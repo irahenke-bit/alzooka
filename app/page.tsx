@@ -116,7 +116,7 @@ export default function FeedPage() {
       .order("created_at", { ascending: false });
 
     if (data) {
-      const postsWithNestedComments = data.map(post => {
+      const postsWithNestedComments = data.map((post: any) => {
         const allComments = (post.comments || []) as Comment[];
         
         // Separate parent comments (no parent_comment_id) and replies
@@ -139,7 +139,7 @@ export default function FeedPage() {
           comments: commentsWithReplies
         };
       });
-      setPosts(postsWithNestedComments as Post[]);
+      setPosts(postsWithNestedComments as unknown as Post[]);
     }
   }
 
