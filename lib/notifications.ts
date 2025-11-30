@@ -1,0 +1,195 @@
+import { SupabaseClient } from "@supabase/supabase-js";
+
+// Vote milestones for upvotes
+const UPVOTE_MILESTONES = [10, 50, 100, 200, 300, 500, 1000];
+// After 1000, notify every 1000
+const UPVOTE_REPEAT_INTERVAL = 1000;
+
+// Vote milestones for downvotes
+const DOWNVOTE_MILESTONES = [20, 100];
+
+type NotificationParams = {
+  supabase: SupabaseClient;
+  userId: string;
+  type: string;
+  title: string;
+  content?: string;
+  link?: string;
+  relatedUserId?: string;
+  relatedPostId?: string;
+  relatedCommentId?: string;
+};
+
+export async function createNotification({
+  supabase,
+  userId,
+  type,
+  title,
+  content,
+  link,
+  relatedUserId,
+  relatedPostId,
+  relatedCommentId,
+}: NotificationParams) {
+  // Don't notify yourself
+  if (relatedUserId && relatedUserId === userId) return;
+
+  await supabase.from("notifications").insert({
+    user_id: userId,
+    type,
+    title,
+    content,
+    link,
+    related_user_id: relatedUserId,
+    related_post_id: relatedPostId,
+    related_comment_id: relatedCommentId,
+  });
+}
+
+// Notify when someone comments on your post
+export async function notifyNewComment(
+  supabase: SupabaseClient,
+  postOwnerId: string,
+  commenterUsername: string,
+  postId: string,
+  commentPreview: string
+) {
+  await createNotification({
+    supabase,
+    userId: postOwnerId,
+    type: "comment",
+    title: `@${commenterUsername} commented on your post`,
+    content: commentPreview.slice(0, 100),
+    link: `/?post=${postId}`,
+    relatedPostId: postId,
+  });
+}
+
+// Notify when someone replies to your comment
+export async function notifyNewReply(
+  supabase: SupabaseClient,
+  commentOwnerId: string,
+  replierUsername: string,
+  postId: string,
+  replyPreview: string
+) {
+  await createNotification({
+    supabase,
+    userId: commentOwnerId,
+    type: "reply",
+    title: `@${replierUsername} replied to your comment`,
+    content: replyPreview.slice(0, 100),
+    link: `/?post=${postId}`,
+    relatedPostId: postId,
+  });
+}
+
+// Notify when someone mentions you
+export async function notifyMention(
+  supabase: SupabaseClient,
+  mentionedUserId: string,
+  mentionerUsername: string,
+  postId: string,
+  commentPreview: string
+) {
+  await createNotification({
+    supabase,
+    userId: mentionedUserId,
+    type: "mention",
+    title: `@${mentionerUsername} mentioned you`,
+    content: commentPreview.slice(0, 100),
+    link: `/?post=${postId}`,
+    relatedPostId: postId,
+  });
+}
+
+// Check and notify for vote milestones
+export async function checkVoteMilestones(
+  supabase: SupabaseClient,
+  userId: string,
+  targetType: "post" | "comment",
+  targetId: string,
+  currentTotal: number,
+  previousTotal: number
+) {
+  // Check upvote milestones
+  for (const milestone of UPVOTE_MILESTONES) {
+    if (previousTotal < milestone && currentTotal >= milestone) {
+      await createNotification({
+        supabase,
+        userId,
+        type: "upvote_milestone",
+        title: `🎉 Your ${targetType} reached ${milestone} upvotes!`,
+        content: "Keep up the great contributions!",
+        link: targetType === "post" ? `/?post=${targetId}` : undefined,
+      });
+      return; // Only one milestone notification at a time
+    }
+  }
+
+  // Check for milestones above 1000 (every 1000)
+  if (currentTotal >= 1000) {
+    const prevThousand = Math.floor(previousTotal / UPVOTE_REPEAT_INTERVAL);
+    const currThousand = Math.floor(currentTotal / UPVOTE_REPEAT_INTERVAL);
+    
+    if (currThousand > prevThousand && currThousand >= 1) {
+      const milestone = currThousand * UPVOTE_REPEAT_INTERVAL;
+      await createNotification({
+        supabase,
+        userId,
+        type: "upvote_milestone",
+        title: `🎉 Your ${targetType} reached ${milestone} upvotes!`,
+        content: "Incredible! Your content is resonating with the community.",
+        link: targetType === "post" ? `/?post=${targetId}` : undefined,
+      });
+    }
+  }
+
+  // Check downvote milestones (negative values)
+  const downvotes = Math.abs(Math.min(0, currentTotal));
+  const prevDownvotes = Math.abs(Math.min(0, previousTotal));
+  
+  for (const milestone of DOWNVOTE_MILESTONES) {
+    if (prevDownvotes < milestone && downvotes >= milestone) {
+      await createNotification({
+        supabase,
+        userId,
+        type: "downvote_milestone",
+        title: `Your ${targetType} received ${milestone} downvotes`,
+        content: "Consider reviewing your content.",
+        link: targetType === "post" ? `/?post=${targetId}` : undefined,
+      });
+      return;
+    }
+  }
+}
+
+// Parse @mentions from text
+export function parseMentions(text: string): string[] {
+  const mentionRegex = /@(\w+)/g;
+  const matches = text.match(mentionRegex);
+  if (!matches) return [];
+  return [...new Set(matches.map((m) => m.slice(1).toLowerCase()))];
+}
+
+// Get user IDs from usernames
+export async function getUserIdsByUsernames(
+  supabase: SupabaseClient,
+  usernames: string[]
+): Promise<Record<string, string>> {
+  if (usernames.length === 0) return {};
+
+  const { data } = await supabase
+    .from("users")
+    .select("id, username")
+    .in("username", usernames);
+
+  if (!data) return {};
+
+  const result: Record<string, string> = {};
+  data.forEach((user) => {
+    result[user.username.toLowerCase()] = user.id;
+  });
+  return result;
+}
+
