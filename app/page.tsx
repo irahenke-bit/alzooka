@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -15,6 +15,14 @@ import {
   parseMentions,
   getUserIdsByUsernames 
 } from "@/lib/notifications";
+
+export default function FeedPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><p>Loading...</p></div>}>
+      <FeedContent />
+    </Suspense>
+  );
+}
 
 type Vote = {
   id: string;
@@ -47,7 +55,7 @@ type Post = {
   comments: Comment[];
 };
 
-export default function FeedPage() {
+function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
