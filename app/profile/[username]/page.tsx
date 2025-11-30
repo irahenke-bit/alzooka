@@ -165,7 +165,7 @@ export default function ProfilePage() {
           voteScore: votesByComment[comment.id] || 0,
         }));
 
-        setComments(commentsWithVotes as Comment[]);
+        setComments(commentsWithVotes as unknown as Comment[]);
       }
 
       // Get vote stats - votes received on user's posts
