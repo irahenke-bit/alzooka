@@ -65,6 +65,8 @@ export default function ProfilePage() {
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [posting, setPosting] = useState(false);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
 
@@ -263,6 +265,39 @@ export default function ProfilePage() {
     if (profile) {
       setProfile({ ...profile, avatar_url: newUrl });
     }
+  }
+
+  async function handlePost() {
+    if (!newPostContent.trim() || !currentUser || !profile) return;
+
+    setPosting(true);
+
+    const { data: newPost, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: currentUser.id,
+        content: newPostContent.trim(),
+      })
+      .select()
+      .single();
+
+    if (!error && newPost) {
+      // Add the new post to the top of the list
+      setPosts([
+        {
+          id: newPost.id,
+          content: newPost.content,
+          created_at: newPost.created_at,
+          commentCount: 0,
+          voteScore: 0,
+        },
+        ...posts,
+      ]);
+      setNewPostContent("");
+      setActiveTab("posts"); // Switch to posts tab to show new post
+    }
+
+    setPosting(false);
   }
 
   if (loading) {
@@ -473,6 +508,34 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* New Post Form (only on own profile) */}
+      {isOwnProfile && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <textarea
+            value={newPostContent}
+            onChange={(e) => setNewPostContent(e.target.value)}
+            placeholder="What's on your mind?"
+            rows={3}
+            maxLength={500}
+            style={{ marginBottom: 12, resize: "vertical" }}
+          />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 12, opacity: 0.5 }}>
+              {newPostContent.length}/500
+            </span>
+            <button
+              onClick={handlePost}
+              disabled={posting || !newPostContent.trim()}
+              style={{
+                opacity: !newPostContent.trim() ? 0.5 : 1,
+              }}
+            >
+              {posting ? "Posting..." : "Post"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
