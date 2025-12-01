@@ -1,11 +1,19 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+
+// Singleton browser client
+let browserClient: SupabaseClient | null = null
 
 // Browser client for auth and client-side operations
 export function createBrowserClient() {
+  if (browserClient) {
+    return browserClient
+  }
+  
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   
-  return createClient(url, key)
+  browserClient = createClient(url, key)
+  return browserClient
 }
 
 // Server client for API routes and server components
