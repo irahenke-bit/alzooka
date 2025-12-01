@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { AvatarUpload } from "@/app/components/AvatarUpload";
+import { NotificationBell } from "@/app/components/NotificationBell";
 
 type UserProfile = {
   id: string;
@@ -347,17 +348,20 @@ export default function ProfilePage() {
             Alzooka
           </span>
         </Link>
-        <Link 
-          href="/"
-          style={{ 
-            color: "var(--alzooka-cream)",
-            fontSize: 14,
-            textDecoration: "none",
-            opacity: 0.8,
-          }}
-        >
-          ← Back to Feed
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {currentUser && <NotificationBell userId={currentUser.id} />}
+          <Link 
+            href="/"
+            style={{ 
+              color: "var(--alzooka-cream)",
+              fontSize: 14,
+              textDecoration: "none",
+              opacity: 0.8,
+            }}
+          >
+            ← Back to Feed
+          </Link>
+        </div>
       </header>
 
       {/* Profile Card */}
