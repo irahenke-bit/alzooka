@@ -184,7 +184,7 @@ export async function notifyFriendRequest(
     type: "friend_request",
     title: `@${senderUsername} sent you a friend request`,
     content: "Accept or decline this request",
-    link: `/profile/${senderUsername}`,
+    link: `/profile/${encodeURIComponent(senderUsername)}`,
     relatedUserId: senderId,
   });
 }
@@ -202,7 +202,7 @@ export async function notifyFriendRequestAccepted(
     type: "friend_accepted",
     title: `@${accepterUsername} accepted your friend request`,
     content: "You are now friends!",
-    link: `/profile/${accepterUsername}`,
+    link: `/profile/${encodeURIComponent(accepterUsername)}`,
     relatedUserId: accepterId,
   });
 }
