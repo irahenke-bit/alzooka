@@ -14,6 +14,7 @@ type Group = {
   name: string;
   description: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   privacy: "public" | "private";
   created_by: string;
   created_at: string;
@@ -71,8 +72,10 @@ export default function GroupPage() {
   const router = useRouter();
   const supabase = createBrowserClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<User | null>(null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [userUsername, setUserUsername] = useState("");
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -384,6 +387,44 @@ export default function GroupPage() {
     await loadMembers();
   }
 
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user || !group) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be less than 5MB");
+      return;
+    }
+
+    setUploadingBanner(true);
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `group-${groupId}-banner-${Date.now()}.${fileExt}`;
+    const filePath = `banners/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      alert("Failed to upload banner");
+      setUploadingBanner(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
+
+    await supabase.from("groups").update({ banner_url: publicUrl }).eq("id", groupId);
+    setGroup({ ...group, banner_url: publicUrl });
+    setUploadingBanner(false);
+    
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
+
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
@@ -435,70 +476,119 @@ export default function GroupPage() {
       </header>
 
       {/* Group Header */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
-          {group.avatar_url ? (
-            <img src={group.avatar_url} alt="" style={{ width: 80, height: 80, borderRadius: 12, objectFit: "cover" }} />
-          ) : (
-            <div style={{
-              width: 80,
-              height: 80,
-              borderRadius: 12,
-              background: "var(--alzooka-gold)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--alzooka-teal-dark)",
-              fontWeight: 700,
-              fontSize: 32,
-            }}>
-              {group.name.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div style={{ flex: 1 }}>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: 24 }}>{group.name}</h1>
-            {group.description && (
-              <p style={{ margin: "0 0 12px 0", opacity: 0.8, lineHeight: 1.5 }}>{group.description}</p>
-            )}
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
+        {/* Banner */}
+        <div 
+          style={{ 
+            height: 160,
+            background: group.banner_url 
+              ? `url(${group.banner_url}) center/cover`
+              : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+            position: "relative",
+          }}
+        >
+          {/* Banner upload button for admins */}
+          {userRole === "admin" && (
+            <>
+              <input
+                ref={bannerInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerUpload}
+                style={{ display: "none" }}
+              />
               <button
-                onClick={() => setShowMembers(!showMembers)}
+                onClick={() => bannerInputRef.current?.click()}
+                disabled={uploadingBanner}
                 style={{
-                  background: "transparent",
+                  position: "absolute",
+                  bottom: 12,
+                  right: 12,
+                  background: "rgba(0, 0, 0, 0.6)",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "white",
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  fontSize: 12,
                   cursor: "pointer",
-                  padding: 0,
-                  fontSize: 14,
-                  opacity: 0.7,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                👥 {members.length} {members.length === 1 ? "member" : "members"}
+                📷 {uploadingBanner ? "Uploading..." : group.banner_url ? "Change Banner" : "Add Banner"}
               </button>
-              <span className="text-muted" style={{ fontSize: 14 }}>
-                {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
-              </span>
-            </div>
-          </div>
-          <div>
-            {isMember ? (
-              userRole !== "admin" && (
+            </>
+          )}
+        </div>
+
+        {/* Group Info Card */}
+        <div className="card" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, paddingTop: 20 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
+            {group.avatar_url ? (
+              <img src={group.avatar_url} alt="" style={{ width: 80, height: 80, borderRadius: 12, objectFit: "cover", marginTop: -50, border: "4px solid var(--alzooka-teal)" }} />
+            ) : (
+              <div style={{
+                width: 80,
+                height: 80,
+                borderRadius: 12,
+                background: "var(--alzooka-gold)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--alzooka-teal-dark)",
+                fontWeight: 700,
+                fontSize: 32,
+                marginTop: -50,
+                border: "4px solid var(--alzooka-teal)",
+              }}>
+                {group.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div style={{ flex: 1 }}>
+              <h1 style={{ margin: "0 0 8px 0", fontSize: 24 }}>{group.name}</h1>
+              {group.description && (
+                <p style={{ margin: "0 0 12px 0", opacity: 0.8, lineHeight: 1.5 }}>{group.description}</p>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <button
-                  onClick={handleLeave}
+                  onClick={() => setShowMembers(!showMembers)}
                   style={{
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    border: "none",
                     color: "var(--alzooka-cream)",
+                    cursor: "pointer",
+                    padding: 0,
+                    fontSize: 14,
+                    opacity: 0.7,
                   }}
                 >
-                  Leave Group
+                  👥 {members.length} {members.length === 1 ? "member" : "members"}
                 </button>
-              )
-            ) : (
-              <button onClick={handleJoin}>Join Group</button>
-            )}
+                <span className="text-muted" style={{ fontSize: 14 }}>
+                  {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
+                </span>
+              </div>
+            </div>
+            <div>
+              {isMember ? (
+                userRole !== "admin" && (
+                  <button
+                    onClick={handleLeave}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                    }}
+                  >
+                    Leave Group
+                  </button>
+                )
+              ) : (
+                <button onClick={handleJoin}>Join Group</button>
+              )}
+            </div>
           </div>
-        </div>
 
         {/* Members List */}
         {showMembers && (
