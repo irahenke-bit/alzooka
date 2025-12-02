@@ -63,6 +63,7 @@ export default function ProfilePage() {
     upvotesGiven: 0,
     downvotesGiven: 0,
   });
+  const [friendsCount, setFriendsCount] = useState(0);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -245,6 +246,15 @@ export default function ProfilePage() {
         upvotesGiven,
         downvotesGiven,
       });
+
+      // Get friends count
+      const { count: friendsCountData } = await supabase
+        .from("friendships")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${profileData.id},addressee_id.eq.${profileData.id}`);
+      
+      setFriendsCount(friendsCountData || 0);
 
       setLoading(false);
     }
@@ -512,8 +522,13 @@ export default function ProfilePage() {
                   Joined {joinDate}
                 </p>
 
-                {/* Vote Stats */}
+                {/* Friends & Vote Stats */}
                 <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 16 }}>👥</span>
+                    <span style={{ fontWeight: 600 }}>{friendsCount}</span>
+                    <span className="text-muted" style={{ fontSize: 13 }}>{friendsCount === 1 ? "friend" : "friends"}</span>
+                  </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
                     <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
