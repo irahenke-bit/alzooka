@@ -439,7 +439,7 @@ function FeedContent() {
           </Link>
           <UserSearch />
         </div>
-        <nav style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <nav style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: 32 }}>
           <Link 
             href="/groups"
             style={{ 
