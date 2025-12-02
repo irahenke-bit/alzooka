@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { AvatarUpload } from "@/app/components/AvatarUpload";
 import { NotificationBell } from "@/app/components/NotificationBell";
+import { UserSearch } from "@/app/components/UserSearch";
 
 type UserProfile = {
   id: string;
@@ -349,6 +350,7 @@ export default function ProfilePage() {
           </span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <UserSearch />
           {currentUser && <NotificationBell userId={currentUser.id} />}
           <Link 
             href="/"
