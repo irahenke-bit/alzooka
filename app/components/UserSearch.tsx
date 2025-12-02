@@ -83,25 +83,31 @@ export function UserSearch() {
       )
     : recentSearches;
 
-  // Immediate search on Enter key
+  // Handle Enter key - use existing results or do immediate search
   async function handleEnterSearch() {
-    if (query.trim().length < 2) {
-      // Check recent searches
-      if (filteredRecent.length > 0) {
-        handleUserClick(filteredRecent[0]);
-      }
+    // If we already have results displayed, use the first one
+    if (results.length > 0) {
+      handleUserClick(results[0]);
+      return;
+    }
+    
+    // If showing recent searches, use first one
+    if (query.trim().length < 2 && filteredRecent.length > 0) {
+      handleUserClick(filteredRecent[0]);
       return;
     }
 
-    // Do immediate search (no debounce)
-    const { data } = await supabase
-      .from("users")
-      .select("id, username, display_name, avatar_url")
-      .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
-      .limit(1);
+    // If no results yet but query is long enough, do immediate search
+    if (query.trim().length >= 2) {
+      const { data } = await supabase
+        .from("users")
+        .select("id, username, display_name, avatar_url")
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .limit(1);
 
-    if (data && data.length > 0) {
-      handleUserClick(data[0]);
+      if (data && data.length > 0) {
+        handleUserClick(data[0]);
+      }
     }
   }
 
