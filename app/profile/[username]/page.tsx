@@ -388,6 +388,19 @@ export default function ProfilePage() {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <UserSearch />
           {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
+          {currentUser && !isOwnProfile && currentUserUsername && (
+            <Link 
+              href={`/profile/${encodeURIComponent(currentUserUsername)}`}
+              style={{ 
+                color: "var(--alzooka-cream)",
+                fontSize: 14,
+                textDecoration: "none",
+                opacity: 0.8,
+              }}
+            >
+              My Profile
+            </Link>
+          )}
           <Link 
             href="/"
             style={{ 
