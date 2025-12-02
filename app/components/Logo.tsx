@@ -2,28 +2,28 @@ export function Logo({ size = 48 }: { size?: number }) {
   return (
     <svg 
       width={size} 
-      height={size * 0.6} 
-      viewBox="0 0 80 48" 
+      height={size * 0.5} 
+      viewBox="0 0 100 50" 
       fill="none"
-      style={{ display: "block", margin: "0 auto" }}
+      style={{ display: "block" }}
     >
-      {/* Three wave lines */}
+      {/* Three smooth flowing wave lines */}
       <path 
-        d="M8 12 Q20 4, 32 12 T56 12 T72 12" 
+        d="M 5 12 C 18 2, 30 2, 43 12 C 56 22, 68 22, 81 12 C 88 6, 95 6, 95 12" 
         stroke="var(--alzooka-gold)" 
         strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
-        d="M8 24 Q20 16, 32 24 T56 24 T72 24" 
+        d="M 5 25 C 18 15, 30 15, 43 25 C 56 35, 68 35, 81 25 C 88 19, 95 19, 95 25" 
         stroke="var(--alzooka-gold)" 
         strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
-        d="M8 36 Q20 28, 32 36 T56 36 T72 36" 
+        d="M 5 38 C 18 28, 30 28, 43 38 C 56 48, 68 48, 81 38 C 88 32, 95 32, 95 38" 
         stroke="var(--alzooka-gold)" 
         strokeWidth="4" 
         strokeLinecap="round"

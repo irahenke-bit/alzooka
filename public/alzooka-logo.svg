@@ -1,37 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
   <!-- Background -->
-  <rect width="400" height="200" fill="#1A3A4A"/>
+  <rect width="600" height="400" fill="#1A3A4A"/>
   
-  <!-- Three wavy lines -->
-  <g fill="none" stroke="#D4A84B" stroke-width="4" stroke-linecap="round">
+  <!-- Three wavy lines - smooth flowing waves with 3 full cycles -->
+  <g fill="none" stroke="#D4A84B" stroke-width="8" stroke-linecap="round">
     <!-- Top wave -->
-    <path d="M 120 50 
-             Q 140 40, 160 50 
-             Q 180 60, 200 50 
-             Q 220 40, 240 50 
-             Q 260 60, 280 50"/>
+    <path d="M 120 100 
+             C 145 70, 175 70, 200 100 
+             C 225 130, 255 130, 280 100 
+             C 305 70, 335 70, 360 100 
+             C 385 130, 415 130, 440 100
+             C 465 70, 480 70, 480 100"/>
     <!-- Middle wave -->
-    <path d="M 120 65 
-             Q 140 55, 160 65 
-             Q 180 75, 200 65 
-             Q 220 55, 240 65 
-             Q 260 75, 280 65"/>
+    <path d="M 120 140 
+             C 145 110, 175 110, 200 140 
+             C 225 170, 255 170, 280 140 
+             C 305 110, 335 110, 360 140 
+             C 385 170, 415 170, 440 140
+             C 465 110, 480 110, 480 140"/>
     <!-- Bottom wave -->
-    <path d="M 120 80 
-             Q 140 70, 160 80 
-             Q 180 90, 200 80 
-             Q 220 70, 240 80 
-             Q 260 90, 280 80"/>
+    <path d="M 120 180 
+             C 145 150, 175 150, 200 180 
+             C 225 210, 255 210, 280 180 
+             C 305 150, 335 150, 360 180 
+             C 385 210, 415 210, 440 180
+             C 465 150, 480 150, 480 180"/>
   </g>
   
   <!-- Alzooka text -->
-  <text x="200" y="140" 
+  <text x="300" y="300" 
         font-family="Georgia, 'Times New Roman', serif" 
-        font-size="48" 
+        font-size="72" 
         font-weight="400"
         fill="#F0EBE0" 
         text-anchor="middle">
     Alzooka
   </text>
 </svg>
-
