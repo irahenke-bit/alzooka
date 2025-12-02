@@ -40,6 +40,7 @@ type Comment = {
   users: {
     username: string;
     display_name: string | null;
+    avatar_url: string | null;
   };
   replies?: Comment[];
 };
@@ -60,6 +61,7 @@ type Post = {
   users: {
     username: string;
     display_name: string | null;
+    avatar_url: string | null;
   };
   comments: Comment[];
 };
@@ -144,7 +146,8 @@ function FeedContent() {
         user_id,
         users (
           username,
-          display_name
+          display_name,
+          avatar_url
         ),
         comments (
           id,
@@ -154,7 +157,8 @@ function FeedContent() {
           parent_comment_id,
           users (
             username,
-            display_name
+            display_name,
+            avatar_url
           )
         )
       `)
@@ -846,18 +850,46 @@ function PostCard({
         <div style={{ flex: 1 }}>
           {/* Post Header */}
           <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <Link 
-                href={`/profile/${post.users?.username || "unknown"}`}
-                className="text-gold" 
-                style={{ fontWeight: 600, textDecoration: "none" }}
-              >
-                @{post.users?.username || "unknown"}
-              </Link>
-              <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
-                {formatTime(post.created_at)}
-              </span>
-            </div>
+            <Link 
+              href={`/profile/${post.users?.username || "unknown"}`}
+              style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
+            >
+              {post.users?.avatar_url ? (
+                <img 
+                  src={post.users.avatar_url} 
+                  alt=""
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: "var(--alzooka-gold)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--alzooka-teal-dark)",
+                  fontWeight: 700,
+                  fontSize: 16,
+                }}>
+                  {(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                  {post.users?.display_name || post.users?.username || "Unknown"}
+                </span>
+                <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
+                  {formatTime(post.created_at)}
+                </span>
+              </div>
+            </Link>
             {post.user_id === user.id && (
               <div style={{ display: "flex", gap: 8 }}>
                 <button
@@ -1051,18 +1083,46 @@ function PostCard({
                     {/* Comment Content */}
                     <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid var(--alzooka-gold)" }}>
                       <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div>
-                          <Link 
-                            href={`/profile/${comment.users?.username || "unknown"}`}
-                            className="text-gold" 
-                            style={{ fontSize: 14, fontWeight: 600, textDecoration: "none" }}
-                          >
-                            @{comment.users?.username || "unknown"}
-                          </Link>
-                          <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>
-                            {formatTime(comment.created_at)}
-                          </span>
-                        </div>
+                        <Link 
+                          href={`/profile/${comment.users?.username || "unknown"}`}
+                          style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+                        >
+                          {comment.users?.avatar_url ? (
+                            <img 
+                              src={comment.users.avatar_url} 
+                              alt=""
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              background: "var(--alzooka-gold)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "var(--alzooka-teal-dark)",
+                              fontWeight: 700,
+                              fontSize: 12,
+                            }}>
+                              {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                              {comment.users?.display_name || comment.users?.username || "Unknown"}
+                            </span>
+                            <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>
+                              {formatTime(comment.created_at)}
+                            </span>
+                          </div>
+                        </Link>
                         <div style={{ display: "flex", gap: 8 }}>
                           <button
                             onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
@@ -1133,18 +1193,46 @@ function PostCard({
                           {/* Reply Content */}
                           <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid rgba(212, 168, 75, 0.4)" }}>
                             <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <div>
-                                <Link 
-                                  href={`/profile/${reply.users?.username || "unknown"}`}
-                                  className="text-gold" 
-                                  style={{ fontSize: 13, fontWeight: 600, textDecoration: "none" }}
-                                >
-                                  @{reply.users?.username || "unknown"}
-                                </Link>
-                                <span className="text-muted" style={{ marginLeft: 8, fontSize: 11 }}>
-                                  {formatTime(reply.created_at)}
-                                </span>
-                              </div>
+                              <Link 
+                                href={`/profile/${reply.users?.username || "unknown"}`}
+                                style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none" }}
+                              >
+                                {reply.users?.avatar_url ? (
+                                  <img 
+                                    src={reply.users.avatar_url} 
+                                    alt=""
+                                    style={{
+                                      width: 24,
+                                      height: 24,
+                                      borderRadius: "50%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <div style={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: "50%",
+                                    background: "var(--alzooka-gold)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "var(--alzooka-teal-dark)",
+                                    fontWeight: 700,
+                                    fontSize: 10,
+                                  }}>
+                                    {(reply.users?.display_name || reply.users?.username || "?").charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                <div>
+                                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                                    {reply.users?.display_name || reply.users?.username || "Unknown"}
+                                  </span>
+                                  <span className="text-muted" style={{ marginLeft: 8, fontSize: 11 }}>
+                                    {formatTime(reply.created_at)}
+                                  </span>
+                                </div>
+                              </Link>
                               {reply.user_id === user.id && (
                                 <button
                                   onClick={() => handleDeleteComment(reply.id)}
