@@ -99,7 +99,7 @@ export default function ProfilePage() {
         .select("id, username, display_name, bio, avatar_url, created_at");
       
       const profileData = allUsers?.find(
-        u => u.username.toLowerCase() === username.toLowerCase()
+        u => u.username.trim().toLowerCase() === username.trim().toLowerCase()
       );
 
       if (!profileData) {
