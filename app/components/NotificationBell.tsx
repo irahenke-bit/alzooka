@@ -135,7 +135,14 @@ export function NotificationBell({ userId }: { userId: string }) {
     <div ref={dropdownRef} style={{ position: "relative" }}>
       {/* Bell Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const wasOpen = isOpen;
+          setIsOpen(!isOpen);
+          // Mark all as read when opening the dropdown
+          if (!wasOpen && unreadCount > 0) {
+            markAllAsRead();
+          }
+        }}
         style={{
           background: "transparent",
           border: "none",

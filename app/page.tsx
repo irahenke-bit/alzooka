@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
+import { UserSearch } from "@/app/components/UserSearch";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -66,6 +67,9 @@ function FeedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
+  const highlightCommentId = searchParams.get("comment");
+  
+  console.log("URL params - post:", highlightPostId, "comment:", highlightCommentId);
   const supabase = createBrowserClient();
 
   useEffect(() => {
@@ -83,8 +87,15 @@ function FeedContent() {
       await loadVoteTotals();
       setLoading(false);
 
-      // Scroll to highlighted post if present
-      if (highlightPostId) {
+      // Scroll to highlighted comment or post if present
+      if (highlightCommentId) {
+        setTimeout(() => {
+          const element = document.getElementById(`comment-${highlightCommentId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
+      } else if (highlightPostId) {
         setTimeout(() => {
           const element = document.getElementById(`post-${highlightPostId}`);
           if (element) {
@@ -121,7 +132,7 @@ function FeedContent() {
           )
         )
       `)
-      .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false });
 
     if (data) {
       const postsWithNestedComments = data.map((post: any) => {
@@ -329,6 +340,7 @@ function FeedContent() {
           </h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <UserSearch />
           <Link 
             href={`/profile/${user?.user_metadata?.username || ""}`}
             style={{ 
@@ -387,6 +399,7 @@ function FeedContent() {
               voteTotals={voteTotals}
               onVote={handleVote}
               isHighlighted={post.id === highlightPostId}
+              highlightCommentId={highlightCommentId}
               onCommentAdded={async () => {
                 await loadPosts();
                 await loadUserVotes(user!.id);
@@ -480,6 +493,7 @@ function PostCard({
   voteTotals,
   onVote,
   isHighlighted,
+  highlightCommentId,
   onCommentAdded 
 }: { 
   post: Post; 
@@ -489,9 +503,14 @@ function PostCard({
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   isHighlighted?: boolean;
+  highlightCommentId?: string | null;
   onCommentAdded: () => void;
 }) {
-  const [showComments, setShowComments] = useState(isHighlighted || false);
+  // Auto-expand comments if a comment in this post is highlighted
+  const hasHighlightedComment = highlightCommentId && post.comments?.some(
+    c => c.id === highlightCommentId || c.replies?.some(r => r.id === highlightCommentId)
+  );
+  const [showComments, setShowComments] = useState(isHighlighted || hasHighlightedComment || false);
   const [commentText, setCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -548,6 +567,7 @@ function PostCard({
             parentComment.user_id,
             commenterUsername,
             post.id,
+            data.id,
             trimmedComment
           );
         }
@@ -559,6 +579,7 @@ function PostCard({
             post.user_id,
             commenterUsername,
             post.id,
+            data.id,
             trimmedComment
           );
         }
@@ -576,6 +597,7 @@ function PostCard({
               mentionedUserId,
               commenterUsername,
               post.id,
+              data.id,
               trimmedComment
             );
           }
@@ -684,7 +706,21 @@ function PostCard({
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.1)" }}>
               {/* Existing Comments - Two Level Structure */}
               {post.comments?.map((comment) => (
-                <div key={comment.id} style={{ marginBottom: 16 }}>
+                <div 
+                  key={comment.id} 
+                  id={`comment-${comment.id}`} 
+                  style={{ 
+                    marginBottom: 16,
+                    ...(highlightCommentId === comment.id ? {
+                      background: "rgba(212, 168, 75, 0.2)",
+                      padding: 12,
+                      marginLeft: -12,
+                      marginRight: -12,
+                      borderRadius: 8,
+                      boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
+                    } : {})
+                  }}
+                >
                   {/* Parent Comment */}
                   <div style={{ display: "flex", gap: 8 }}>
                     {/* Comment Vote Buttons */}
@@ -753,7 +789,22 @@ function PostCard({
                   {comment.replies && comment.replies.length > 0 && (
                     <div style={{ marginLeft: 48, marginTop: 8 }}>
                       {comment.replies.map((reply) => (
-                        <div key={reply.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                        <div 
+                          key={reply.id} 
+                          id={`comment-${reply.id}`}
+                          style={{ 
+                            marginBottom: 8,
+                            ...(highlightCommentId === reply.id ? {
+                              background: "rgba(212, 168, 75, 0.2)",
+                              padding: 12,
+                              marginLeft: -12,
+                              marginRight: -12,
+                              borderRadius: 8,
+                              boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
+                            } : {})
+                          }}
+                        >
+                        <div style={{ display: "flex", gap: 8 }}>
                           {/* Reply Vote Buttons */}
                           <VoteButtons
                             targetType="comment"
@@ -798,6 +849,7 @@ function PostCard({
                             </div>
                             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>{reply.content}</p>
                           </div>
+                        </div>
                         </div>
                       ))}
                     </div>

@@ -52,6 +52,7 @@ export async function notifyNewComment(
   postOwnerId: string,
   commenterUsername: string,
   postId: string,
+  commentId: string,
   commentPreview: string
 ) {
   await createNotification({
@@ -60,8 +61,9 @@ export async function notifyNewComment(
     type: "comment",
     title: `@${commenterUsername} commented on your post`,
     content: commentPreview.slice(0, 100),
-    link: `/?post=${postId}`,
+    link: `/?post=${postId}&comment=${commentId}`,
     relatedPostId: postId,
+    relatedCommentId: commentId,
   });
 }
 
@@ -71,6 +73,7 @@ export async function notifyNewReply(
   commentOwnerId: string,
   replierUsername: string,
   postId: string,
+  commentId: string,
   replyPreview: string
 ) {
   await createNotification({
@@ -79,8 +82,9 @@ export async function notifyNewReply(
     type: "reply",
     title: `@${replierUsername} replied to your comment`,
     content: replyPreview.slice(0, 100),
-    link: `/?post=${postId}`,
+    link: `/?post=${postId}&comment=${commentId}`,
     relatedPostId: postId,
+    relatedCommentId: commentId,
   });
 }
 
@@ -90,6 +94,7 @@ export async function notifyMention(
   mentionedUserId: string,
   mentionerUsername: string,
   postId: string,
+  commentId: string,
   commentPreview: string
 ) {
   await createNotification({
@@ -98,8 +103,9 @@ export async function notifyMention(
     type: "mention",
     title: `@${mentionerUsername} mentioned you`,
     content: commentPreview.slice(0, 100),
-    link: `/?post=${postId}`,
+    link: `/?post=${postId}&comment=${commentId}`,
     relatedPostId: postId,
+    relatedCommentId: commentId,
   });
 }
 
