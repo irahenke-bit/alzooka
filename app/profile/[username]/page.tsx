@@ -9,6 +9,7 @@ import { Logo } from "@/app/components/Logo";
 import { AvatarUpload } from "@/app/components/AvatarUpload";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import { FriendButton } from "@/app/components/FriendButton";
 
 type UserProfile = {
   id: string;
@@ -477,6 +478,16 @@ export default function ProfilePage() {
                 <p className="text-gold" style={{ margin: "0 0 12px 0", fontSize: 16 }}>
                   @{profile.username}
                 </p>
+                
+                {/* Friend Button (only show on other people's profiles) */}
+                {currentUser && !isOwnProfile && (
+                  <div style={{ marginBottom: 12 }}>
+                    <FriendButton
+                      currentUserId={currentUser.id}
+                      targetUserId={profile.id}
+                    />
+                  </div>
+                )}
                 {profile.bio && (
                   <p style={{ margin: "0 0 12px 0", lineHeight: 1.5 }}>
                     {profile.bio}
