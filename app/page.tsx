@@ -69,6 +69,7 @@ type Post = {
 function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
@@ -97,14 +98,15 @@ function FeedContent() {
       
       setUser(user);
       
-      // Fetch current user's username from the users table
+      // Fetch current user's username and avatar from the users table
       const { data: userData } = await supabase
         .from("users")
-        .select("username")
+        .select("username, avatar_url")
         .eq("id", user.id)
         .single();
       if (userData) {
         setUserUsername(userData.username);
+        setUserAvatarUrl(userData.avatar_url);
       }
       
       await loadPosts();
@@ -428,67 +430,82 @@ function FeedContent() {
         paddingBottom: 16,
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Logo size={32} />
           <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400 }}>
             Alzooka
           </h1>
+          <div style={{ marginLeft: 8 }}>
+            <UserSearch />
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <UserSearch />
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Link 
             href="/groups"
-            title="Groups"
             style={{ 
               color: "var(--alzooka-cream)",
-              fontSize: 20,
               textDecoration: "none",
-              opacity: 0.7,
-              padding: "8px",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
+              gap: 2,
+              opacity: 0.8,
             }}
           >
-            👥
+            <span style={{ fontSize: 20 }}>👥</span>
+            <span style={{ fontSize: 11 }}>Groups</span>
           </Link>
           {user && <NotificationBell userId={user.id} currentUsername={userUsername} />}
           <Link 
-            href={`/profile/${user?.user_metadata?.username || ""}`}
+            href={`/profile/${userUsername}`}
             title="My Profile"
             style={{ 
               display: "flex",
               alignItems: "center",
             }}
           >
-            <div style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: "var(--alzooka-gold)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--alzooka-teal-dark)",
-              fontWeight: 700,
-              fontSize: 14,
-            }}>
-              {(user?.user_metadata?.username || "?").charAt(0).toUpperCase()}
-            </div>
+            {userAvatarUrl ? (
+              <img 
+                src={userAvatarUrl} 
+                alt="Profile"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "2px solid var(--alzooka-gold)",
+                }}
+              />
+            ) : (
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                background: "var(--alzooka-gold)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--alzooka-teal-dark)",
+                fontWeight: 700,
+                fontSize: 14,
+              }}>
+                {(userUsername || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
           </Link>
           <button 
             onClick={handleLogout}
-            title="Sign Out"
             style={{ 
               background: "transparent", 
               color: "var(--alzooka-cream)",
-              padding: "8px",
-              fontSize: 18,
-              border: "none",
+              padding: "6px 12px",
+              fontSize: 13,
+              border: "1px solid rgba(240, 235, 224, 0.3)",
               cursor: "pointer",
-              opacity: 0.7,
+              borderRadius: 4,
             }}
           >
-            ⏻
+            Sign Out
           </button>
         </div>
       </header>
