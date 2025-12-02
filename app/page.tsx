@@ -463,6 +463,7 @@ function FeedContent() {
           <Link 
             href={`/profile/${userUsername}`}
             title="My Profile"
+            style={{ display: "block", flexShrink: 0 }}
           >
             {userAvatarUrl ? (
               <img 
@@ -471,15 +472,20 @@ function FeedContent() {
                 style={{
                   width: 34,
                   height: 34,
+                  minWidth: 34,
+                  minHeight: 34,
                   borderRadius: "50%",
                   objectFit: "cover",
                   border: "2px solid var(--alzooka-gold)",
+                  display: "block",
                 }}
               />
             ) : (
               <div style={{
                 width: 34,
                 height: 34,
+                minWidth: 34,
+                minHeight: 34,
                 borderRadius: "50%",
                 background: "var(--alzooka-gold)",
                 display: "flex",
