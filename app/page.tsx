@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -47,6 +47,7 @@ type Comment = {
 type Post = {
   id: string;
   content: string;
+  image_url: string | null;
   created_at: string;
   user_id: string;
   users: {
@@ -63,6 +64,9 @@ function FeedContent() {
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [content, setContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const router = useRouter();
@@ -126,6 +130,7 @@ function FeedContent() {
       .select(`
         id,
         content,
+        image_url,
         created_at,
         user_id,
         users (
@@ -283,16 +288,75 @@ function FeedContent() {
     }
   }
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be less than 5MB");
+      return;
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function removeSelectedImage() {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() || !user) return;
+    if ((!content.trim() && !selectedImage) || !user) return;
 
     setPosting(true);
+
+    let imageUrl: string | null = null;
+
+    // Upload image if selected
+    if (selectedImage) {
+      const fileExt = selectedImage.name.split(".").pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `posts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(filePath, selectedImage, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        alert("Failed to upload image. Please try again.");
+        setPosting(false);
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("post-images")
+        .getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
+    }
 
     const { data, error } = await supabase
       .from("posts")
       .insert({
         content: content.trim(),
+        image_url: imageUrl,
         user_id: user.id,
       })
       .select()
@@ -308,6 +372,11 @@ function FeedContent() {
       });
       
       setContent("");
+      setSelectedImage(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       await loadPosts();
       await loadUserVotes(user.id);
       await loadVoteTotals();
@@ -389,9 +458,76 @@ function FeedContent() {
           rows={3}
           style={{ marginBottom: 12, resize: "vertical" }}
         />
-        <button type="submit" disabled={posting || !content.trim()}>
-          {posting ? "Posting..." : "Post"}
-        </button>
+        
+        {/* Image Preview */}
+        {imagePreview && (
+          <div style={{ position: "relative", marginBottom: 12, display: "inline-block" }}>
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              style={{ 
+                maxWidth: "100%", 
+                maxHeight: 200, 
+                borderRadius: 8,
+                border: "1px solid rgba(240, 235, 224, 0.2)"
+              }} 
+            />
+            <button
+              type="button"
+              onClick={removeSelectedImage}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "rgba(0, 0, 0, 0.7)",
+                border: "none",
+                borderRadius: "50%",
+                width: 28,
+                height: 28,
+                color: "white",
+                cursor: "pointer",
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          style={{ display: "none" }}
+        />
+
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <button 
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(240, 235, 224, 0.3)",
+              color: "var(--alzooka-cream)",
+              padding: "8px 16px",
+              fontSize: 14,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            📷 Photo
+          </button>
+          <button type="submit" disabled={posting || (!content.trim() && !selectedImage)}>
+            {posting ? "Posting..." : "Post"}
+          </button>
+        </div>
       </form>
 
       {/* Posts Feed */}
@@ -694,7 +830,26 @@ function PostCard({
           </div>
 
           {/* Post Content */}
-          <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>
+          {post.content && (
+            <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>
+          )}
+          
+          {/* Post Image */}
+          {post.image_url && (
+            <div style={{ marginBottom: 16 }}>
+              <img 
+                src={post.image_url} 
+                alt="Post image"
+                style={{ 
+                  maxWidth: "100%", 
+                  maxHeight: 500,
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+                onClick={() => window.open(post.image_url!, "_blank")}
+              />
+            </div>
+          )}
 
           {/* Comment Toggle */}
           <button
