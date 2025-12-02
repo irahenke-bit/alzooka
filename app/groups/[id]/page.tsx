@@ -465,17 +465,26 @@ export default function GroupPage() {
   }
 
   async function togglePrivacy() {
-    if (!group || userRole !== "admin") return;
+    if (!group || userRole !== "admin") {
+      console.log("Toggle blocked - group:", !!group, "userRole:", userRole);
+      return;
+    }
     
     setChangingPrivacy(true);
     const newPrivacy = group.privacy === "public" ? "private" : "public";
+    
+    console.log("Attempting to change privacy to:", newPrivacy, "for group:", groupId);
     
     const { error } = await supabase
       .from("groups")
       .update({ privacy: newPrivacy })
       .eq("id", groupId);
     
-    if (!error) {
+    if (error) {
+      console.error("Privacy update error:", error);
+      alert("Failed to update privacy: " + error.message);
+    } else {
+      console.log("Privacy updated successfully");
       setGroup({ ...group, privacy: newPrivacy });
     }
     setChangingPrivacy(false);
