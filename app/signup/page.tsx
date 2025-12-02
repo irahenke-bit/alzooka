@@ -60,13 +60,14 @@ export default function SignupPage() {
     }
 
     // Sign up with Supabase Auth (profile created automatically via trigger)
+    const trimmedUsername = username.trim();
     const { error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: {
-          username: username,
-          display_name: username,
+          username: trimmedUsername,
+          display_name: trimmedUsername,
         }
       }
     });
