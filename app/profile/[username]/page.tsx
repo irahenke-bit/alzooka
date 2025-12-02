@@ -42,8 +42,6 @@ type Comment = {
 type VoteStats = {
   upvotesReceived: number;
   downvotesReceived: number;
-  upvotesGiven: number;
-  downvotesGiven: number;
 };
 
 export default function ProfilePage() {
@@ -60,8 +58,6 @@ export default function ProfilePage() {
   const [voteStats, setVoteStats] = useState<VoteStats>({
     upvotesReceived: 0,
     downvotesReceived: 0,
-    upvotesGiven: 0,
-    downvotesGiven: 0,
   });
   const [friendsCount, setFriendsCount] = useState(0);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
@@ -224,27 +220,9 @@ export default function ProfilePage() {
         }
       }
 
-      // Get votes given by this user
-      const { data: votesGiven } = await supabase
-        .from("votes")
-        .select("value")
-        .eq("user_id", profileData.id);
-
-      let upvotesGiven = 0;
-      let downvotesGiven = 0;
-
-      if (votesGiven) {
-        votesGiven.forEach(v => {
-          if (v.value > 0) upvotesGiven += 1;
-          else downvotesGiven += 1;
-        });
-      }
-
       setVoteStats({
         upvotesReceived,
         downvotesReceived,
-        upvotesGiven,
-        downvotesGiven,
       });
 
       // Get friends count
@@ -538,16 +516,6 @@ export default function ProfilePage() {
                     <span style={{ color: "#e57373", fontSize: 18 }}>▼</span>
                     <span style={{ fontWeight: 600 }}>{voteStats.downvotesReceived}</span>
                     <span className="text-muted" style={{ fontSize: 13 }}>received</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ opacity: 0.6, fontSize: 13 }}>▲</span>
-                    <span style={{ fontWeight: 600, opacity: 0.8 }}>{voteStats.upvotesGiven}</span>
-                    <span className="text-muted" style={{ fontSize: 13 }}>given</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ opacity: 0.6, fontSize: 13 }}>▼</span>
-                    <span style={{ fontWeight: 600, opacity: 0.8 }}>{voteStats.downvotesGiven}</span>
-                    <span className="text-muted" style={{ fontSize: 13 }}>given</span>
                   </div>
                 </div>
               </div>
