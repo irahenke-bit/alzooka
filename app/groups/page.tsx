@@ -376,22 +376,24 @@ export default function GroupsPage() {
                 <label style={{ display: "block", marginBottom: 6, fontSize: 14, opacity: 0.8 }}>
                   Privacy
                 </label>
-                <div style={{ display: "flex", gap: 16 }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                <div style={{ display: "flex", gap: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="privacy"
                       checked={newGroupPrivacy === "public"}
                       onChange={() => setNewGroupPrivacy("public")}
+                      style={{ width: 18, height: 18 }}
                     />
                     <span>Public</span>
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="privacy"
                       checked={newGroupPrivacy === "private"}
                       onChange={() => setNewGroupPrivacy("private")}
+                      style={{ width: 18, height: 18 }}
                     />
                     <span>Private</span>
                   </label>
