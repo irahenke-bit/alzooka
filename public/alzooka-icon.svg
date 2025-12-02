@@ -2,25 +2,10 @@
   <!-- Background -->
   <rect width="200" height="200" fill="#1A3A4A"/>
   
-  <!-- Three wavy lines - matching reference -->
-  <g fill="none" stroke="#D4A84B" stroke-width="5" stroke-linecap="round">
-    <!-- Top wave -->
-    <path d="M 25 70
-             C 25 70, 38 55, 55 55
-             C 72 55, 78 85, 95 85
-             C 112 85, 118 55, 135 55
-             C 152 55, 163 75, 175 70"/>
-    <!-- Middle wave -->
-    <path d="M 25 100
-             C 25 100, 38 85, 55 85
-             C 72 85, 78 115, 95 115
-             C 112 115, 118 85, 135 85
-             C 152 85, 163 105, 175 100"/>
-    <!-- Bottom wave -->
-    <path d="M 25 130
-             C 25 130, 38 115, 55 115
-             C 72 115, 78 145, 95 145
-             C 112 145, 118 115, 135 115
-             C 152 115, 163 135, 175 130"/>
+  <!-- Three wavy lines - cream color -->
+  <g fill="none" stroke="#F0EBE0" stroke-width="6" stroke-linecap="round">
+    <path d="M 35 65 Q 65 45, 100 65 Q 135 85, 165 65"/>
+    <path d="M 35 100 Q 65 80, 100 100 Q 135 120, 165 100"/>
+    <path d="M 35 135 Q 65 115, 100 135 Q 135 155, 165 135"/>
   </g>
 </svg>

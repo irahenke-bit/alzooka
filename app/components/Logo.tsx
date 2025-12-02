@@ -2,30 +2,30 @@ export function Logo({ size = 48 }: { size?: number }) {
   return (
     <svg 
       width={size} 
-      height={size * 0.5} 
-      viewBox="0 0 100 50" 
+      height={size * 0.6} 
+      viewBox="0 0 100 60" 
       fill="none"
       style={{ display: "block" }}
     >
-      {/* Three smooth flowing wave lines - matching reference */}
+      {/* Three smooth wave lines - matching reference image exactly */}
       <path 
-        d="M 5 12 C 5 12, 14 4, 25 4 C 36 4, 40 20, 51 20 C 62 20, 66 4, 77 4 C 88 4, 95 14, 95 12" 
+        d="M 10 15 Q 30 5, 50 15 Q 70 25, 90 15" 
         stroke="var(--alzooka-gold)" 
-        strokeWidth="3.5" 
+        strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
-        d="M 5 25 C 5 25, 14 17, 25 17 C 36 17, 40 33, 51 33 C 62 33, 66 17, 77 17 C 88 17, 95 27, 95 25" 
+        d="M 10 30 Q 30 20, 50 30 Q 70 40, 90 30" 
         stroke="var(--alzooka-gold)" 
-        strokeWidth="3.5" 
+        strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
-        d="M 5 38 C 5 38, 14 30, 25 30 C 36 30, 40 46, 51 46 C 62 46, 66 30, 77 30 C 88 30, 95 40, 95 38" 
+        d="M 10 45 Q 30 35, 50 45 Q 70 55, 90 45" 
         stroke="var(--alzooka-gold)" 
-        strokeWidth="3.5" 
+        strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
