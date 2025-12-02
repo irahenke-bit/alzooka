@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type UserResult = {
   id: string;
@@ -22,6 +22,7 @@ export function UserSearch() {
   const [loading, setLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const supabase = createBrowserClient();
+  const router = useRouter();
 
   // Load recent searches from localStorage on mount
   useEffect(() => {
@@ -73,15 +74,24 @@ export function UserSearch() {
     return () => clearTimeout(debounce);
   }, [query]);
 
-  // Add user to recent searches
-  function addToRecentSearches(user: UserResult) {
+  // Add user to recent searches and navigate
+  function handleUserClick(user: UserResult) {
+    // Save to recent searches first
+    const currentRecent = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]");
     const updated = [
       user,
-      ...recentSearches.filter((u) => u.id !== user.id),
+      ...currentRecent.filter((u: UserResult) => u.id !== user.id),
     ].slice(0, MAX_RECENT_SEARCHES);
     
-    setRecentSearches(updated);
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    setRecentSearches(updated);
+    
+    // Close dropdown and clear query
+    setIsOpen(false);
+    setQuery("");
+    
+    // Navigate to profile
+    router.push(`/profile/${encodeURIComponent(user.username)}`);
   }
 
   // Remove user from recent searches
@@ -163,20 +173,15 @@ export function UserSearch() {
                 Recent Searches
               </div>
               {filteredRecent.map((user) => (
-                <Link
+                <div
                   key={user.id}
-                  href={`/profile/${encodeURIComponent(user.username)}`}
-                  onClick={() => {
-                    addToRecentSearches(user);
-                    setIsOpen(false);
-                    setQuery("");
-                  }}
+                  onClick={() => handleUserClick(user)}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "10px 12px",
-                    textDecoration: "none",
+                    cursor: "pointer",
                     borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                   }}
                 >
@@ -234,7 +239,7 @@ export function UserSearch() {
                   >
                     ×
                   </button>
-                </Link>
+                </div>
               ))}
             </>
           )}
@@ -252,20 +257,15 @@ export function UserSearch() {
                 </div>
               ) : (
                 results.map((user) => (
-                  <Link
+                  <div
                     key={user.id}
-                    href={`/profile/${encodeURIComponent(user.username)}`}
-                    onClick={() => {
-                      addToRecentSearches(user);
-                      setIsOpen(false);
-                      setQuery("");
-                    }}
+                    onClick={() => handleUserClick(user)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 10,
                       padding: "10px 12px",
-                      textDecoration: "none",
+                      cursor: "pointer",
                       borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                     }}
                   >
@@ -306,7 +306,7 @@ export function UserSearch() {
                         @{user.username}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               )}
             </>
