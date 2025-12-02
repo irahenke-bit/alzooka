@@ -434,42 +434,61 @@ function FeedContent() {
             Alzooka
           </h1>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <UserSearch />
           <Link 
             href="/groups"
+            title="Groups"
             style={{ 
               color: "var(--alzooka-cream)",
-              fontSize: 14,
+              fontSize: 20,
               textDecoration: "none",
-              opacity: 0.8,
+              opacity: 0.7,
+              padding: "8px",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            Groups
-          </Link>
-          <Link 
-            href={`/profile/${user?.user_metadata?.username || ""}`}
-            style={{ 
-              color: "var(--alzooka-cream)",
-              fontSize: 14,
-              textDecoration: "none",
-              opacity: 0.8,
-            }}
-          >
-            My Profile
+            👥
           </Link>
           {user && <NotificationBell userId={user.id} currentUsername={userUsername} />}
+          <Link 
+            href={`/profile/${user?.user_metadata?.username || ""}`}
+            title="My Profile"
+            style={{ 
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: "var(--alzooka-gold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--alzooka-teal-dark)",
+              fontWeight: 700,
+              fontSize: 14,
+            }}>
+              {(user?.user_metadata?.username || "?").charAt(0).toUpperCase()}
+            </div>
+          </Link>
           <button 
             onClick={handleLogout}
+            title="Sign Out"
             style={{ 
               background: "transparent", 
               color: "var(--alzooka-cream)",
-              padding: "8px 16px",
-              fontSize: 14,
-              border: "1px solid rgba(240, 235, 224, 0.3)"
+              padding: "8px",
+              fontSize: 18,
+              border: "none",
+              cursor: "pointer",
+              opacity: 0.7,
             }}
           >
-            Sign Out
+            ⏻
           </button>
         </div>
       </header>
