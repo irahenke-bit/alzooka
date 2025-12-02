@@ -74,6 +74,37 @@ export function UserSearch() {
     return () => clearTimeout(debounce);
   }, [query]);
 
+  // Filter recent searches based on query
+  const filteredRecent = query.trim().length > 0
+    ? recentSearches.filter(
+        (u) =>
+          u.username.toLowerCase().includes(query.toLowerCase()) ||
+          (u.display_name && u.display_name.toLowerCase().includes(query.toLowerCase()))
+      )
+    : recentSearches;
+
+  // Immediate search on Enter key
+  async function handleEnterSearch() {
+    if (query.trim().length < 2) {
+      // Check recent searches
+      if (filteredRecent.length > 0) {
+        handleUserClick(filteredRecent[0]);
+      }
+      return;
+    }
+
+    // Do immediate search (no debounce)
+    const { data } = await supabase
+      .from("users")
+      .select("id, username, display_name, avatar_url")
+      .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+      .limit(1);
+
+    if (data && data.length > 0) {
+      handleUserClick(data[0]);
+    }
+  }
+
   // Add user to recent searches and navigate
   function handleUserClick(user: UserResult) {
     // Save to recent searches first
@@ -104,15 +135,6 @@ export function UserSearch() {
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
   }
 
-  // Filter recent searches based on query
-  const filteredRecent = query.trim().length > 0
-    ? recentSearches.filter(
-        (u) =>
-          u.username.toLowerCase().includes(query.toLowerCase()) ||
-          (u.display_name && u.display_name.toLowerCase().includes(query.toLowerCase()))
-      )
-    : recentSearches;
-
   // Determine what to show in dropdown
   const showRecent = query.trim().length < 2 && filteredRecent.length > 0;
   const showResults = query.trim().length >= 2;
@@ -132,14 +154,7 @@ export function UserSearch() {
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            // If we have search results, go to the first one
-            if (results.length > 0) {
-              handleUserClick(results[0]);
-            } 
-            // If showing recent searches and we have filtered results, go to first
-            else if (filteredRecent.length > 0 && query.trim().length < 2) {
-              handleUserClick(filteredRecent[0]);
-            }
+            handleEnterSearch();
           }
         }}
         style={{
