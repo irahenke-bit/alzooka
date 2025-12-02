@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <!-- Background -->
+  <rect width="400" height="200" fill="#1A3A4A"/>
+  
+  <!-- Three wavy lines -->
+  <g fill="none" stroke="#D4A84B" stroke-width="4" stroke-linecap="round">
+    <!-- Top wave -->
+    <path d="M 120 50 
+             Q 140 40, 160 50 
+             Q 180 60, 200 50 
+             Q 220 40, 240 50 
+             Q 260 60, 280 50"/>
+    <!-- Middle wave -->
+    <path d="M 120 65 
+             Q 140 55, 160 65 
+             Q 180 75, 200 65 
+             Q 220 55, 240 65 
+             Q 260 75, 280 65"/>
+    <!-- Bottom wave -->
+    <path d="M 120 80 
+             Q 140 70, 160 80 
+             Q 180 90, 200 80 
+             Q 220 70, 240 80 
+             Q 260 90, 280 80"/>
+  </g>
+  
+  <!-- Alzooka text -->
+  <text x="200" y="140" 
+        font-family="Georgia, 'Times New Roman', serif" 
+        font-size="48" 
+        font-weight="400"
+        fill="#F0EBE0" 
+        text-anchor="middle">
+    Alzooka
+  </text>
+</svg>
+
