@@ -10,6 +10,7 @@ import { AvatarUpload } from "@/app/components/AvatarUpload";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import { FriendButton } from "@/app/components/FriendButton";
+import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 
 type UserProfile = {
   id: string;
@@ -62,6 +63,7 @@ export default function ProfilePage() {
   const [friendsCount, setFriendsCount] = useState(0);
   const [friendsList, setFriendsList] = useState<{id: string; username: string; display_name: string | null; avatar_url: string | null}[]>([]);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showPictureModal, setShowPictureModal] = useState(false);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [loading, setLoading] = useState(true);
@@ -426,13 +428,41 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div style={{ flexShrink: 0 }}>
             {isOwnProfile ? (
-              <AvatarUpload
-                currentAvatarUrl={profile.avatar_url}
-                userId={profile.id}
-                onUpload={handleAvatarUpdate}
-              />
+              <div style={{ position: "relative" }}>
+                <AvatarUpload
+                  currentAvatarUrl={profile.avatar_url}
+                  userId={profile.id}
+                  onUpload={handleAvatarUpdate}
+                />
+                {/* View button overlay for own profile */}
+                {profile.avatar_url && (
+                  <button
+                    onClick={() => setShowPictureModal(true)}
+                    style={{
+                      position: "absolute",
+                      bottom: -8,
+                      right: -8,
+                      background: "var(--alzooka-gold)",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 28,
+                      height: 28,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 14,
+                      color: "var(--alzooka-teal-dark)",
+                    }}
+                    title="View profile picture"
+                  >
+                    🔍
+                  </button>
+                )}
+              </div>
             ) : (
-              <div
+              <button
+                onClick={() => setShowPictureModal(true)}
                 style={{
                   width: 100,
                   height: 100,
@@ -446,10 +476,22 @@ export default function ProfilePage() {
                   justifyContent: "center",
                   fontSize: 36,
                   color: "var(--alzooka-gold)",
+                  cursor: "pointer",
+                  padding: 0,
+                  transition: "transform 0.2s, box-shadow 0.2s",
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(212, 175, 55, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+                title="View profile picture"
               >
                 {!profile.avatar_url && profile.username[0].toUpperCase()}
-              </div>
+              </button>
             )}
           </div>
 
@@ -758,6 +800,17 @@ export default function ProfilePage() {
           )
         )}
       </div>
+
+      {/* Profile Picture Modal */}
+      <ProfilePictureModal
+        isOpen={showPictureModal}
+        onClose={() => setShowPictureModal(false)}
+        avatarUrl={profile.avatar_url}
+        profileOwnerId={profile.id}
+        profileOwnerName={profile.display_name || profile.username}
+        profileOwnerUsername={profile.username}
+        currentUserId={currentUser?.id || null}
+      />
 
       {/* Friends List Modal */}
       {showFriendsModal && (
