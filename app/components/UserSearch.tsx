@@ -129,6 +129,19 @@ export function UserSearch() {
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            // If we have search results, go to the first one
+            if (results.length > 0) {
+              handleUserClick(results[0]);
+            } 
+            // If showing recent searches and we have filtered results, go to first
+            else if (filteredRecent.length > 0 && query.trim().length < 2) {
+              handleUserClick(filteredRecent[0]);
+            }
+          }
+        }}
         style={{
           padding: "8px 12px",
           fontSize: 14,
