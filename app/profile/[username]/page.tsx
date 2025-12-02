@@ -60,6 +60,9 @@ export default function ProfilePage() {
     downvotesReceived: 0,
   });
   const [friendsCount, setFriendsCount] = useState(0);
+  const [friendsList, setFriendsList] = useState<{id: string; username: string; display_name: string | null; avatar_url: string | null}[]>([]);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [loadingFriends, setLoadingFriends] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -239,6 +242,37 @@ export default function ProfilePage() {
 
     init();
   }, [username]);
+
+  async function loadFriends() {
+    if (!profile) return;
+    setLoadingFriends(true);
+    setShowFriendsModal(true);
+
+    // Get friendships where this user is either requester or addressee
+    const { data: friendships } = await supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+
+    if (friendships && friendships.length > 0) {
+      // Get the friend IDs (the other person in each friendship)
+      const friendIds = friendships.map(f => 
+        f.requester_id === profile.id ? f.addressee_id : f.requester_id
+      );
+
+      // Fetch friend profiles
+      const { data: friends } = await supabase
+        .from("users")
+        .select("id, username, display_name, avatar_url")
+        .in("id", friendIds);
+
+      setFriendsList(friends || []);
+    } else {
+      setFriendsList([]);
+    }
+    setLoadingFriends(false);
+  }
 
   async function handleSaveProfile() {
     if (!profile || !currentUser) return;
@@ -502,11 +536,25 @@ export default function ProfilePage() {
 
                 {/* Friends & Vote Stats */}
                 <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <button
+                    onClick={loadFriends}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "transparent",
+                      border: "none",
+                      color: "inherit",
+                      cursor: "pointer",
+                      padding: 0,
+                      fontSize: "inherit",
+                    }}
+                    title="View friends"
+                  >
                     <span style={{ fontSize: 16 }}>👥</span>
                     <span style={{ fontWeight: 600 }}>{friendsCount}</span>
                     <span className="text-muted" style={{ fontSize: 13 }}>{friendsCount === 1 ? "friend" : "friends"}</span>
-                  </div>
+                  </button>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
                     <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
@@ -692,6 +740,128 @@ export default function ProfilePage() {
           )
         )}
       </div>
+
+      {/* Friends List Modal */}
+      {showFriendsModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowFriendsModal(false)}
+        >
+          <div
+            className="card"
+            style={{
+              width: "90%",
+              maxWidth: 400,
+              maxHeight: "70vh",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center",
+              marginBottom: 16,
+              paddingBottom: 12,
+              borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            }}>
+              <h3 style={{ margin: 0, fontSize: 18 }}>
+                {profile?.display_name || profile?.username}&apos;s Friends
+              </h3>
+              <button
+                onClick={() => setShowFriendsModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--alzooka-cream)",
+                  fontSize: 24,
+                  cursor: "pointer",
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {loadingFriends ? (
+                <p style={{ textAlign: "center", opacity: 0.6 }}>Loading...</p>
+              ) : friendsList.length === 0 ? (
+                <p style={{ textAlign: "center", opacity: 0.6 }}>No friends yet</p>
+              ) : (
+                friendsList.map((friend) => (
+                  <Link
+                    key={friend.id}
+                    href={`/profile/${encodeURIComponent(friend.username)}`}
+                    onClick={() => setShowFriendsModal(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 0",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    {friend.avatar_url ? (
+                      <img
+                        src={friend.avatar_url}
+                        alt=""
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          background: "var(--alzooka-gold)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--alzooka-teal-dark)",
+                          fontWeight: 700,
+                          fontSize: 16,
+                        }}
+                      >
+                        {(friend.display_name || friend.username).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {friend.display_name || friend.username}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 13, opacity: 0.6 }}>
+                        @{friend.username}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
