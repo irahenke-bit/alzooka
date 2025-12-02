@@ -53,6 +53,7 @@ export default function ProfilePage() {
   const supabase = createBrowserClient();
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -78,6 +79,18 @@ export default function ProfilePage() {
       // Get current logged in user
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
+
+      // Get current user's username from the users table
+      if (user) {
+        const { data: currentUserData } = await supabase
+          .from("users")
+          .select("username")
+          .eq("id", user.id)
+          .single();
+        if (currentUserData) {
+          setCurrentUserUsername(currentUserData.username);
+        }
+      }
 
       // Get profile for the username in the URL
       const { data: profileData, error: profileError } = await supabase
@@ -352,7 +365,7 @@ export default function ProfilePage() {
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <UserSearch />
-          {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUser.user_metadata?.username} />}
+          {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
           <Link 
             href="/"
             style={{ 
@@ -484,7 +497,7 @@ export default function ProfilePage() {
                   <div style={{ marginBottom: 12 }}>
                     <FriendButton
                       currentUserId={currentUser.id}
-                      currentUsername={currentUser.user_metadata?.username}
+                      currentUsername={currentUserUsername}
                       targetUserId={profile.id}
                       targetUsername={profile.username}
                     />

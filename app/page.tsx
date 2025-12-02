@@ -58,6 +58,7 @@ type Post = {
 
 function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
+  const [userUsername, setUserUsername] = useState<string>("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
@@ -82,6 +83,17 @@ function FeedContent() {
       }
       
       setUser(user);
+      
+      // Fetch current user's username from the users table
+      const { data: userData } = await supabase
+        .from("users")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+      if (userData) {
+        setUserUsername(userData.username);
+      }
+      
       await loadPosts();
       await loadUserVotes(user.id);
       await loadVoteTotals();
@@ -352,7 +364,7 @@ function FeedContent() {
           >
             My Profile
           </Link>
-          {user && <NotificationBell userId={user.id} currentUsername={user.user_metadata?.username} />}
+          {user && <NotificationBell userId={user.id} currentUsername={userUsername} />}
           <button 
             onClick={handleLogout}
             style={{ 
