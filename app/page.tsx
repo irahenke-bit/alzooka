@@ -44,11 +44,18 @@ type Comment = {
   replies?: Comment[];
 };
 
+type EditHistoryEntry = {
+  content: string;
+  edited_at: string;
+};
+
 type Post = {
   id: string;
   content: string;
   image_url: string | null;
   created_at: string;
+  edited_at: string | null;
+  edit_history: EditHistoryEntry[];
   user_id: string;
   users: {
     username: string;
@@ -132,6 +139,8 @@ function FeedContent() {
         content,
         image_url,
         created_at,
+        edited_at,
+        edit_history,
         user_id,
         users (
           username,
@@ -662,6 +671,10 @@ function PostCard({
   const [commentText, setCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [saving, setSaving] = useState(false);
+  const [showEditHistory, setShowEditHistory] = useState(false);
 
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
@@ -675,6 +688,41 @@ function PostCard({
     
     await supabase.from("comments").delete().eq("id", commentId);
     onCommentAdded(); // Refresh the feed
+  }
+
+  async function handleSaveEdit() {
+    if (!editContent.trim() && !post.image_url) return;
+    
+    setSaving(true);
+
+    // Add current content to edit history
+    const newHistoryEntry: EditHistoryEntry = {
+      content: post.content,
+      edited_at: new Date().toISOString(),
+    };
+    
+    const updatedHistory = [...(post.edit_history || []), newHistoryEntry];
+
+    const { error } = await supabase
+      .from("posts")
+      .update({
+        content: editContent.trim(),
+        edited_at: new Date().toISOString(),
+        edit_history: updatedHistory,
+      })
+      .eq("id", post.id);
+
+    if (!error) {
+      setIsEditing(false);
+      onCommentAdded(); // Refresh the feed
+    }
+
+    setSaving(false);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setEditContent(post.content);
   }
 
   async function handleComment(e: React.FormEvent) {
@@ -811,27 +859,128 @@ function PostCard({
               </span>
             </div>
             {post.user_id === user.id && (
-              <button
-                onClick={() => handleDeletePost(post.id)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#e57373",
-                  fontSize: 12,
-                  cursor: "pointer",
-                  opacity: 0.7,
-                  padding: "4px 8px",
-                }}
-                title="Delete post"
-              >
-                Delete
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Edit post"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeletePost(post.id)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#e57373",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Delete post"
+                >
+                  Delete
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Post Content */}
-          {post.content && (
-            <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>
+          {/* Post Content - Edit Mode or View Mode */}
+          {isEditing ? (
+            <div style={{ marginBottom: 16 }}>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={3}
+                style={{ marginBottom: 12, resize: "vertical" }}
+              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSaveEdit} disabled={saving}>
+                  {saving ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={cancelEdit}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {post.content && (
+                <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>
+              )}
+              
+              {/* Edited indicator */}
+              {post.edited_at && (
+                <div style={{ marginBottom: 12, fontSize: 12, opacity: 0.6 }}>
+                  <span>Edited {formatTime(post.edited_at)}</span>
+                  {post.edit_history && post.edit_history.length > 0 && (
+                    <button
+                      onClick={() => setShowEditHistory(!showEditHistory)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-gold)",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        marginLeft: 8,
+                        textDecoration: "underline",
+                        padding: 0,
+                      }}
+                    >
+                      {showEditHistory ? "Hide edits" : "See edits"}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Edit History */}
+              {showEditHistory && post.edit_history && post.edit_history.length > 0 && (
+                <div style={{ 
+                  marginBottom: 16, 
+                  padding: 12, 
+                  background: "rgba(0, 0, 0, 0.2)", 
+                  borderRadius: 8,
+                  fontSize: 14,
+                }}>
+                  <p style={{ margin: "0 0 8px 0", fontWeight: 600, fontSize: 12, opacity: 0.7 }}>
+                    Edit History
+                  </p>
+                  {post.edit_history.map((entry, index) => (
+                    <div 
+                      key={index} 
+                      style={{ 
+                        marginBottom: index < post.edit_history.length - 1 ? 12 : 0,
+                        paddingBottom: index < post.edit_history.length - 1 ? 12 : 0,
+                        borderBottom: index < post.edit_history.length - 1 ? "1px solid rgba(240, 235, 224, 0.1)" : "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 11, opacity: 0.5 }}>
+                        {formatTime(entry.edited_at)}
+                      </span>
+                      <p style={{ margin: "4px 0 0 0", opacity: 0.7, fontStyle: "italic" }}>
+                        {entry.content || "(no text)"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
           
           {/* Post Image */}
