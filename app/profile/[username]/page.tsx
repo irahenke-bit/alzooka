@@ -93,13 +93,18 @@ export default function ProfilePage() {
       }
 
       // Get profile for the username in the URL
-      const { data: profileData, error: profileError } = await supabase
+      // Query all users and find match (handles spaces and case issues)
+      const { data: allUsers } = await supabase
         .from("users")
-        .select("id, username, display_name, bio, avatar_url, created_at")
-        .eq("username", username)
-        .single();
+        .select("id, username, display_name, bio, avatar_url, created_at");
+      
+      const profileData = allUsers?.find(
+        u => u.username.toLowerCase() === username.toLowerCase()
+      );
 
-      if (profileError || !profileData) {
+      if (!profileData) {
+        console.log("Profile lookup failed. Looking for:", username);
+        console.log("Available usernames:", allUsers?.map(u => u.username));
         setLoading(false);
         return;
       }
