@@ -352,12 +352,38 @@ export default function GroupsPage() {
                     {group.description.slice(0, 100)}{group.description.length > 100 ? "..." : ""}
                   </p>
                 )}
-                <button 
-                  onClick={() => handleJoinGroup(group.id)}
-                  style={{ width: "100%" }}
-                >
-                  Join Group
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, opacity: 0.7 }}>
+                    {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
+                  </span>
+                </div>
+                {group.privacy === "public" ? (
+                  <button 
+                    onClick={() => handleJoinGroup(group.id)}
+                    style={{ width: "100%", marginTop: 12 }}
+                  >
+                    Join Group
+                  </button>
+                ) : (
+                  <Link
+                    href={`/groups/${group.id}`}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      marginTop: 12,
+                      padding: "10px 16px",
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                      borderRadius: 8,
+                      textAlign: "center",
+                      textDecoration: "none",
+                      fontSize: 14,
+                    }}
+                  >
+                    View Group
+                  </Link>
+                )}
               </div>
             ))}
           </div>

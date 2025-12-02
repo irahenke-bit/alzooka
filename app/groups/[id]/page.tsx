@@ -16,7 +16,17 @@ type Group = {
   avatar_url: string | null;
   banner_url: string | null;
   privacy: "public" | "private";
+  allow_member_invites: boolean;
   created_by: string;
+  created_at: string;
+};
+
+type GroupInvite = {
+  id: string;
+  group_id: string;
+  invited_user_id: string;
+  invited_by: string;
+  status: "pending" | "accepted" | "declined";
   created_at: string;
 };
 
@@ -92,6 +102,11 @@ export default function GroupPage() {
   const [posting, setPosting] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [changingPrivacy, setChangingPrivacy] = useState(false);
+  const [pendingInvite, setPendingInvite] = useState<GroupInvite | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null}>>([]);
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -140,8 +155,23 @@ export default function GroupPage() {
       setIsMember(!!membership);
       setUserRole(membership?.role || null);
 
-      // Load members
-      await loadMembers();
+      // Check for pending invite if not a member and private group
+      if (!membership && groupData.privacy === "private") {
+        const { data: invite } = await supabase
+          .from("group_invites")
+          .select("*")
+          .eq("group_id", groupId)
+          .eq("invited_user_id", user.id)
+          .eq("status", "pending")
+          .single();
+        
+        setPendingInvite(invite || null);
+      }
+
+      // Load members only if member or public
+      if (membership || groupData.privacy === "public") {
+        await loadMembers();
+      }
 
       // Load posts if member or public group
       if (membership || groupData.privacy === "public") {
@@ -451,6 +481,99 @@ export default function GroupPage() {
     setChangingPrivacy(false);
   }
 
+  async function toggleMemberInvites() {
+    if (!group || userRole !== "admin") return;
+    
+    const newValue = !group.allow_member_invites;
+    
+    const { error } = await supabase
+      .from("groups")
+      .update({ allow_member_invites: newValue })
+      .eq("id", groupId);
+    
+    if (!error) {
+      setGroup({ ...group, allow_member_invites: newValue });
+    }
+  }
+
+  async function acceptInvite() {
+    if (!user || !pendingInvite) return;
+    
+    // Update invite status
+    await supabase
+      .from("group_invites")
+      .update({ status: "accepted" })
+      .eq("id", pendingInvite.id);
+    
+    // Join the group
+    await supabase.from("group_members").insert({
+      group_id: groupId,
+      user_id: user.id,
+      role: "member",
+    });
+    
+    setIsMember(true);
+    setUserRole("member");
+    setPendingInvite(null);
+    await loadMembers();
+    await loadPosts();
+    if (user) {
+      await loadUserVotes(user.id);
+    }
+    await loadVoteTotals();
+  }
+
+  async function declineInvite() {
+    if (!pendingInvite) return;
+    
+    await supabase
+      .from("group_invites")
+      .update({ status: "declined" })
+      .eq("id", pendingInvite.id);
+    
+    setPendingInvite(null);
+  }
+
+  async function searchUsersToInvite(query: string) {
+    setInviteSearch(query);
+    if (query.length < 2) {
+      setInviteResults([]);
+      return;
+    }
+    
+    // Get existing member IDs
+    const memberIds = members.map(m => m.user_id);
+    
+    const { data } = await supabase
+      .from("users")
+      .select("id, username, display_name, avatar_url")
+      .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+      .not("id", "in", `(${memberIds.join(",")})`)
+      .limit(10);
+    
+    setInviteResults(data || []);
+  }
+
+  async function sendInvite(invitedUserId: string) {
+    if (!user) return;
+    
+    setSendingInvite(true);
+    
+    const { error } = await supabase.from("group_invites").insert({
+      group_id: groupId,
+      invited_user_id: invitedUserId,
+      invited_by: user.id,
+    });
+    
+    if (!error) {
+      // Remove from results
+      setInviteResults(prev => prev.filter(u => u.id !== invitedUserId));
+      setInviteSearch("");
+    }
+    
+    setSendingInvite(false);
+  }
+
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
@@ -662,19 +785,56 @@ export default function GroupPage() {
               )}
             </div>
           </div>
-          <div style={{ flexShrink: 0 }}>
+          <div style={{ flexShrink: 0, display: "flex", gap: 8 }}>
             {isMember ? (
-              userRole !== "admin" && (
-                <button
-                  onClick={handleLeave}
-                  style={{
-                    background: "rgba(0,0,0,0.4)",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
-                  }}
-                >
-                  Leave Group
-                </button>
+              <>
+                {/* Invite button for admins, or members if allowed */}
+                {group.privacy === "private" && (userRole === "admin" || group.allow_member_invites) && (
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    style={{
+                      background: "rgba(0,0,0,0.4)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                    }}
+                  >
+                    ➕ Invite
+                  </button>
+                )}
+                {userRole !== "admin" && (
+                  <button
+                    onClick={handleLeave}
+                    style={{
+                      background: "rgba(0,0,0,0.4)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                    }}
+                  >
+                    Leave Group
+                  </button>
+                )}
+              </>
+            ) : group.privacy === "private" ? (
+              pendingInvite ? (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
+                    ✓ Accept Invite
+                  </button>
+                  <button
+                    onClick={declineInvite}
+                    style={{
+                      background: "rgba(0,0,0,0.4)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                    }}
+                  >
+                    ✕ Decline
+                  </button>
+                </div>
+              ) : (
+                <span style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+                  🔒 Invite only
+                </span>
               )
             ) : (
               <button onClick={handleJoin}>Join Group</button>
@@ -727,7 +887,124 @@ export default function GroupPage() {
             </div>
           </div>
         )}
+
+        {/* Admin Settings */}
+        {userRole === "admin" && group.privacy === "private" && (
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.2)" }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 14, opacity: 0.8 }}>Admin Settings</h3>
+            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14 }}>
+              <input
+                type="checkbox"
+                checked={group.allow_member_invites}
+                onChange={toggleMemberInvites}
+                style={{ width: 18, height: 18 }}
+              />
+              Allow members to invite others
+            </label>
+          </div>
+        )}
       </div>
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowInviteModal(false);
+            setInviteSearch("");
+            setInviteResults([]);
+          }}
+        >
+          <div
+            className="card"
+            style={{ width: "90%", maxWidth: 400 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Invite to {group.name}</h2>
+            <input
+              type="text"
+              placeholder="Search for users to invite..."
+              value={inviteSearch}
+              onChange={e => searchUsersToInvite(e.target.value)}
+              autoFocus
+            />
+            {inviteResults.length > 0 && (
+              <div style={{ marginTop: 12, maxHeight: 300, overflowY: "auto" }}>
+                {inviteResults.map(u => (
+                  <div
+                    key={u.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 0",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          background: "var(--alzooka-gold)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--alzooka-teal-dark)",
+                          fontWeight: 700,
+                          fontSize: 14,
+                        }}>
+                          {(u.display_name || u.username).charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span style={{ fontSize: 14 }}>{u.display_name || u.username}</span>
+                    </div>
+                    <button
+                      onClick={() => sendInvite(u.id)}
+                      disabled={sendingInvite}
+                      style={{ padding: "6px 12px", fontSize: 13 }}
+                    >
+                      Invite
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {inviteSearch.length >= 2 && inviteResults.length === 0 && (
+              <p className="text-muted" style={{ textAlign: "center", padding: 20 }}>
+                No users found
+              </p>
+            )}
+            <button
+              onClick={() => {
+                setShowInviteModal(false);
+                setInviteSearch("");
+                setInviteResults([]);
+              }}
+              style={{
+                marginTop: 16,
+                width: "100%",
+                background: "transparent",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: "var(--alzooka-cream)",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Post Form (members only) */}
       {isMember && (
@@ -794,9 +1071,31 @@ export default function GroupPage() {
 
       {/* Posts */}
       {!isMember && group.privacy === "private" ? (
-        <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-          Join this group to see posts
-        </p>
+        <div className="card" style={{ textAlign: "center", padding: 40 }}>
+          <p style={{ fontSize: 18, marginBottom: 12 }}>🔒 This is a private group</p>
+          {pendingInvite ? (
+            <>
+              <p className="text-muted" style={{ marginBottom: 16 }}>You have been invited to join!</p>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
+                  ✓ Accept Invite
+                </button>
+                <button
+                  onClick={declineInvite}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                >
+                  ✕ Decline
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-muted">You need an invite from a member to join.</p>
+          )}
+        </div>
       ) : posts.length === 0 ? (
         <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
           No posts yet. {isMember ? "Be the first to share something!" : ""}
