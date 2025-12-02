@@ -430,16 +430,16 @@ function FeedContent() {
         paddingBottom: 16,
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Logo size={32} />
-          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400 }}>
-            Alzooka
-          </h1>
-          <div style={{ marginLeft: 8 }}>
-            <UserSearch />
-          </div>
-        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <Logo size={32} />
+            <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>
+              Alzooka
+            </h1>
+          </Link>
+          <UserSearch />
+        </div>
+        <nav style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <Link 
             href="/groups"
             style={{ 
@@ -449,28 +449,28 @@ function FeedContent() {
               flexDirection: "column",
               alignItems: "center",
               gap: 2,
-              opacity: 0.8,
+              opacity: 0.85,
             }}
           >
-            <span style={{ fontSize: 20 }}>👥</span>
-            <span style={{ fontSize: 11 }}>Groups</span>
+            <span style={{ fontSize: 18 }}>👥</span>
+            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
           </Link>
-          {user && <NotificationBell userId={user.id} currentUsername={userUsername} />}
+          {user && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <NotificationBell userId={user.id} currentUsername={userUsername} />
+            </div>
+          )}
           <Link 
             href={`/profile/${userUsername}`}
             title="My Profile"
-            style={{ 
-              display: "flex",
-              alignItems: "center",
-            }}
           >
             {userAvatarUrl ? (
               <img 
                 src={userAvatarUrl} 
                 alt="Profile"
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 34,
+                  height: 34,
                   borderRadius: "50%",
                   objectFit: "cover",
                   border: "2px solid var(--alzooka-gold)",
@@ -478,8 +478,8 @@ function FeedContent() {
               />
             ) : (
               <div style={{
-                width: 36,
-                height: 36,
+                width: 34,
+                height: 34,
                 borderRadius: "50%",
                 background: "var(--alzooka-gold)",
                 display: "flex",
@@ -496,18 +496,29 @@ function FeedContent() {
           <button 
             onClick={handleLogout}
             style={{ 
-              background: "transparent", 
+              background: "rgba(240, 235, 224, 0.1)", 
               color: "var(--alzooka-cream)",
-              padding: "6px 12px",
-              fontSize: 13,
-              border: "1px solid rgba(240, 235, 224, 0.3)",
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 500,
+              border: "none",
               cursor: "pointer",
-              borderRadius: 4,
+              borderRadius: 20,
+              opacity: 0.9,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)";
+              e.currentTarget.style.opacity = "1";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+              e.currentTarget.style.opacity = "0.9";
             }}
           >
             Sign Out
           </button>
-        </div>
+        </nav>
       </header>
 
       {/* New Post Form */}
