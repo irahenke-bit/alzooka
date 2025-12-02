@@ -90,6 +90,7 @@ export default function GroupPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [posting, setPosting] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [changingPrivacy, setChangingPrivacy] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -425,6 +426,23 @@ export default function GroupPage() {
     if (bannerInputRef.current) bannerInputRef.current.value = "";
   }
 
+  async function togglePrivacy() {
+    if (!group || userRole !== "admin") return;
+    
+    setChangingPrivacy(true);
+    const newPrivacy = group.privacy === "public" ? "private" : "public";
+    
+    const { error } = await supabase
+      .from("groups")
+      .update({ privacy: newPrivacy })
+      .eq("id", groupId);
+    
+    if (!error) {
+      setGroup({ ...group, privacy: newPrivacy });
+    }
+    setChangingPrivacy(false);
+  }
+
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
@@ -570,9 +588,31 @@ export default function GroupPage() {
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
-                {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
-              </span>
+              {userRole === "admin" ? (
+                <button
+                  onClick={togglePrivacy}
+                  disabled={changingPrivacy}
+                  style={{
+                    background: "rgba(0,0,0,0.3)",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    color: "var(--alzooka-cream)",
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                  title="Click to change privacy"
+                >
+                  {changingPrivacy ? "..." : group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
+                </button>
+              ) : (
+                <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
+                  {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
+                </span>
+              )}
             </div>
           </div>
           <div style={{ flexShrink: 0 }}>
