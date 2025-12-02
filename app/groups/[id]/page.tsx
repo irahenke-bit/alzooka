@@ -630,6 +630,7 @@ export default function GroupPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Post Form (members only) */}
