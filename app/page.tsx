@@ -162,6 +162,7 @@ function FeedContent() {
           )
         )
       `)
+    .is("group_id", null)  // Only show feed posts, not group posts
     .order("created_at", { ascending: false });
 
     if (data) {
@@ -435,6 +436,17 @@ function FeedContent() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <UserSearch />
+          <Link 
+            href="/groups"
+            style={{ 
+              color: "var(--alzooka-cream)",
+              fontSize: 14,
+              textDecoration: "none",
+              opacity: 0.8,
+            }}
+          >
+            Groups
+          </Link>
           <Link 
             href={`/profile/${user?.user_metadata?.username || ""}`}
             style={{ 
