@@ -96,7 +96,7 @@ export default function ProfilePage() {
       const { data: profileData, error: profileError } = await supabase
         .from("users")
         .select("id, username, display_name, bio, avatar_url, created_at")
-        .ilike("username", username)
+        .eq("username", username)
         .single();
 
       if (profileError || !profileData) {
