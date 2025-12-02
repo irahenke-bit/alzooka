@@ -352,7 +352,7 @@ export default function ProfilePage() {
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <UserSearch />
-          {currentUser && <NotificationBell userId={currentUser.id} />}
+          {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUser.user_metadata?.username} />}
           <Link 
             href="/"
             style={{ 
@@ -484,7 +484,9 @@ export default function ProfilePage() {
                   <div style={{ marginBottom: 12 }}>
                     <FriendButton
                       currentUserId={currentUser.id}
+                      currentUsername={currentUser.user_metadata?.username}
                       targetUserId={profile.id}
+                      targetUsername={profile.username}
                     />
                   </div>
                 )}

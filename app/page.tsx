@@ -352,7 +352,7 @@ function FeedContent() {
           >
             My Profile
           </Link>
-          {user && <NotificationBell userId={user.id} />}
+          {user && <NotificationBell userId={user.id} currentUsername={user.user_metadata?.username} />}
           <button 
             onClick={handleLogout}
             style={{ 

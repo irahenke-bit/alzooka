@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import Link from "next/link";
+import { notifyFriendRequestAccepted } from "@/lib/notifications";
 
 type Notification = {
   id: string;
@@ -12,13 +13,15 @@ type Notification = {
   link: string | null;
   is_read: boolean;
   created_at: string;
+  related_user_id: string | null;
 };
 
-export function NotificationBell({ userId }: { userId: string }) {
+export function NotificationBell({ userId, currentUsername }: { userId: string; currentUsername?: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createBrowserClient();
 
@@ -97,6 +100,62 @@ export function NotificationBell({ userId }: { userId: string }) {
     setUnreadCount(0);
   }
 
+  async function handleFriendRequestResponse(notification: Notification, accept: boolean) {
+    if (!notification.related_user_id) return;
+    
+    setRespondingTo(notification.id);
+    
+    if (accept) {
+      // Accept the friend request
+      await supabase
+        .from("friendships")
+        .update({ status: "accepted" })
+        .eq("requester_id", notification.related_user_id)
+        .eq("addressee_id", userId);
+      
+      // Notify the requester
+      if (currentUsername) {
+        await notifyFriendRequestAccepted(
+          supabase,
+          notification.related_user_id,
+          currentUsername,
+          userId
+        );
+      }
+    } else {
+      // Decline the friend request
+      await supabase
+        .from("friendships")
+        .update({ status: "declined" })
+        .eq("requester_id", notification.related_user_id)
+        .eq("addressee_id", userId);
+    }
+    
+    // Update the notification to show it's been handled
+    // We'll change the type so it doesn't show buttons anymore
+    setNotifications((prev) =>
+      prev.map((n) => 
+        n.id === notification.id 
+          ? { 
+              ...n, 
+              type: accept ? "friend_accepted" : "friend_declined",
+              title: accept ? "You accepted this friend request" : "You declined this friend request",
+              content: null,
+              is_read: true
+            } 
+          : n
+      )
+    );
+    
+    // Mark as read
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", notification.id);
+    
+    setRespondingTo(null);
+  }
+
   function getNotificationIcon(type: string) {
     switch (type) {
       case "comment":
@@ -109,6 +168,12 @@ export function NotificationBell({ userId }: { userId: string }) {
         return "🎉";
       case "downvote_milestone":
         return "📉";
+      case "friend_request":
+        return "👋";
+      case "friend_accepted":
+        return "🤝";
+      case "friend_declined":
+        return "❌";
       default:
         return "🔔";
     }
@@ -138,9 +203,15 @@ export function NotificationBell({ userId }: { userId: string }) {
         onClick={() => {
           const wasOpen = isOpen;
           setIsOpen(!isOpen);
-          // Mark all as read when opening the dropdown
+          // Mark all as read when opening the dropdown (except friend requests)
           if (!wasOpen && unreadCount > 0) {
-            markAllAsRead();
+            // Only mark non-friend-request notifications as read
+            const nonFriendRequestUnread = notifications.filter(
+              n => !n.is_read && n.type !== "friend_request"
+            );
+            if (nonFriendRequestUnread.length > 0) {
+              nonFriendRequestUnread.forEach(n => markAsRead(n.id));
+            }
           }
         }}
         style={{
@@ -186,7 +257,7 @@ export function NotificationBell({ userId }: { userId: string }) {
             top: "100%",
             right: 0,
             marginTop: 8,
-            width: 320,
+            width: 340,
             maxHeight: 400,
             overflowY: "auto",
             background: "var(--alzooka-teal-light)",
@@ -237,6 +308,8 @@ export function NotificationBell({ userId }: { userId: string }) {
               <div
                 key={notification.id}
                 onClick={() => {
+                  // Don't auto-navigate for friend requests
+                  if (notification.type === "friend_request") return;
                   if (!notification.is_read) markAsRead(notification.id);
                   if (notification.link) {
                     setIsOpen(false);
@@ -248,10 +321,18 @@ export function NotificationBell({ userId }: { userId: string }) {
                   background: notification.is_read
                     ? "transparent"
                     : "rgba(212, 168, 75, 0.1)",
-                  cursor: notification.link ? "pointer" : "default",
+                  cursor: notification.link && notification.type !== "friend_request" ? "pointer" : "default",
                 }}
               >
-                {notification.link ? (
+                {notification.type === "friend_request" ? (
+                  <FriendRequestNotification
+                    notification={notification}
+                    getIcon={getNotificationIcon}
+                    formatTime={formatTime}
+                    onRespond={handleFriendRequestResponse}
+                    isResponding={respondingTo === notification.id}
+                  />
+                ) : notification.link ? (
                   <Link
                     href={notification.link}
                     style={{ textDecoration: "none", color: "inherit" }}
@@ -336,3 +417,111 @@ function NotificationContent({
   );
 }
 
+function FriendRequestNotification({
+  notification,
+  getIcon,
+  formatTime,
+  onRespond,
+  isResponding,
+}: {
+  notification: Notification;
+  getIcon: (type: string) => string;
+  formatTime: (date: string) => string;
+  onRespond: (notification: Notification, accept: boolean) => void;
+  isResponding: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+      <span style={{ fontSize: 18 }}>{getIcon(notification.type)}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 13,
+            fontWeight: notification.is_read ? 400 : 600,
+            lineHeight: 1.4,
+          }}
+        >
+          {notification.title}
+        </p>
+        <span style={{ fontSize: 11, opacity: 0.5, display: "block", marginTop: 2 }}>
+          {formatTime(notification.created_at)}
+        </span>
+        
+        {/* Accept/Decline buttons */}
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRespond(notification, true);
+            }}
+            disabled={isResponding}
+            style={{
+              padding: "6px 16px",
+              background: "var(--alzooka-gold)",
+              color: "#1a1a1a",
+              border: "none",
+              borderRadius: 4,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: isResponding ? "not-allowed" : "pointer",
+              opacity: isResponding ? 0.6 : 1,
+            }}
+          >
+            {isResponding ? "..." : "Accept"}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRespond(notification, false);
+            }}
+            disabled={isResponding}
+            style={{
+              padding: "6px 16px",
+              background: "transparent",
+              color: "var(--alzooka-cream)",
+              border: "1px solid rgba(240, 235, 224, 0.3)",
+              borderRadius: 4,
+              fontSize: 12,
+              cursor: isResponding ? "not-allowed" : "pointer",
+              opacity: isResponding ? 0.6 : 1,
+            }}
+          >
+            Decline
+          </button>
+          {notification.link && (
+            <Link
+              href={notification.link}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                padding: "6px 12px",
+                background: "transparent",
+                color: "var(--alzooka-cream)",
+                border: "1px solid rgba(240, 235, 224, 0.2)",
+                borderRadius: 4,
+                fontSize: 12,
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              View
+            </Link>
+          )}
+        </div>
+      </div>
+      {!notification.is_read && (
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "var(--alzooka-gold)",
+            flexShrink: 0,
+            marginTop: 4,
+          }}
+        />
+      )}
+    </div>
+  );
+}

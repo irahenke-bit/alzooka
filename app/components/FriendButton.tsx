@@ -2,16 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { notifyFriendRequest, notifyFriendRequestAccepted } from "@/lib/notifications";
 
 type FriendshipStatus = "none" | "pending_sent" | "pending_received" | "friends";
 
 export function FriendButton({ 
-  currentUserId, 
+  currentUserId,
+  currentUsername,
   targetUserId,
+  targetUsername,
   onStatusChange
 }: { 
-  currentUserId: string; 
+  currentUserId: string;
+  currentUsername?: string;
   targetUserId: string;
+  targetUsername?: string;
   onStatusChange?: () => void;
 }) {
   const [status, setStatus] = useState<FriendshipStatus>("none");
@@ -48,11 +53,23 @@ export function FriendButton({
 
   async function sendRequest() {
     setLoading(true);
-    await supabase.from("friendships").insert({
+    const { data } = await supabase.from("friendships").insert({
       requester_id: currentUserId,
       addressee_id: targetUserId,
       status: "pending",
-    });
+    }).select().single();
+    
+    // Send notification to the recipient
+    if (data && currentUsername) {
+      await notifyFriendRequest(
+        supabase,
+        targetUserId,
+        currentUsername,
+        currentUserId,
+        data.id
+      );
+    }
+    
     setStatus("pending_sent");
     setLoading(false);
     onStatusChange?.();
@@ -77,6 +94,17 @@ export function FriendButton({
       .update({ status: "accepted" })
       .eq("requester_id", targetUserId)
       .eq("addressee_id", currentUserId);
+    
+    // Notify the requester that their request was accepted
+    if (currentUsername) {
+      await notifyFriendRequestAccepted(
+        supabase,
+        targetUserId,
+        currentUsername,
+        currentUserId
+      );
+    }
+    
     setStatus("friends");
     setLoading(false);
     onStatusChange?.();

@@ -170,6 +170,43 @@ export async function checkVoteMilestones(
   }
 }
 
+// Notify when someone sends a friend request
+export async function notifyFriendRequest(
+  supabase: SupabaseClient,
+  recipientId: string,
+  senderUsername: string,
+  senderId: string,
+  friendshipId: string
+) {
+  await createNotification({
+    supabase,
+    userId: recipientId,
+    type: "friend_request",
+    title: `@${senderUsername} sent you a friend request`,
+    content: "Accept or decline this request",
+    link: `/profile/${senderUsername}`,
+    relatedUserId: senderId,
+  });
+}
+
+// Notify when someone accepts your friend request
+export async function notifyFriendRequestAccepted(
+  supabase: SupabaseClient,
+  requesterId: string,
+  accepterUsername: string,
+  accepterId: string
+) {
+  await createNotification({
+    supabase,
+    userId: requesterId,
+    type: "friend_accepted",
+    title: `@${accepterUsername} accepted your friend request`,
+    content: "You are now friends!",
+    link: `/profile/${accepterUsername}`,
+    relatedUserId: accepterId,
+  });
+}
+
 // Parse @mentions from text
 export function parseMentions(text: string): string[] {
   const mentionRegex = /@(\w+)/g;
