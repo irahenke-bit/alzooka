@@ -419,8 +419,14 @@ export default function GroupPage() {
 
     const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
 
-    await supabase.from("groups").update({ banner_url: publicUrl }).eq("id", groupId);
-    setGroup({ ...group, banner_url: publicUrl });
+    const { error: updateError } = await supabase.from("groups").update({ banner_url: publicUrl }).eq("id", groupId);
+    
+    if (updateError) {
+      console.error("Error saving banner:", updateError);
+      alert("Failed to save banner. Please try again.");
+    } else {
+      setGroup({ ...group, banner_url: publicUrl });
+    }
     setUploadingBanner(false);
     
     if (bannerInputRef.current) bannerInputRef.current.value = "";
