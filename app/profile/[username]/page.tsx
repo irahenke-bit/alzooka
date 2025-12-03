@@ -500,57 +500,61 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Profile Card with Banner */}
-      <div className="card" style={{ marginBottom: 32, padding: 0, overflow: "hidden" }}>
-        {/* Banner */}
-        <div 
-          style={{ 
-            height: 160,
-            background: profile.banner_url 
-              ? `url(${profile.banner_url}) center/cover`
-              : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
-            position: "relative",
-          }}
-        >
-          {isOwnProfile && (
-            <>
-              <input
-                ref={bannerInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleBannerUpload}
-                style={{ display: "none" }}
-              />
-              <button
-                onClick={() => bannerInputRef.current?.click()}
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  background: "rgba(0, 0, 0, 0.6)",
-                  border: "none",
-                  color: "white",
-                  padding: "8px 14px",
-                  borderRadius: 6,
-                  fontSize: 12,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                📷 {uploadingBanner ? "Uploading..." : profile.banner_url ? "Change Banner" : "Add Banner"}
-              </button>
-            </>
-          )}
-        </div>
+      {/* Profile Card with Banner - unified like groups */}
+      <div 
+        style={{ 
+          marginBottom: 32, 
+          borderRadius: 12, 
+          overflow: "hidden",
+          background: profile.banner_url 
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
+            : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+          position: "relative",
+          padding: "24px",
+          minHeight: 200,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+        }}
+      >
+        {/* Banner upload button */}
+        {isOwnProfile && (
+          <>
+            <input
+              ref={bannerInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleBannerUpload}
+              style={{ display: "none" }}
+            />
+            <button
+              onClick={() => bannerInputRef.current?.click()}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                background: "rgba(0, 0, 0, 0.6)",
+                border: "none",
+                color: "white",
+                padding: "8px 14px",
+                borderRadius: 6,
+                fontSize: 12,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              📷 {uploadingBanner ? "Uploading..." : profile.banner_url ? "Change Banner" : "Add Banner"}
+            </button>
+          </>
+        )}
 
-        {/* Profile Info */}
-        <div style={{ padding: 24, paddingTop: 0, marginTop: -50 }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "flex-end" }}>
-            {/* Avatar */}
-            <div style={{ flexShrink: 0 }}>
-              {isOwnProfile ? (
+        {/* Profile Info - overlaid on banner */}
+        <div style={{ display: "flex", gap: 24, alignItems: "flex-end" }}>
+          {/* Avatar */}
+          <div style={{ flexShrink: 0 }}>
+            {isOwnProfile ? (
               <div style={{ position: "relative" }}>
                 <AvatarUpload
                   currentAvatarUrl={profile.avatar_url}
@@ -752,7 +756,6 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-        </div>
         </div>
       </div>
 
