@@ -124,7 +124,7 @@ export default function ProfilePage() {
       setEditDisplayName(profileData.display_name || "");
       setEditBio(profileData.bio || "");
 
-      // Get posts by this user with comment counts
+      // Get posts by this user with comment counts (only feed posts, not group posts)
       const { data: postsData } = await supabase
         .from("posts")
         .select(`
@@ -135,6 +135,7 @@ export default function ProfilePage() {
           comments (id)
         `)
         .eq("user_id", profileData.id)
+        .is("group_id", null)
         .order("created_at", { ascending: false });
 
       if (postsData) {
