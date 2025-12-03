@@ -450,14 +450,13 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
-      {/* Header */}
+    <>
+      {/* Header - Full Width */}
       <header style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center",
-        marginBottom: 32,
-        paddingBottom: 16,
+        padding: "20px 40px",
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -543,6 +542,7 @@ export default function ProfilePage() {
         </nav>
       </header>
 
+      <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
       {/* Profile Card with Banner - unified like groups */}
       <div 
         style={{ 
@@ -1126,7 +1126,8 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
