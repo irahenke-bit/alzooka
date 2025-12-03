@@ -451,24 +451,22 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* Header - Full Width */}
+      {/* Header - Centered */}
       <header style={{ 
         display: "flex", 
-        justifyContent: "space-between", 
+        justifyContent: "center", 
         alignItems: "center",
+        gap: 24,
         padding: "20px 40px",
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <Logo size={32} />
-            <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
-              Alzooka
-            </span>
-          </Link>
-          <UserSearch />
-        </div>
-        <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <Logo size={32} />
+          <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
+            Alzooka
+          </span>
+        </Link>
+        <UserSearch />
           <Link 
             href="/groups"
             style={{ 
@@ -539,7 +537,6 @@ export default function ProfilePage() {
           >
             Sign Out
           </button>
-        </nav>
       </header>
 
       <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
