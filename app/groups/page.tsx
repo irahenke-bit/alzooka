@@ -65,8 +65,16 @@ export default function GroupsPage() {
   }, []);
 
   async function loadGroups(userId: string) {
-    // Get all public groups with member counts
-    const { data: allGroups } = await supabase
+    // Get user's memberships first
+    const { data: memberships } = await supabase
+      .from("group_members")
+      .select("group_id")
+      .eq("user_id", userId);
+
+    const memberGroupIds = new Set(memberships?.map(m => m.group_id) || []);
+
+    // Get all public groups
+    const { data: publicGroups } = await supabase
       .from("groups")
       .select(`
         id,
@@ -79,17 +87,34 @@ export default function GroupsPage() {
       .eq("privacy", "public")
       .order("created_at", { ascending: false });
 
-    // Get user's memberships
-    const { data: memberships } = await supabase
-      .from("group_members")
-      .select("group_id")
-      .eq("user_id", userId);
+    // Get private groups user is a member of
+    const { data: myPrivateGroups } = await supabase
+      .from("groups")
+      .select(`
+        id,
+        name,
+        description,
+        avatar_url,
+        privacy,
+        created_at
+      `)
+      .eq("privacy", "private")
+      .in("id", Array.from(memberGroupIds).length > 0 ? Array.from(memberGroupIds) : ['00000000-0000-0000-0000-000000000000'])
+      .order("created_at", { ascending: false });
 
-    const memberGroupIds = new Set(memberships?.map(m => m.group_id) || []);
+    // Combine all groups (avoid duplicates)
+    const allGroupsMap = new Map<string, typeof publicGroups extends (infer T)[] | null ? T : never>();
+    for (const g of publicGroups || []) {
+      allGroupsMap.set(g.id, g);
+    }
+    for (const g of myPrivateGroups || []) {
+      allGroupsMap.set(g.id, g);
+    }
+    const allGroups = Array.from(allGroupsMap.values());
 
     // Get member counts for each group
     const groupsWithCounts: Group[] = [];
-    for (const group of allGroups || []) {
+    for (const group of allGroups) {
       const { count } = await supabase
         .from("group_members")
         .select("*", { count: "exact", head: true })
@@ -102,9 +127,9 @@ export default function GroupsPage() {
       });
     }
 
-    // Separate into my groups and discover
+    // Separate into my groups and discover (only public groups in discover)
     setMyGroups(groupsWithCounts.filter(g => g.is_member));
-    setGroups(groupsWithCounts.filter(g => !g.is_member));
+    setGroups(groupsWithCounts.filter(g => !g.is_member && g.privacy === "public"));
   }
 
   async function handleCreateGroup(e: React.FormEvent) {
