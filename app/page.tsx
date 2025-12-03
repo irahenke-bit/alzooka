@@ -55,6 +55,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -67,6 +68,25 @@ type Post = {
   comments: Comment[];
 };
 
+// YouTube URL detection and parsing
+function extractYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function findYouTubeUrl(text: string): string | null {
+  const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
 function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
@@ -77,6 +97,8 @@ function FeedContent() {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -125,6 +147,7 @@ function FeedContent() {
             id,
             content,
             image_url,
+            video_url,
             created_at,
             edited_at,
             edit_history,
@@ -189,6 +212,7 @@ function FeedContent() {
         id,
         content,
         image_url,
+        video_url,
         created_at,
         edited_at,
         edit_history,
@@ -379,9 +403,47 @@ function FeedContent() {
     }
   }
 
+  function removeYoutubePreview() {
+    setYoutubePreview(null);
+  }
+
+  async function handleContentChange(newContent: string) {
+    setContent(newContent);
+    
+    // Check for YouTube URL if we don't already have a preview
+    if (!youtubePreview && !loadingYoutubePreview) {
+      const youtubeUrl = findYouTubeUrl(newContent);
+      if (youtubeUrl) {
+        const videoId = extractYouTubeVideoId(youtubeUrl);
+        if (videoId) {
+          setLoadingYoutubePreview(true);
+          try {
+            // Fetch video title using noembed (no API key needed)
+            const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+            const data = await response.json();
+            setYoutubePreview({
+              videoId,
+              url: youtubeUrl,
+              title: data.title || "YouTube Video",
+            });
+          } catch {
+            // If fetch fails, still show preview with generic title
+            setYoutubePreview({
+              videoId,
+              url: youtubeUrl,
+              title: "YouTube Video",
+            });
+          }
+          setLoadingYoutubePreview(false);
+        }
+      }
+    }
+  }
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    if ((!content.trim() && !selectedImage) || !user) return;
+    // Allow posting if there's content, image, or YouTube video
+    if ((!content.trim() && !selectedImage && !youtubePreview) || !user) return;
 
     setPosting(true);
 
@@ -420,6 +482,7 @@ function FeedContent() {
       .insert({
         content: content.trim(),
         image_url: imageUrl,
+        video_url: youtubePreview?.url || null,
         user_id: user.id,
       })
       .select()
@@ -437,6 +500,7 @@ function FeedContent() {
       setContent("");
       setSelectedImage(null);
       setImagePreview(null);
+      setYoutubePreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -590,9 +654,9 @@ function FeedContent() {
       {/* New Post Form */}
       <form onSubmit={handlePost} style={{ marginBottom: 32 }}>
         <textarea
-          placeholder="What's on your mind?"
+          placeholder="What's on your mind? Paste a YouTube link to share a video..."
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => handleContentChange(e.target.value)}
           rows={3}
           style={{ marginBottom: 12, resize: "vertical" }}
         />
@@ -613,6 +677,59 @@ function FeedContent() {
             <button
               type="button"
               onClick={removeSelectedImage}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "rgba(0, 0, 0, 0.7)",
+                border: "none",
+                borderRadius: "50%",
+                width: 28,
+                height: 28,
+                color: "white",
+                cursor: "pointer",
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* YouTube Preview */}
+        {loadingYoutubePreview && (
+          <div style={{ marginBottom: 12, padding: 16, background: "rgba(0,0,0,0.2)", borderRadius: 8 }}>
+            <p style={{ margin: 0, opacity: 0.6 }}>Loading video preview...</p>
+          </div>
+        )}
+        {youtubePreview && (
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <div style={{ 
+              background: "var(--alzooka-teal-dark)", 
+              borderRadius: 8, 
+              overflow: "hidden",
+              border: "1px solid rgba(240, 235, 224, 0.2)"
+            }}>
+              <img 
+                src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
+                alt="YouTube thumbnail"
+                style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+              />
+              <div style={{ padding: "12px 16px" }}>
+                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                  YouTube.com
+                </p>
+                <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                  {youtubePreview.title}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={removeYoutubePreview}
               style={{
                 position: "absolute",
                 top: 8,
@@ -662,7 +779,7 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <button type="submit" disabled={posting || (!content.trim() && !selectedImage)}>
+          <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview)}>
             {posting ? "Posting..." : "Post"}
           </button>
         </div>
@@ -715,6 +832,7 @@ function FeedContent() {
                 id,
                 content,
                 image_url,
+                video_url,
                 created_at,
                 edited_at,
                 edit_history,
@@ -1121,6 +1239,70 @@ function PostCard({
               />
             </div>
           )}
+
+          {/* YouTube Video */}
+          {post.video_url && (() => {
+            const videoId = extractYouTubeVideoId(post.video_url);
+            if (!videoId) return null;
+            return (
+              <div style={{ marginBottom: 16 }}>
+                <a 
+                  href={post.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                >
+                  <div style={{ 
+                    background: "var(--alzooka-teal-dark)", 
+                    borderRadius: 8, 
+                    overflow: "hidden",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    cursor: "pointer",
+                    transition: "opacity 0.2s",
+                  }}>
+                    <div style={{ position: "relative" }}>
+                      <img 
+                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                        alt="YouTube video"
+                        style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }}
+                      />
+                      {/* Play button overlay */}
+                      <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: 68,
+                        height: 48,
+                        background: "rgba(255, 0, 0, 0.9)",
+                        borderRadius: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                        <div style={{
+                          width: 0,
+                          height: 0,
+                          borderTop: "10px solid transparent",
+                          borderBottom: "10px solid transparent",
+                          borderLeft: "18px solid white",
+                          marginLeft: 4,
+                        }} />
+                      </div>
+                    </div>
+                    <div style={{ padding: "12px 16px" }}>
+                      <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                        YouTube.com
+                      </p>
+                      <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                        Watch on YouTube
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            );
+          })()}
 
           {/* Comment Button - Opens Modal */}
           <button
