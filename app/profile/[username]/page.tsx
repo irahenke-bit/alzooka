@@ -405,6 +405,7 @@ export default function ProfilePage() {
         {
           id: newPost.id,
           content: newPost.content,
+          image_url: null,
           created_at: newPost.created_at,
           commentCount: 0,
           voteScore: 0,
