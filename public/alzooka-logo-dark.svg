@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" fill="none">
-  <!-- Alzooka full logo - exact match to website -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
+  <!-- Alzooka full logo with dark background -->
+  
+  <!-- Dark teal background -->
+  <rect width="200" height="100" fill="#1A3A4A"/>
   
   <!-- Wave icon centered at top -->
   <g transform="translate(50, 5)">
@@ -37,3 +40,4 @@
     fill="#D4A84B"
   >Alzooka</text>
 </svg>
+

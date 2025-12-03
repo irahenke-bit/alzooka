@@ -1,23 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60">
-  <!-- Three flowing wave lines - Alzooka logo -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" fill="none">
+  <!-- Alzooka wave icon - exact match to website -->
   <path 
-    d="M 8 38 C 20 38, 25 28, 40 28 C 55 28, 60 18, 72 18" 
+    d="M 10 15 Q 30 5, 50 15 Q 70 25, 90 15" 
     stroke="#D4A84B" 
-    stroke-width="5" 
+    stroke-width="4" 
     stroke-linecap="round"
     fill="none"
   />
   <path 
-    d="M 8 48 C 20 48, 25 38, 40 38 C 55 38, 60 28, 72 28" 
+    d="M 10 30 Q 30 20, 50 30 Q 70 40, 90 30" 
     stroke="#D4A84B" 
-    stroke-width="5" 
+    stroke-width="4" 
     stroke-linecap="round"
     fill="none"
   />
   <path 
-    d="M 8 58 C 20 58, 25 48, 40 48 C 55 48, 60 38, 72 38" 
+    d="M 10 45 Q 30 35, 50 45 Q 70 55, 90 45" 
     stroke="#D4A84B" 
-    stroke-width="5" 
+    stroke-width="4" 
     stroke-linecap="round"
     fill="none"
   />
