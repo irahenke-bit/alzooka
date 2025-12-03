@@ -11,6 +11,7 @@ import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import { FriendButton } from "@/app/components/FriendButton";
 import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
+import { BannerCropModal } from "@/app/components/BannerCropModal";
 
 type UserProfile = {
   id: string;
@@ -75,6 +76,8 @@ export default function ProfilePage() {
   const [newPostContent, setNewPostContent] = useState("");
   const [posting, setPosting] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [showBannerCrop, setShowBannerCrop] = useState(false);
+  const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -315,23 +318,38 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !profile || !currentUser) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Banner must be less than 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image must be less than 10MB");
       return;
     }
 
-    setUploadingBanner(true);
+    // Create a preview URL and show crop modal
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBannerImageToCrop(reader.result as string);
+      setShowBannerCrop(true);
+    };
+    reader.readAsDataURL(file);
+    
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${profile.id}-banner-${Date.now()}.${fileExt}`;
+  async function handleBannerCropSave(croppedBlob: Blob) {
+    if (!profile || !currentUser) return;
+
+    setUploadingBanner(true);
+    setShowBannerCrop(false);
+    setBannerImageToCrop(null);
+
+    const fileName = `${profile.id}-banner-${Date.now()}.jpg`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(fileName, file, { upsert: true });
+      .upload(fileName, croppedBlob, { upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -357,7 +375,11 @@ export default function ProfilePage() {
     }
 
     setUploadingBanner(false);
-    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
+
+  function handleBannerCropCancel() {
+    setShowBannerCrop(false);
+    setBannerImageToCrop(null);
   }
 
   async function handlePost() {
@@ -524,7 +546,7 @@ export default function ProfilePage() {
               ref={bannerInputRef}
               type="file"
               accept="image/*"
-              onChange={handleBannerUpload}
+              onChange={handleBannerSelect}
               style={{ display: "none" }}
             />
             <button
@@ -938,6 +960,15 @@ export default function ProfilePage() {
         profileOwnerUsername={profile.username}
         currentUserId={currentUser?.id || null}
       />
+
+      {/* Banner Crop Modal */}
+      {showBannerCrop && bannerImageToCrop && (
+        <BannerCropModal
+          imageSrc={bannerImageToCrop}
+          onCancel={handleBannerCropCancel}
+          onSave={handleBannerCropSave}
+        />
+      )}
 
       {/* Friends List Modal */}
       {showFriendsModal && (
