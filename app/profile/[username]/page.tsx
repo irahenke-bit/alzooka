@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -18,6 +18,7 @@ type UserProfile = {
   display_name: string | null;
   bio: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   created_at: string;
 };
 
@@ -73,6 +74,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [posting, setPosting] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
 
@@ -98,7 +101,7 @@ export default function ProfilePage() {
       // Query all users and find match (handles spaces and case issues)
       const { data: allUsers } = await supabase
         .from("users")
-        .select("id, username, display_name, bio, avatar_url, created_at");
+        .select("id, username, display_name, bio, avatar_url, banner_url, created_at");
       
       const profileData = allUsers?.find(
         u => u.username.trim().toLowerCase() === username.trim().toLowerCase()
@@ -312,6 +315,51 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !profile || !currentUser) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Banner must be less than 5MB");
+      return;
+    }
+
+    setUploadingBanner(true);
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${profile.id}-banner-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      alert("Failed to upload banner");
+      setUploadingBanner(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(fileName);
+
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ banner_url: publicUrl })
+      .eq("id", profile.id);
+
+    if (updateError) {
+      console.error("Update error:", updateError);
+      alert("Failed to save banner");
+    } else {
+      setProfile({ ...profile, banner_url: publicUrl });
+    }
+
+    setUploadingBanner(false);
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
+
   async function handlePost() {
     if (!newPostContent.trim() || !currentUser || !profile) return;
 
@@ -452,12 +500,57 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Profile Card */}
-      <div className="card" style={{ marginBottom: 32 }}>
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-          {/* Avatar */}
-          <div style={{ flexShrink: 0 }}>
-            {isOwnProfile ? (
+      {/* Profile Card with Banner */}
+      <div className="card" style={{ marginBottom: 32, padding: 0, overflow: "hidden" }}>
+        {/* Banner */}
+        <div 
+          style={{ 
+            height: 160,
+            background: profile.banner_url 
+              ? `url(${profile.banner_url}) center/cover`
+              : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+            position: "relative",
+          }}
+        >
+          {isOwnProfile && (
+            <>
+              <input
+                ref={bannerInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerUpload}
+                style={{ display: "none" }}
+              />
+              <button
+                onClick={() => bannerInputRef.current?.click()}
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  background: "rgba(0, 0, 0, 0.6)",
+                  border: "none",
+                  color: "white",
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                📷 {uploadingBanner ? "Uploading..." : profile.banner_url ? "Change Banner" : "Add Banner"}
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Profile Info */}
+        <div style={{ padding: 24, paddingTop: 0, marginTop: -50 }}>
+          <div style={{ display: "flex", gap: 24, alignItems: "flex-end" }}>
+            {/* Avatar */}
+            <div style={{ flexShrink: 0 }}>
+              {isOwnProfile ? (
               <div style={{ position: "relative" }}>
                 <AvatarUpload
                   currentAvatarUrl={profile.avatar_url}
@@ -659,6 +752,7 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
 
