@@ -1,32 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
-  <!-- Background - exact teal from site -->
-  <rect width="600" height="500" fill="#1A3A4A"/>
-  
-  <!-- Three wavy lines - cream color like reference -->
-  <g fill="none" stroke="#F0EBE0" stroke-width="8" stroke-linecap="round">
-    <path d="M 175 80 Q 220 50, 265 80 Q 310 110, 355 80 Q 400 50, 425 80"/>
-    <path d="M 175 115 Q 220 85, 265 115 Q 310 145, 355 115 Q 400 85, 425 115"/>
-    <path d="M 175 150 Q 220 120, 265 150 Q 310 180, 355 150 Q 400 120, 425 150"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">
+  <!-- Wave icon -->
+  <g transform="translate(60, 0)">
+    <path 
+      d="M 8 38 C 20 38, 25 28, 40 28 C 55 28, 60 18, 72 18" 
+      stroke="#D4A84B" 
+      stroke-width="5" 
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path 
+      d="M 8 48 C 20 48, 25 38, 40 38 C 55 38, 60 28, 72 28" 
+      stroke="#D4A84B" 
+      stroke-width="5" 
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path 
+      d="M 8 58 C 20 58, 25 48, 40 48 C 55 48, 60 38, 72 38" 
+      stroke="#D4A84B" 
+      stroke-width="5" 
+      stroke-linecap="round"
+      fill="none"
+    />
   </g>
   
-  <!-- Alzooka text - gold color -->
-  <text x="300" y="280" 
-        font-family="Georgia, 'Times New Roman', serif" 
-        font-size="90" 
-        font-weight="400"
-        fill="#c9a55c" 
-        text-anchor="middle">
-    Alzooka
-  </text>
-  
-  <!-- COMMUNITY WITHOUT CLUTTER - cream color -->
-  <text x="300" y="340" 
-        font-family="Arial, Helvetica, sans-serif" 
-        font-size="22" 
-        font-weight="400"
-        letter-spacing="4"
-        fill="#F0EBE0" 
-        text-anchor="middle">
-    COMMUNITY WITHOUT CLUTTER
-  </text>
+  <!-- Alzooka text -->
+  <text 
+    x="100" 
+    y="95" 
+    text-anchor="middle" 
+    font-family="Georgia, serif" 
+    font-size="32" 
+    font-weight="400"
+    fill="#D4A84B"
+  >Alzooka</text>
 </svg>

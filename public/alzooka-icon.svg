@@ -1,11 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Background -->
-  <rect width="200" height="200" fill="#1A3A4A"/>
-  
-  <!-- Three wavy lines - cream color -->
-  <g fill="none" stroke="#F0EBE0" stroke-width="6" stroke-linecap="round">
-    <path d="M 35 65 Q 65 45, 100 65 Q 135 85, 165 65"/>
-    <path d="M 35 100 Q 65 80, 100 100 Q 135 120, 165 100"/>
-    <path d="M 35 135 Q 65 115, 100 135 Q 135 155, 165 135"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60">
+  <!-- Three flowing wave lines - Alzooka logo -->
+  <path 
+    d="M 8 38 C 20 38, 25 28, 40 28 C 55 28, 60 18, 72 18" 
+    stroke="#D4A84B" 
+    stroke-width="5" 
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path 
+    d="M 8 48 C 20 48, 25 38, 40 38 C 55 38, 60 28, 72 28" 
+    stroke="#D4A84B" 
+    stroke-width="5" 
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path 
+    d="M 8 58 C 20 58, 25 48, 40 48 C 55 48, 60 38, 72 38" 
+    stroke="#D4A84B" 
+    stroke-width="5" 
+    stroke-linecap="round"
+    fill="none"
+  />
 </svg>
