@@ -460,14 +460,16 @@ export default function ProfilePage() {
         paddingBottom: 16,
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-          <Logo size={32} />
-          <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
-            Alzooka
-          </span>
-        </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <Logo size={32} />
+            <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
+              Alzooka
+            </span>
+          </Link>
           <UserSearch />
+        </div>
+        <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <Link 
             href="/groups"
             style={{ 
@@ -538,7 +540,7 @@ export default function ProfilePage() {
           >
             Sign Out
           </button>
-        </div>
+        </nav>
       </header>
 
       {/* Profile Card with Banner - unified like groups */}
