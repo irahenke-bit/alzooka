@@ -152,7 +152,7 @@ function FeedContent() {
           
         if (postsData) {
           // Process comments like we do in loadPosts
-          const allComments = (postsData.comments || []) as Comment[];
+          const allComments = (postsData.comments || []) as unknown as Comment[];
           const parentComments = allComments
             .filter(c => !c.parent_comment_id)
             .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -729,7 +729,7 @@ function FeedContent() {
 
             if (freshPost) {
               // Process comments
-              const allComments = (freshPost.comments || []) as Comment[];
+              const allComments = (freshPost.comments || []) as unknown as Comment[];
               const parentComments = allComments
                 .filter(c => !c.parent_comment_id)
                 .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
