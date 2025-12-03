@@ -9,6 +9,56 @@ type AvatarUploadProps = {
   onUpload: (url: string) => void;
 };
 
+// Resize image to target size while maintaining quality
+async function resizeImage(file: File, targetSize: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    img.onload = () => {
+      // Calculate dimensions for center crop
+      const size = Math.min(img.width, img.height);
+      const offsetX = (img.width - size) / 2;
+      const offsetY = (img.height - size) / 2;
+
+      canvas.width = targetSize;
+      canvas.height = targetSize;
+
+      if (!ctx) {
+        reject(new Error("Could not get canvas context"));
+        return;
+      }
+
+      // Use high quality settings
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      // Draw cropped and resized image
+      ctx.drawImage(
+        img,
+        offsetX, offsetY, size, size,  // Source crop
+        0, 0, targetSize, targetSize    // Destination
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Could not create blob"));
+          }
+        },
+        "image/jpeg",
+        0.92  // High quality JPEG
+      );
+    };
+
+    img.onerror = () => reject(new Error("Could not load image"));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -25,9 +75,9 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Image must be less than 2MB");
+    // Validate file size (max 10MB for original - we'll resize it)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Image must be less than 10MB");
       return;
     }
 
@@ -35,17 +85,20 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
     setError("");
 
     try {
+      // Resize image to 400x400 for crisp display at all sizes
+      const resizedBlob = await resizeImage(file, 400);
+      
       // Create unique filename
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const fileName = `${userId}-${Date.now()}.jpg`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload to Supabase Storage
+      // Upload resized image to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, {
+        .upload(filePath, resizedBlob, {
           cacheControl: "3600",
           upsert: true,
+          contentType: "image/jpeg",
         });
 
       if (uploadError) {
@@ -182,5 +235,3 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
     </div>
   );
 }
-
-
