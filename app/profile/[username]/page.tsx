@@ -26,6 +26,7 @@ type UserProfile = {
 type Post = {
   id: string;
   content: string;
+  image_url: string | null;
   created_at: string;
   commentCount: number;
   voteScore: number;
@@ -126,7 +127,8 @@ export default function ProfilePage() {
         .from("posts")
         .select(`
           id, 
-          content, 
+          content,
+          image_url,
           created_at,
           comments (id)
         `)
@@ -152,6 +154,7 @@ export default function ProfilePage() {
         const postsWithCounts = postsData.map(post => ({
           id: post.id,
           content: post.content,
+          image_url: post.image_url || null,
           created_at: post.created_at,
           commentCount: (post.comments as unknown[])?.length || 0,
           voteScore: votesByPost[post.id] || 0,
@@ -855,9 +858,24 @@ export default function ProfilePage() {
                 style={{ textDecoration: "none", color: "inherit", display: "block" }}
               >
                 <article className="card" style={{ cursor: "pointer", transition: "opacity 0.2s" }}>
-                  <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>
-                    {post.content}
-                  </p>
+                  {post.content && (
+                    <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>
+                      {post.content}
+                    </p>
+                  )}
+                  {post.image_url && (
+                    <img 
+                      src={post.image_url} 
+                      alt="" 
+                      style={{ 
+                        width: "100%", 
+                        borderRadius: 8, 
+                        marginBottom: 12,
+                        maxHeight: 300,
+                        objectFit: "cover",
+                      }} 
+                    />
+                  )}
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                     <span className="text-muted" style={{ fontSize: 14 }}>
                       {formatTime(post.created_at)}
