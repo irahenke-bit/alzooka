@@ -262,14 +262,14 @@ export default function ProfilePage() {
       if (showFriendsParam === "true" && user) {
         setLoadingFriends(true);
         const { data: friendships } = await supabase
-          .from("friends")
-          .select("user_id, friend_id")
-          .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
-          .eq("status", "accepted");
+          .from("friendships")
+          .select("requester_id, addressee_id")
+          .eq("status", "accepted")
+          .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
         
         if (friendships && friendships.length > 0) {
           const friendIds = friendships.map(f => 
-            f.user_id === user.id ? f.friend_id : f.user_id
+            f.requester_id === user.id ? f.addressee_id : f.requester_id
           );
           const { data: friendsData } = await supabase
             .from("users")
@@ -516,14 +516,14 @@ export default function ProfilePage() {
               setLoadingFriends(true);
               // Load current user's friends
               const { data: friendships } = await supabase
-                .from("friends")
-                .select("user_id, friend_id")
-                .or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`)
-                .eq("status", "accepted");
+                .from("friendships")
+                .select("requester_id, addressee_id")
+                .eq("status", "accepted")
+                .or(`requester_id.eq.${currentUser.id},addressee_id.eq.${currentUser.id}`);
               
               if (friendships && friendships.length > 0) {
                 const friendIds = friendships.map(f => 
-                  f.user_id === currentUser.id ? f.friend_id : f.user_id
+                  f.requester_id === currentUser.id ? f.addressee_id : f.requester_id
                 );
                 const { data: friendsData } = await supabase
                   .from("users")
