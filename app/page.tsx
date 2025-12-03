@@ -1103,7 +1103,7 @@ function PostCard({
                   borderRadius: 8,
                   cursor: "pointer",
                 }}
-                onClick={() => window.open(post.image_url!, "_blank")}
+                onClick={onOpenModal}
               />
             </div>
           )}
