@@ -1240,66 +1240,35 @@ function PostCard({
             </div>
           )}
 
-          {/* YouTube Video */}
+          {/* YouTube Video Player */}
           {post.video_url && (() => {
             const videoId = extractYouTubeVideoId(post.video_url);
             if (!videoId) return null;
             return (
               <div style={{ marginBottom: 16 }}>
-                <a 
-                  href={post.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                >
-                  <div style={{ 
-                    background: "var(--alzooka-teal-dark)", 
-                    borderRadius: 8, 
-                    overflow: "hidden",
-                    border: "1px solid rgba(240, 235, 224, 0.2)",
-                    cursor: "pointer",
-                    transition: "opacity 0.2s",
-                  }}>
-                    <div style={{ position: "relative" }}>
-                      <img 
-                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-                        alt="YouTube video"
-                        style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }}
-                      />
-                      {/* Play button overlay */}
-                      <div style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: 68,
-                        height: 48,
-                        background: "rgba(255, 0, 0, 0.9)",
-                        borderRadius: 12,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}>
-                        <div style={{
-                          width: 0,
-                          height: 0,
-                          borderTop: "10px solid transparent",
-                          borderBottom: "10px solid transparent",
-                          borderLeft: "18px solid white",
-                          marginLeft: 4,
-                        }} />
-                      </div>
-                    </div>
-                    <div style={{ padding: "12px 16px" }}>
-                      <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
-                        YouTube.com
-                      </p>
-                      <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                        Watch on YouTube
-                      </p>
-                    </div>
-                  </div>
-                </a>
+                <div style={{ 
+                  position: "relative",
+                  paddingBottom: "56.25%", /* 16:9 aspect ratio */
+                  height: 0,
+                  overflow: "hidden",
+                  borderRadius: 8,
+                  background: "#000",
+                }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                    title="YouTube video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </div>
               </div>
             );
           })()}
