@@ -419,6 +419,34 @@ export default function ProfilePage() {
           >
             ← Back to Feed
           </Link>
+          <button 
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push("/login");
+            }}
+            style={{ 
+              background: "rgba(240, 235, 224, 0.1)", 
+              color: "var(--alzooka-cream)",
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
+              borderRadius: 20,
+              opacity: 0.9,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)";
+              e.currentTarget.style.opacity = "1";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+              e.currentTarget.style.opacity = "0.9";
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </header>
 
