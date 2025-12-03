@@ -112,6 +112,8 @@ function FeedContent() {
   const supabase = createBrowserClient();
 
   useEffect(() => {
+    let postsSubscription: ReturnType<typeof supabase.channel> | null = null;
+
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -137,6 +139,89 @@ function FeedContent() {
       await loadUserVotes(user.id);
       await loadVoteTotals();
       setLoading(false);
+
+      // Subscribe to new posts in real-time
+      postsSubscription = supabase
+        .channel('feed-posts')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'posts',
+            filter: 'group_id=is.null', // Only feed posts, not group posts
+          },
+          async (payload) => {
+            // Don't add if it's our own post (we already added it optimistically)
+            if (payload.new.user_id === user.id) return;
+
+            // Fetch the full post with user data
+            const { data: newPost } = await supabase
+              .from("posts")
+              .select(`
+                id,
+                content,
+                image_url,
+                video_url,
+                created_at,
+                edited_at,
+                edit_history,
+                user_id,
+                users (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
+                comments (
+                  id,
+                  content,
+                  created_at,
+                  user_id,
+                  parent_comment_id,
+                  users (
+                    username,
+                    display_name,
+                    avatar_url
+                  )
+                )
+              `)
+              .eq("id", payload.new.id)
+              .single();
+
+            if (newPost) {
+              // Process comments
+              const allComments = (newPost.comments || []) as unknown as Comment[];
+              const parentComments = allComments
+                .filter(c => !c.parent_comment_id)
+                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+              const replies = allComments.filter(c => c.parent_comment_id);
+              const commentsWithReplies = parentComments.map(parent => ({
+                ...parent,
+                replies: replies
+                  .filter(r => r.parent_comment_id === parent.id)
+                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+              }));
+
+              const processedPost = {
+                ...newPost,
+                comments: commentsWithReplies
+              } as unknown as Post;
+
+              // Add to top of posts list
+              setPosts(currentPosts => {
+                // Check if post already exists
+                if (currentPosts.some(p => p.id === processedPost.id)) {
+                  return currentPosts;
+                }
+                return [processedPost, ...currentPosts];
+              });
+
+              // Load vote totals for the new post
+              await loadVoteTotals();
+            }
+          }
+        )
+        .subscribe();
 
       // Auto-open modal if comment is highlighted, scroll to post if only post is highlighted
       if (highlightCommentId && highlightPostId) {
@@ -203,6 +288,13 @@ function FeedContent() {
     }
     
     init();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (postsSubscription) {
+        supabase.removeChannel(postsSubscription);
+      }
+    };
   }, []);
 
   async function loadPosts() {
