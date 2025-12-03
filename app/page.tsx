@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import { PostModal } from "@/app/components/PostModal";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -79,6 +80,7 @@ function FeedContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [modalPost, setModalPost] = useState<Post | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
@@ -114,14 +116,59 @@ function FeedContent() {
       await loadVoteTotals();
       setLoading(false);
 
-      // Scroll to highlighted comment or post if present
-      if (highlightCommentId) {
-        setTimeout(() => {
-          const element = document.getElementById(`comment-${highlightCommentId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        }, 100);
+      // Auto-open modal if comment is highlighted, scroll to post if only post is highlighted
+      if (highlightCommentId && highlightPostId) {
+        // Find the post containing the highlighted comment and open modal
+        const { data: postsData } = await supabase
+          .from("posts")
+          .select(`
+            id,
+            content,
+            image_url,
+            created_at,
+            edited_at,
+            edit_history,
+            user_id,
+            users (
+              username,
+              display_name,
+              avatar_url
+            ),
+            comments (
+              id,
+              content,
+              created_at,
+              user_id,
+              parent_comment_id,
+              users (
+                username,
+                display_name,
+                avatar_url
+              )
+            )
+          `)
+          .eq("id", highlightPostId)
+          .single();
+          
+        if (postsData) {
+          // Process comments like we do in loadPosts
+          const allComments = (postsData.comments || []) as Comment[];
+          const parentComments = allComments
+            .filter(c => !c.parent_comment_id)
+            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          const replies = allComments.filter(c => c.parent_comment_id);
+          const commentsWithReplies = parentComments.map(parent => ({
+            ...parent,
+            replies: replies
+              .filter(r => r.parent_comment_id === parent.id)
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+          }));
+          
+          setModalPost({
+            ...postsData,
+            comments: commentsWithReplies
+          } as unknown as Post);
+        }
       } else if (highlightPostId) {
         setTimeout(() => {
           const element = document.getElementById(`post-${highlightPostId}`);
@@ -625,7 +672,7 @@ function FeedContent() {
               voteTotals={voteTotals}
               onVote={handleVote}
               isHighlighted={post.id === highlightPostId}
-              highlightCommentId={highlightCommentId}
+              onOpenModal={() => setModalPost(post)}
               onCommentAdded={async () => {
                 await loadPosts();
                 await loadUserVotes(user!.id);
@@ -635,6 +682,78 @@ function FeedContent() {
           ))
         )}
       </div>
+
+      {/* Post Modal */}
+      {modalPost && user && (
+        <PostModal
+          post={modalPost}
+          user={user}
+          supabase={supabase}
+          votes={votes}
+          voteTotals={voteTotals}
+          onVote={handleVote}
+          highlightCommentId={highlightCommentId}
+          onClose={() => setModalPost(null)}
+          onCommentAdded={async () => {
+            // Fetch fresh post data for the modal
+            const { data: freshPost } = await supabase
+              .from("posts")
+              .select(`
+                id,
+                content,
+                image_url,
+                created_at,
+                edited_at,
+                edit_history,
+                user_id,
+                users (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
+                comments (
+                  id,
+                  content,
+                  created_at,
+                  user_id,
+                  parent_comment_id,
+                  users (
+                    username,
+                    display_name,
+                    avatar_url
+                  )
+                )
+              `)
+              .eq("id", modalPost.id)
+              .single();
+
+            if (freshPost) {
+              // Process comments
+              const allComments = (freshPost.comments || []) as Comment[];
+              const parentComments = allComments
+                .filter(c => !c.parent_comment_id)
+                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+              const replies = allComments.filter(c => c.parent_comment_id);
+              const commentsWithReplies = parentComments.map(parent => ({
+                ...parent,
+                replies: replies
+                  .filter(r => r.parent_comment_id === parent.id)
+                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+              }));
+              
+              setModalPost({
+                ...freshPost,
+                comments: commentsWithReplies
+              } as unknown as Post);
+            }
+
+            // Also update the main posts list and votes
+            await loadPosts();
+            await loadUserVotes(user.id);
+            await loadVoteTotals();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -710,7 +829,7 @@ function VoteButtons({
   );
 }
 
-// Post Card Component with Comments
+// Post Card Component
 function PostCard({ 
   post, 
   user, 
@@ -719,7 +838,7 @@ function PostCard({
   voteTotals,
   onVote,
   isHighlighted,
-  highlightCommentId,
+  onOpenModal,
   onCommentAdded 
 }: { 
   post: Post; 
@@ -729,17 +848,9 @@ function PostCard({
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   isHighlighted?: boolean;
-  highlightCommentId?: string | null;
+  onOpenModal: () => void;
   onCommentAdded: () => void;
 }) {
-  // Auto-expand comments if a comment in this post is highlighted
-  const hasHighlightedComment = highlightCommentId && post.comments?.some(
-    c => c.id === highlightCommentId || c.replies?.some(r => r.id === highlightCommentId)
-  );
-  const [showComments, setShowComments] = useState(isHighlighted || hasHighlightedComment || false);
-  const [commentText, setCommentText] = useState("");
-  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
@@ -749,13 +860,6 @@ function PostCard({
     if (!confirm("Delete this post?")) return;
     
     await supabase.from("posts").delete().eq("id", postId);
-    onCommentAdded(); // Refresh the feed
-  }
-
-  async function handleDeleteComment(commentId: string) {
-    if (!confirm("Delete this comment?")) return;
-    
-    await supabase.from("comments").delete().eq("id", commentId);
     onCommentAdded(); // Refresh the feed
   }
 
@@ -792,99 +896,6 @@ function PostCard({
   function cancelEdit() {
     setIsEditing(false);
     setEditContent(post.content);
-  }
-
-  async function handleComment(e: React.FormEvent) {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-
-    setSubmitting(true);
-    const trimmedComment = commentText.trim();
-    const commenterUsername = user.user_metadata?.username || "unknown";
-
-    const { data, error } = await supabase
-      .from("comments")
-      .insert({
-        content: trimmedComment,
-        post_id: post.id,
-        user_id: user.id,
-        parent_comment_id: replyingTo?.id || null,
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      // Auto-upvote own comment (like Reddit)
-      await supabase.from("votes").insert({
-        user_id: user.id,
-        target_type: "comment",
-        target_id: data.id,
-        value: 1,
-      });
-
-      // Send notifications
-      if (replyingTo) {
-        // This is a reply - notify the parent comment owner
-        const parentComment = post.comments?.find(c => c.id === replyingTo.id);
-        if (parentComment && parentComment.user_id !== user.id) {
-          notifyNewReply(
-            supabase,
-            parentComment.user_id,
-            commenterUsername,
-            post.id,
-            data.id,
-            trimmedComment
-          );
-        }
-      } else {
-        // This is a top-level comment - notify the post owner
-        if (post.user_id !== user.id) {
-          notifyNewComment(
-            supabase,
-            post.user_id,
-            commenterUsername,
-            post.id,
-            data.id,
-            trimmedComment
-          );
-        }
-      }
-
-      // Check for @mentions and notify mentioned users
-      const mentions = parseMentions(trimmedComment);
-      if (mentions.length > 0) {
-        const userIdMap = await getUserIdsByUsernames(supabase, mentions);
-        for (const username of mentions) {
-          const mentionedUserId = userIdMap[username.toLowerCase()];
-          if (mentionedUserId && mentionedUserId !== user.id) {
-            notifyMention(
-              supabase,
-              mentionedUserId,
-              commenterUsername,
-              post.id,
-              data.id,
-              trimmedComment
-            );
-          }
-        }
-      }
-      
-      setCommentText("");
-      setReplyingTo(null);
-      onCommentAdded();
-    }
-
-    setSubmitting(false);
-  }
-
-  function handleReply(commentId: string, username: string) {
-    setReplyingTo({ id: commentId, username });
-    setCommentText(`@${username} `);
-  }
-
-  function cancelReply() {
-    setReplyingTo(null);
-    setCommentText("");
   }
 
   // Count all comments including replies
@@ -1097,9 +1108,9 @@ function PostCard({
             </div>
           )}
 
-          {/* Comment Toggle */}
+          {/* Comment Button - Opens Modal */}
           <button
-            onClick={() => setShowComments(!showComments)}
+            onClick={onOpenModal}
             style={{
               background: "transparent",
               color: "var(--alzooka-cream)",
@@ -1107,272 +1118,19 @@ function PostCard({
               fontSize: 14,
               border: "none",
               opacity: 0.7,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
           >
+            <span style={{ fontSize: 16 }}>💬</span>
             {commentCount === 0 
-              ? "Add comment" 
+              ? "Comment" 
               : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
           </button>
-
-          {/* Comments Section */}
-          {showComments && (
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.1)" }}>
-              {/* Existing Comments - Two Level Structure */}
-              {post.comments?.map((comment) => (
-                <div 
-                  key={comment.id} 
-                  id={`comment-${comment.id}`} 
-                  style={{ 
-                    marginBottom: 16,
-                    ...(highlightCommentId === comment.id ? {
-                      background: "rgba(212, 168, 75, 0.2)",
-                      padding: 12,
-                      marginLeft: -12,
-                      marginRight: -12,
-                      borderRadius: 8,
-                      boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
-                    } : {})
-                  }}
-                >
-                  {/* Parent Comment */}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {/* Comment Vote Buttons */}
-                    <VoteButtons
-                      targetType="comment"
-                      targetId={comment.id}
-                      votes={votes}
-                      voteTotals={voteTotals}
-                      onVote={onVote}
-                    />
-                    
-                    {/* Comment Content */}
-                    <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid var(--alzooka-gold)" }}>
-                      <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Link 
-                          href={`/profile/${comment.users?.username || "unknown"}`}
-                          style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
-                        >
-                          {comment.users?.avatar_url ? (
-                            <img 
-                              src={comment.users.avatar_url} 
-                              alt=""
-                              style={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: "50%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          ) : (
-                            <div style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: "50%",
-                              background: "var(--alzooka-gold)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "var(--alzooka-teal-dark)",
-                              fontWeight: 700,
-                              fontSize: 12,
-                            }}>
-                              {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                              {comment.users?.display_name || comment.users?.username || "Unknown"}
-                            </span>
-                            <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>
-                              {formatTime(comment.created_at)}
-                            </span>
-                          </div>
-                        </Link>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
-                            style={{
-                              background: "transparent",
-                              border: "none",
-                              color: "var(--alzooka-cream)",
-                              fontSize: 11,
-                              cursor: "pointer",
-                              opacity: 0.6,
-                              padding: "2px 6px",
-                            }}
-                          >
-                            Reply
-                          </button>
-                          {comment.user_id === user.id && (
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "#e57373",
-                                fontSize: 11,
-                                cursor: "pointer",
-                                opacity: 0.7,
-                                padding: "2px 6px",
-                              }}
-                              title="Delete comment"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
-                    </div>
-                  </div>
-
-                  {/* Replies to this comment */}
-                  {comment.replies && comment.replies.length > 0 && (
-                    <div style={{ marginLeft: 48, marginTop: 8 }}>
-                      {comment.replies.map((reply) => (
-                        <div 
-                          key={reply.id} 
-                          id={`comment-${reply.id}`}
-                          style={{ 
-                            marginBottom: 8,
-                            ...(highlightCommentId === reply.id ? {
-                              background: "rgba(212, 168, 75, 0.2)",
-                              padding: 12,
-                              marginLeft: -12,
-                              marginRight: -12,
-                              borderRadius: 8,
-                              boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
-                            } : {})
-                          }}
-                        >
-                        <div style={{ display: "flex", gap: 8 }}>
-                          {/* Reply Vote Buttons */}
-                          <VoteButtons
-                            targetType="comment"
-                            targetId={reply.id}
-                            votes={votes}
-                            voteTotals={voteTotals}
-                            onVote={onVote}
-                          />
-                          
-                          {/* Reply Content */}
-                          <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid rgba(212, 168, 75, 0.4)" }}>
-                            <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <Link 
-                                href={`/profile/${reply.users?.username || "unknown"}`}
-                                style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none" }}
-                              >
-                                {reply.users?.avatar_url ? (
-                                  <img 
-                                    src={reply.users.avatar_url} 
-                                    alt=""
-                                    style={{
-                                      width: 24,
-                                      height: 24,
-                                      borderRadius: "50%",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                ) : (
-                                  <div style={{
-                                    width: 24,
-                                    height: 24,
-                                    borderRadius: "50%",
-                                    background: "var(--alzooka-gold)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "var(--alzooka-teal-dark)",
-                                    fontWeight: 700,
-                                    fontSize: 10,
-                                  }}>
-                                    {(reply.users?.display_name || reply.users?.username || "?").charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                                <div>
-                                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                                    {reply.users?.display_name || reply.users?.username || "Unknown"}
-                                  </span>
-                                  <span className="text-muted" style={{ marginLeft: 8, fontSize: 11 }}>
-                                    {formatTime(reply.created_at)}
-                                  </span>
-                                </div>
-                              </Link>
-                              {reply.user_id === user.id && (
-                                <button
-                                  onClick={() => handleDeleteComment(reply.id)}
-                                  style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "#e57373",
-                                    fontSize: 11,
-                                    cursor: "pointer",
-                                    opacity: 0.7,
-                                    padding: "2px 6px",
-                                  }}
-                                  title="Delete reply"
-                                >
-                                  Delete
-                                </button>
-                              )}
-                            </div>
-                            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>{reply.content}</p>
-                          </div>
-                        </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {/* Add Comment Form */}
-              <div style={{ marginTop: 12 }}>
-                {replyingTo && (
-                  <div style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: 8, 
-                    marginBottom: 8,
-                    fontSize: 13,
-                    color: "var(--alzooka-gold)",
-                  }}>
-                    <span>Replying to @{replyingTo.username}</span>
-                    <button
-                      onClick={cancelReply}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--alzooka-cream)",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        opacity: 0.6,
-                        padding: "2px 6px",
-                      }}
-                    >
-                      ✕ Cancel
-                    </button>
-                  </div>
-                )}
-                <form onSubmit={handleComment} style={{ display: "flex", gap: 8 }}>
-                  <input
-                    type="text"
-                    placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Write a comment..."}
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    style={{ flex: 1, padding: 8, fontSize: 14 }}
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={submitting || !commentText.trim()}
-                    style={{ padding: "8px 16px", fontSize: 14 }}
-                  >
-                    {submitting ? "..." : replyingTo ? "Reply" : "Comment"}
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </article>
