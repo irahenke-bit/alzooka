@@ -386,13 +386,13 @@ export default function ProfilePage() {
         paddingBottom: 16,
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", marginRight: 24 }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
           <Logo size={32} />
           <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
             Alzooka
           </span>
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: 16 }}>
           <UserSearch />
           {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
           {currentUser && !isOwnProfile && currentUserUsername && (
@@ -419,7 +419,7 @@ export default function ProfilePage() {
               whiteSpace: "nowrap",
             }}
           >
-            Feed
+            ← Back to Feed
           </Link>
           <button 
             onClick={async () => {
