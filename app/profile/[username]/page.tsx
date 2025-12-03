@@ -386,13 +386,13 @@ export default function ProfilePage() {
         paddingBottom: 16,
         borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", marginRight: 24 }}>
           <Logo size={32} />
           <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
             Alzooka
           </span>
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <UserSearch />
           {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
           {currentUser && !isOwnProfile && currentUserUsername && (
@@ -403,6 +403,7 @@ export default function ProfilePage() {
                 fontSize: 14,
                 textDecoration: "none",
                 opacity: 0.8,
+                whiteSpace: "nowrap",
               }}
             >
               My Profile
@@ -415,9 +416,10 @@ export default function ProfilePage() {
               fontSize: 14,
               textDecoration: "none",
               opacity: 0.8,
+              whiteSpace: "nowrap",
             }}
           >
-            ← Back to Feed
+            Feed
           </Link>
           <button 
             onClick={async () => {
