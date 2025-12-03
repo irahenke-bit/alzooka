@@ -149,11 +149,13 @@ function FeedContent() {
             event: 'INSERT',
             schema: 'public',
             table: 'posts',
-            filter: 'group_id=is.null', // Only feed posts, not group posts
           },
           async (payload) => {
             // Don't add if it's our own post (we already added it optimistically)
             if (payload.new.user_id === user.id) return;
+            
+            // Skip group posts - only show feed posts
+            if (payload.new.group_id) return;
 
             // Fetch the full post with user data
             const { data: newPost } = await supabase

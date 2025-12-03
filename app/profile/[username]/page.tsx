@@ -27,6 +27,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   commentCount: number;
   voteScore: number;
@@ -131,6 +132,7 @@ export default function ProfilePage() {
           id, 
           content,
           image_url,
+          video_url,
           created_at,
           comments (id)
         `)
@@ -158,6 +160,7 @@ export default function ProfilePage() {
           id: post.id,
           content: post.content,
           image_url: post.image_url || null,
+          video_url: post.video_url || null,
           created_at: post.created_at,
           commentCount: (post.comments as unknown[])?.length || 0,
           voteScore: votesByPost[post.id] || 0,
@@ -434,6 +437,7 @@ export default function ProfilePage() {
           id: newPost.id,
           content: newPost.content,
           image_url: null,
+          video_url: null,
           created_at: newPost.created_at,
           commentCount: 0,
           voteScore: 0,
@@ -937,16 +941,37 @@ export default function ProfilePage() {
                 : `@${profile.username} hasn't posted anything yet.`}
             </p>
           ) : (
-            posts.map((post) => (
+            posts.map((post) => {
+              // Strip YouTube URL from content if video is embedded
+              let displayContent = post.content;
+              if (post.video_url && displayContent) {
+                displayContent = displayContent
+                  .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                  .trim();
+              }
+              // Extract video ID for thumbnail
+              const videoId = post.video_url ? (() => {
+                const patterns = [
+                  /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+                  /youtube\.com\/shorts\/([^&\s?]+)/,
+                ];
+                for (const pattern of patterns) {
+                  const match = post.video_url!.match(pattern);
+                  if (match) return match[1];
+                }
+                return null;
+              })() : null;
+
+              return (
               <Link 
                 key={post.id} 
                 href={`/?post=${post.id}`}
                 style={{ textDecoration: "none", color: "inherit", display: "block" }}
               >
                 <article className="card" style={{ cursor: "pointer", transition: "opacity 0.2s" }}>
-                  {post.content && (
+                  {displayContent && (
                     <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>
-                      {post.content}
+                      {displayContent}
                     </p>
                   )}
                   {post.image_url && (
@@ -960,6 +985,47 @@ export default function ProfilePage() {
                         marginBottom: 12,
                       }} 
                     />
+                  )}
+                  {videoId && (
+                    <div style={{ 
+                      position: "relative", 
+                      marginBottom: 12,
+                      borderRadius: 8,
+                      overflow: "hidden",
+                    }}>
+                      <img 
+                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                        alt="Video thumbnail"
+                        style={{ 
+                          width: "100%", 
+                          maxHeight: 300,
+                          objectFit: "cover",
+                          display: "block",
+                        }} 
+                      />
+                      <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: 60,
+                        height: 42,
+                        background: "rgba(255, 0, 0, 0.9)",
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                        <div style={{
+                          width: 0,
+                          height: 0,
+                          borderTop: "8px solid transparent",
+                          borderBottom: "8px solid transparent",
+                          borderLeft: "14px solid white",
+                          marginLeft: 3,
+                        }} />
+                      </div>
+                    </div>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                     <span className="text-muted" style={{ fontSize: 14 }}>
@@ -988,7 +1054,8 @@ export default function ProfilePage() {
                   </div>
                 </article>
               </Link>
-            ))
+              );
+            })
           )
         ) : (
           /* Comments Tab */
