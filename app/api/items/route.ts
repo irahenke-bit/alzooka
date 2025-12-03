@@ -20,16 +20,16 @@ export async function POST(request: Request) {
     }
 
     // Insert into Supabase
-    const { data, error } = await supabase
-      .from('items')
+  const { data, error } = await supabase
+    .from('items')
       .insert([{ title: title.trim() }])
-      .select();
+    .select();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-    return NextResponse.json({ data }, { status: 201 });
+  return NextResponse.json({ data }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -40,16 +40,16 @@ export async function GET() {
   try {
     const supabase = getSupabase();
     
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('items')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-    return NextResponse.json({ data }, { status: 200 });
+  return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });

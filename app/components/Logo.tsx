@@ -35,7 +35,7 @@ export function Logo({ size = 48 }: { size?: number }) {
 
 export function LogoWithText() {
   return (
-    <div style={{ textAlign: "center" }}>
+    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <Logo size={64} />
       <h1 style={{ fontSize: 32, margin: "16px 0 0 0", fontWeight: 400 }}>
         Alzooka
