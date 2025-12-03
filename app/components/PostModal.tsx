@@ -450,8 +450,18 @@ export function PostModal({
                 </Link>
               </div>
 
-              {/* Post Text */}
-              {post.content && <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>}
+              {/* Post Text - strip YouTube URL if video is embedded */}
+              {(() => {
+                let displayContent = post.content;
+                if (post.video_url && displayContent) {
+                  displayContent = displayContent
+                    .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                    .trim();
+                }
+                return displayContent ? (
+                  <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p>
+                ) : null;
+              })()}
 
               {/* Edited indicator */}
               {post.edited_at && (

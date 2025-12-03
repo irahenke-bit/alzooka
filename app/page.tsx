@@ -1253,9 +1253,19 @@ function PostCard({
             </div>
           ) : (
             <>
-              {post.content && (
-                <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>
-              )}
+              {(() => {
+                // If there's a video, strip the YouTube URL from displayed content
+                let displayContent = post.content;
+                if (post.video_url && displayContent) {
+                  // Remove YouTube URLs from content
+                  displayContent = displayContent
+                    .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                    .trim();
+                }
+                return displayContent ? (
+                  <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p>
+                ) : null;
+              })()}
               
               {/* Edited indicator */}
               {post.edited_at && (
