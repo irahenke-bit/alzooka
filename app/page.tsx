@@ -502,6 +502,23 @@ function FeedContent() {
             <span style={{ fontSize: 18 }}>👥</span>
             <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
           </Link>
+          {user && userUsername && (
+            <Link 
+              href={`/profile/${userUsername}?showFriends=true`}
+              style={{ 
+                color: "var(--alzooka-cream)",
+                textDecoration: "none",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                opacity: 0.85,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>🧑‍🤝‍🧑</span>
+              <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Friends</span>
+            </Link>
+          )}
           {user && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
               <NotificationBell userId={user.id} currentUsername={userUsername} />

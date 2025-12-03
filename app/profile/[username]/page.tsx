@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
@@ -50,9 +50,11 @@ type VoteStats = {
 
 export default function ProfilePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const username = decodeURIComponent(params.username as string);
   const router = useRouter();
   const supabase = createBrowserClient();
+  const showFriendsParam = searchParams.get("showFriends");
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
@@ -254,10 +256,35 @@ export default function ProfilePage() {
       setFriendsCount(friendsCountData || 0);
 
       setLoading(false);
+
+      // Auto-open friends modal if showFriends param is set
+      if (showFriendsParam === "true" && user) {
+        setLoadingFriends(true);
+        const { data: friendships } = await supabase
+          .from("friends")
+          .select("user_id, friend_id")
+          .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+          .eq("status", "accepted");
+        
+        if (friendships && friendships.length > 0) {
+          const friendIds = friendships.map(f => 
+            f.user_id === user.id ? f.friend_id : f.user_id
+          );
+          const { data: friendsData } = await supabase
+            .from("users")
+            .select("id, username, display_name, avatar_url")
+            .in("id", friendIds);
+          setFriendsList(friendsData || []);
+        } else {
+          setFriendsList([]);
+        }
+        setLoadingFriends(false);
+        setShowFriendsModal(true);
+      }
     }
 
     init();
-  }, [username]);
+  }, [username, showFriendsParam]);
 
   async function loadFriends() {
     if (!profile) return;
@@ -467,22 +494,65 @@ export default function ProfilePage() {
           </span>
         </Link>
         <UserSearch />
-          <Link 
-            href="/groups"
+        <Link 
+          href="/groups"
+          style={{ 
+            color: "var(--alzooka-cream)",
+            textDecoration: "none",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            opacity: 0.85,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>👥</span>
+          <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
+        </Link>
+        {currentUser && (
+          <button
+            onClick={async () => {
+              setLoadingFriends(true);
+              // Load current user's friends
+              const { data: friendships } = await supabase
+                .from("friends")
+                .select("user_id, friend_id")
+                .or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`)
+                .eq("status", "accepted");
+              
+              if (friendships && friendships.length > 0) {
+                const friendIds = friendships.map(f => 
+                  f.user_id === currentUser.id ? f.friend_id : f.user_id
+                );
+                const { data: friendsData } = await supabase
+                  .from("users")
+                  .select("id, username, display_name, avatar_url")
+                  .in("id", friendIds);
+                setFriendsList(friendsData || []);
+              } else {
+                setFriendsList([]);
+              }
+              setLoadingFriends(false);
+              setShowFriendsModal(true);
+            }}
             style={{ 
+              background: "transparent",
+              border: "none",
               color: "var(--alzooka-cream)",
-              textDecoration: "none",
+              cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               gap: 2,
               opacity: 0.85,
+              padding: 0,
             }}
           >
-            <span style={{ fontSize: 18 }}>👥</span>
-            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
-          </Link>
-          {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
+            <span style={{ fontSize: 18 }}>🧑‍🤝‍🧑</span>
+            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Friends</span>
+          </button>
+        )}
+        {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
           {currentUser && !isOwnProfile && currentUserUsername && (
             <Link 
               href={`/profile/${encodeURIComponent(currentUserUsername)}`}
