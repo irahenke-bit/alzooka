@@ -869,11 +869,10 @@ export default function ProfilePage() {
                       src={post.image_url} 
                       alt="" 
                       style={{ 
-                        width: "100%", 
+                        maxWidth: "100%", 
+                        maxHeight: 500,
                         borderRadius: 8, 
                         marginBottom: 12,
-                        maxHeight: 300,
-                        objectFit: "cover",
                       }} 
                     />
                   )}
