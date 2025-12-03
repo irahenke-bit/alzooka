@@ -468,6 +468,21 @@ export default function ProfilePage() {
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 24, marginLeft: 16 }}>
           <UserSearch />
+          <Link 
+            href="/groups"
+            style={{ 
+              color: "var(--alzooka-cream)",
+              textDecoration: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+              opacity: 0.85,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>👥</span>
+            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
+          </Link>
           {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
           {currentUser && !isOwnProfile && currentUserUsername && (
             <Link 
