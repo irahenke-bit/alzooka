@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { profileSchema, getFirstZodError } from "@/lib/validation";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -76,6 +77,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [posting, setPosting] = useState(false);
@@ -323,24 +325,41 @@ export default function ProfilePage() {
 
   async function handleSaveProfile() {
     if (!profile || !currentUser) return;
+    setEditError("");
+
+    // Validate form data with Zod
+    const result = profileSchema.safeParse({
+      displayName: editDisplayName,
+      bio: editBio,
+    });
+
+    if (!result.success) {
+      setEditError(getFirstZodError(result.error));
+      return;
+    }
+
+    const { displayName: validatedDisplayName, bio: validatedBio } = result.data;
 
     setSaving(true);
 
     const { error } = await supabase
       .from("users")
       .update({
-        display_name: editDisplayName.trim() || null,
-        bio: editBio.trim() || null,
+        display_name: validatedDisplayName || null,
+        bio: validatedBio || null,
       })
       .eq("id", profile.id);
 
     if (!error) {
       setProfile({
         ...profile,
-        display_name: editDisplayName.trim() || null,
-        bio: editBio.trim() || null,
+        display_name: validatedDisplayName || null,
+        bio: validatedBio || null,
       });
       setIsEditing(false);
+      setEditError("");
+    } else {
+      setEditError("Failed to save profile. Please try again.");
     }
 
     setSaving(false);
@@ -770,6 +789,11 @@ export default function ProfilePage() {
                     {editBio.length}/160
                   </span>
                 </div>
+                {editError && (
+                  <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+                    {editError}
+                  </p>
+                )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={handleSaveProfile} disabled={saving}>
                     {saving ? "Saving..." : "Save"}
@@ -779,6 +803,7 @@ export default function ProfilePage() {
                       setIsEditing(false);
                       setEditDisplayName(profile.display_name || "");
                       setEditBio(profile.bio || "");
+                      setEditError("");
                     }}
                     style={{
                       background: "transparent",

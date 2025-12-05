@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { loginSchema, getFirstZodError } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogoWithText } from "@/app/components/Logo";
@@ -19,8 +20,22 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    // Validate form data with Zod
+    const result = loginSchema.safeParse({
       email,
+      password,
+    });
+
+    if (!result.success) {
+      setError(getFirstZodError(result.error));
+      setLoading(false);
+      return;
+    }
+
+    const { email: validatedEmail } = result.data;
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: validatedEmail,
       password,
     });
 
