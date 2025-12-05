@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { profileSchema, getFirstZodError } from "@/lib/validation";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -326,35 +327,34 @@ export default function ProfilePage() {
     if (!profile || !currentUser) return;
     setEditError("");
 
-    // Validate display name length
-    const trimmedDisplayName = editDisplayName.trim();
-    if (trimmedDisplayName.length > 50) {
-      setEditError("Display name must be 50 characters or less");
+    // Validate form data with Zod
+    const result = profileSchema.safeParse({
+      displayName: editDisplayName,
+      bio: editBio,
+    });
+
+    if (!result.success) {
+      setEditError(getFirstZodError(result.error));
       return;
     }
 
-    // Validate bio length
-    const trimmedBio = editBio.trim();
-    if (trimmedBio.length > 160) {
-      setEditError("Bio must be 160 characters or less");
-      return;
-    }
+    const { displayName: validatedDisplayName, bio: validatedBio } = result.data;
 
     setSaving(true);
 
     const { error } = await supabase
       .from("users")
       .update({
-        display_name: trimmedDisplayName || null,
-        bio: trimmedBio || null,
+        display_name: validatedDisplayName || null,
+        bio: validatedBio || null,
       })
       .eq("id", profile.id);
 
     if (!error) {
       setProfile({
         ...profile,
-        display_name: trimmedDisplayName || null,
-        bio: trimmedBio || null,
+        display_name: validatedDisplayName || null,
+        bio: validatedBio || null,
       });
       setIsEditing(false);
       setEditError("");

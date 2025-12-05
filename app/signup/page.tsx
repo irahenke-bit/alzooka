@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
-import { isValidEmail } from "@/lib/validation";
+import { signupSchema, getFirstZodError } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogoWithText } from "@/app/components/Logo";
@@ -21,58 +21,26 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    // Validate username
-    const trimmedUsername = username.trim();
-    if (trimmedUsername.length < 3) {
-      setError("Username must be at least 3 characters");
+    // Validate form data with Zod
+    const result = signupSchema.safeParse({
+      username,
+      email,
+      password,
+    });
+
+    if (!result.success) {
+      setError(getFirstZodError(result.error));
       setLoading(false);
       return;
     }
 
-    if (trimmedUsername.length > 30) {
-      setError("Username must be 30 characters or less");
-      setLoading(false);
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9_ ]+$/.test(trimmedUsername)) {
-      setError("Username can only contain letters, numbers, spaces, and underscores");
-      setLoading(false);
-      return;
-    }
-
-    // Validate email format
-    const trimmedEmail = email.trim();
-    if (!isValidEmail(trimmedEmail)) {
-      setError("Please enter a valid email address");
-      setLoading(false);
-      return;
-    }
-
-    // Validate password strength
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      setLoading(false);
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      setError("Password must contain at least one uppercase letter");
-      setLoading(false);
-      return;
-    }
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      setError("Password must contain at least one special character");
-      setLoading(false);
-      return;
-    }
+    const { username: validatedUsername, email: validatedEmail } = result.data;
 
     // Check if username is taken
     const { data: existingUser } = await supabase
       .from("users")
       .select("username")
-      .eq("username", trimmedUsername.toLowerCase())
+      .eq("username", validatedUsername.toLowerCase())
       .single();
 
     if (existingUser) {
@@ -83,12 +51,12 @@ export default function SignupPage() {
 
     // Sign up with Supabase Auth (profile created automatically via trigger)
     const { error: signUpError } = await supabase.auth.signUp({
-      email: trimmedEmail,
+      email: validatedEmail,
       password,
       options: {
         data: {
-          username: trimmedUsername,
-          display_name: trimmedUsername,
+          username: validatedUsername,
+          display_name: validatedUsername,
         }
       }
     });
