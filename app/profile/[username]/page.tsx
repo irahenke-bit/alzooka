@@ -324,21 +324,35 @@ export default function ProfilePage() {
   async function handleSaveProfile() {
     if (!profile || !currentUser) return;
 
+    // Validate display name length
+    const trimmedDisplayName = editDisplayName.trim();
+    if (trimmedDisplayName.length > 50) {
+      alert("Display name must be 50 characters or less");
+      return;
+    }
+
+    // Validate bio length
+    const trimmedBio = editBio.trim();
+    if (trimmedBio.length > 160) {
+      alert("Bio must be 160 characters or less");
+      return;
+    }
+
     setSaving(true);
 
     const { error } = await supabase
       .from("users")
       .update({
-        display_name: editDisplayName.trim() || null,
-        bio: editBio.trim() || null,
+        display_name: trimmedDisplayName || null,
+        bio: trimmedBio || null,
       })
       .eq("id", profile.id);
 
     if (!error) {
       setProfile({
         ...profile,
-        display_name: editDisplayName.trim() || null,
-        bio: editBio.trim() || null,
+        display_name: trimmedDisplayName || null,
+        bio: trimmedBio || null,
       });
       setIsEditing(false);
     }

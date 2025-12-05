@@ -21,19 +21,40 @@ export default function SignupPage() {
     setError("");
 
     // Validate username
-    if (username.length < 3) {
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3) {
       setError("Username must be at least 3 characters");
       setLoading(false);
       return;
     }
 
-    if (!/^[a-zA-Z0-9_ ]+$/.test(username)) {
+    if (trimmedUsername.length > 30) {
+      setError("Username must be 30 characters or less");
+      setLoading(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_ ]+$/.test(trimmedUsername)) {
       setError("Username can only contain letters, numbers, spaces, and underscores");
       setLoading(false);
       return;
     }
 
+    // Validate email format
+    const trimmedEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
     // Validate password strength
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
     if (!/[A-Z]/.test(password)) {
       setError("Password must contain at least one uppercase letter");
       setLoading(false);
@@ -50,7 +71,7 @@ export default function SignupPage() {
     const { data: existingUser } = await supabase
       .from("users")
       .select("username")
-      .eq("username", username.toLowerCase())
+      .eq("username", trimmedUsername.toLowerCase())
       .single();
 
     if (existingUser) {
@@ -60,9 +81,8 @@ export default function SignupPage() {
     }
 
     // Sign up with Supabase Auth (profile created automatically via trigger)
-    const trimmedUsername = username.trim();
     const { error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
+      email: trimmedEmail,
       password,
       options: {
         data: {
@@ -105,6 +125,7 @@ export default function SignupPage() {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            maxLength={30}
             required
           />
         </div>
