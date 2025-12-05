@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { isValidEmail } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogoWithText } from "@/app/components/Logo";
@@ -42,7 +43,7 @@ export default function SignupPage() {
 
     // Validate email format
     const trimmedEmail = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (!isValidEmail(trimmedEmail)) {
       setError("Please enter a valid email address");
       setLoading(false);
       return;

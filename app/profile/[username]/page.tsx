@@ -76,6 +76,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [posting, setPosting] = useState(false);
@@ -323,18 +324,19 @@ export default function ProfilePage() {
 
   async function handleSaveProfile() {
     if (!profile || !currentUser) return;
+    setEditError("");
 
     // Validate display name length
     const trimmedDisplayName = editDisplayName.trim();
     if (trimmedDisplayName.length > 50) {
-      alert("Display name must be 50 characters or less");
+      setEditError("Display name must be 50 characters or less");
       return;
     }
 
     // Validate bio length
     const trimmedBio = editBio.trim();
     if (trimmedBio.length > 160) {
-      alert("Bio must be 160 characters or less");
+      setEditError("Bio must be 160 characters or less");
       return;
     }
 
@@ -355,6 +357,9 @@ export default function ProfilePage() {
         bio: trimmedBio || null,
       });
       setIsEditing(false);
+      setEditError("");
+    } else {
+      setEditError("Failed to save profile. Please try again.");
     }
 
     setSaving(false);
@@ -784,6 +789,11 @@ export default function ProfilePage() {
                     {editBio.length}/160
                   </span>
                 </div>
+                {editError && (
+                  <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+                    {editError}
+                  </p>
+                )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={handleSaveProfile} disabled={saving}>
                     {saving ? "Saving..." : "Save"}
@@ -793,6 +803,7 @@ export default function ProfilePage() {
                       setIsEditing(false);
                       setEditDisplayName(profile.display_name || "");
                       setEditBio(profile.bio || "");
+                      setEditError("");
                     }}
                     style={{
                       background: "transparent",
