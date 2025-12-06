@@ -74,6 +74,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState<string>("");
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
@@ -942,14 +944,14 @@ export default function ProfilePage() {
             </p>
           ) : (
             posts.map((post) => {
-              // Strip YouTube URL from content if video is embedded
+              // Prepare display content and video id like feed
               let displayContent = post.content;
               if (post.video_url && displayContent) {
                 displayContent = displayContent
                   .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
                   .trim();
               }
-              // Extract video ID for thumbnail
+
               const videoId = post.video_url ? (() => {
                 const patterns = [
                   /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
@@ -963,97 +965,111 @@ export default function ProfilePage() {
               })() : null;
 
               return (
-              <Link 
-                key={post.id} 
-                href={`/?post=${post.id}`}
-                style={{ textDecoration: "none", color: "inherit", display: "block" }}
-              >
-                <article className="card" style={{ cursor: "pointer", transition: "opacity 0.2s" }}>
-                  {displayContent && (
-                    <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>
-                      {displayContent}
-                    </p>
-                  )}
-                  {post.image_url && (
-                    <img 
-                      src={post.image_url} 
-                      alt="" 
-                      style={{ 
-                        maxWidth: "100%", 
-                        maxHeight: 500,
-                        borderRadius: 8, 
-                        marginBottom: 12,
-                      }} 
-                    />
-                  )}
-                  {videoId && (
-                    <div style={{ 
-                      position: "relative", 
-                      marginBottom: 12,
-                      borderRadius: 8,
-                      overflow: "hidden",
-                    }}>
-                      <img 
-                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-                        alt="Video thumbnail"
-                        style={{ 
-                          width: "100%", 
-                          maxHeight: 300,
-                          objectFit: "cover",
-                          display: "block",
-                        }} 
-                      />
-                      <div style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: 60,
-                        height: 42,
-                        background: "rgba(255, 0, 0, 0.9)",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}>
-                        <div style={{
-                          width: 0,
-                          height: 0,
-                          borderTop: "8px solid transparent",
-                          borderBottom: "8px solid transparent",
-                          borderLeft: "14px solid white",
-                          marginLeft: 3,
-                        }} />
+                <article key={post.id} className="card" style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {/* Left spacer for vote column (visual parity with feed) */}
+                    <div style={{ width: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div style={{ fontSize: 14, opacity: 0.9 }}>
+                        {post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}
+                      </div>
+                      <div style={{ fontWeight: 600, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit" }}>
+                        {post.voteScore}
                       </div>
                     </div>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <span className="text-muted" style={{ fontSize: 14 }}>
-                      {formatTime(post.created_at)}
-                    </span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ 
-                        color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit",
-                        opacity: post.voteScore === 0 ? 0.5 : 1,
-                        fontSize: 14,
-                      }}>
-                        {post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}
-                      </span>
-                      <span style={{ 
-                        fontSize: 14,
-                        color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit",
-                        opacity: post.voteScore === 0 ? 0.5 : 1,
-                      }}>
-                        {post.voteScore}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, opacity: 0.6 }}>
-                      <span style={{ fontSize: 14 }}>💬</span>
-                      <span style={{ fontSize: 14 }}>{post.commentCount}</span>
+
+                    <div style={{ flex: 1 }}>
+                      {/* Header: avatar, name, time, edit/delete */}
+                      <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Link href={`/profile/${encodeURIComponent(profile.username)}`} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+                          {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--alzooka-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--alzooka-teal-dark)", fontWeight: 700 }}>{(profile.display_name || profile.username).charAt(0).toUpperCase()}</div>
+                          )}
+                          <div>
+                            <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>{profile.display_name || profile.username}</span>
+                            <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>{formatTime(post.created_at)}</span>
+                          </div>
+                        </Link>
+
+                        {currentUser && post && post.id && currentUser.id === profile.id && (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={() => {
+                                setEditingPostId(post.id);
+                                setEditingContent(post.content || "");
+                              }}
+                              style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                              title="Edit post"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!confirm("Delete this post?")) return;
+                                await supabase.from("posts").delete().eq("id", post.id);
+                                setPosts(prev => prev.filter(p => p.id !== post.id));
+                              }}
+                              style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 12, cursor: "pointer", opacity: 0.9 }}
+                              title="Delete post"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Edit mode */}
+                      {editingPostId === post.id ? (
+                        <div style={{ marginBottom: 12 }}>
+                          <textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} rows={3} style={{ marginBottom: 8, width: "100%", resize: "vertical" }} />
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={async () => {
+                                if (!editingContent.trim()) return;
+                                const updatedAt = new Date().toISOString();
+                                await supabase.from("posts").update({ content: editingContent.trim(), edited_at: updatedAt }).eq("id", post.id);
+                                setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingContent.trim(), edited_at: updatedAt } : p));
+                                setEditingPostId(null);
+                                setEditingContent("");
+                              }}
+                            >Save</button>
+                            <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid rgba(240, 235, 224, 0.3)", color: "var(--alzooka-cream)" }}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {displayContent && <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>{displayContent}</p>}
+
+                          {post.image_url && (
+                            <img src={post.image_url} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12 }} />
+                          )}
+
+                          {videoId && (
+                            <div style={{ position: "relative", marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
+                              <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt="Video thumbnail" style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
+                              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 60, height: 42, background: "rgba(255, 0, 0, 0.9)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <div style={{ width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderLeft: "14px solid white", marginLeft: 3 }} />
+                              </div>
+                            </div>
+                          )}
+
+                          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            <span className="text-muted" style={{ fontSize: 14 }}>{formatTime(post.created_at)}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1, fontSize: 14 }}>{post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}</span>
+                              <span style={{ fontSize: 14, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1 }}>{post.voteScore}</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, opacity: 0.6 }}>
+                              <span style={{ fontSize: 14 }}>💬</span>
+                              <span style={{ fontSize: 14 }}>{post.commentCount}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </article>
-              </Link>
               );
             })
           )
