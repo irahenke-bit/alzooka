@@ -141,12 +141,12 @@ function FeedContent() {
       await loadVoteTotals(loadedPosts);
       setLoading(false);
 
-      // Fallback: poll periodically in case realtime misses an event
+      // Fallback: poll periodically in case realtime misses an event (every 5s)
       pollInterval = setInterval(async () => {
         const refreshedPosts = await loadPosts();
         await loadUserVotes(user.id);
         await loadVoteTotals(refreshedPosts);
-      }, 15000);
+      }, 5000);
 
       // Subscribe to new posts in real-time
       postsSubscription = supabase
