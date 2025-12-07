@@ -135,9 +135,9 @@ function FeedContent() {
         setUserAvatarUrl(userData.avatar_url);
       }
       
-      await loadPosts();
+      const loadedPosts = await loadPosts();
       await loadUserVotes(user.id);
-      await loadVoteTotals();
+      await loadVoteTotals(loadedPosts);
       setLoading(false);
 
       // Subscribe to new posts in real-time
@@ -210,16 +210,19 @@ function FeedContent() {
               } as unknown as Post;
 
               // Add to top of posts list
+              let updatedPosts: Post[] = [];
               setPosts(currentPosts => {
                 // Check if post already exists
                 if (currentPosts.some(p => p.id === processedPost.id)) {
+                  updatedPosts = currentPosts;
                   return currentPosts;
                 }
-                return [processedPost, ...currentPosts];
+                updatedPosts = [processedPost, ...currentPosts];
+                return updatedPosts;
               });
 
-              // Load vote totals for the new post
-              await loadVoteTotals();
+              // Load vote totals for the new post using the fresh list
+              await loadVoteTotals(updatedPosts);
             }
           }
         )
@@ -299,7 +302,7 @@ function FeedContent() {
     };
   }, []);
 
-  async function loadPosts() {
+  async function loadPosts(): Promise<Post[]> {
     const { data } = await supabase
       .from("posts")
       .select(`
@@ -329,35 +332,35 @@ function FeedContent() {
           )
         )
       `)
-    .is("group_id", null)  // Only show feed posts, not group posts
-    .order("created_at", { ascending: false });
+      .is("group_id", null)  // Only show feed posts, not group posts
+      .order("created_at", { ascending: false });
 
-    if (data) {
-      const postsWithNestedComments = data.map((post: any) => {
-        const allComments = (post.comments || []) as Comment[];
-        
-        // Separate parent comments (no parent_comment_id) and replies
-        const parentComments = allComments
-          .filter(c => !c.parent_comment_id)
-          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        
-        const replies = allComments.filter(c => c.parent_comment_id);
-        
-        // Attach replies to their parent comments
-        const commentsWithReplies = parentComments.map(parent => ({
-          ...parent,
-          replies: replies
-            .filter(r => r.parent_comment_id === parent.id)
-            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        }));
-        
-        return {
-          ...post,
-          comments: commentsWithReplies
-        };
-      });
-      setPosts(postsWithNestedComments as unknown as Post[]);
-    }
+    const postsWithNestedComments: Post[] = (data || []).map((post: any) => {
+      const allComments = (post.comments || []) as Comment[];
+      
+      // Separate parent comments (no parent_comment_id) and replies
+      const parentComments = allComments
+        .filter(c => !c.parent_comment_id)
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      
+      const replies = allComments.filter(c => c.parent_comment_id);
+      
+      // Attach replies to their parent comments
+      const commentsWithReplies = parentComments.map(parent => ({
+        ...parent,
+        replies: replies
+          .filter(r => r.parent_comment_id === parent.id)
+          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      }));
+      
+      return {
+        ...post,
+        comments: commentsWithReplies
+      } as Post;
+    });
+
+    setPosts(postsWithNestedComments);
+    return postsWithNestedComments;
   }
 
   async function loadUserVotes(userId: string) {
@@ -376,19 +379,48 @@ function FeedContent() {
     }
   }
 
-  async function loadVoteTotals() {
-    const { data } = await supabase
-      .from("votes")
-      .select("target_type, target_id, value");
+  async function loadVoteTotals(targetPosts?: Post[]) {
+    const sourcePosts = targetPosts ?? posts;
 
-    if (data) {
-      const totals: Record<string, number> = {};
-      data.forEach((vote) => {
-        const key = `${vote.target_type}-${vote.target_id}`;
-        totals[key] = (totals[key] || 0) + vote.value;
+    const postIds = sourcePosts.map(p => p.id);
+    const commentIds: string[] = [];
+    sourcePosts.forEach(p => {
+      (p.comments || []).forEach(c => {
+        commentIds.push(c.id);
+        (c.replies || []).forEach(r => commentIds.push(r.id));
       });
-      setVoteTotals(totals);
-    }
+    });
+
+    // Guard against empty lists (Supabase .in needs at least one item)
+    const safePostIds = postIds.length ? postIds : ["00000000-0000-0000-0000-000000000000"];
+    const safeCommentIds = commentIds.length ? commentIds : ["00000000-0000-0000-0000-000000000000"];
+
+    const [{ data: postVotes }, { data: commentVotes }] = await Promise.all([
+      supabase
+        .from("votes")
+        .select("target_id, value")
+        .eq("target_type", "post")
+        .in("target_id", safePostIds),
+      supabase
+        .from("votes")
+        .select("target_id, value")
+        .eq("target_type", "comment")
+        .in("target_id", safeCommentIds),
+    ]);
+
+    const totals: Record<string, number> = {};
+
+    (postVotes || []).forEach((vote) => {
+      const key = `post-${vote.target_id}`;
+      totals[key] = (totals[key] || 0) + vote.value;
+    });
+
+    (commentVotes || []).forEach((vote) => {
+      const key = `comment-${vote.target_id}`;
+      totals[key] = (totals[key] || 0) + vote.value;
+    });
+
+    setVoteTotals(totals);
   }
 
   async function handleVote(targetType: "post" | "comment", targetId: string, value: number) {
@@ -598,9 +630,9 @@ function FeedContent() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      await loadPosts();
+      const refreshedPosts = await loadPosts();
       await loadUserVotes(user.id);
-      await loadVoteTotals();
+      await loadVoteTotals(refreshedPosts);
     }
 
     setPosting(false);
@@ -898,9 +930,9 @@ function FeedContent() {
               isHighlighted={post.id === highlightPostId}
               onOpenModal={() => setModalPost(post)}
               onCommentAdded={async () => {
-                await loadPosts();
+                const refreshedPosts = await loadPosts();
                 await loadUserVotes(user!.id);
-                await loadVoteTotals();
+                await loadVoteTotals(refreshedPosts);
               }}
             />
           ))
@@ -973,9 +1005,9 @@ function FeedContent() {
             }
 
             // Also update the main posts list and votes
-            await loadPosts();
+            const refreshedPosts = await loadPosts();
             await loadUserVotes(user.id);
-            await loadVoteTotals();
+            await loadVoteTotals(refreshedPosts);
           }}
         />
       )}

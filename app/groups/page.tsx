@@ -112,20 +112,27 @@ export default function GroupsPage() {
     }
     const allGroups = Array.from(allGroupsMap.values());
 
-    // Get member counts for each group
-    const groupsWithCounts: Group[] = [];
-    for (const group of allGroups) {
-      const { count } = await supabase
-        .from("group_members")
-        .select("*", { count: "exact", head: true })
-        .eq("group_id", group.id);
+    // Get member counts for all groups in one query
+    const groupIds = allGroups.map(g => g.id);
+    let memberCounts: Record<string, number> = {};
 
-      groupsWithCounts.push({
-        ...group,
-        member_count: count || 0,
-        is_member: memberGroupIds.has(group.id),
-      });
+    if (groupIds.length > 0) {
+      const { data: membershipRows } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .in("group_id", groupIds);
+
+      memberCounts = (membershipRows || []).reduce((acc, row) => {
+        acc[row.group_id] = (acc[row.group_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
     }
+
+    const groupsWithCounts: Group[] = allGroups.map(group => ({
+      ...group,
+      member_count: memberCounts[group.id] || 0,
+      is_member: memberGroupIds.has(group.id),
+    }));
 
     // Separate into my groups and discover (only public groups in discover)
     setMyGroups(groupsWithCounts.filter(g => g.is_member));

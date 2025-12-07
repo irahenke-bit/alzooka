@@ -23,12 +23,19 @@ type UserProfile = {
   created_at: string;
 };
 
+type EditHistoryEntry = {
+  content: string;
+  edited_at: string;
+};
+
 type Post = {
   id: string;
   content: string;
   image_url: string | null;
   video_url: string | null;
   created_at: string;
+  edited_at: string | null;
+  edit_history: EditHistoryEntry[] | null;
   commentCount: number;
   voteScore: number;
 };
@@ -72,6 +79,7 @@ export default function ProfilePage() {
   const [showPictureModal, setShowPictureModal] = useState(false);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
+  const [showEditHistoryId, setShowEditHistoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
@@ -106,19 +114,15 @@ export default function ProfilePage() {
         }
       }
 
-      // Get profile for the username in the URL
-      // Query all users and find match (handles spaces and case issues)
-      const { data: allUsers } = await supabase
+      // Get profile for the username in the URL (case-insensitive)
+      const trimmedUsername = username.trim().toLowerCase();
+      const { data: profileData } = await supabase
         .from("users")
-        .select("id, username, display_name, bio, avatar_url, banner_url, created_at");
-      
-      const profileData = allUsers?.find(
-        u => u.username.trim().toLowerCase() === username.trim().toLowerCase()
-      );
+        .select("id, username, display_name, bio, avatar_url, banner_url, created_at")
+        .ilike("username", trimmedUsername)
+        .single();
 
       if (!profileData) {
-        console.log("Profile lookup failed. Looking for:", username);
-        console.log("Available usernames:", allUsers?.map(u => u.username));
         setLoading(false);
         return;
       }
@@ -136,6 +140,8 @@ export default function ProfilePage() {
           image_url,
           video_url,
           created_at,
+          edited_at,
+          edit_history,
           comments (id)
         `)
         .eq("user_id", profileData.id)
@@ -164,6 +170,8 @@ export default function ProfilePage() {
           image_url: post.image_url || null,
           video_url: post.video_url || null,
           created_at: post.created_at,
+          edited_at: post.edited_at || null,
+          edit_history: (post.edit_history as EditHistoryEntry[] | null) || null,
           commentCount: (post.comments as unknown[])?.length || 0,
           voteScore: votesByPost[post.id] || 0,
         }));
@@ -1025,14 +1033,42 @@ export default function ProfilePage() {
                           <textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} rows={3} style={{ marginBottom: 8, width: "100%", resize: "vertical" }} />
                           <div style={{ display: "flex", gap: 8 }}>
                             <button
-                              onClick={async () => {
-                                if (!editingContent.trim()) return;
-                                const updatedAt = new Date().toISOString();
-                                await supabase.from("posts").update({ content: editingContent.trim(), edited_at: updatedAt }).eq("id", post.id);
-                                setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingContent.trim(), edited_at: updatedAt } : p));
-                                setEditingPostId(null);
-                                setEditingContent("");
-                              }}
+                      onClick={async () => {
+                        if (!editingContent.trim()) return;
+                        const updatedAt = new Date().toISOString();
+
+                        // Preserve edit history like the feed page
+                        const newHistoryEntry: EditHistoryEntry = {
+                          content: post.content,
+                          edited_at: updatedAt,
+                        };
+                        const updatedHistory = [
+                          ...(post.edit_history || []),
+                          newHistoryEntry,
+                        ];
+
+                        await supabase
+                          .from("posts")
+                          .update({ 
+                            content: editingContent.trim(), 
+                            edited_at: updatedAt,
+                            edit_history: updatedHistory,
+                          })
+                          .eq("id", post.id);
+
+                        setPosts(prev => prev.map(p => 
+                          p.id === post.id 
+                            ? { 
+                                ...p, 
+                                content: editingContent.trim(), 
+                                edited_at: updatedAt,
+                                edit_history: updatedHistory,
+                              } 
+                            : p
+                        ));
+                        setEditingPostId(null);
+                        setEditingContent("");
+                      }}
                             >Save</button>
                             <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid rgba(240, 235, 224, 0.3)", color: "var(--alzooka-cream)" }}>Cancel</button>
                           </div>
@@ -1044,6 +1080,61 @@ export default function ProfilePage() {
                           {post.image_url && (
                             <img src={post.image_url} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12 }} />
                           )}
+
+                      {/* Edited indicator and history */}
+                      {post.edited_at && (
+                        <div style={{ marginBottom: 12, fontSize: 12, opacity: 0.7 }}>
+                          <span>Edited {formatTime(post.edited_at)}</span>
+                          {post.edit_history && post.edit_history.length > 0 && (
+                            <button
+                              onClick={() => setShowEditHistoryId(showEditHistoryId === post.id ? null : post.id)}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "var(--alzooka-gold)",
+                                fontSize: 12,
+                                cursor: "pointer",
+                                marginLeft: 8,
+                                textDecoration: "underline",
+                                padding: 0,
+                              }}
+                            >
+                              {showEditHistoryId === post.id ? "Hide edits" : "See edits"}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {showEditHistoryId === post.id && post.edit_history && post.edit_history.length > 0 && (
+                        <div
+                          style={{
+                            marginBottom: 12,
+                            padding: 10,
+                            background: "rgba(0, 0, 0, 0.15)",
+                            borderRadius: 8,
+                            fontSize: 13,
+                          }}
+                        >
+                          <p style={{ margin: "0 0 6px 0", fontWeight: 600, fontSize: 12, opacity: 0.75 }}>
+                            Edit History
+                          </p>
+                          {post.edit_history.map((entry, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                marginBottom: index < post.edit_history.length - 1 ? 8 : 0,
+                                paddingBottom: index < post.edit_history.length - 1 ? 8 : 0,
+                                borderBottom: index < post.edit_history.length - 1 ? "1px solid rgba(240, 235, 224, 0.08)" : "none",
+                              }}
+                            >
+                              <span style={{ fontSize: 11, opacity: 0.6 }}>{formatTime(entry.edited_at)}</span>
+                              <p style={{ margin: "4px 0 0 0", opacity: 0.8, fontStyle: "italic" }}>
+                                {entry.content || "(no text)"}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                           {videoId && (
                             <div style={{ position: "relative", marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
