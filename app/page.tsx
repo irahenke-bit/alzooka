@@ -114,6 +114,7 @@ function FeedContent() {
   useEffect(() => {
     let postsSubscription: ReturnType<typeof supabase.channel> | null = null;
     let pollInterval: NodeJS.Timeout | null = null;
+    let visibilityHandler: (() => void) | null = null;
 
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -141,12 +142,22 @@ function FeedContent() {
       await loadVoteTotals(loadedPosts);
       setLoading(false);
 
-      // Fallback: poll periodically in case realtime misses an event (every 5s)
+      // Fallback: poll periodically in case realtime misses an event (every 2s)
       pollInterval = setInterval(async () => {
         const refreshedPosts = await loadPosts();
         await loadUserVotes(user.id);
         await loadVoteTotals(refreshedPosts);
-      }, 5000);
+      }, 2000);
+
+      // Also refresh when the tab becomes visible again
+      visibilityHandler = async () => {
+        if (document.visibilityState === "visible") {
+          const refreshedPosts = await loadPosts();
+          await loadUserVotes(user.id);
+          await loadVoteTotals(refreshedPosts);
+        }
+      };
+      document.addEventListener("visibilitychange", visibilityHandler);
 
       // Subscribe to new posts in real-time
       postsSubscription = supabase
@@ -309,6 +320,9 @@ function FeedContent() {
       }
       if (pollInterval) {
         clearInterval(pollInterval);
+      }
+      if (visibilityHandler) {
+        document.removeEventListener("visibilitychange", visibilityHandler);
       }
     };
   }, []);
