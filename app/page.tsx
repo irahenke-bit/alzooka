@@ -142,12 +142,12 @@ function FeedContent() {
       await loadVoteTotals(loadedPosts);
       setLoading(false);
 
-      // Fallback: poll periodically in case realtime misses an event (every 2s)
+      // Fallback: poll periodically in case realtime misses an event (every 15s)
       pollInterval = setInterval(async () => {
         const refreshedPosts = await loadPosts();
         await loadUserVotes(user.id);
         await loadVoteTotals(refreshedPosts);
-      }, 2000);
+      }, 15000);
 
       // Also refresh when the tab becomes visible again
       visibilityHandler = async () => {
