@@ -113,6 +113,7 @@ function FeedContent() {
 
   useEffect(() => {
     let postsSubscription: ReturnType<typeof supabase.channel> | null = null;
+    let pollInterval: NodeJS.Timeout | null = null;
 
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -139,6 +140,13 @@ function FeedContent() {
       await loadUserVotes(user.id);
       await loadVoteTotals(loadedPosts);
       setLoading(false);
+
+      // Fallback: poll periodically in case realtime misses an event
+      pollInterval = setInterval(async () => {
+        const refreshedPosts = await loadPosts();
+        await loadUserVotes(user.id);
+        await loadVoteTotals(refreshedPosts);
+      }, 15000);
 
       // Subscribe to new posts in real-time
       postsSubscription = supabase
@@ -298,6 +306,9 @@ function FeedContent() {
     return () => {
       if (postsSubscription) {
         supabase.removeChannel(postsSubscription);
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval);
       }
     };
   }, []);
