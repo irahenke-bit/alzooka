@@ -207,6 +207,25 @@ export async function notifyFriendRequestAccepted(
   });
 }
 
+// Notify when someone posts on your wall
+export async function notifyWallPost(
+  supabase: SupabaseClient,
+  wallOwnerId: string,
+  posterUsername: string,
+  postId: string,
+  contentPreview: string
+) {
+  await createNotification({
+    supabase,
+    userId: wallOwnerId,
+    type: "wall_post",
+    title: `@${posterUsername} posted on your wall`,
+    content: contentPreview.slice(0, 100),
+    link: `/?post=${postId}`,
+    relatedPostId: postId,
+  });
+}
+
 // Parse @mentions from text
 export function parseMentions(text: string): string[] {
   const mentionRegex = /@(\w+)/g;

@@ -56,6 +56,12 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  wall_user_id: string | null;
+  wall_user?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -91,6 +97,8 @@ function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [allowWallPosts, setAllowWallPosts] = useState<boolean>(true);
+  const [wallFriendsOnly, setWallFriendsOnly] = useState<boolean>(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
@@ -129,12 +137,14 @@ function FeedContent() {
       // Fetch current user's username and avatar from the users table
       const { data: userData } = await supabase
         .from("users")
-        .select("username, avatar_url")
+        .select("username, avatar_url, allow_wall_posts, wall_friends_only")
         .eq("id", user.id)
         .single();
       if (userData) {
         setUserUsername(userData.username);
         setUserAvatarUrl(userData.avatar_url);
+        setAllowWallPosts(userData.allow_wall_posts ?? true);
+        setWallFriendsOnly(userData.wall_friends_only ?? true);
       }
       
       const loadedPosts = await loadPosts();
@@ -193,6 +203,11 @@ function FeedContent() {
                   display_name,
                   avatar_url
                 ),
+        wall_user:wall_user_id (
+          username,
+          display_name,
+          avatar_url
+        ),
                 comments (
                   id,
                   content,
@@ -266,6 +281,11 @@ function FeedContent() {
               display_name,
               avatar_url
             ),
+        wall_user:wall_user_id (
+          username,
+          display_name,
+          avatar_url
+        ),
             comments (
               id,
               content,
@@ -335,11 +355,17 @@ function FeedContent() {
         content,
         image_url,
         video_url,
+        wall_user_id,
         created_at,
         edited_at,
         edit_history,
         user_id,
         users (
+          username,
+          display_name,
+          avatar_url
+        ),
+        wall_user:wall_user_id (
           username,
           display_name,
           avatar_url
@@ -635,6 +661,7 @@ function FeedContent() {
         image_url: imageUrl,
         video_url: youtubePreview?.url || null,
         user_id: user.id,
+        wall_user_id: highlightPostId ? null : null, // feed posts only here
       })
       .select()
       .single();
@@ -1249,7 +1276,7 @@ function PostCard({
                 </span>
               </div>
             </Link>
-            {post.user_id === user.id && (
+            {(post.user_id === user.id || post.wall_user_id === user.id) && (
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   onClick={() => setIsEditing(true)}
@@ -1284,6 +1311,11 @@ function PostCard({
               </div>
             )}
           </div>
+          {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
+            <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
+              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
+            </div>
+          )}
 
           {/* Post Content - Edit Mode or View Mode */}
           {isEditing ? (

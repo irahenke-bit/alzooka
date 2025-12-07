@@ -12,6 +12,7 @@ import { UserSearch } from "@/app/components/UserSearch";
 import { FriendButton } from "@/app/components/FriendButton";
 import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
+import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
   id: string;
@@ -20,6 +21,8 @@ type UserProfile = {
   bio: string | null;
   avatar_url: string | null;
   banner_url: string | null;
+  allow_wall_posts: boolean;
+  wall_friends_only: boolean;
   created_at: string;
 };
 
@@ -33,6 +36,18 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  user_id: string;
+  users?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
+  wall_user_id: string | null;
+  wall_user?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[] | null;
@@ -67,6 +82,7 @@ export default function ProfilePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isFriend, setIsFriend] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [voteStats, setVoteStats] = useState<VoteStats>({
@@ -92,6 +108,10 @@ export default function ProfilePage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
+  const [allowWallPosts, setAllowWallPosts] = useState(true);
+  const [wallFriendsOnly, setWallFriendsOnly] = useState(true);
+  const [wallPostContent, setWallPostContent] = useState("");
+  const [postingWall, setPostingWall] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -118,7 +138,7 @@ export default function ProfilePage() {
       const trimmedUsername = username.trim().toLowerCase();
       const { data: profileData } = await supabase
         .from("users")
-        .select("id, username, display_name, bio, avatar_url, banner_url, created_at")
+        .select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only")
         .ilike("username", trimmedUsername)
         .single();
 
@@ -127,24 +147,40 @@ export default function ProfilePage() {
         return;
       }
 
-      setProfile(profileData);
+      setProfile(profileData as UserProfile);
       setEditDisplayName(profileData.display_name || "");
       setEditBio(profileData.bio || "");
+      setAllowWallPosts(profileData.allow_wall_posts ?? true);
+      setWallFriendsOnly(profileData.wall_friends_only ?? true);
 
       // Get posts by this user with comment counts (only feed posts, not group posts)
       const { data: postsData } = await supabase
         .from("posts")
         .select(`
           id, 
+          user_id,
           content,
           image_url,
           video_url,
+          wall_user_id,
           created_at,
           edited_at,
           edit_history,
-          comments (id)
+          comments (id),
+          users:users (
+            id,
+            username,
+            display_name,
+            avatar_url
+          ),
+          wall_user:wall_user_id (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
         `)
-        .eq("user_id", profileData.id)
+        .or(`wall_user_id.eq.${profileData.id},and(user_id.eq.${profileData.id},group_id.is.null,wall_user_id.is.null)`)
         .is("group_id", null)
         .order("created_at", { ascending: false });
 
@@ -166,9 +202,13 @@ export default function ProfilePage() {
         // Transform posts with counts
         const postsWithCounts = postsData.map(post => ({
           id: post.id,
+          user_id: post.user_id,
           content: post.content,
           image_url: post.image_url || null,
           video_url: post.video_url || null,
+          wall_user_id: post.wall_user_id || null,
+          wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
+          users: Array.isArray(post.users) ? post.users[0] : post.users || null,
           created_at: post.created_at,
           edited_at: post.edited_at || null,
           edit_history: (post.edit_history as EditHistoryEntry[] | null) || null,
@@ -269,6 +309,17 @@ export default function ProfilePage() {
       
       setFriendsCount(friendsCountData || 0);
 
+      // Determine friendship status (between viewer and profile)
+      if (user) {
+        const { data: friendRow } = await supabase
+          .from("friendships")
+          .select("id")
+          .eq("status", "accepted")
+          .or(`and(requester_id.eq.${user.id},addressee_id.eq.${profileData.id}),and(requester_id.eq.${profileData.id},addressee_id.eq.${user.id}))`)
+          .maybeSingle();
+        setIsFriend(!!friendRow);
+      }
+
       setLoading(false);
 
       // Auto-open friends modal if showFriends param is set
@@ -354,6 +405,94 @@ export default function ProfilePage() {
     }
 
     setSaving(false);
+  }
+
+  async function handleToggleWallPosts(nextValue: boolean) {
+    if (!profile || !currentUser) return;
+    setAllowWallPosts(nextValue);
+    await supabase.from("users").update({ allow_wall_posts: nextValue }).eq("id", profile.id);
+    setProfile({ ...profile, allow_wall_posts: nextValue });
+  }
+
+  async function handleToggleWallFriendsOnly(nextValue: boolean) {
+    if (!profile || !currentUser) return;
+    setWallFriendsOnly(nextValue);
+    await supabase.from("users").update({ wall_friends_only: nextValue }).eq("id", profile.id);
+    setProfile({ ...profile, wall_friends_only: nextValue });
+  }
+
+  async function handleWallPost() {
+    if (!wallPostContent.trim() || !currentUser || !profile) return;
+
+    // Permission guard
+    if (!profile.allow_wall_posts && !isOwnProfile) {
+      alert("This user has wall posts disabled.");
+      return;
+    }
+    if (profile.wall_friends_only && !isFriend && !isOwnProfile) {
+      alert("Only friends can post on this wall.");
+      return;
+    }
+
+    setPostingWall(true);
+
+    const { data: newPost, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: currentUser.id,
+        wall_user_id: profile.id,
+        content: wallPostContent.trim(),
+      })
+      .select(`
+        id,
+        content,
+        image_url,
+        video_url,
+        wall_user_id,
+        created_at,
+        users:users (
+          username,
+          display_name,
+          avatar_url
+        ),
+        wall_user:wall_user_id (
+          username,
+          display_name,
+          avatar_url
+        )
+      `)
+      .single();
+
+    if (!error && newPost) {
+      if (profile.id !== currentUser.id) {
+        notifyWallPost(supabase, profile.id, currentUserUsername, newPost.id, wallPostContent.trim());
+      }
+      setPosts(prev => [
+        {
+          id: newPost.id,
+          user_id: currentUser.id,
+          content: newPost.content,
+          image_url: newPost.image_url,
+          video_url: newPost.video_url,
+          wall_user_id: newPost.wall_user_id,
+          wall_user: Array.isArray(newPost.wall_user) ? newPost.wall_user[0] : newPost.wall_user || null,
+          created_at: newPost.created_at,
+          edited_at: null,
+          edit_history: null,
+          commentCount: 0,
+          voteScore: 0,
+          users: Array.isArray(newPost.users) ? newPost.users[0] : newPost.users || {
+            username: currentUserUsername,
+            display_name: currentUserUsername,
+            avatar_url: null,
+          },
+        },
+        ...prev,
+      ]);
+      setWallPostContent("");
+    }
+
+    setPostingWall(false);
   }
 
   function handleAvatarUpdate(newUrl: string) {
@@ -445,12 +584,22 @@ export default function ProfilePage() {
       setPosts([
         {
           id: newPost.id,
+          user_id: currentUser.id,
           content: newPost.content,
           image_url: null,
           video_url: null,
+          wall_user_id: null,
+          wall_user: null,
           created_at: newPost.created_at,
+          edited_at: null,
+          edit_history: null,
           commentCount: 0,
           voteScore: 0,
+          users: {
+            username: profile.username,
+            display_name: profile.display_name,
+            avatar_url: profile.avatar_url,
+          },
         },
         ...posts,
       ]);
@@ -808,18 +957,37 @@ export default function ProfilePage() {
                     {profile.display_name || profile.username}
                   </h1>
                   {isOwnProfile && (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
-                        padding: "6px 12px",
-                        fontSize: 12,
-                      }}
-                    >
-                      Edit Profile
-                    </button>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        style={{
+                          background: "transparent",
+                          border: "1px solid rgba(240, 235, 224, 0.3)",
+                          color: "var(--alzooka-cream)",
+                          padding: "6px 12px",
+                          fontSize: 12,
+                        }}
+                      >
+                        Edit Profile
+                      </button>
+                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.9 }}>
+                        <input
+                          type="checkbox"
+                          checked={allowWallPosts}
+                          onChange={(e) => handleToggleWallPosts(e.target.checked)}
+                        />
+                        Allow wall posts
+                      </label>
+                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.9 : 0.4 }}>
+                        <input
+                          type="checkbox"
+                          checked={wallFriendsOnly}
+                          onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
+                          disabled={!allowWallPosts}
+                        />
+                        Friends only
+                      </label>
+                    </div>
                   )}
                 </div>
                 <p className="text-gold" style={{ margin: "0 0 12px 0", fontSize: 16 }}>
@@ -912,6 +1080,42 @@ export default function ProfilePage() {
         </div>
       )}
 
+      {/* Wall Post Form (on someone else's profile, if allowed) */}
+      {!isOwnProfile && profile && (
+        (() => {
+          const canPost =
+            profile.allow_wall_posts &&
+            (!profile.wall_friends_only || isFriend || currentUser?.id === profile.id);
+          if (!canPost) return null;
+          return (
+            <div className="card" style={{ marginBottom: 24 }}>
+              <textarea
+                value={wallPostContent}
+                onChange={(e) => setWallPostContent(e.target.value)}
+                placeholder={`Post on ${profile.display_name || profile.username}'s wall...`}
+                rows={3}
+                maxLength={500}
+                style={{ marginBottom: 12, resize: "vertical" }}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 12, opacity: 0.5 }}>
+                  {wallPostContent.length}/500
+                </span>
+                <button
+                  onClick={handleWallPost}
+                  disabled={postingWall || !wallPostContent.trim()}
+                  style={{
+                    opacity: !wallPostContent.trim() ? 0.5 : 1,
+                  }}
+                >
+                  {postingWall ? "Posting..." : "Post to wall"}
+                </button>
+              </div>
+            </div>
+          );
+        })()
+      )}
+
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button
@@ -988,41 +1192,55 @@ export default function ProfilePage() {
                     <div style={{ flex: 1 }}>
                       {/* Header: avatar, name, time, edit/delete */}
                       <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Link href={`/profile/${encodeURIComponent(profile.username)}`} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-                          {profile.avatar_url ? (
-                            <img src={profile.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+                        <Link href={`/profile/${encodeURIComponent(post.users?.username || "unknown")}`} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+                          {post.users?.avatar_url ? (
+                            <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                           ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--alzooka-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--alzooka-teal-dark)", fontWeight: 700 }}>{(profile.display_name || profile.username).charAt(0).toUpperCase()}</div>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--alzooka-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--alzooka-teal-dark)", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
                           )}
                           <div>
-                            <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>{profile.display_name || profile.username}</span>
+                            <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
                             <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>{formatTime(post.created_at)}</span>
                           </div>
                         </Link>
 
-                        {currentUser && post && post.id && currentUser.id === profile.id && (
+                        {post.wall_user_id && post.wall_user && post.wall_user.username !== profile.username && (
+                          <div style={{ marginTop: -6, marginBottom: 6, fontSize: 13, opacity: 0.75 }}>
+                            Posted on{" "}
+                            <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
+                              {post.wall_user.display_name || post.wall_user.username}
+                            </Link>
+                            's wall
+                          </div>
+                        )}
+
+                        {currentUser && post && post.id && (
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button
-                              onClick={() => {
-                                setEditingPostId(post.id);
-                                setEditingContent(post.content || "");
-                              }}
-                              style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
-                              title="Edit post"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (!confirm("Delete this post?")) return;
-                                await supabase.from("posts").delete().eq("id", post.id);
-                                setPosts(prev => prev.filter(p => p.id !== post.id));
-                              }}
-                              style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 12, cursor: "pointer", opacity: 0.9 }}
-                              title="Delete post"
-                            >
-                              Delete
-                            </button>
+                            {currentUser.id === post.user_id && (
+                              <button
+                                onClick={() => {
+                                  setEditingPostId(post.id);
+                                  setEditingContent(post.content || "");
+                                }}
+                                style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                                title="Edit post"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            {(currentUser.id === post.user_id || post.wall_user_id === currentUser.id) && (
+                              <button
+                                onClick={async () => {
+                                  if (!confirm("Delete this post?")) return;
+                                  await supabase.from("posts").delete().eq("id", post.id);
+                                  setPosts(prev => prev.filter(p => p.id !== post.id));
+                                }}
+                                style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 12, cursor: "pointer", opacity: 0.9 }}
+                                title="Delete post"
+                              >
+                                Delete
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1105,36 +1323,40 @@ export default function ProfilePage() {
                         </div>
                       )}
 
-                      {showEditHistoryId === post.id && post.edit_history && post.edit_history.length > 0 && (
-                        <div
-                          style={{
-                            marginBottom: 12,
-                            padding: 10,
-                            background: "rgba(0, 0, 0, 0.15)",
-                            borderRadius: 8,
-                            fontSize: 13,
-                          }}
-                        >
-                          <p style={{ margin: "0 0 6px 0", fontWeight: 600, fontSize: 12, opacity: 0.75 }}>
-                            Edit History
-                          </p>
-                          {post.edit_history.map((entry, index) => (
-                            <div
-                              key={index}
-                              style={{
-                                marginBottom: index < post.edit_history.length - 1 ? 8 : 0,
-                                paddingBottom: index < post.edit_history.length - 1 ? 8 : 0,
-                                borderBottom: index < post.edit_history.length - 1 ? "1px solid rgba(240, 235, 224, 0.08)" : "none",
-                              }}
-                            >
-                              <span style={{ fontSize: 11, opacity: 0.6 }}>{formatTime(entry.edited_at)}</span>
-                              <p style={{ margin: "4px 0 0 0", opacity: 0.8, fontStyle: "italic" }}>
-                                {entry.content || "(no text)"}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const history = post.edit_history ?? [];
+                        if (showEditHistoryId !== post.id || history.length === 0) return null;
+                        return (
+                          <div
+                            style={{
+                              marginBottom: 12,
+                              padding: 10,
+                              background: "rgba(0, 0, 0, 0.15)",
+                              borderRadius: 8,
+                              fontSize: 13,
+                            }}
+                          >
+                            <p style={{ margin: "0 0 6px 0", fontWeight: 600, fontSize: 12, opacity: 0.75 }}>
+                              Edit History
+                            </p>
+                            {history.map((entry, index) => (
+                              <div
+                                key={index}
+                                style={{
+                                  marginBottom: index < history.length - 1 ? 8 : 0,
+                                  paddingBottom: index < history.length - 1 ? 8 : 0,
+                                  borderBottom: index < history.length - 1 ? "1px solid rgba(240, 235, 224, 0.08)" : "none",
+                                }}
+                              >
+                                <span style={{ fontSize: 11, opacity: 0.6 }}>{formatTime(entry.edited_at)}</span>
+                                <p style={{ margin: "4px 0 0 0", opacity: 0.8, fontStyle: "italic" }}>
+                                  {entry.content || "(no text)"}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
 
                           {videoId && (
                             <div style={{ position: "relative", marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
