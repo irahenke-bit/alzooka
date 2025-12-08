@@ -492,7 +492,7 @@ export default function ProfilePage() {
       setWallPostContent("");
     } else if (error) {
       console.error("Wall post insert failed:", error);
-      alert("Couldn't post to the wall. Please try again.");
+      alert(`Couldn't post to the wall: ${error.message}`);
     }
 
     setPostingWall(false);
