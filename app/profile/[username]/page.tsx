@@ -960,23 +960,35 @@ export default function ProfilePage() {
                       >
                         Edit Profile
                       </button>
-                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.9 }}>
-                        <input
-                          type="checkbox"
-                          checked={allowWallPosts}
-                          onChange={(e) => handleToggleWallPosts(e.target.checked)}
-                        />
-                        Allow wall posts
-                      </label>
-                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.9 : 0.4 }}>
-                        <input
-                          type="checkbox"
-                          checked={wallFriendsOnly}
-                          onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
-                          disabled={!allowWallPosts}
-                        />
-                        Friends only
-                      </label>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "6px 10px",
+                          border: "1px solid rgba(240, 235, 224, 0.2)",
+                          borderRadius: 10,
+                          background: "rgba(0,0,0,0.25)",
+                        }}
+                      >
+                        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.95, whiteSpace: "nowrap" }}>
+                          <input
+                            type="checkbox"
+                            checked={allowWallPosts}
+                            onChange={(e) => handleToggleWallPosts(e.target.checked)}
+                          />
+                          Allow wall posts
+                        </label>
+                        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.95 : 0.4, whiteSpace: "nowrap" }}>
+                          <input
+                            type="checkbox"
+                            checked={wallFriendsOnly}
+                            onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
+                            disabled={!allowWallPosts}
+                          />
+                          Friends only
+                        </label>
+                      </div>
                     </div>
                   )}
                 </div>
