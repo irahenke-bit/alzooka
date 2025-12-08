@@ -450,32 +450,61 @@ export default function ProfilePage() {
       if (profile.id !== currentUser.id) {
         notifyWallPost(supabase, profile.id, currentUserUsername, newPost.id, wallPostContent.trim());
       }
-      setPosts(prev => [
-        {
-          id: newPost.id,
-          user_id: currentUser.id,
-          content: newPost.content,
-          image_url: newPost.image_url,
-          video_url: newPost.video_url,
-          wall_user_id: newPost.wall_user_id,
-          wall_user: {
-            username: profile.username,
-            display_name: profile.display_name,
-            avatar_url: profile.avatar_url,
-          },
-          created_at: newPost.created_at,
-          edited_at: null,
-          edit_history: null,
-          commentCount: 0,
-          voteScore: 0,
-          users: {
-            username: currentUserUsername,
-            display_name: currentUserUsername,
-            avatar_url: null,
-          },
-        },
-        ...prev,
-      ]);
+      // Refresh from DB to avoid stale/local shape issues
+      const refreshed = await supabase
+        .from("posts")
+        .select(`
+          id,
+          user_id,
+          content,
+          image_url,
+          video_url,
+          wall_user_id,
+          created_at,
+          edited_at,
+          edit_history,
+          users:users (
+            username,
+            display_name,
+            avatar_url
+          ),
+          wall_user:wall_user_id (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .or(`wall_user_id.eq.${profile.id},and(user_id.eq.${profile.id},group_id.is.null,wall_user_id.is.null)`)
+        .is("group_id", null)
+        .order("created_at", { ascending: false });
+
+      if (refreshed.data) {
+        const votesByPost: Record<string, number> = {};
+        const ids = refreshed.data.map(p => p.id);
+        const { data: votesData } = await supabase
+          .from("votes")
+          .select("target_id, value")
+          .eq("target_type", "post")
+          .in("target_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+        votesData?.forEach(v => {
+          votesByPost[v.target_id] = (votesByPost[v.target_id] || 0) + v.value;
+        });
+        setPosts(refreshed.data.map(p => ({
+          id: p.id,
+          user_id: p.user_id,
+          content: p.content,
+          image_url: p.image_url,
+          video_url: p.video_url,
+          wall_user_id: p.wall_user_id,
+          wall_user: Array.isArray((p as any).wall_user) ? (p as any).wall_user[0] : (p as any).wall_user || null,
+          users: Array.isArray((p as any).users) ? (p as any).users[0] : (p as any).users || null,
+          created_at: p.created_at,
+          edited_at: p.edited_at || null,
+          edit_history: (p as any).edit_history || null,
+          commentCount: ((p as any).comments as unknown[] | undefined)?.length || 0,
+          voteScore: votesByPost[p.id] || 0,
+        })));
+      }
       setWallPostContent("");
     } else if (error) {
       console.error("Wall post insert failed:", error);
@@ -942,7 +971,7 @@ export default function ProfilePage() {
             ) : (
               /* View Mode */
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
                   <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400 }}>
                     {profile.display_name || profile.username}
                   </h1>
@@ -965,15 +994,15 @@ export default function ProfilePage() {
                   <div
                     style={{
                       display: "flex",
-                      gap: 12,
+                      gap: 14,
                       alignItems: "center",
                       flexWrap: "wrap",
-                      marginBottom: 10,
-                      padding: "6px 10px",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
-                      borderRadius: 10,
-                      background: "rgba(0,0,0,0.22)",
-                      maxWidth: 420,
+                      marginBottom: 12,
+                      padding: "8px 12px",
+                      border: "1px solid rgba(240, 235, 224, 0.18)",
+                      borderRadius: 12,
+                      background: "rgba(0,0,0,0.32)",
+                      width: "fit-content",
                     }}
                   >
                     <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.95, whiteSpace: "nowrap" }}>
