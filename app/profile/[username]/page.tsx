@@ -443,24 +443,7 @@ export default function ProfilePage() {
         wall_user_id: profile.id,
         content: wallPostContent.trim(),
       })
-      .select(`
-        id,
-        content,
-        image_url,
-        video_url,
-        wall_user_id,
-        created_at,
-        users:users (
-          username,
-          display_name,
-          avatar_url
-        ),
-        wall_user:wall_user_id (
-          username,
-          display_name,
-          avatar_url
-        )
-      `)
+      .select("id, content, image_url, video_url, wall_user_id, created_at")
       .single();
 
     if (!error && newPost) {
@@ -475,13 +458,17 @@ export default function ProfilePage() {
           image_url: newPost.image_url,
           video_url: newPost.video_url,
           wall_user_id: newPost.wall_user_id,
-          wall_user: Array.isArray(newPost.wall_user) ? newPost.wall_user[0] : newPost.wall_user || null,
+          wall_user: {
+            username: profile.username,
+            display_name: profile.display_name,
+            avatar_url: profile.avatar_url,
+          },
           created_at: newPost.created_at,
           edited_at: null,
           edit_history: null,
           commentCount: 0,
           voteScore: 0,
-          users: Array.isArray(newPost.users) ? newPost.users[0] : newPost.users || {
+          users: {
             username: currentUserUsername,
             display_name: currentUserUsername,
             avatar_url: null,
