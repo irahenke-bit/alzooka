@@ -947,51 +947,54 @@ export default function ProfilePage() {
                     {profile.display_name || profile.username}
                   </h1>
                   {isOwnProfile && (
-                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => setIsEditing(true)}
-                        style={{
-                          background: "transparent",
-                          border: "1px solid rgba(240, 235, 224, 0.3)",
-                          color: "var(--alzooka-cream)",
-                          padding: "6px 12px",
-                          fontSize: 12,
-                        }}
-                      >
-                        Edit Profile
-                      </button>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          padding: "6px 10px",
-                          border: "1px solid rgba(240, 235, 224, 0.2)",
-                          borderRadius: 10,
-                          background: "rgba(0,0,0,0.25)",
-                        }}
-                      >
-                        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.95, whiteSpace: "nowrap" }}>
-                          <input
-                            type="checkbox"
-                            checked={allowWallPosts}
-                            onChange={(e) => handleToggleWallPosts(e.target.checked)}
-                          />
-                          Allow wall posts
-                        </label>
-                        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.95 : 0.4, whiteSpace: "nowrap" }}>
-                          <input
-                            type="checkbox"
-                            checked={wallFriendsOnly}
-                            onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
-                            disabled={!allowWallPosts}
-                          />
-                          Friends only
-                        </label>
-                      </div>
-                    </div>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        color: "var(--alzooka-cream)",
+                        padding: "6px 12px",
+                        fontSize: 12,
+                      }}
+                    >
+                      Edit Profile
+                    </button>
                   )}
                 </div>
+                {isOwnProfile && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      marginBottom: 10,
+                      padding: "6px 10px",
+                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      borderRadius: 10,
+                      background: "rgba(0,0,0,0.22)",
+                      maxWidth: 420,
+                    }}
+                  >
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.95, whiteSpace: "nowrap" }}>
+                      <input
+                        type="checkbox"
+                        checked={allowWallPosts}
+                        onChange={(e) => handleToggleWallPosts(e.target.checked)}
+                      />
+                      Allow wall posts
+                    </label>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.95 : 0.4, whiteSpace: "nowrap" }}>
+                      <input
+                        type="checkbox"
+                        checked={wallFriendsOnly}
+                        onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
+                        disabled={!allowWallPosts}
+                      />
+                      Friends only
+                    </label>
+                  </div>
+                )}
                 <p className="text-gold" style={{ margin: "0 0 12px 0", fontSize: 16 }}>
                   @{profile.username}
                 </p>
