@@ -681,16 +681,32 @@ export default function GroupPage() {
     
     if (!confirm("This is your final warning. Are you ABSOLUTELY sure?")) return;
 
-    // Delete the group (cascade will handle members, posts, etc.)
-    const { error } = await supabase
-      .from("groups")
-      .delete()
-      .eq("id", groupId);
+    try {
+      // Delete all related data first
+      // 1. Delete all posts in this group
+      await supabase.from("posts").delete().eq("group_id", groupId);
+      
+      // 2. Delete all group invites
+      await supabase.from("group_invites").delete().eq("group_id", groupId);
+      
+      // 3. Delete all group members
+      await supabase.from("group_members").delete().eq("group_id", groupId);
+      
+      // 4. Finally delete the group itself
+      const { error } = await supabase
+        .from("groups")
+        .delete()
+        .eq("id", groupId);
 
-    if (error) {
-      alert("Failed to delete group: " + error.message);
-    } else {
-      router.push("/groups");
+      if (error) {
+        alert("Failed to delete group: " + error.message);
+        console.error("Delete error:", error);
+      } else {
+        router.push("/groups");
+      }
+    } catch (err) {
+      alert("An error occurred while deleting the group");
+      console.error("Delete error:", err);
     }
   }
 
