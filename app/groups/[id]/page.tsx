@@ -675,6 +675,24 @@ export default function GroupPage() {
     await loadPosts();
   }
 
+  async function handleDeleteGroup() {
+    if (!confirm(`Are you sure you want to delete ${group?.name}? This action cannot be undone and will delete all posts and data associated with this group.`)) return;
+    
+    if (!confirm("This is your final warning. Are you ABSOLUTELY sure?")) return;
+
+    // Delete the group (cascade will handle members, posts, etc.)
+    const { error } = await supabase
+      .from("groups")
+      .delete()
+      .eq("id", groupId);
+
+    if (error) {
+      alert("Failed to delete group: " + error.message);
+    } else {
+      router.push("/groups");
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -802,7 +820,7 @@ export default function GroupPage() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Banner upload button for admins */}
+        {/* Admin buttons for banner */}
         {userRole === "admin" && (
           <>
             <input
@@ -812,27 +830,44 @@ export default function GroupPage() {
               onChange={handleBannerSelect}
               style={{ display: "none" }}
             />
-            <button
-              onClick={() => bannerInputRef.current?.click()}
-              disabled={uploadingBanner}
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                background: "rgba(0, 0, 0, 0.6)",
-                border: "none",
-                color: "white",
-                padding: "8px 14px",
-                borderRadius: 6,
-                fontSize: 12,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              📷 {uploadingBanner ? "Uploading..." : group.banner_url ? "Change Banner" : "Add Banner"}
-            </button>
+            <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8 }}>
+              <button
+                onClick={() => bannerInputRef.current?.click()}
+                disabled={uploadingBanner}
+                style={{
+                  background: "rgba(0, 0, 0, 0.6)",
+                  border: "none",
+                  color: "white",
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                📷 {uploadingBanner ? "Uploading..." : group.banner_url ? "Change Banner" : "Add Banner"}
+              </button>
+              <button
+                onClick={handleDeleteGroup}
+                style={{
+                  background: "rgba(139, 0, 0, 0.8)",
+                  border: "none",
+                  color: "white",
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+                title="Delete this group permanently"
+              >
+                🗑️ Delete Group
+              </button>
+            </div>
           </>
         )}
 
