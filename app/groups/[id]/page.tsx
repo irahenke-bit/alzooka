@@ -489,7 +489,7 @@ export default function GroupPage() {
     await loadMembers();
   }
 
-  function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user || !group) return;
 
@@ -502,15 +502,41 @@ export default function GroupPage() {
       return;
     }
 
-    // Create a preview URL and show crop modal
-    const reader = new FileReader();
-    reader.onload = () => {
-      setBannerImageToCrop(reader.result as string);
-      setShowBannerCrop(true);
-    };
-    reader.readAsDataURL(file);
+    // Upload directly without cropping
+    setUploadingBanner(true);
+    
+    const fileName = `group-${groupId}-banner-${Date.now()}.${file.name.split('.').pop()}`;
+    const filePath = `banners/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(filePath, file, { cacheControl: "3600", upsert: true });
+
+    if (uploadError) {
+      alert("Failed to upload banner");
+      setUploadingBanner(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
+
+    const { error: updateError } = await supabase.from("groups").update({ banner_url: publicUrl }).eq("id", groupId);
+    
+    if (updateError) {
+      console.error("Error saving banner:", updateError);
+      alert("Failed to save banner. Please try again.");
+    } else {
+      setGroup({ ...group, banner_url: publicUrl });
+    }
+    setUploadingBanner(false);
     
     if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
+
+  function handleCropExistingBanner() {
+    if (!group?.banner_url) return;
+    setBannerImageToCrop(group.banner_url);
+    setShowBannerCrop(true);
   }
 
   async function handleBannerCropSave(croppedBlob: Blob) {
@@ -827,8 +853,9 @@ export default function GroupPage() {
           borderRadius: 12, 
           overflow: "hidden",
           background: group.banner_url 
-            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${group.banner_url}) center/cover`
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${group.banner_url}) center/contain no-repeat`
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+          backgroundColor: group.banner_url ? "var(--alzooka-teal-dark)" : undefined,
           position: "relative",
           padding: "24px",
           minHeight: 200,
@@ -866,6 +893,25 @@ export default function GroupPage() {
               >
                 📷 {uploadingBanner ? "Uploading..." : group.banner_url ? "Change Banner" : "Add Banner"}
               </button>
+              {group.banner_url && (
+                <button
+                  onClick={handleCropExistingBanner}
+                  style={{
+                    background: "rgba(0, 0, 0, 0.6)",
+                    border: "none",
+                    color: "white",
+                    padding: "8px 14px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  ✂️ Crop Banner
+                </button>
+              )}
               <button
                 onClick={handleDeleteGroup}
                 onMouseEnter={() => setShowDeleteText(true)}
