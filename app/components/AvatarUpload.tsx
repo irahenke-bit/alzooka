@@ -62,6 +62,7 @@ async function resizeImage(file: File, targetSize: number): Promise<Blob> {
 export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createBrowserClient();
 
@@ -148,6 +149,8 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
       {/* Avatar display with upload trigger */}
       <button
         onClick={() => fileInputRef.current?.click()}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         disabled={uploading}
         style={{
           width: 100,
@@ -193,7 +196,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
         )}
 
         {/* Hover overlay */}
-        {!uploading && currentAvatarUrl && (
+        {!uploading && currentAvatarUrl && isHovered && (
           <div
             style={{
               position: "absolute",
@@ -204,10 +207,8 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               justifyContent: "center",
               fontSize: 12,
               color: "var(--alzooka-cream)",
-              transition: "opacity 0.2s",
+              pointerEvents: "none",
             }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}
           >
             Change
           </div>

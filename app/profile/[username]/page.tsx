@@ -1266,9 +1266,6 @@ export default function ProfilePage() {
                 <h1 style={{ fontSize: 24, margin: 0, marginBottom: 6, fontWeight: 400 }}>
                   {profile.display_name || profile.username}
                 </h1>
-                <p className="text-gold" style={{ margin: "0 0 12px 0", fontSize: 16 }}>
-                  @{profile.username}
-                </p>
                 
                 {/* Friend Button (only show on other people's profiles) */}
                 {currentUser && !isOwnProfile && (
