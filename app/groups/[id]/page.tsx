@@ -852,20 +852,32 @@ export default function GroupPage() {
               <button
                 onClick={handleDeleteGroup}
                 style={{
-                  background: "rgba(139, 0, 0, 0.8)",
-                  border: "none",
-                  color: "white",
-                  padding: "8px 14px",
+                  background: "rgba(0, 0, 0, 0.5)",
+                  border: "1px solid rgba(255, 100, 100, 0.3)",
+                  color: "rgba(255, 150, 150, 0.9)",
+                  padding: "6px 10px",
                   borderRadius: 6,
-                  fontSize: 12,
+                  fontSize: 11,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 4,
+                  opacity: 0.7,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                  e.currentTarget.style.background = "rgba(139, 0, 0, 0.7)";
+                  e.currentTarget.style.color = "white";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = "0.7";
+                  e.currentTarget.style.background = "rgba(0, 0, 0, 0.5)";
+                  e.currentTarget.style.color = "rgba(255, 150, 150, 0.9)";
                 }}
                 title="Delete this group permanently"
               >
-                🗑️ Delete Group
+                🗑️
               </button>
             </div>
           </>
