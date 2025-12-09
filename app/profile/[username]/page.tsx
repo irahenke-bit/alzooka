@@ -908,19 +908,29 @@ export default function ProfilePage() {
               
               {/* Dropdown Menu */}
               {showEditMenu && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 8px)",
-                    right: 0,
-                    background: "var(--alzooka-teal-dark)",
-                    border: "1px solid rgba(240, 235, 224, 0.2)",
-                    borderRadius: 8,
-                    minWidth: 220,
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-                    zIndex: 100,
-                  }}
-                >
+                <>
+                  {/* Invisible overlay to close dropdown when clicking outside */}
+                  <div
+                    onClick={() => setShowEditMenu(false)}
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      zIndex: 99,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      right: 0,
+                      background: "var(--alzooka-teal-dark)",
+                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      borderRadius: 8,
+                      minWidth: 220,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                      zIndex: 100,
+                    }}
+                  >
                   <button
                     onClick={() => {
                       setShowEditMenu(false);
@@ -1044,6 +1054,7 @@ export default function ProfilePage() {
                     🗑️ Deactivate Account
                   </button>
                 </div>
+                </>
               )}
             </div>
           </>
