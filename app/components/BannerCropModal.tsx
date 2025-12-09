@@ -13,10 +13,12 @@ type Props = {
 // Helper function to create cropped image
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   const image = new Image();
+  image.crossOrigin = "anonymous"; // Enable CORS
   image.src = imageSrc;
   
-  await new Promise((resolve) => {
+  await new Promise((resolve, reject) => {
     image.onload = resolve;
+    image.onerror = () => reject(new Error("Failed to load image"));
   });
 
   const canvas = document.createElement("canvas");
@@ -26,6 +28,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
     throw new Error("No 2d context");
   }
 
+  // Set canvas size to desired output
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
@@ -48,7 +51,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
       } else {
         reject(new Error("Canvas is empty"));
       }
-    }, "image/jpeg", 0.9);
+    }, "image/jpeg", 0.95); // Higher quality
   });
 }
 

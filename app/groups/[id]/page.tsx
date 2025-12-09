@@ -853,11 +853,12 @@ export default function GroupPage() {
           borderRadius: 12, 
           overflow: "hidden",
           background: group.banner_url 
-            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${group.banner_url}) center/cover`
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 70%), url(${group.banner_url}) center/contain no-repeat`
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+          backgroundColor: "var(--alzooka-teal-dark)",
           position: "relative",
           padding: "24px",
-          minHeight: 200,
+          minHeight: 300,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
