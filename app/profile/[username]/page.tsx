@@ -23,6 +23,9 @@ type UserProfile = {
   banner_url: string | null;
   allow_wall_posts: boolean;
   wall_friends_only: boolean;
+  is_active?: boolean;
+  deactivated_at?: string | null;
+  scheduled_deletion_at?: string | null;
   created_at: string;
 };
 
@@ -146,7 +149,7 @@ export default function ProfilePage() {
       const trimmedUsername = username.trim().toLowerCase();
       const { data: profileData } = await supabase
         .from("users")
-        .select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only")
+        .select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, is_active, deactivated_at, scheduled_deletion_at")
         .ilike("username", trimmedUsername)
         .single();
 
