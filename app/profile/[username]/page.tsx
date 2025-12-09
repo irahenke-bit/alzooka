@@ -71,6 +71,13 @@ type VoteStats = {
   downvotesReceived: number;
 };
 
+// YouTube URL detection
+function findYouTubeUrl(text: string): string | null {
+  const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
 export default function ProfilePage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -436,12 +443,16 @@ export default function ProfilePage() {
 
     setPostingWall(true);
 
+    // Detect YouTube URL in content
+    const youtubeUrl = findYouTubeUrl(wallPostContent);
+
     const { data: newPost, error } = await supabase
       .from("posts")
       .insert({
         user_id: currentUser.id,
         wall_user_id: profile.id,
         content: wallPostContent.trim(),
+        video_url: youtubeUrl,
       })
       .select("id, content, image_url, video_url, wall_user_id, created_at")
       .single();
@@ -593,11 +604,15 @@ export default function ProfilePage() {
 
     setPosting(true);
 
+    // Detect YouTube URL in content
+    const youtubeUrl = findYouTubeUrl(newPostContent);
+
     const { data: newPost, error } = await supabase
       .from("posts")
       .insert({
         user_id: currentUser.id,
         content: newPostContent.trim(),
+        video_url: youtubeUrl,
       })
       .select()
       .single();
@@ -610,7 +625,7 @@ export default function ProfilePage() {
           user_id: currentUser.id,
           content: newPost.content,
           image_url: null,
-          video_url: null,
+          video_url: youtubeUrl,
           wall_user_id: null,
           wall_user: null,
           created_at: newPost.created_at,
@@ -1396,10 +1411,29 @@ export default function ProfilePage() {
                       })()}
 
                           {videoId && (
-                            <div style={{ position: "relative", marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
-                              <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt="Video thumbnail" style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
-                              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 60, height: 42, background: "rgba(255, 0, 0, 0.9)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <div style={{ width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderLeft: "14px solid white", marginLeft: 3 }} />
+                            <div style={{ marginBottom: 12 }}>
+                              <div style={{ 
+                                position: "relative",
+                                paddingBottom: "56.25%",
+                                height: 0,
+                                overflow: "hidden",
+                                borderRadius: 8,
+                                background: "#000",
+                              }}>
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                                  title="YouTube video"
+                                  frameBorder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                  allowFullScreen
+                                  style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    width: "100%",
+                                    height: "100%",
+                                  }}
+                                />
                               </div>
                             </div>
                           )}

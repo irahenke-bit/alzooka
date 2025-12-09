@@ -65,6 +65,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   edited_at: string | null;
   user_id: string;
@@ -75,6 +76,25 @@ type Post = {
   };
   comments: Comment[];
 };
+
+// YouTube URL detection
+function findYouTubeUrl(text: string): string | null {
+  const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
+function extractYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
 
 export default function GroupPage() {
   const params = useParams();
@@ -107,6 +127,8 @@ export default function GroupPage() {
   const [inviteSearch, setInviteSearch] = useState("");
   const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null}>>([]);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -216,6 +238,7 @@ export default function GroupPage() {
         id,
         content,
         image_url,
+        video_url,
         created_at,
         edited_at,
         user_id,
@@ -344,9 +367,44 @@ export default function GroupPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  function removeYoutubePreview() {
+    setYoutubePreview(null);
+  }
+
+  async function handleContentChange(newContent: string) {
+    setContent(newContent);
+    
+    // Check for YouTube URL if we don't already have a preview
+    if (!youtubePreview && !loadingYoutubePreview) {
+      const youtubeUrl = findYouTubeUrl(newContent);
+      if (youtubeUrl) {
+        const videoId = extractYouTubeVideoId(youtubeUrl);
+        if (videoId) {
+          setLoadingYoutubePreview(true);
+          try {
+            const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+            const data = await response.json();
+            setYoutubePreview({
+              videoId,
+              url: youtubeUrl,
+              title: data.title || "YouTube Video",
+            });
+          } catch {
+            setYoutubePreview({
+              videoId,
+              url: youtubeUrl,
+              title: "YouTube Video",
+            });
+          }
+          setLoadingYoutubePreview(false);
+        }
+      }
+    }
+  }
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    if ((!content.trim() && !selectedImage) || !user) return;
+    if ((!content.trim() && !selectedImage && !youtubePreview) || !user) return;
 
     setPosting(true);
 
@@ -376,6 +434,7 @@ export default function GroupPage() {
       .insert({
         content: content.trim(),
         image_url: imageUrl,
+        video_url: youtubePreview?.url || null,
         user_id: user.id,
         group_id: groupId,
       })
@@ -393,6 +452,7 @@ export default function GroupPage() {
       setContent("");
       setSelectedImage(null);
       setImagePreview(null);
+      setYoutubePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       await loadPosts();
       await loadUserVotes(user.id);
@@ -1052,9 +1112,9 @@ export default function GroupPage() {
       {isMember && (
         <form onSubmit={handlePost} style={{ marginBottom: 24 }}>
           <textarea
-            placeholder={`Share something with ${group.name}...`}
+            placeholder={`Share something with ${group.name}... Paste a YouTube link to share a video`}
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={e => handleContentChange(e.target.value)}
             rows={3}
             style={{ marginBottom: 12, resize: "vertical" }}
           />
@@ -1076,6 +1136,57 @@ export default function GroupPage() {
                   color: "white",
                   cursor: "pointer",
                   fontSize: 16,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          {loadingYoutubePreview && (
+            <div style={{ marginBottom: 12, padding: 16, background: "rgba(0,0,0,0.2)", borderRadius: 8 }}>
+              <p style={{ margin: 0, opacity: 0.6 }}>Loading video preview...</p>
+            </div>
+          )}
+          {youtubePreview && (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <div style={{ 
+                background: "var(--alzooka-teal-dark)", 
+                borderRadius: 8, 
+                overflow: "hidden",
+                border: "1px solid rgba(240, 235, 224, 0.2)"
+              }}>
+                <img 
+                  src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
+                  alt="YouTube thumbnail"
+                  style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                />
+                <div style={{ padding: "12px 16px" }}>
+                  <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                    YouTube.com
+                  </p>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                    {youtubePreview.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={removeYoutubePreview}
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: 28,
+                  height: 28,
+                  color: "white",
+                  cursor: "pointer",
+                  fontSize: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 ×
@@ -1104,7 +1215,7 @@ export default function GroupPage() {
             >
               📷 Photo
             </button>
-            <button type="submit" disabled={posting || (!content.trim() && !selectedImage)}>
+            <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview)}>
               {posting ? "Posting..." : "Post"}
             </button>
           </div>
@@ -1295,7 +1406,16 @@ function GroupPostCard({
             )}
           </div>
 
-          {post.content && <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{post.content}</p>}
+          {post.content && (() => {
+            // Strip YouTube URL from displayed content if video exists
+            let displayContent = post.content;
+            if (post.video_url && displayContent) {
+              displayContent = displayContent
+                .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                .trim();
+            }
+            return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p> : null;
+          })()}
           {post.image_url && (
             <div style={{ marginBottom: 16 }}>
               <img
@@ -1306,6 +1426,37 @@ function GroupPostCard({
               />
             </div>
           )}
+          {post.video_url && (() => {
+            const videoId = extractYouTubeVideoId(post.video_url);
+            if (!videoId) return null;
+            return (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ 
+                  position: "relative",
+                  paddingBottom: "56.25%",
+                  height: 0,
+                  overflow: "hidden",
+                  borderRadius: 8,
+                  background: "#000",
+                }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                    title="YouTube video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           <button
             onClick={() => setShowComments(!showComments)}
