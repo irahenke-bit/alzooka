@@ -132,6 +132,7 @@ export default function GroupPage() {
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
+  const [showDeleteText, setShowDeleteText] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -851,33 +852,28 @@ export default function GroupPage() {
               </button>
               <button
                 onClick={handleDeleteGroup}
+                onMouseEnter={() => setShowDeleteText(true)}
+                onMouseLeave={() => setShowDeleteText(false)}
                 style={{
-                  background: "rgba(0, 0, 0, 0.5)",
+                  background: showDeleteText ? "rgba(139, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.5)",
                   border: "1px solid rgba(255, 100, 100, 0.3)",
-                  color: "rgba(255, 150, 150, 0.9)",
+                  color: showDeleteText ? "white" : "rgba(255, 150, 150, 0.9)",
                   padding: "6px 10px",
                   borderRadius: 6,
                   fontSize: 11,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 4,
-                  opacity: 0.7,
-                  transition: "all 0.2s",
+                  gap: 6,
+                  opacity: showDeleteText ? 1 : 0.7,
+                  transition: "all 0.2s ease",
+                  whiteSpace: "nowrap",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                  e.currentTarget.style.background = "rgba(139, 0, 0, 0.7)";
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = "0.7";
-                  e.currentTarget.style.background = "rgba(0, 0, 0, 0.5)";
-                  e.currentTarget.style.color = "rgba(255, 150, 150, 0.9)";
-                }}
-                title="Delete this group permanently"
               >
                 🗑️
+                {showDeleteText && (
+                  <span style={{ fontSize: 11 }}>Delete Group</span>
+                )}
               </button>
             </div>
           </>
