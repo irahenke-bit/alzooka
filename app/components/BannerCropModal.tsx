@@ -137,6 +137,8 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
           image={imageSrc}
           crop={crop}
           zoom={zoom}
+          minZoom={0.1}
+          maxZoom={10}
           aspect={16 / 5}
           restrictPosition={false}
           onCropChange={setCrop}
@@ -165,14 +167,14 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         <span style={{ color: "white", fontSize: 14 }}>Zoom:</span>
         <input
           type="range"
-          min={0.5}
-          max={5}
+          min={0.1}
+          max={10}
           step={0.1}
           value={zoom}
           onChange={(e) => setZoom(Number(e.target.value))}
           style={{ flex: 1, maxWidth: 300 }}
         />
-        <span style={{ color: "white", fontSize: 14, minWidth: 40 }}>{zoom.toFixed(1)}x</span>
+        <span style={{ color: "white", fontSize: 14, minWidth: 50 }}>{zoom.toFixed(1)}x</span>
       </div>
 
       {/* Instructions */}
