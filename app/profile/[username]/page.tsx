@@ -119,6 +119,7 @@ export default function ProfilePage() {
   const [wallFriendsOnly, setWallFriendsOnly] = useState(true);
   const [wallPostContent, setWallPostContent] = useState("");
   const [postingWall, setPostingWall] = useState(false);
+  const [showEditMenu, setShowEditMenu] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -426,6 +427,43 @@ export default function ProfilePage() {
     setWallFriendsOnly(nextValue);
     await supabase.from("users").update({ wall_friends_only: nextValue }).eq("id", profile.id);
     setProfile({ ...profile, wall_friends_only: nextValue });
+  }
+
+  async function handleDeactivateAccount() {
+    if (!profile || !currentUser) return;
+    setShowEditMenu(false);
+    
+    if (!confirm("Are you sure you want to deactivate your account?\n\nYour profile will appear as 'User not found' and all your posts/comments will be hidden.\n\nYou have 30 days to reactivate by logging back in.")) {
+      return;
+    }
+    
+    if (!confirm("This is your final warning. Deactivate your account?")) {
+      return;
+    }
+
+    // TODO: Send confirmation email (requires email service integration)
+    
+    // Set deactivation timestamp (30 days from now for permanent deletion)
+    const deactivationDate = new Date();
+    const permanentDeletionDate = new Date(deactivationDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    const { error } = await supabase
+      .from("users")
+      .update({ 
+        is_active: false,
+        deactivated_at: deactivationDate.toISOString(),
+        scheduled_deletion_at: permanentDeletionDate.toISOString()
+      })
+      .eq("id", currentUser.id);
+    
+    if (error) {
+      alert("Failed to deactivate account. Please try again.");
+      console.error("Deactivation error:", error);
+    } else {
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      router.push("/login");
+    }
   }
 
   async function handleWallPost() {
@@ -829,7 +867,7 @@ export default function ProfilePage() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Banner upload button */}
+        {/* Edit menu button */}
         {isOwnProfile && (
           <>
             <input
@@ -839,26 +877,166 @@ export default function ProfilePage() {
               onChange={handleBannerSelect}
               style={{ display: "none" }}
             />
-            <button
-              onClick={() => bannerInputRef.current?.click()}
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                background: "rgba(0, 0, 0, 0.6)",
-                border: "none",
-                color: "white",
-                padding: "8px 14px",
-                borderRadius: 6,
-                fontSize: 12,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              📷 {uploadingBanner ? "Uploading..." : profile.banner_url ? "Change Banner" : "Add Banner"}
-            </button>
+            <div style={{ position: "absolute", top: 12, right: 12 }}>
+              <button
+                onClick={() => setShowEditMenu(!showEditMenu)}
+                style={{
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "none",
+                  color: "white",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontWeight: 500,
+                }}
+              >
+                ⚙️ Edit
+              </button>
+              
+              {/* Dropdown Menu */}
+              {showEditMenu && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    background: "var(--alzooka-teal-dark)",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    borderRadius: 8,
+                    minWidth: 220,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                    zIndex: 100,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setIsEditing(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    ✏️ Edit Profile
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      bannerInputRef.current?.click();
+                    }}
+                    disabled={uploadingBanner}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    📷 {uploadingBanner ? "Uploading..." : "Change Banner"}
+                  </button>
+                  
+                  {profile.banner_url && (
+                    <button
+                      onClick={() => {
+                        setShowEditMenu(false);
+                        setBannerImageToCrop(profile.banner_url);
+                        setShowBannerCrop(true);
+                      }}
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        padding: "12px 16px",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      }}
+                    >
+                      ✂️ Crop Banner
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      handleToggleWallPosts(!allowWallPosts);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    {allowWallPosts ? "🚫 Disable Wall Posts" : "📝 Allow Wall Posts"}
+                  </button>
+                  
+                  {allowWallPosts && (
+                    <button
+                      onClick={() => {
+                        setShowEditMenu(false);
+                        handleToggleWallFriendsOnly(!wallFriendsOnly);
+                      }}
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        padding: "12px 16px",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      }}
+                    >
+                      {wallFriendsOnly ? "🌐 Allow All to Post" : "👥 Friends Only"}
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={handleDeactivateAccount}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "#ff6b6b",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    🗑️ Deactivate Account
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         )}
 
@@ -990,59 +1168,9 @@ export default function ProfilePage() {
             ) : (
               /* View Mode */
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
-                  <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400 }}>
-                    {profile.display_name || profile.username}
-                  </h1>
-                  {isOwnProfile && (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
-                        padding: "6px 12px",
-                        fontSize: 12,
-                      }}
-                    >
-                      Edit Profile
-                    </button>
-                  )}
-                </div>
-                {isOwnProfile && (
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 14,
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      marginBottom: 12,
-                      padding: "8px 12px",
-                      border: "1px solid rgba(240, 235, 224, 0.18)",
-                      borderRadius: 12,
-                      background: "rgba(0,0,0,0.32)",
-                      width: "fit-content",
-                    }}
-                  >
-                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.95, whiteSpace: "nowrap" }}>
-                      <input
-                        type="checkbox"
-                        checked={allowWallPosts}
-                        onChange={(e) => handleToggleWallPosts(e.target.checked)}
-                      />
-                      Allow wall posts
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: allowWallPosts ? 0.95 : 0.4, whiteSpace: "nowrap" }}>
-                      <input
-                        type="checkbox"
-                        checked={wallFriendsOnly}
-                        onChange={(e) => handleToggleWallFriendsOnly(e.target.checked)}
-                        disabled={!allowWallPosts}
-                      />
-                      Friends only
-                    </label>
-                  </div>
-                )}
+                <h1 style={{ fontSize: 24, margin: 0, marginBottom: 6, fontWeight: 400 }}>
+                  {profile.display_name || profile.username}
+                </h1>
                 <p className="text-gold" style={{ margin: "0 0 12px 0", fontSize: 16 }}>
                   @{profile.username}
                 </p>
