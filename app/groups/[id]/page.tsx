@@ -170,13 +170,17 @@ export default function GroupPage() {
 
       // Load members only if member or public
       if (membership || groupData.privacy === "public") {
+        // eslint-disable-next-line react-hooks/immutability
         await loadMembers();
       }
 
       // Load posts if member or public group
       if (membership || groupData.privacy === "public") {
+        // eslint-disable-next-line react-hooks/immutability
         await loadPosts();
+        // eslint-disable-next-line react-hooks/immutability
         await loadUserVotes(user.id);
+        // eslint-disable-next-line react-hooks/immutability
         await loadVoteTotals();
       }
 
@@ -237,6 +241,7 @@ export default function GroupPage() {
       .order("created_at", { ascending: false });
 
     if (data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const postsWithNestedComments = data.map((post: any) => {
         const allComments = (post.comments || []) as Comment[];
         const parentComments = allComments

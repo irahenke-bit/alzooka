@@ -43,6 +43,12 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  wall_user_id: string | null;
+  wall_user?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -188,6 +194,7 @@ export function PostModal({
   // Ensure we're on client before rendering portal
   useEffect(() => {
     setMounted(true);
+     
   }, []);
 
   // Focus comment input when modal opens
@@ -449,6 +456,15 @@ export function PostModal({
                   </div>
                 </Link>
               </div>
+              {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
+                <div style={{ marginTop: -6, marginBottom: 12, fontSize: 13, opacity: 0.75 }}>
+                  Posted on{" "}
+                  <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "var(--alzooka-gold)" }}>
+                    {post.wall_user.display_name || post.wall_user.username}
+                  </Link>
+                  &apos;s wall
+                </div>
+              )}
 
               {/* Post Text - strip YouTube URL if video is embedded */}
               {(() => {

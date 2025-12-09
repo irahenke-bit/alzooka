@@ -175,8 +175,7 @@ export async function notifyFriendRequest(
   supabase: SupabaseClient,
   recipientId: string,
   senderUsername: string,
-  senderId: string,
-  friendshipId: string
+  senderId: string
 ) {
   await createNotification({
     supabase,

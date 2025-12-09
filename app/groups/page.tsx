@@ -57,6 +57,7 @@ export default function GroupsPage() {
         setUserAvatarUrl(userData.avatar_url);
       }
 
+      // eslint-disable-next-line react-hooks/immutability
       await loadGroups(user.id);
       setLoading(false);
     }

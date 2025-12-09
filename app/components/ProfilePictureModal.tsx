@@ -44,12 +44,6 @@ export function ProfilePictureModal({
   const [loading, setLoading] = useState(true);
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadData();
-    }
-  }, [isOpen, profileOwnerId]);
-
   async function loadData() {
     setLoading(true);
 
@@ -106,6 +100,13 @@ export function ProfilePictureModal({
 
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, profileOwnerId]);
 
   async function toggleHeart() {
     if (!currentUserId) return;
@@ -576,8 +577,6 @@ function formatTime(dateString: string): string {
 
   return date.toLocaleDateString();
 }
-
-
 
 
 

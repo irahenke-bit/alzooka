@@ -204,10 +204,10 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               justifyContent: "center",
               fontSize: 12,
               color: "var(--alzooka-cream)",
-              opacity: 0,
               transition: "opacity 0.2s",
             }}
-            className="avatar-hover-overlay"
+            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}
           >
             Change
           </div>
@@ -226,12 +226,6 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
           {error}
         </p>
       )}
-
-      <style jsx>{`
-        button:hover .avatar-hover-overlay {
-          opacity: 1 !important;
-        }
-      `}</style>
     </div>
   );
 }

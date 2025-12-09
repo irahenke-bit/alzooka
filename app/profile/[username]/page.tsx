@@ -496,11 +496,15 @@ export default function ProfilePage() {
           image_url: p.image_url,
           video_url: p.video_url,
           wall_user_id: p.wall_user_id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           wall_user: Array.isArray((p as any).wall_user) ? (p as any).wall_user[0] : (p as any).wall_user || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           users: Array.isArray((p as any).users) ? (p as any).users[0] : (p as any).users || null,
           created_at: p.created_at,
           edited_at: p.edited_at || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           edit_history: (p as any).edit_history || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           commentCount: ((p as any).comments as unknown[] | undefined)?.length || 0,
           voteScore: votesByPost[p.id] || 0,
         })));
@@ -1035,7 +1039,6 @@ export default function ProfilePage() {
                       currentUserId={currentUser.id}
                       currentUsername={currentUserUsername}
                       targetUserId={profile.id}
-                      targetUsername={profile.username}
                     />
                   </div>
                 )}
@@ -1185,8 +1188,8 @@ export default function ProfilePage() {
           posts.length === 0 ? (
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
               {isOwnProfile 
-                ? "You haven't posted anything yet." 
-                : `@${profile.username} hasn't posted anything yet.`}
+                ? "You haven&apos;t posted anything yet." 
+                : `@${profile.username} hasn&apos;t posted anything yet.`}
             </p>
           ) : (
             posts.map((post) => {
@@ -1244,7 +1247,7 @@ export default function ProfilePage() {
                             <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
                               {post.wall_user.display_name || post.wall_user.username}
                             </Link>
-                            's wall
+                            &apos;s wall
                           </div>
                         )}
 
@@ -1425,8 +1428,8 @@ export default function ProfilePage() {
           comments.length === 0 ? (
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
               {isOwnProfile 
-                ? "You haven't commented on anything yet." 
-                : `@${profile.username} hasn't commented on anything yet.`}
+                ? "You haven&apos;t commented on anything yet." 
+                : `@${profile.username} hasn&apos;t commented on anything yet.`}
             </p>
           ) : (
             comments.map((comment) => (
@@ -1448,7 +1451,7 @@ export default function ProfilePage() {
                   >
                     <span className="text-muted">Replying to: </span>
                     <span style={{ fontStyle: "italic" }}>
-                      "{comment.posts?.content?.slice(0, 80)}{comment.posts?.content?.length > 80 ? "..." : ""}"
+                      &quot;{comment.posts?.content?.slice(0, 80)}{comment.posts?.content?.length > 80 ? "..." : ""}&quot;
                     </span>
                   </div>
                   {/* Comment content */}

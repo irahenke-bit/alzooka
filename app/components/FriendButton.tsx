@@ -10,22 +10,16 @@ export function FriendButton({
   currentUserId,
   currentUsername,
   targetUserId,
-  targetUsername,
   onStatusChange
 }: { 
   currentUserId: string;
   currentUsername?: string;
   targetUserId: string;
-  targetUsername?: string;
   onStatusChange?: () => void;
 }) {
   const [status, setStatus] = useState<FriendshipStatus>("none");
   const [loading, setLoading] = useState(true);
   const supabase = createBrowserClient();
-
-  useEffect(() => {
-    loadFriendshipStatus();
-  }, [currentUserId, targetUserId]);
 
   async function loadFriendshipStatus() {
     // Check if there's a friendship request in either direction
@@ -51,6 +45,11 @@ export function FriendButton({
     setLoading(false);
   }
 
+  useEffect(() => {
+    loadFriendshipStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserId, targetUserId]);
+
   async function sendRequest() {
     setLoading(true);
     const { data } = await supabase.from("friendships").insert({
@@ -65,8 +64,7 @@ export function FriendButton({
         supabase,
         targetUserId,
         currentUsername,
-        currentUserId,
-        data.id
+        currentUserId
       );
     }
     

@@ -43,6 +43,7 @@ export function UserSearch() {
         setRecentSearches([]);
       }
     }
+     
   }, []);
 
   // Close dropdown when clicking outside

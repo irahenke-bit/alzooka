@@ -25,10 +25,26 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createBrowserClient();
 
+  async function loadNotifications() {
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (data) {
+      setNotifications(data);
+      setUnreadCount(data.filter((n) => !n.is_read).length);
+    }
+    setLoading(false);
+  }
+
   useEffect(() => {
     loadNotifications();
 
     // Subscribe to new notifications
+     
     const channel = supabase
       .channel("notifications")
       .on(
@@ -61,21 +77,6 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  async function loadNotifications() {
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter((n) => !n.is_read).length);
-    }
-    setLoading(false);
-  }
 
   async function markAsRead(notificationId: string) {
     await supabase

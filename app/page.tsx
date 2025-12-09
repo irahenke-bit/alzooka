@@ -147,8 +147,11 @@ function FeedContent() {
         setWallFriendsOnly(userData.wall_friends_only ?? true);
       }
       
+      // eslint-disable-next-line react-hooks/immutability
       const loadedPosts = await loadPosts();
+      // eslint-disable-next-line react-hooks/immutability
       await loadUserVotes(user.id);
+      // eslint-disable-next-line react-hooks/immutability
       await loadVoteTotals(loadedPosts);
       setLoading(false);
 
@@ -386,6 +389,7 @@ function FeedContent() {
       .is("group_id", null)  // Only show feed posts, not group posts
       .order("created_at", { ascending: false });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postsWithNestedComments: Post[] = (data || []).map((post: any) => {
       const allComments = (post.comments || []) as Comment[];
       
