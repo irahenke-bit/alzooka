@@ -167,13 +167,13 @@ export default function ProfilePage() {
           edited_at,
           edit_history,
           comments (id),
-          users:users (
+          users:users!posts_user_id_fkey (
             id,
             username,
             display_name,
             avatar_url
           ),
-          wall_user:wall_user_id (
+          wall_user:users!posts_wall_user_id_fkey (
             id,
             username,
             display_name,
@@ -463,12 +463,12 @@ export default function ProfilePage() {
           created_at,
           edited_at,
           edit_history,
-          users:users (
+          users:users!posts_user_id_fkey (
             username,
             display_name,
             avatar_url
           ),
-          wall_user:wall_user_id (
+          wall_user:users!posts_wall_user_id_fkey (
             username,
             display_name,
             avatar_url

@@ -219,7 +219,7 @@ export default function GroupPage() {
         created_at,
         edited_at,
         user_id,
-        users (
+        users!posts_user_id_fkey (
           username,
           display_name,
           avatar_url
@@ -230,7 +230,7 @@ export default function GroupPage() {
           created_at,
           user_id,
           parent_comment_id,
-          users (
+          users!comments_user_id_fkey (
             username,
             display_name,
             avatar_url

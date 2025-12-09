@@ -201,23 +201,23 @@ function FeedContent() {
                 edited_at,
                 edit_history,
                 user_id,
-                users (
+                users!posts_user_id_fkey (
                   username,
                   display_name,
                   avatar_url
                 ),
-        wall_user:wall_user_id (
-          username,
-          display_name,
-          avatar_url
-        ),
+                wall_user:users!posts_wall_user_id_fkey (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
                 comments (
                   id,
                   content,
                   created_at,
                   user_id,
                   parent_comment_id,
-                  users (
+                  users!comments_user_id_fkey (
                     username,
                     display_name,
                     avatar_url
@@ -279,23 +279,23 @@ function FeedContent() {
             edited_at,
             edit_history,
             user_id,
-            users (
+            users!posts_user_id_fkey (
               username,
               display_name,
               avatar_url
             ),
-        wall_user:wall_user_id (
-          username,
-          display_name,
-          avatar_url
-        ),
+            wall_user:users!posts_wall_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
             comments (
               id,
               content,
               created_at,
               user_id,
               parent_comment_id,
-              users (
+              users!comments_user_id_fkey (
                 username,
                 display_name,
                 avatar_url
@@ -351,7 +351,7 @@ function FeedContent() {
   }, []);
 
   async function loadPosts(): Promise<Post[]> {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("posts")
       .select(`
         id,
@@ -363,12 +363,12 @@ function FeedContent() {
         edited_at,
         edit_history,
         user_id,
-        users (
+        users!posts_user_id_fkey (
           username,
           display_name,
           avatar_url
         ),
-        wall_user:wall_user_id (
+        wall_user:users!posts_wall_user_id_fkey (
           username,
           display_name,
           avatar_url
@@ -379,7 +379,7 @@ function FeedContent() {
           created_at,
           user_id,
           parent_comment_id,
-          users (
+          users!comments_user_id_fkey (
             username,
             display_name,
             avatar_url
@@ -1019,7 +1019,7 @@ function FeedContent() {
                 edited_at,
                 edit_history,
                 user_id,
-                users (
+                users!posts_user_id_fkey (
                   username,
                   display_name,
                   avatar_url
@@ -1030,7 +1030,7 @@ function FeedContent() {
                   created_at,
                   user_id,
                   parent_comment_id,
-                  users (
+                  users!comments_user_id_fkey (
                     username,
                     display_name,
                     avatar_url
