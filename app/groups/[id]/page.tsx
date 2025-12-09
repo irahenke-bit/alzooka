@@ -133,6 +133,9 @@ export default function GroupPage() {
   const [showBannerCrop, setShowBannerCrop] = useState(false);
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
   const [showDeleteText, setShowDeleteText] = useState(false);
+  const [showEditMenu, setShowEditMenu] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -703,6 +706,7 @@ export default function GroupPage() {
   }
 
   async function handleDeleteGroup() {
+    setShowEditMenu(false);
     if (!confirm(`Are you sure you want to delete ${group?.name}? This action cannot be undone and will delete all posts and data associated with this group.`)) return;
     
     if (!confirm("This is your final warning. Are you ABSOLUTELY sure?")) return;
@@ -733,6 +737,23 @@ export default function GroupPage() {
     } catch (err) {
       alert("An error occurred while deleting the group");
       console.error("Delete error:", err);
+    }
+  }
+
+  async function handleEditName() {
+    if (!newGroupName.trim() || !group) return;
+    
+    const { error } = await supabase
+      .from("groups")
+      .update({ name: newGroupName.trim() })
+      .eq("id", groupId);
+    
+    if (!error) {
+      setGroup({ ...group, name: newGroupName.trim() });
+      setEditingName(false);
+      setNewGroupName("");
+    } else {
+      alert("Failed to update group name");
     }
   }
 
@@ -863,7 +884,7 @@ export default function GroupPage() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Admin buttons for banner */}
+        {/* Admin Edit button for banner */}
         {userRole === "admin" && (
           <>
             <input
@@ -873,69 +894,166 @@ export default function GroupPage() {
               onChange={handleBannerSelect}
               style={{ display: "none" }}
             />
-            <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8 }}>
+            <div style={{ position: "absolute", top: 12, right: 12 }}>
               <button
-                onClick={() => bannerInputRef.current?.click()}
-                disabled={uploadingBanner}
+                onClick={() => setShowEditMenu(!showEditMenu)}
                 style={{
-                  background: "rgba(0, 0, 0, 0.6)",
+                  background: "rgba(0, 0, 0, 0.7)",
                   border: "none",
                   color: "white",
-                  padding: "8px 14px",
+                  padding: "8px 16px",
                   borderRadius: 6,
-                  fontSize: 12,
+                  fontSize: 13,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
+                  fontWeight: 500,
                 }}
               >
-                📷 {uploadingBanner ? "Uploading..." : group.banner_url ? "Change Banner" : "Add Banner"}
+                ⚙️ Edit
               </button>
-              {group.banner_url && (
-                <button
-                  onClick={handleCropExistingBanner}
+              
+              {/* Dropdown Menu */}
+              {showEditMenu && (
+                <div
                   style={{
-                    background: "rgba(0, 0, 0, 0.6)",
-                    border: "none",
-                    color: "white",
-                    padding: "8px 14px",
-                    borderRadius: 6,
-                    fontSize: 12,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    background: "var(--alzooka-teal-dark)",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    borderRadius: 8,
+                    minWidth: 200,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                    zIndex: 100,
                   }}
                 >
-                  ✂️ Crop Banner
-                </button>
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      bannerInputRef.current?.click();
+                    }}
+                    disabled={uploadingBanner}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    📷 {uploadingBanner ? "Uploading..." : "Change Banner"}
+                  </button>
+                  
+                  {group.banner_url && (
+                    <button
+                      onClick={() => {
+                        setShowEditMenu(false);
+                        handleCropExistingBanner();
+                      }}
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        padding: "12px 16px",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      }}
+                    >
+                      ✂️ Crop Banner
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setNewGroupName(group.name);
+                      setEditingName(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    ✏️ Edit Name
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      togglePrivacy();
+                    }}
+                    disabled={changingPrivacy}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    {group.privacy === "public" ? "🔒 Make Private" : "🌐 Make Public"}
+                  </button>
+                  
+                  {group.privacy === "private" && (
+                    <button
+                      onClick={() => {
+                        setShowEditMenu(false);
+                        toggleMemberInvites();
+                      }}
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        padding: "12px 16px",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      }}
+                    >
+                      {group.allow_member_invites ? "🚫 Disable Member Invites" : "✅ Allow Member Invites"}
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={handleDeleteGroup}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "#ff6b6b",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    🗑️ Delete Group
+                  </button>
+                </div>
               )}
-              <button
-                onClick={handleDeleteGroup}
-                onMouseEnter={() => setShowDeleteText(true)}
-                onMouseLeave={() => setShowDeleteText(false)}
-                style={{
-                  background: showDeleteText ? "rgba(139, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.5)",
-                  border: "1px solid rgba(255, 100, 100, 0.3)",
-                  color: showDeleteText ? "white" : "rgba(255, 150, 150, 0.9)",
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  fontSize: 11,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  opacity: showDeleteText ? 1 : 0.7,
-                  transition: "all 0.2s ease",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                🗑️
-                {showDeleteText && (
-                  <span style={{ fontSize: 11 }}>Delete Group</span>
-                )}
-              </button>
             </div>
           </>
         )}
@@ -984,31 +1102,9 @@ export default function GroupPage() {
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              {userRole === "admin" ? (
-                <button
-                  onClick={togglePrivacy}
-                  disabled={changingPrivacy}
-                  style={{
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
-                    padding: "4px 10px",
-                    borderRadius: 4,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                  title="Click to change privacy"
-                >
-                  {changingPrivacy ? "..." : group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
-                </button>
-              ) : (
-                <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
-                  {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
-                </span>
-              )}
+              <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
+                {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
+              </span>
             </div>
           </div>
           <div style={{ flexShrink: 0, display: "flex", gap: 8 }}>
@@ -1114,21 +1210,6 @@ export default function GroupPage() {
           </div>
         )}
 
-        {/* Admin Settings */}
-        {userRole === "admin" && group.privacy === "private" && (
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.2)" }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: 14, opacity: 0.8 }}>Admin Settings</h3>
-            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14 }}>
-              <input
-                type="checkbox"
-                checked={group.allow_member_invites}
-                onChange={toggleMemberInvites}
-                style={{ width: 18, height: 18 }}
-              />
-              Allow members to invite others
-            </label>
-          </div>
-        )}
       </div>
 
       {/* Invite Modal */}
@@ -1228,6 +1309,64 @@ export default function GroupPage() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Name Modal */}
+      {editingName && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setEditingName(false);
+            setNewGroupName("");
+          }}
+        >
+          <div
+            className="card"
+            style={{ width: "90%", maxWidth: 400 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Edit Group Name</h2>
+            <input
+              type="text"
+              placeholder="Group name"
+              value={newGroupName}
+              onChange={e => setNewGroupName(e.target.value)}
+              autoFocus
+              maxLength={100}
+            />
+            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+              <button 
+                onClick={handleEditName}
+                disabled={!newGroupName.trim() || newGroupName.trim() === group.name}
+                style={{ flex: 1 }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setEditingName(false);
+                  setNewGroupName("");
+                }}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
