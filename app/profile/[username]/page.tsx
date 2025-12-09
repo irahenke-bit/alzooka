@@ -855,7 +855,7 @@ export default function ProfilePage() {
         style={{ 
           marginBottom: 32, 
           borderRadius: 12, 
-          overflow: "hidden",
+          overflow: "visible",
           background: profile.banner_url 
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
@@ -867,6 +867,15 @@ export default function ProfilePage() {
           justifyContent: "flex-end",
         }}
       >
+        {/* Background with rounded corners for clipping */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 12,
+          overflow: "hidden",
+          background: "inherit",
+          zIndex: -1,
+        }} />
         {/* Edit menu button */}
         {isOwnProfile && (
           <>
