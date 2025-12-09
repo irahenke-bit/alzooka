@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import { BannerCropModal } from "@/app/components/BannerCropModal";
 
 type Group = {
   id: string;
@@ -129,6 +130,8 @@ export default function GroupPage() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
+  const [showBannerCrop, setShowBannerCrop] = useState(false);
+  const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -485,7 +488,7 @@ export default function GroupPage() {
     await loadMembers();
   }
 
-  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user || !group) return;
 
@@ -493,20 +496,35 @@ export default function GroupPage() {
       alert("Please select an image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be less than 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image must be less than 10MB");
       return;
     }
 
-    setUploadingBanner(true);
+    // Create a preview URL and show crop modal
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBannerImageToCrop(reader.result as string);
+      setShowBannerCrop(true);
+    };
+    reader.readAsDataURL(file);
+    
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `group-${groupId}-banner-${Date.now()}.${fileExt}`;
+  async function handleBannerCropSave(croppedBlob: Blob) {
+    if (!user || !group) return;
+
+    setUploadingBanner(true);
+    setShowBannerCrop(false);
+    setBannerImageToCrop(null);
+
+    const fileName = `group-${groupId}-banner-${Date.now()}.jpg`;
     const filePath = `banners/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("post-images")
-      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+      .upload(filePath, croppedBlob, { cacheControl: "3600", upsert: true, contentType: "image/jpeg" });
 
     if (uploadError) {
       alert("Failed to upload banner");
@@ -525,8 +543,11 @@ export default function GroupPage() {
       setGroup({ ...group, banner_url: publicUrl });
     }
     setUploadingBanner(false);
-    
-    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  }
+
+  function handleBannerCropCancel() {
+    setShowBannerCrop(false);
+    setBannerImageToCrop(null);
   }
 
   async function togglePrivacy() {
@@ -789,7 +810,7 @@ export default function GroupPage() {
               ref={bannerInputRef}
               type="file"
               accept="image/*"
-              onChange={handleBannerUpload}
+              onChange={handleBannerSelect}
               style={{ display: "none" }}
             />
             <button
@@ -1271,6 +1292,15 @@ export default function GroupPage() {
             }}
           />
         ))
+      )}
+
+      {/* Banner Crop Modal */}
+      {showBannerCrop && bannerImageToCrop && (
+        <BannerCropModal
+          imageSrc={bannerImageToCrop}
+          onCancel={handleBannerCropCancel}
+          onSave={handleBannerCropSave}
+        />
       )}
     </div>
   );
