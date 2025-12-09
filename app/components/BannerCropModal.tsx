@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
-import type { Area } from "react-easy-crop";
+import { useState, useRef } from "react";
+import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 type Props = {
   imageSrc: string;
@@ -10,68 +10,60 @@ type Props = {
   onSave: (croppedBlob: Blob) => void;
 };
 
-// Helper function to create cropped image
-async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
-  const image = new Image();
-  image.crossOrigin = "anonymous"; // Enable CORS
-  image.src = imageSrc;
-  
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = () => reject(new Error("Failed to load image"));
-  });
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  
-  if (!ctx) {
-    throw new Error("No 2d context");
-  }
-
-  // Set canvas size to desired output
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
-
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height
-  );
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Canvas is empty"));
-      }
-    }, "image/jpeg", 0.95); // Higher quality
-  });
-}
-
 export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [crop, setCrop] = useState<Crop>({
+    unit: "%",
+    width: 90,
+    height: 50,
+    x: 5,
+    y: 25,
+  });
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const imgRef = useRef<HTMLImageElement>(null);
   const [saving, setSaving] = useState(false);
 
-  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   async function handleSave() {
-    if (!croppedAreaPixels) return;
-    
+    if (!completedCrop || !imgRef.current) return;
+
     setSaving(true);
     try {
-      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      onSave(croppedBlob);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      
+      if (!ctx) {
+        throw new Error("No 2d context");
+      }
+
+      const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
+      const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
+
+      canvas.width = completedCrop.width;
+      canvas.height = completedCrop.height;
+
+      ctx.drawImage(
+        imgRef.current,
+        completedCrop.x * scaleX,
+        completedCrop.y * scaleY,
+        completedCrop.width * scaleX,
+        completedCrop.height * scaleY,
+        0,
+        0,
+        completedCrop.width,
+        completedCrop.height
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            onSave(blob);
+          } else {
+            alert("Failed to crop image");
+            setSaving(false);
+          }
+        },
+        "image/jpeg",
+        0.95
+      );
     } catch (error) {
       console.error("Error cropping image:", error);
       alert("Failed to crop image");
@@ -84,7 +76,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.9)",
+        background: "rgba(0, 0, 0, 0.95)",
         zIndex: 2000,
         display: "flex",
         flexDirection: "column",
@@ -98,7 +90,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         alignItems: "center",
         borderBottom: "1px solid rgba(255,255,255,0.1)"
       }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: "white" }}>Position your banner</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: "white" }}>Crop your banner</h2>
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={onCancel}
@@ -115,7 +107,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !completedCrop}
             style={{
               background: "var(--alzooka-gold)",
               border: "none",
@@ -124,6 +116,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
               borderRadius: 6,
               cursor: "pointer",
               fontWeight: 600,
+              opacity: saving || !completedCrop ? 0.5 : 1,
             }}
           >
             {saving ? "Saving..." : "Save"}
@@ -131,50 +124,36 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         </div>
       </div>
 
-      {/* Cropper */}
-      <div style={{ position: "relative", flex: 1 }}>
-        <Cropper
-          image={imageSrc}
-          crop={crop}
-          zoom={zoom}
-          minZoom={0.1}
-          maxZoom={10}
-          aspect={16 / 5}
-          restrictPosition={false}
-          onCropChange={setCrop}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-          showGrid={true}
-          style={{
-            containerStyle: {
-              background: "#000",
-            },
-            cropAreaStyle: {
-              border: "2px solid var(--alzooka-gold)",
-            },
-          }}
-        />
-      </div>
-
-      {/* Zoom slider */}
+      {/* Crop Area */}
       <div style={{ 
-        padding: "16px 24px", 
+        flex: 1, 
         display: "flex", 
         alignItems: "center", 
-        gap: 16,
-        borderTop: "1px solid rgba(255,255,255,0.1)"
+        justifyContent: "center",
+        overflow: "auto",
+        padding: "20px"
       }}>
-        <span style={{ color: "white", fontSize: 14 }}>Zoom:</span>
-        <input
-          type="range"
-          min={0.1}
-          max={10}
-          step={0.1}
-          value={zoom}
-          onChange={(e) => setZoom(Number(e.target.value))}
-          style={{ flex: 1, maxWidth: 300 }}
-        />
-        <span style={{ color: "white", fontSize: 14, minWidth: 50 }}>{zoom.toFixed(1)}x</span>
+        <ReactCrop
+          crop={crop}
+          onChange={(c) => setCrop(c)}
+          onComplete={(c) => setCompletedCrop(c)}
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+          }}
+        >
+          <img
+            ref={imgRef}
+            src={imageSrc}
+            alt="Crop preview"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "calc(100vh - 200px)",
+              display: "block",
+            }}
+            crossOrigin="anonymous"
+          />
+        </ReactCrop>
       </div>
 
       {/* Instructions */}
@@ -183,13 +162,10 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         color: "rgba(255,255,255,0.6)", 
         fontSize: 14, 
         margin: 0,
-        paddingBottom: 16
+        padding: "16px"
       }}>
-        Drag to reposition • Scroll or use slider to zoom
+        Drag the corners to resize • Drag inside to reposition
       </p>
     </div>
   );
 }
-
-
-
