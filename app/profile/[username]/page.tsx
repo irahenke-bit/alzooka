@@ -433,17 +433,65 @@ export default function ProfilePage() {
     if (!profile || !currentUser) return;
     setShowEditMenu(false);
     
-    if (!confirm("Are you sure you want to deactivate your account?\n\nYour profile will appear as 'User not found' and all your posts/comments will be hidden.\n\nYou have 30 days to reactivate by logging back in.")) {
+    const currentlyActive = profile.is_active ?? true;
+    
+    if (currentlyActive) {
+      // Deactivating
+      if (!confirm("Deactivate your account?\n\nYour profile will appear as 'User not found' and all your posts/comments will be hidden.\n\nYou can reactivate anytime by logging back in.")) {
+        return;
+      }
+      
+      const { error } = await supabase
+        .from("users")
+        .update({ 
+          is_active: false,
+          deactivated_at: new Date().toISOString()
+        })
+        .eq("id", currentUser.id);
+      
+      if (error) {
+        alert("Failed to deactivate account. Please try again.");
+        console.error("Deactivation error:", error);
+      } else {
+        await supabase.auth.signOut();
+        router.push("/login");
+      }
+    } else {
+      // Reactivating
+      if (!confirm("Reactivate your account?")) {
+        return;
+      }
+      
+      const { error } = await supabase
+        .from("users")
+        .update({ 
+          is_active: true,
+          deactivated_at: null,
+          scheduled_deletion_at: null // Also clear any deletion schedule
+        })
+        .eq("id", currentUser.id);
+      
+      if (error) {
+        alert("Failed to reactivate account. Please try again.");
+        console.error("Reactivation error:", error);
+      } else {
+        setProfile({ ...profile, is_active: true });
+      }
+    }
+  }
+
+  async function handleDeleteAccountPermanently() {
+    if (!profile || !currentUser) return;
+    setShowEditMenu(false);
+    
+    if (!confirm("⚠️ DELETE YOUR ACCOUNT PERMANENTLY?\n\nThis will:\n• Deactivate your account immediately\n• Schedule PERMANENT deletion in 30 days\n• Delete ALL your data after 30 days\n\nYou can cancel within 30 days by logging back in.\n\nAre you ABSOLUTELY SURE?")) {
       return;
     }
     
-    if (!confirm("This is your final warning. Deactivate your account?")) {
+    if (!confirm("THIS IS YOUR FINAL WARNING!\n\nYour account will be PERMANENTLY DELETED in 30 days.\n\nContinue?")) {
       return;
     }
 
-    // TODO: Send confirmation email (requires email service integration)
-    
-    // Set deactivation timestamp (30 days from now for permanent deletion)
     const deactivationDate = new Date();
     const permanentDeletionDate = new Date(deactivationDate.getTime() + 30 * 24 * 60 * 60 * 1000);
     
@@ -457,10 +505,10 @@ export default function ProfilePage() {
       .eq("id", currentUser.id);
     
     if (error) {
-      alert("Failed to deactivate account. Please try again.");
-      console.error("Deactivation error:", error);
+      alert("Failed to schedule account deletion. Please try again.");
+      console.error("Delete scheduling error:", error);
     } else {
-      // Sign out and redirect
+      alert(`Account deletion scheduled for ${permanentDeletionDate.toLocaleDateString()}.\n\nYou can cancel by logging in within 30 days.`);
       await supabase.auth.signOut();
       router.push("/login");
     }
@@ -1043,6 +1091,30 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    💤 {profile.is_active ?? true ? "Deactivate Account" : "Reactivate Account"}
+                  </button>
+                  
+                  {/* Separator line */}
+                  <div style={{
+                    height: 1,
+                    background: "rgba(240, 235, 224, 0.2)",
+                    margin: "4px 0",
+                  }} />
+                  
+                  <button
+                    onClick={handleDeleteAccountPermanently}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
                       color: "#ff6b6b",
                       padding: "12px 16px",
                       textAlign: "left",
@@ -1051,7 +1123,7 @@ export default function ProfilePage() {
                       fontWeight: 500,
                     }}
                   >
-                    🗑️ Deactivate Account
+                    🗑️ Delete Account Permanently
                   </button>
                 </div>
                 </>
