@@ -138,13 +138,17 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
           crop={crop}
           zoom={zoom}
           aspect={16 / 5}
+          restrictPosition={false}
           onCropChange={setCrop}
           onCropComplete={onCropComplete}
           onZoomChange={setZoom}
-          showGrid={false}
+          showGrid={true}
           style={{
             containerStyle: {
               background: "#000",
+            },
+            cropAreaStyle: {
+              border: "2px solid var(--alzooka-gold)",
             },
           }}
         />
@@ -161,13 +165,14 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         <span style={{ color: "white", fontSize: 14 }}>Zoom:</span>
         <input
           type="range"
-          min={1}
-          max={3}
+          min={0.5}
+          max={5}
           step={0.1}
           value={zoom}
           onChange={(e) => setZoom(Number(e.target.value))}
           style={{ flex: 1, maxWidth: 300 }}
         />
+        <span style={{ color: "white", fontSize: 14, minWidth: 40 }}>{zoom.toFixed(1)}x</span>
       </div>
 
       {/* Instructions */}
