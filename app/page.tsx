@@ -93,6 +93,18 @@ function findYouTubeUrl(text: string): string | null {
   return match ? match[1] : null;
 }
 
+// Spotify URL detection
+function findSpotifyUrl(text: string): string | null {
+  const urlPattern = /(https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
+function getSpotifyType(url: string): string | null {
+  const match = url.match(/spotify\.com\/(track|album|playlist|episode|show)\//);
+  return match ? match[1] : null;
+}
+
 function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
@@ -107,6 +119,8 @@ function FeedContent() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
+  const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
+  const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -588,11 +602,15 @@ function FeedContent() {
     setYoutubePreview(null);
   }
 
+  function removeSpotifyPreview() {
+    setSpotifyPreview(null);
+  }
+
   async function handleContentChange(newContent: string) {
     setContent(newContent);
     
     // Check for YouTube URL if we don't already have a preview
-    if (!youtubePreview && !loadingYoutubePreview) {
+    if (!youtubePreview && !spotifyPreview && !loadingYoutubePreview && !loadingSpotifyPreview) {
       const youtubeUrl = findYouTubeUrl(newContent);
       if (youtubeUrl) {
         const videoId = extractYouTubeVideoId(youtubeUrl);
@@ -617,14 +635,42 @@ function FeedContent() {
           }
           setLoadingYoutubePreview(false);
         }
+        return;
+      }
+
+      // Check for Spotify URL if no YouTube URL found
+      const spotifyUrl = findSpotifyUrl(newContent);
+      if (spotifyUrl) {
+        const spotifyType = getSpotifyType(spotifyUrl);
+        if (spotifyType) {
+          setLoadingSpotifyPreview(true);
+          try {
+            const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`);
+            const data = await response.json();
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: data.title || "Spotify",
+              thumbnail: data.thumbnail_url || "",
+              type: spotifyType,
+            });
+          } catch {
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: `Spotify ${spotifyType.charAt(0).toUpperCase() + spotifyType.slice(1)}`,
+              thumbnail: "",
+              type: spotifyType,
+            });
+          }
+          setLoadingSpotifyPreview(false);
+        }
       }
     }
   }
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    // Allow posting if there's content, image, or YouTube video
-    if ((!content.trim() && !selectedImage && !youtubePreview) || !user) return;
+    // Allow posting if there's content, image, YouTube video, or Spotify
+    if ((!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview) || !user) return;
 
     setPosting(true);
 
@@ -663,7 +709,7 @@ function FeedContent() {
       .insert({
         content: content.trim(),
         image_url: imageUrl,
-        video_url: youtubePreview?.url || null,
+        video_url: youtubePreview?.url || spotifyPreview?.url || null,
         user_id: user.id,
         wall_user_id: highlightPostId ? null : null, // feed posts only here
       })
@@ -683,6 +729,7 @@ function FeedContent() {
       setSelectedImage(null);
       setImagePreview(null);
       setYoutubePreview(null);
+      setSpotifyPreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -836,7 +883,7 @@ function FeedContent() {
       {/* New Post Form */}
       <form onSubmit={handlePost} style={{ marginBottom: 32 }}>
         <textarea
-          placeholder="What's on your mind? Paste a YouTube link to share a video..."
+          placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
           rows={3}
@@ -934,6 +981,61 @@ function FeedContent() {
           </div>
         )}
 
+        {/* Spotify Preview */}
+        {loadingSpotifyPreview && (
+          <div style={{ marginBottom: 12, padding: 16, background: "rgba(0,0,0,0.2)", borderRadius: 8 }}>
+            <p style={{ margin: 0, opacity: 0.6 }}>Loading Spotify preview...</p>
+          </div>
+        )}
+        {spotifyPreview && (
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <div style={{ 
+              background: "var(--alzooka-teal-dark)", 
+              borderRadius: 8, 
+              overflow: "hidden",
+              border: "1px solid rgba(240, 235, 224, 0.2)"
+            }}>
+              {spotifyPreview.thumbnail && (
+                <img 
+                  src={spotifyPreview.thumbnail}
+                  alt="Spotify artwork"
+                  style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                />
+              )}
+              <div style={{ padding: "12px 16px" }}>
+                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                  🎵 Spotify.com
+                </p>
+                <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                  {spotifyPreview.title}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={removeSpotifyPreview}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "rgba(0, 0, 0, 0.7)",
+                border: "none",
+                borderRadius: "50%",
+                width: 28,
+                height: 28,
+                color: "white",
+                cursor: "pointer",
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -961,7 +1063,7 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview)}>
+          <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview)}>
             {posting ? "Posting..." : "Post"}
           </button>
         </div>
@@ -1349,12 +1451,13 @@ function PostCard({
           ) : (
             <>
               {(() => {
-                // If there's a video, strip the YouTube URL from displayed content
+                // If there's a video, strip the YouTube or Spotify URL from displayed content
                 let displayContent = post.content;
                 if (post.video_url && displayContent) {
-                  // Remove YouTube URLs from content
+                  // Remove YouTube and Spotify URLs from content
                   displayContent = displayContent
                     .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                    .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                     .trim();
                 }
                 return displayContent ? (
@@ -1437,37 +1540,63 @@ function PostCard({
             </div>
           )}
 
-          {/* YouTube Video Player */}
+          {/* YouTube or Spotify Player */}
           {post.video_url && (() => {
+            // Check if it's a YouTube URL
             const videoId = extractYouTubeVideoId(post.video_url);
-            if (!videoId) return null;
-            return (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ 
-                  position: "relative",
-                  paddingBottom: "56.25%", /* 16:9 aspect ratio */
-                  height: 0,
-                  overflow: "hidden",
-                  borderRadius: 8,
-                  background: "#000",
-                }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}?rel=0`}
-                    title="YouTube video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  />
+            if (videoId) {
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ 
+                    position: "relative",
+                    paddingBottom: "56.25%", /* 16:9 aspect ratio */
+                    height: 0,
+                    overflow: "hidden",
+                    borderRadius: 8,
+                    background: "#000",
+                  }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                      title="YouTube video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            }
+            
+            // Check if it's a Spotify URL
+            const spotifyUrl = findSpotifyUrl(post.video_url);
+            if (spotifyUrl) {
+              // Extract Spotify URI for embed
+              const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+              if (match) {
+                const [, type, id] = match;
+                return (
+                  <div style={{ marginBottom: 16 }}>
+                    <iframe
+                      style={{ borderRadius: 12, width: "100%", height: type === "track" || type === "episode" ? 152 : 380 }}
+                      src={`https://open.spotify.com/embed/${type}/${id}?utm_source=generator`}
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    />
+                  </div>
+                );
+              }
+            }
+            
+            return null;
           })()}
 
           {/* Comment Button - Opens Modal */}

@@ -98,6 +98,18 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+// Spotify URL detection
+function findSpotifyUrl(text: string): string | null {
+  const urlPattern = /(https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
+function getSpotifyType(url: string): string | null {
+  const match = url.match(/spotify\.com\/(track|album|playlist|episode|show)\//);
+  return match ? match[1] : null;
+}
+
 export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
@@ -131,6 +143,8 @@ export default function GroupPage() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
+  const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
+  const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
   const [showDeleteText, setShowDeleteText] = useState(false);
@@ -379,11 +393,15 @@ export default function GroupPage() {
     setYoutubePreview(null);
   }
 
+  function removeSpotifyPreview() {
+    setSpotifyPreview(null);
+  }
+
   async function handleContentChange(newContent: string) {
     setContent(newContent);
     
     // Check for YouTube URL if we don't already have a preview
-    if (!youtubePreview && !loadingYoutubePreview) {
+    if (!youtubePreview && !spotifyPreview && !loadingYoutubePreview && !loadingSpotifyPreview) {
       const youtubeUrl = findYouTubeUrl(newContent);
       if (youtubeUrl) {
         const videoId = extractYouTubeVideoId(youtubeUrl);
@@ -406,13 +424,41 @@ export default function GroupPage() {
           }
           setLoadingYoutubePreview(false);
         }
+        return;
+      }
+
+      // Check for Spotify URL if no YouTube URL found
+      const spotifyUrl = findSpotifyUrl(newContent);
+      if (spotifyUrl) {
+        const spotifyType = getSpotifyType(spotifyUrl);
+        if (spotifyType) {
+          setLoadingSpotifyPreview(true);
+          try {
+            const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`);
+            const data = await response.json();
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: data.title || "Spotify",
+              thumbnail: data.thumbnail_url || "",
+              type: spotifyType,
+            });
+          } catch {
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: `Spotify ${spotifyType.charAt(0).toUpperCase() + spotifyType.slice(1)}`,
+              thumbnail: "",
+              type: spotifyType,
+            });
+          }
+          setLoadingSpotifyPreview(false);
+        }
       }
     }
   }
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    if ((!content.trim() && !selectedImage && !youtubePreview) || !user) return;
+    if ((!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview) || !user) return;
 
     setPosting(true);
 
@@ -442,7 +488,7 @@ export default function GroupPage() {
       .insert({
         content: content.trim(),
         image_url: imageUrl,
-        video_url: youtubePreview?.url || null,
+        video_url: youtubePreview?.url || spotifyPreview?.url || null,
         user_id: user.id,
         group_id: groupId,
       })
@@ -461,6 +507,7 @@ export default function GroupPage() {
       setSelectedImage(null);
       setImagePreview(null);
       setYoutubePreview(null);
+      setSpotifyPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       await loadPosts();
       await loadUserVotes(user.id);
@@ -1395,7 +1442,7 @@ export default function GroupPage() {
       {isMember && (
         <form onSubmit={handlePost} style={{ marginBottom: 24 }}>
           <textarea
-            placeholder={`Share something with ${group.name}... Paste a YouTube link to share a video`}
+            placeholder={`Share something with ${group.name}... Paste a YouTube or Spotify link to share`}
             value={content}
             onChange={e => handleContentChange(e.target.value)}
             rows={3}
@@ -1476,6 +1523,59 @@ export default function GroupPage() {
               </button>
             </div>
           )}
+          {loadingSpotifyPreview && (
+            <div style={{ marginBottom: 12, padding: 16, background: "rgba(0,0,0,0.2)", borderRadius: 8 }}>
+              <p style={{ margin: 0, opacity: 0.6 }}>Loading Spotify preview...</p>
+            </div>
+          )}
+          {spotifyPreview && (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <div style={{ 
+                background: "var(--alzooka-teal-dark)", 
+                borderRadius: 8, 
+                overflow: "hidden",
+                border: "1px solid rgba(240, 235, 224, 0.2)"
+              }}>
+                {spotifyPreview.thumbnail && (
+                  <img 
+                    src={spotifyPreview.thumbnail}
+                    alt="Spotify artwork"
+                    style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                  />
+                )}
+                <div style={{ padding: "12px 16px" }}>
+                  <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                    🎵 Spotify.com
+                  </p>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                    {spotifyPreview.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={removeSpotifyPreview}
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: 28,
+                  height: 28,
+                  color: "white",
+                  cursor: "pointer",
+                  fontSize: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -1498,7 +1598,7 @@ export default function GroupPage() {
             >
               📷 Photo
             </button>
-            <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview)}>
+            <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview)}>
               {posting ? "Posting..." : "Post"}
             </button>
           </div>
@@ -1699,11 +1799,12 @@ function GroupPostCard({
           </div>
 
           {post.content && (() => {
-            // Strip YouTube URL from displayed content if video exists
+            // Strip YouTube or Spotify URL from displayed content if video exists
             let displayContent = post.content;
             if (post.video_url && displayContent) {
               displayContent = displayContent
                 .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                 .trim();
             }
             return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p> : null;
@@ -1719,35 +1820,61 @@ function GroupPostCard({
             </div>
           )}
           {post.video_url && (() => {
+            // Check if it's a YouTube URL
             const videoId = extractYouTubeVideoId(post.video_url);
-            if (!videoId) return null;
-            return (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ 
-                  position: "relative",
-                  paddingBottom: "56.25%",
-                  height: 0,
-                  overflow: "hidden",
-                  borderRadius: 8,
-                  background: "#000",
-                }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}?rel=0`}
-                    title="YouTube video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  />
+            if (videoId) {
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ 
+                    position: "relative",
+                    paddingBottom: "56.25%",
+                    height: 0,
+                    overflow: "hidden",
+                    borderRadius: 8,
+                    background: "#000",
+                  }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                      title="YouTube video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            }
+            
+            // Check if it's a Spotify URL
+            const spotifyUrl = findSpotifyUrl(post.video_url);
+            if (spotifyUrl) {
+              // Extract Spotify URI for embed
+              const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+              if (match) {
+                const [, type, id] = match;
+                return (
+                  <div style={{ marginBottom: 16 }}>
+                    <iframe
+                      style={{ borderRadius: 12, width: "100%", height: type === "track" || type === "episode" ? 152 : 380 }}
+                      src={`https://open.spotify.com/embed/${type}/${id}?utm_source=generator`}
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    />
+                  </div>
+                );
+              }
+            }
+            
+            return null;
           })()}
 
           <button
