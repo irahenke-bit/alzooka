@@ -1848,6 +1848,8 @@ function GroupPostCard({
   const [saving, setSaving] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
@@ -1896,6 +1898,30 @@ function GroupPostCard({
     if (!error && data) {
       await supabase.from("votes").insert({ user_id: user.id, target_type: "comment", target_id: data.id, value: 1 });
       setCommentText("");
+      onRefresh();
+    }
+    setSubmitting(false);
+  }
+
+  async function handleReply(parentCommentId: string) {
+    if (!replyText.trim()) return;
+    setSubmitting(true);
+
+    const { data, error } = await supabase
+      .from("comments")
+      .insert({
+        content: replyText.trim(),
+        post_id: post.id,
+        user_id: user.id,
+        parent_comment_id: parentCommentId
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      await supabase.from("votes").insert({ user_id: user.id, target_type: "comment", target_id: data.id, value: 1 });
+      setReplyText("");
+      setReplyingToCommentId(null);
       onRefresh();
     }
     setSubmitting(false);
@@ -2298,7 +2324,238 @@ function GroupPostCard({
                           </div>
                         </div>
                       ) : (
-                        <p style={{ margin: "0", fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
+                        <>
+                          <p style={{ margin: "0 0 8px 0", fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
+                          <button
+                            onClick={() => setReplyingToCommentId(comment.id)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              color: "var(--alzooka-cream)",
+                              fontSize: 12,
+                              cursor: "pointer",
+                              opacity: 0.6,
+                              padding: "2px 0",
+                            }}
+                          >
+                            💬 Reply
+                          </button>
+                        </>
+                      )}
+
+                      {/* Reply Form */}
+                      {replyingToCommentId === comment.id && (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleReply(comment.id);
+                          }}
+                          style={{ marginTop: 12 }}
+                        >
+                          <input
+                            type="text"
+                            placeholder="Write a reply..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            style={{ width: "100%", marginBottom: 8, fontSize: 13, padding: "6px 10px" }}
+                            autoFocus
+                          />
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              type="submit"
+                              disabled={submitting || !replyText.trim()}
+                              style={{ padding: "6px 12px", fontSize: 13 }}
+                            >
+                              {submitting ? "..." : "Reply"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReplyingToCommentId(null);
+                                setReplyText("");
+                              }}
+                              style={{
+                                padding: "6px 12px",
+                                fontSize: 13,
+                                background: "transparent",
+                                border: "1px solid rgba(240, 235, 224, 0.3)",
+                                color: "var(--alzooka-cream)",
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      )}
+
+                      {/* Nested Replies */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div style={{ marginTop: 12, paddingLeft: 20, borderLeft: "2px solid rgba(217, 171, 92, 0.3)" }}>
+                          {comment.replies.map(reply => {
+                            const replyKey = `comment-${reply.id}`;
+                            const replyVote = votes[replyKey]?.value || 0;
+                            const replyScore = voteTotals[replyKey] || 0;
+
+                            return (
+                              <div key={reply.id} style={{ marginBottom: 12, display: "flex", gap: 8 }}>
+                                {/* Vote Buttons for Reply */}
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, minWidth: 20 }}>
+                                  <button
+                                    onClick={() => onVote("comment", reply.id, 1)}
+                                    style={{
+                                      background: "transparent",
+                                      border: "none",
+                                      padding: "2px 4px",
+                                      cursor: "pointer",
+                                      color: replyVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                                      opacity: replyVote === 1 ? 1 : 0.5,
+                                      fontSize: 10,
+                                      lineHeight: 1,
+                                    }}
+                                  >
+                                    ▲
+                                  </button>
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: replyScore > 0 ? "var(--alzooka-gold)" : replyScore < 0 ? "#e57373" : "var(--alzooka-cream)", opacity: replyScore === 0 ? 0.5 : 1 }}>
+                                    {replyScore}
+                                  </span>
+                                  <button
+                                    onClick={() => onVote("comment", reply.id, -1)}
+                                    style={{
+                                      background: "transparent",
+                                      border: "none",
+                                      padding: "2px 4px",
+                                      cursor: "pointer",
+                                      color: replyVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+                                      opacity: replyVote === -1 ? 1 : 0.5,
+                                      fontSize: 10,
+                                      lineHeight: 1,
+                                    }}
+                                  >
+                                    ▼
+                                  </button>
+                                </div>
+
+                                <Link href={`/profile/${reply.users?.username}`} style={{ flexShrink: 0 }}>
+                                  {reply.users?.avatar_url ? (
+                                    <img src={reply.users.avatar_url} alt="" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />
+                                  ) : (
+                                    <div style={{
+                                      width: 24,
+                                      height: 24,
+                                      borderRadius: "50%",
+                                      background: "var(--alzooka-gold)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "var(--alzooka-teal-dark)",
+                                      fontWeight: 700,
+                                      fontSize: 10,
+                                    }}>
+                                      {(reply.users?.display_name || reply.users?.username || "?").charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                </Link>
+
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                                    <div>
+                                      <span style={{ fontSize: 13, fontWeight: 600 }}>{reply.users?.display_name || reply.users?.username}</span>
+                                      <span className="text-muted" style={{ marginLeft: 8, fontSize: 11 }}>{formatTime(reply.created_at)}</span>
+                                    </div>
+                                    {(reply.user_id === user.id || userRole === "admin") && (
+                                      <div style={{ display: "flex", gap: 8 }}>
+                                        {reply.user_id === user.id && (
+                                          <button
+                                            onClick={() => {
+                                              setEditingCommentId(reply.id);
+                                              setEditingCommentText(reply.content);
+                                            }}
+                                            style={{
+                                              background: "transparent",
+                                              border: "none",
+                                              color: "var(--alzooka-cream)",
+                                              fontSize: 10,
+                                              cursor: "pointer",
+                                              opacity: 0.7,
+                                              padding: "2px 6px",
+                                            }}
+                                            title="Edit reply"
+                                          >
+                                            Edit
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={async () => {
+                                            if (!confirm("Delete this reply?")) return;
+                                            await supabase.from("comments").delete().eq("id", reply.id);
+                                            onRefresh();
+                                          }}
+                                          style={{
+                                            background: "transparent",
+                                            border: "none",
+                                            color: "#e57373",
+                                            fontSize: 10,
+                                            cursor: "pointer",
+                                            opacity: 0.7,
+                                            padding: "2px 6px",
+                                          }}
+                                          title="Delete reply"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {editingCommentId === reply.id ? (
+                                    <div style={{ marginTop: 8 }}>
+                                      <textarea
+                                        value={editingCommentText}
+                                        onChange={(e) => setEditingCommentText(e.target.value)}
+                                        rows={2}
+                                        style={{ width: "100%", marginBottom: 8, fontSize: 13, resize: "vertical" }}
+                                      />
+                                      <div style={{ display: "flex", gap: 8 }}>
+                                        <button
+                                          onClick={async () => {
+                                            if (!editingCommentText.trim()) return;
+                                            await supabase
+                                              .from("comments")
+                                              .update({ content: editingCommentText.trim() })
+                                              .eq("id", reply.id);
+                                            setEditingCommentId(null);
+                                            setEditingCommentText("");
+                                            onRefresh();
+                                          }}
+                                          style={{ padding: "6px 12px", fontSize: 12 }}
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setEditingCommentId(null);
+                                            setEditingCommentText("");
+                                          }}
+                                          style={{
+                                            padding: "6px 12px",
+                                            fontSize: 12,
+                                            background: "transparent",
+                                            border: "1px solid rgba(240, 235, 224, 0.3)",
+                                            color: "var(--alzooka-cream)",
+                                          }}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p style={{ margin: "0", fontSize: 13, lineHeight: 1.5 }}>{reply.content}</p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
