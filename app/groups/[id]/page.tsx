@@ -1729,11 +1729,42 @@ function GroupPostCard({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [saving, setSaving] = useState(false);
 
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
   const score = voteTotals[postKey] || 0;
   const scoreColor = score > 0 ? "var(--alzooka-gold)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
+
+  async function handleSaveEdit() {
+    if (!editContent.trim() && !post.image_url && !post.video_url) return;
+    
+    setSaving(true);
+
+    const { error } = await supabase
+      .from("posts")
+      .update({
+        content: editContent.trim(),
+        edited_at: new Date().toISOString(),
+      })
+      .eq("id", post.id);
+
+    if (!error) {
+      setIsEditing(false);
+      onRefresh();
+    } else {
+      alert("Failed to update post");
+    }
+
+    setSaving(false);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setEditContent(post.content);
+  }
 
   async function handleComment(e: React.FormEvent) {
     e.preventDefault();
@@ -1827,26 +1858,81 @@ function GroupPostCard({
               </div>
             </Link>
             {post.user_id === user.id && (
-              <button
-                onClick={() => onDelete(post.id)}
-                style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 12, cursor: "pointer", opacity: 0.7 }}
-              >
-                Delete
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Edit post"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDelete(post.id)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#e57373",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Delete post"
+                >
+                  Delete
+                </button>
+              </div>
             )}
           </div>
 
-          {post.content && (() => {
-            // Strip YouTube or Spotify URL from displayed content if video exists
-            let displayContent = post.content;
-            if (post.video_url && displayContent) {
-              displayContent = displayContent
-                .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
-                .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
-                .trim();
-            }
-            return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p> : null;
-          })()}
+          {/* Post Content - Edit Mode or View Mode */}
+          {isEditing ? (
+            <div style={{ marginBottom: 16 }}>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={3}
+                style={{ marginBottom: 12, resize: "vertical", width: "100%", boxSizing: "border-box" }}
+              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSaveEdit} disabled={saving} style={{ padding: "8px 16px", fontSize: 14 }}>
+                  {saving ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={cancelEdit}
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: 14,
+                    background: "transparent",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            post.content && (() => {
+              // Strip YouTube or Spotify URL from displayed content if video exists
+              let displayContent = post.content;
+              if (post.video_url && displayContent) {
+                displayContent = displayContent
+                  .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                  .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
+                  .trim();
+              }
+              return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p> : null;
+            })()
+          )}
           {post.image_url && (
             <div style={{ marginBottom: 16 }}>
               <img
