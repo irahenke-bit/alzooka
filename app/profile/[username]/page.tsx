@@ -89,10 +89,32 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
   useEffect(() => {
     async function fetchPlaylistTitle() {
       try {
+        // Try YouTube's oEmbed API first (works for playlists)
         const playlistUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
-        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(playlistUrl)}`);
-        const data = await response.json();
-        setTitle(data.title || null);
+        const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(playlistUrl)}&format=json`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTitle(data.title || null);
+        } else {
+          // Fallback: try to get it from the video URL with list parameter
+          const response2 = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`);
+          const data2 = await response2.json();
+          // Extract playlist title from video title if it contains indicators
+          if (data2.title) {
+            const title = data2.title;
+            // Look for common playlist/album patterns in the title
+            if (title.toLowerCase().includes('full album') || 
+                title.toLowerCase().includes('playlist') ||
+                title.match(/\(.*(?:album|playlist|mix).*\)/i)) {
+              setTitle(title);
+            } else {
+              setTitle(null);
+            }
+          } else {
+            setTitle(null);
+          }
+        }
       } catch {
         setTitle(null);
       }
@@ -100,7 +122,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     }
 
     fetchPlaylistTitle();
-  }, [playlistId]);
+  }, [playlistId, videoUrl]);
 
   if (loading) {
     return (
