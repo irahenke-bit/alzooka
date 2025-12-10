@@ -36,6 +36,8 @@ export default function GroupsPage() {
   const supabase = createBrowserClient();
 
   useEffect(() => {
+    let groupsSubscription: ReturnType<typeof supabase.channel> | null = null;
+
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -60,6 +62,39 @@ export default function GroupsPage() {
       // eslint-disable-next-line react-hooks/immutability
       await loadGroups(user.id);
       setLoading(false);
+
+      // Subscribe to group changes (inserts and deletes)
+      groupsSubscription = supabase
+        .channel('groups-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'groups'
+          },
+          async () => {
+            // Refresh groups list whenever a group is created or deleted
+            await loadGroups(user.id);
+          }
+        )
+        .subscribe();
+
+      // Refresh when page becomes visible (in case user had page open when group was deleted)
+      const handleVisibilityChange = async () => {
+        if (document.visibilityState === 'visible') {
+          await loadGroups(user.id);
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // Cleanup
+      return () => {
+        if (groupsSubscription) {
+          supabase.removeChannel(groupsSubscription);
+        }
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
 
     init();
@@ -129,15 +164,17 @@ export default function GroupsPage() {
       }, {} as Record<string, number>);
     }
 
-    const groupsWithCounts: Group[] = allGroups.map(group => ({
-      ...group,
-      member_count: memberCounts[group.id] || 0,
-      is_member: memberGroupIds.has(group.id),
-    }));
+    const groupsWithCounts: Group[] = allGroups
+      .filter(group => group && group.id) // Filter out any null/undefined groups
+      .map(group => ({
+        ...group,
+        member_count: memberCounts[group.id] || 0,
+        is_member: memberGroupIds.has(group.id),
+      }));
 
     // Separate into my groups and discover (only public groups in discover)
-    setMyGroups(groupsWithCounts.filter(g => g.is_member));
-    setGroups(groupsWithCounts.filter(g => !g.is_member && g.privacy === "public"));
+    setMyGroups(groupsWithCounts.filter(g => g && g.is_member));
+    setGroups(groupsWithCounts.filter(g => g && !g.is_member && g.privacy === "public"));
   }
 
   async function handleCreateGroup(e: React.FormEvent) {
