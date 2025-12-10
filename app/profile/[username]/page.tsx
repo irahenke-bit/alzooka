@@ -81,6 +81,80 @@ function findYouTubeUrl(text: string): string | null {
   return match ? match[1] : null;
 }
 
+// Playlist Title Component - fetches and displays YouTube playlist title
+function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId: string }) {
+  const [title, setTitle] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPlaylistTitle() {
+      try {
+        const playlistUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(playlistUrl)}`);
+        const data = await response.json();
+        setTitle(data.title || null);
+      } catch {
+        setTitle(null);
+      }
+      setLoading(false);
+    }
+
+    fetchPlaylistTitle();
+  }, [playlistId]);
+
+  if (loading) {
+    return (
+      <div style={{
+        marginBottom: 12,
+        padding: "12px 16px",
+        background: "rgba(217, 171, 92, 0.1)",
+        borderRadius: 8,
+        borderLeft: "4px solid var(--alzooka-gold)",
+      }}>
+        <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+          Loading playlist info...
+        </div>
+      </div>
+    );
+  }
+
+  if (!title) {
+    return (
+      <div style={{
+        marginBottom: 12,
+        padding: "12px 16px",
+        background: "rgba(217, 171, 92, 0.1)",
+        borderRadius: 8,
+        borderLeft: "4px solid var(--alzooka-gold)",
+      }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+          📀 Full Album/Playlist
+        </div>
+        <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+          This will autoplay through all tracks
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      marginBottom: 12,
+      padding: "12px 16px",
+      background: "rgba(217, 171, 92, 0.1)",
+      borderRadius: 8,
+      borderLeft: "4px solid var(--alzooka-gold)",
+    }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+        📀 {title}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+        This will autoplay through all tracks
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -1448,6 +1522,11 @@ export default function ProfilePage() {
                 return null;
               })() : null;
 
+              const playlistId = post.video_url ? (() => {
+                const match = post.video_url!.match(/[?&]list=([^&\s]+)/);
+                return match ? match[1] : null;
+              })() : null;
+
               return (
                 <article key={post.id} className="card" style={{ marginBottom: 12 }}>
                   <div style={{ display: "flex", gap: 12 }}>
@@ -1632,6 +1711,9 @@ export default function ProfilePage() {
 
                           {videoId && (
                             <div style={{ marginBottom: 12 }}>
+                              {playlistId && (
+                                <PlaylistTitle videoUrl={post.video_url!} playlistId={playlistId} />
+                              )}
                               <div style={{ 
                                 position: "relative",
                                 paddingBottom: "56.25%",
@@ -1641,7 +1723,9 @@ export default function ProfilePage() {
                                 background: "#000",
                               }}>
                                 <iframe
-                                  src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                                  src={playlistId 
+                                    ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
+                                    : `https://www.youtube.com/embed/${videoId}?rel=0`}
                                   title="YouTube video"
                                   frameBorder="0"
                                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"

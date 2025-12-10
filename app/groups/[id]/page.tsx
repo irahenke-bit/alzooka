@@ -146,7 +146,7 @@ export default function GroupPage() {
   const [inviteSearch, setInviteSearch] = useState("");
   const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null}>>([]);
   const [sendingInvite, setSendingInvite] = useState(false);
-  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string} | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
@@ -417,11 +417,26 @@ export default function GroupPage() {
           try {
             const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
             const data = await response.json();
+            
+            // If playlist ID exists, try to fetch playlist title from the page
+            let playlistTitle = undefined;
+            if (playlistId) {
+              try {
+                const playlistUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+                const playlistResponse = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(playlistUrl)}`);
+                const playlistData = await playlistResponse.json();
+                playlistTitle = playlistData.title || undefined;
+              } catch {
+                // Ignore playlist title fetch errors
+              }
+            }
+            
             setYoutubePreview({
               videoId,
               url: youtubeUrl,
               title: data.title || "YouTube Video",
               playlistId: playlistId || undefined,
+              playlistTitle,
             });
           } catch {
             setYoutubePreview({
@@ -1706,6 +1721,80 @@ export default function GroupPage() {
   );
 }
 
+// Playlist Title Component - fetches and displays YouTube playlist title
+function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId: string }) {
+  const [title, setTitle] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPlaylistTitle() {
+      try {
+        const playlistUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(playlistUrl)}`);
+        const data = await response.json();
+        setTitle(data.title || null);
+      } catch {
+        setTitle(null);
+      }
+      setLoading(false);
+    }
+
+    fetchPlaylistTitle();
+  }, [playlistId]);
+
+  if (loading) {
+    return (
+      <div style={{
+        marginBottom: 12,
+        padding: "12px 16px",
+        background: "rgba(217, 171, 92, 0.1)",
+        borderRadius: 8,
+        borderLeft: "4px solid var(--alzooka-gold)",
+      }}>
+        <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+          Loading playlist info...
+        </div>
+      </div>
+    );
+  }
+
+  if (!title) {
+    return (
+      <div style={{
+        marginBottom: 12,
+        padding: "12px 16px",
+        background: "rgba(217, 171, 92, 0.1)",
+        borderRadius: 8,
+        borderLeft: "4px solid var(--alzooka-gold)",
+      }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+          📀 Full Album/Playlist
+        </div>
+        <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+          This will autoplay through all tracks
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      marginBottom: 12,
+      padding: "12px 16px",
+      background: "rgba(217, 171, 92, 0.1)",
+      borderRadius: 8,
+      borderLeft: "4px solid var(--alzooka-gold)",
+    }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+        📀 {title}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+        This will autoplay through all tracks
+      </div>
+    </div>
+  );
+}
+
 // Simplified Post Card for Groups
 function GroupPostCard({
   post,
@@ -1948,13 +2037,16 @@ function GroupPostCard({
             const videoId = extractYouTubeVideoId(post.video_url);
             if (videoId) {
               const playlistId = extractYouTubePlaylistId(post.video_url);
-              const embedUrl = playlistId 
+              const embedUrl = playlistId
                 ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
                 : `https://www.youtube.com/embed/${videoId}?rel=0`;
-              
+
               return (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ 
+                  {playlistId && (
+                    <PlaylistTitle videoUrl={post.video_url} playlistId={playlistId} />
+                  )}
+                  <div style={{
                     position: "relative",
                     paddingBottom: "56.25%",
                     height: 0,
