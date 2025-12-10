@@ -9,6 +9,7 @@ import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
+import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 
 type Group = {
   id: string;
@@ -1071,7 +1072,15 @@ export default function GroupPage() {
 
         {/* Group Info - overlaid on banner */}
         <div style={{ display: "flex", alignItems: "flex-end", gap: 20 }}>
-          {group.avatar_url ? (
+          {/* Avatar - editable for admins, static for others */}
+          {userRole === "admin" ? (
+            <GroupAvatarUpload
+              currentAvatarUrl={group.avatar_url}
+              groupId={groupId}
+              groupName={group.name}
+              onUpload={(url) => setGroup({ ...group, avatar_url: url })}
+            />
+          ) : group.avatar_url ? (
             <img src={group.avatar_url} alt="" style={{ 
               width: 90, 
               height: 90, 
