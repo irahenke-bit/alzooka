@@ -55,11 +55,11 @@ type Post = {
   image_url: string | null;
   video_url: string | null;
   user_id: string;
-  users?: {
+  users: {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
-  } | null;
+  };
   wall_user_id: string | null;
   wall_user?: {
     username: string;
@@ -68,7 +68,7 @@ type Post = {
   } | null;
   created_at: string;
   edited_at: string | null;
-  edit_history: EditHistoryEntry[] | null;
+  edit_history: EditHistoryEntry[];
   commentCount: number;
   voteScore: number;
   comments?: PostComment[];
@@ -226,7 +226,8 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
-  const [modalPost, setModalPost] = useState<Post | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [modalPost, setModalPost] = useState<any>(null);
   const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [posting, setPosting] = useState(false);
@@ -334,10 +335,10 @@ export default function ProfilePage() {
           video_url: post.video_url || null,
           wall_user_id: post.wall_user_id || null,
           wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
-          users: Array.isArray(post.users) ? post.users[0] : post.users || null,
+          users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
           created_at: post.created_at,
           edited_at: post.edited_at || null,
-          edit_history: (post.edit_history as EditHistoryEntry[] | null) || null,
+          edit_history: (post.edit_history as EditHistoryEntry[] | null) || [],
           commentCount: (post.comments as unknown[])?.length || 0,
           voteScore: votesByPost[post.id] || 0,
         }));
@@ -714,11 +715,11 @@ export default function ProfilePage() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           wall_user: Array.isArray((p as any).wall_user) ? (p as any).wall_user[0] : (p as any).wall_user || null,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          users: Array.isArray((p as any).users) ? (p as any).users[0] : (p as any).users || null,
+          users: Array.isArray((p as any).users) ? (p as any).users[0] : (p as any).users || { username: 'unknown', display_name: null, avatar_url: null },
           created_at: p.created_at,
           edited_at: p.edited_at || null,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          edit_history: (p as any).edit_history || null,
+          edit_history: (p as any).edit_history || [],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           commentCount: ((p as any).comments as unknown[] | undefined)?.length || 0,
           voteScore: votesByPost[p.id] || 0,
@@ -834,7 +835,7 @@ export default function ProfilePage() {
           wall_user: null,
           created_at: newPost.created_at,
           edited_at: null,
-          edit_history: null,
+          edit_history: [],
           commentCount: 0,
           voteScore: 0,
           users: {
@@ -1883,7 +1884,7 @@ export default function ProfilePage() {
                               <span style={{ fontSize: 14, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1 }}>{post.voteScore}</span>
                             </div>
                             <button
-                              onClick={() => setModalPost(post)}
+                              onClick={() => setModalPost({ ...post, edit_history: post.edit_history || [], comments: [] } as any)}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -2181,7 +2182,8 @@ export default function ProfilePage() {
 
               setModalPost({
                 ...(freshPost as any),
-                comments: commentsWithReplies
+                comments: commentsWithReplies,
+                edit_history: (freshPost as any).edit_history || []
               });
 
               // Reload votes
