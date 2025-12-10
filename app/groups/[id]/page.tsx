@@ -1705,6 +1705,7 @@ export default function GroupPage() {
               await loadUserVotes(user!.id);
               await loadVoteTotals();
             }}
+            userRole={userRole}
           />
         ))
       )}
@@ -1827,6 +1828,7 @@ function GroupPostCard({
   onVote,
   onDelete,
   onRefresh,
+  userRole,
 }: {
   post: Post;
   user: User;
@@ -1836,6 +1838,7 @@ function GroupPostCard({
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   onDelete: (id: string) => void;
   onRefresh: () => void;
+  userRole: string | null;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -1843,6 +1846,8 @@ function GroupPostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
 
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
@@ -2129,35 +2134,176 @@ function GroupPostCard({
 
           {showComments && (
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.1)" }}>
-              {post.comments?.map(comment => (
-                <div key={comment.id} style={{ marginBottom: 12, display: "flex", gap: 8 }}>
-                  <Link href={`/profile/${comment.users?.username}`} style={{ flexShrink: 0 }}>
-                    {comment.users?.avatar_url ? (
-                      <img src={comment.users.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover" }} />
-                    ) : (
-                      <div style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: "50%",
-                        background: "var(--alzooka-gold)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}>
-                        {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+              {post.comments?.map(comment => {
+                const commentKey = `comment-${comment.id}`;
+                const commentVote = votes[commentKey]?.value || 0;
+                const commentScore = voteTotals[commentKey] || 0;
+
+                return (
+                  <div key={comment.id} style={{ marginBottom: 12, display: "flex", gap: 8 }}>
+                    {/* Vote Buttons */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, minWidth: 24 }}>
+                      <button
+                        onClick={() => onVote("comment", comment.id, 1)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          padding: "2px 4px",
+                          cursor: "pointer",
+                          color: commentVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                          opacity: commentVote === 1 ? 1 : 0.5,
+                          fontSize: 12,
+                          lineHeight: 1,
+                        }}
+                      >
+                        ▲
+                      </button>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: commentScore > 0 ? "var(--alzooka-gold)" : commentScore < 0 ? "#e57373" : "var(--alzooka-cream)",
+                          opacity: commentScore === 0 ? 0.5 : 1,
+                        }}
+                      >
+                        {commentScore}
+                      </span>
+                      <button
+                        onClick={() => onVote("comment", comment.id, -1)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          padding: "2px 4px",
+                          cursor: "pointer",
+                          color: commentVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+                          opacity: commentVote === -1 ? 1 : 0.5,
+                          fontSize: 12,
+                          lineHeight: 1,
+                        }}
+                      >
+                        ▼
+                      </button>
+                    </div>
+
+                    <Link href={`/profile/${comment.users?.username}`} style={{ flexShrink: 0 }}>
+                      {comment.users?.avatar_url ? (
+                        <img src={comment.users.avatar_url} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: "var(--alzooka-gold)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--alzooka-teal-dark)",
+                          fontWeight: 700,
+                          fontSize: 12,
+                        }}>
+                          {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </Link>
+                    <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid var(--alzooka-gold)" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                        <div>
+                          <span style={{ fontSize: 14, fontWeight: 600 }}>{comment.users?.display_name || comment.users?.username}</span>
+                          <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>{formatTime(comment.created_at)}</span>
+                        </div>
+                        {(comment.user_id === user.id || userRole === "admin") && (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            {comment.user_id === user.id && (
+                              <button
+                                onClick={() => {
+                                  setEditingCommentId(comment.id);
+                                  setEditingCommentText(comment.content);
+                                }}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  color: "var(--alzooka-cream)",
+                                  fontSize: 11,
+                                  cursor: "pointer",
+                                  opacity: 0.7,
+                                  padding: "2px 6px",
+                                }}
+                                title="Edit comment"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            <button
+                              onClick={async () => {
+                                if (!confirm("Delete this comment?")) return;
+                                await supabase.from("comments").delete().eq("id", comment.id);
+                                onRefresh();
+                              }}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "#e57373",
+                                fontSize: 11,
+                                cursor: "pointer",
+                                opacity: 0.7,
+                                padding: "2px 6px",
+                              }}
+                              title="Delete comment"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </Link>
-                  <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid var(--alzooka-gold)" }}>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{comment.users?.display_name || comment.users?.username}</span>
-                    <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>{formatTime(comment.created_at)}</span>
-                    <p style={{ margin: "4px 0 0 0", fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
+
+                      {editingCommentId === comment.id ? (
+                        <div style={{ marginTop: 8 }}>
+                          <textarea
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            rows={2}
+                            style={{ width: "100%", marginBottom: 8, fontSize: 14, resize: "vertical" }}
+                          />
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={async () => {
+                                if (!editingCommentText.trim()) return;
+                                await supabase
+                                  .from("comments")
+                                  .update({ content: editingCommentText.trim() })
+                                  .eq("id", comment.id);
+                                setEditingCommentId(null);
+                                setEditingCommentText("");
+                                onRefresh();
+                              }}
+                              style={{ padding: "6px 12px", fontSize: 13 }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditingCommentText("");
+                              }}
+                              style={{
+                                padding: "6px 12px",
+                                fontSize: 13,
+                                background: "transparent",
+                                border: "1px solid rgba(240, 235, 224, 0.3)",
+                                color: "var(--alzooka-cream)",
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p style={{ margin: "0", fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <form onSubmit={handleComment} style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <input
                   type="text"

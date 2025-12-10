@@ -12,6 +12,7 @@ import { UserSearch } from "@/app/components/UserSearch";
 import { FriendButton } from "@/app/components/FriendButton";
 import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
+import { PostModal } from "@/app/components/PostModal";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -32,6 +33,20 @@ type UserProfile = {
 type EditHistoryEntry = {
   content: string;
   edited_at: string;
+};
+
+type PostComment = {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  parent_comment_id: string | null;
+  users: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  replies?: PostComment[];
 };
 
 type Post = {
@@ -56,6 +71,7 @@ type Post = {
   edit_history: EditHistoryEntry[] | null;
   commentCount: number;
   voteScore: number;
+  comments?: PostComment[];
 };
 
 type Comment = {
@@ -210,6 +226,9 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
+  const [modalPost, setModalPost] = useState<Post | null>(null);
+  const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
+  const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [posting, setPosting] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
@@ -831,6 +850,99 @@ export default function ProfilePage() {
     }
 
     setPosting(false);
+  }
+
+  async function loadUserVotes(userId: string) {
+    const { data } = await supabase
+      .from("votes")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (data) {
+      const voteMap: Record<string, { id: string; user_id: string; value: number }> = {};
+      data.forEach((vote) => {
+        const key = `${vote.target_type}-${vote.target_id}`;
+        voteMap[key] = vote;
+      });
+      setVotes(voteMap);
+    }
+  }
+
+  async function loadVoteTotals(targetPosts: Post[]) {
+    const postIds = targetPosts.map(p => p.id);
+    const commentIds: string[] = [];
+    targetPosts.forEach(p => {
+      (p.comments || []).forEach(c => {
+        commentIds.push(c.id);
+        (c.replies || []).forEach(r => commentIds.push(r.id));
+      });
+    });
+
+    const safePostIds = postIds.length ? postIds : ["00000000-0000-0000-0000-000000000000"];
+    const safeCommentIds = commentIds.length ? commentIds : ["00000000-0000-0000-0000-000000000000"];
+
+    const { data: postVotes } = await supabase
+      .from("votes")
+      .select("target_id, value")
+      .eq("target_type", "post")
+      .in("target_id", safePostIds);
+
+    const { data: commentVotes } = await supabase
+      .from("votes")
+      .select("target_id, value")
+      .eq("target_type", "comment")
+      .in("target_id", safeCommentIds);
+
+    const totals: Record<string, number> = {};
+    postVotes?.forEach(v => {
+      const key = `post-${v.target_id}`;
+      totals[key] = (totals[key] || 0) + v.value;
+    });
+    commentVotes?.forEach(v => {
+      const key = `comment-${v.target_id}`;
+      totals[key] = (totals[key] || 0) + v.value;
+    });
+
+    setVoteTotals(totals);
+  }
+
+  async function handleVote(targetType: "post" | "comment", targetId: string, value: number) {
+    if (!currentUser) return;
+
+    const key = `${targetType}-${targetId}`;
+    const currentVote = votes[key];
+    const currentTotal = voteTotals[key] || 0;
+    let newTotal = currentTotal;
+
+    if (currentVote) {
+      if (currentVote.value === value) {
+        // Remove vote
+        await supabase.from("votes").delete().eq("id", currentVote.id);
+        const { [key]: removed, ...rest } = votes;
+        setVotes(rest);
+        newTotal = currentTotal - value;
+        setVoteTotals({ ...voteTotals, [key]: newTotal });
+      } else {
+        // Change vote
+        await supabase.from("votes").update({ value }).eq("id", currentVote.id);
+        setVotes({ ...votes, [key]: { ...currentVote, value } });
+        newTotal = currentTotal - currentVote.value + value;
+        setVoteTotals({ ...voteTotals, [key]: newTotal });
+      }
+    } else {
+      // New vote
+      const { data } = await supabase
+        .from("votes")
+        .insert({ user_id: currentUser.id, target_type: targetType, target_id: targetId, value })
+        .select()
+        .single();
+
+      if (data) {
+        setVotes({ ...votes, [key]: data });
+        newTotal = currentTotal + value;
+        setVoteTotals({ ...voteTotals, [key]: newTotal });
+      }
+    }
   }
 
   if (loading) {
@@ -1770,10 +1882,25 @@ export default function ProfilePage() {
                               <span style={{ color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1, fontSize: 14 }}>{post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}</span>
                               <span style={{ fontSize: 14, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1 }}>{post.voteScore}</span>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 4, opacity: 0.6 }}>
+                            <button
+                              onClick={() => setModalPost(post)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                opacity: 0.6,
+                                background: "transparent",
+                                border: "none",
+                                color: "var(--alzooka-cream)",
+                                cursor: "pointer",
+                                padding: "4px 8px",
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                              onMouseLeave={(e) => e.currentTarget.style.opacity = "0.6"}
+                            >
                               <span style={{ fontSize: 14 }}>💬</span>
-                              <span style={{ fontSize: 14 }}>{post.commentCount}</span>
-                            </div>
+                              <span style={{ fontSize: 14 }}>{post.commentCount === 0 ? "Comment" : `${post.commentCount} ${post.commentCount === 1 ? "comment" : "comments"}`}</span>
+                            </button>
                           </div>
                         </>
                       )}
@@ -1986,6 +2113,85 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Post Modal for Comments */}
+      {modalPost && currentUser && (
+        <PostModal
+          post={modalPost}
+          user={currentUser}
+          supabase={supabase}
+          votes={votes}
+          voteTotals={voteTotals}
+          onVote={handleVote}
+          onClose={() => setModalPost(null)}
+          onCommentAdded={async () => {
+            // Fetch fresh post data for the modal
+            const { data: freshPost } = await supabase
+              .from("posts")
+              .select(`
+                id,
+                content,
+                image_url,
+                video_url,
+                created_at,
+                edited_at,
+                edit_history,
+                user_id,
+                wall_user_id,
+                users!posts_user_id_fkey (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
+                wall_user:users!posts_wall_user_id_fkey (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
+                comments (
+                  id,
+                  content,
+                  created_at,
+                  user_id,
+                  parent_comment_id,
+                  users!comments_user_id_fkey (
+                    username,
+                    display_name,
+                    avatar_url
+                  )
+                )
+              `)
+              .eq("id", modalPost.id)
+              .single();
+
+            if (freshPost) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const allComments = ((freshPost as any).comments || []) as PostComment[];
+              const parentComments = allComments
+                .filter(c => !c.parent_comment_id)
+                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+              const replies = allComments.filter(c => c.parent_comment_id);
+              const commentsWithReplies = parentComments.map(parent => ({
+                ...parent,
+                replies: replies
+                  .filter(r => r.parent_comment_id === parent.id)
+                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+              }));
+
+              setModalPost({
+                ...(freshPost as any),
+                comments: commentsWithReplies
+              });
+
+              // Reload votes
+              if (currentUser) {
+                await loadUserVotes(currentUser.id);
+                await loadVoteTotals([{ ...(freshPost as any), comments: commentsWithReplies }]);
+              }
+            }
+          }}
+        />
       )}
       </div>
     </>
