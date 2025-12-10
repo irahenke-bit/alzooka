@@ -98,6 +98,11 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+function extractYouTubePlaylistId(url: string): string | null {
+  const match = url.match(/[?&]list=([^&\s]+)/);
+  return match ? match[1] : null;
+}
+
 // Spotify URL detection
 function findSpotifyUrl(text: string): string | null {
   const urlPattern = /(https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+)/i;
@@ -141,7 +146,7 @@ export default function GroupPage() {
   const [inviteSearch, setInviteSearch] = useState("");
   const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null}>>([]);
   const [sendingInvite, setSendingInvite] = useState(false);
-  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
@@ -406,6 +411,7 @@ export default function GroupPage() {
       const youtubeUrl = findYouTubeUrl(newContent);
       if (youtubeUrl) {
         const videoId = extractYouTubeVideoId(youtubeUrl);
+        const playlistId = extractYouTubePlaylistId(youtubeUrl);
         if (videoId) {
           setLoadingYoutubePreview(true);
           try {
@@ -415,12 +421,14 @@ export default function GroupPage() {
               videoId,
               url: youtubeUrl,
               title: data.title || "YouTube Video",
+              playlistId: playlistId || undefined,
             });
           } catch {
             setYoutubePreview({
               videoId,
               url: youtubeUrl,
               title: "YouTube Video",
+              playlistId: playlistId || undefined,
             });
           }
           setLoadingYoutubePreview(false);
@@ -1853,6 +1861,11 @@ function GroupPostCard({
             // Check if it's a YouTube URL
             const videoId = extractYouTubeVideoId(post.video_url);
             if (videoId) {
+              const playlistId = extractYouTubePlaylistId(post.video_url);
+              const embedUrl = playlistId 
+                ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
+                : `https://www.youtube.com/embed/${videoId}?rel=0`;
+              
               return (
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ 
@@ -1864,7 +1877,7 @@ function GroupPostCard({
                     background: "#000",
                   }}>
                     <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                      src={embedUrl}
                       title="YouTube video"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"

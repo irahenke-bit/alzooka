@@ -87,6 +87,11 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+function extractYouTubePlaylistId(url: string): string | null {
+  const match = url.match(/[?&]list=([^&\s]+)/);
+  return match ? match[1] : null;
+}
+
 function findYouTubeUrl(text: string): string | null {
   const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
   const match = text.match(urlPattern);
@@ -117,7 +122,7 @@ function FeedContent() {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
@@ -614,6 +619,7 @@ function FeedContent() {
       const youtubeUrl = findYouTubeUrl(newContent);
       if (youtubeUrl) {
         const videoId = extractYouTubeVideoId(youtubeUrl);
+        const playlistId = extractYouTubePlaylistId(youtubeUrl);
         if (videoId) {
           setLoadingYoutubePreview(true);
           try {
@@ -624,6 +630,7 @@ function FeedContent() {
               videoId,
               url: youtubeUrl,
               title: data.title || "YouTube Video",
+              playlistId: playlistId || undefined,
             });
           } catch {
             // If fetch fails, still show preview with generic title
@@ -631,6 +638,7 @@ function FeedContent() {
               videoId,
               url: youtubeUrl,
               title: "YouTube Video",
+              playlistId: playlistId || undefined,
             });
           }
           setLoadingYoutubePreview(false);
@@ -1545,6 +1553,11 @@ function PostCard({
             // Check if it's a YouTube URL
             const videoId = extractYouTubeVideoId(post.video_url);
             if (videoId) {
+              const playlistId = extractYouTubePlaylistId(post.video_url);
+              const embedUrl = playlistId 
+                ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
+                : `https://www.youtube.com/embed/${videoId}?rel=0`;
+              
               return (
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ 
@@ -1556,7 +1569,7 @@ function PostCard({
                     background: "#000",
                   }}>
                     <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                      src={embedUrl}
                       title="YouTube video"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
