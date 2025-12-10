@@ -149,8 +149,9 @@ export default function GroupPage() {
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
   const [showDeleteText, setShowDeleteText] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
-  const [editingName, setEditingName] = useState(false);
+  const [editingInfo, setEditingInfo] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupDescription, setNewGroupDescription] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -788,20 +789,28 @@ export default function GroupPage() {
     }
   }
 
-  async function handleEditName() {
+  async function handleEditInfo() {
     if (!newGroupName.trim() || !group) return;
     
     const { error } = await supabase
       .from("groups")
-      .update({ name: newGroupName.trim() })
+      .update({ 
+        name: newGroupName.trim(),
+        description: newGroupDescription.trim() || null
+      })
       .eq("id", groupId);
     
     if (!error) {
-      setGroup({ ...group, name: newGroupName.trim() });
-      setEditingName(false);
+      setGroup({ 
+        ...group, 
+        name: newGroupName.trim(),
+        description: newGroupDescription.trim() || null
+      });
+      setEditingInfo(false);
       setNewGroupName("");
+      setNewGroupDescription("");
     } else {
-      alert("Failed to update group name");
+      alert("Failed to update group info");
     }
   }
 
@@ -1034,7 +1043,8 @@ export default function GroupPage() {
                     onClick={() => {
                       setShowEditMenu(false);
                       setNewGroupName(group.name);
-                      setEditingName(true);
+                      setNewGroupDescription(group.description || "");
+                      setEditingInfo(true);
                     }}
                     style={{
                       width: "100%",
@@ -1048,7 +1058,7 @@ export default function GroupPage() {
                       borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                     }}
                   >
-                    ✏️ Edit Name
+                    ✏️ Edit Info
                   </button>
                   
                   <button
@@ -1380,8 +1390,8 @@ export default function GroupPage() {
         </div>
       )}
 
-      {/* Edit Name Modal */}
-      {editingName && (
+      {/* Edit Info Modal */}
+      {editingInfo && (
         <div
           style={{
             position: "fixed",
@@ -1393,16 +1403,21 @@ export default function GroupPage() {
             zIndex: 1000,
           }}
           onClick={() => {
-            setEditingName(false);
+            setEditingInfo(false);
             setNewGroupName("");
+            setNewGroupDescription("");
           }}
         >
           <div
             className="card"
-            style={{ width: "90%", maxWidth: 400 }}
+            style={{ width: "90%", maxWidth: 500 }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Edit Group Name</h2>
+            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Edit Group Info</h2>
+            
+            <label style={{ display: "block", marginBottom: 8, fontSize: 14, opacity: 0.8 }}>
+              Group Name
+            </label>
             <input
               type="text"
               placeholder="Group name"
@@ -1410,19 +1425,34 @@ export default function GroupPage() {
               onChange={e => setNewGroupName(e.target.value)}
               autoFocus
               maxLength={100}
+              style={{ marginBottom: 16 }}
             />
-            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+            
+            <label style={{ display: "block", marginBottom: 8, fontSize: 14, opacity: 0.8 }}>
+              Description (optional)
+            </label>
+            <textarea
+              placeholder="Describe what this group is about..."
+              value={newGroupDescription}
+              onChange={e => setNewGroupDescription(e.target.value)}
+              rows={3}
+              maxLength={500}
+              style={{ marginBottom: 16, resize: "vertical" }}
+            />
+            
+            <div style={{ display: "flex", gap: 12 }}>
               <button 
-                onClick={handleEditName}
-                disabled={!newGroupName.trim() || newGroupName.trim() === group.name}
+                onClick={handleEditInfo}
+                disabled={!newGroupName.trim() || (newGroupName.trim() === group.name && newGroupDescription.trim() === (group.description || ""))}
                 style={{ flex: 1 }}
               >
                 Save
               </button>
               <button
                 onClick={() => {
-                  setEditingName(false);
+                  setEditingInfo(false);
                   setNewGroupName("");
+                  setNewGroupDescription("");
                 }}
                 style={{
                   flex: 1,
