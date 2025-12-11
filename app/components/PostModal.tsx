@@ -203,12 +203,14 @@ export function PostModal({
      
   }, []);
 
-  // Focus comment input when modal opens
+  // Focus comment input when modal opens (skip if highlighting a comment)
   useEffect(() => {
-    setTimeout(() => {
-      commentInputRef.current?.focus();
-    }, 100);
-  }, []);
+    if (!highlightCommentId) {
+      setTimeout(() => {
+        commentInputRef.current?.focus();
+      }, 100);
+    }
+  }, [highlightCommentId]);
 
   // Scroll to highlighted comment if present
   useEffect(() => {
