@@ -140,6 +140,7 @@ function FeedContent() {
 
   useEffect(() => {
     let postsSubscription: ReturnType<typeof supabase.channel> | null = null;
+    let commentsSubscription: ReturnType<typeof supabase.channel> | null = null;
     let pollInterval: NodeJS.Timeout | null = null;
     let visibilityHandler: (() => void) | null = null;
 
@@ -284,6 +285,104 @@ function FeedContent() {
         )
         .subscribe();
 
+      // Subscribe to new comments in real-time
+      commentsSubscription = supabase
+        .channel('feed-comments')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'comments',
+          },
+          async (payload) => {
+            // Don't add if it's our own comment (we already added it optimistically)
+            if (payload.new.user_id === user.id) return;
+
+            // Fetch the full comment with user data
+            const { data: newComment } = await supabase
+              .from("comments")
+              .select(`
+                id,
+                content,
+                created_at,
+                user_id,
+                post_id,
+                parent_comment_id,
+                users!comments_user_id_fkey (
+                  username,
+                  display_name,
+                  avatar_url
+                )
+              `)
+              .eq("id", payload.new.id)
+              .single();
+
+            if (newComment) {
+              const postId = newComment.post_id;
+              
+              // Update the post in the main feed
+              setPosts(currentPosts => {
+                return currentPosts.map(post => {
+                  if (post.id !== postId) return post;
+                  
+                  const typedComment = newComment as unknown as Comment;
+                  
+                  if (typedComment.parent_comment_id) {
+                    // It's a reply - add to parent's replies
+                    const addReplyToParent = (comments: Comment[]): Comment[] => {
+                      return comments.map(c => {
+                        if (c.id === typedComment.parent_comment_id) {
+                          return {
+                            ...c,
+                            replies: [...(c.replies || []), typedComment]
+                          };
+                        }
+                        if (c.replies && c.replies.length > 0) {
+                          return { ...c, replies: addReplyToParent(c.replies) };
+                        }
+                        return c;
+                      });
+                    };
+                    return { ...post, comments: addReplyToParent(post.comments || []) };
+                  } else {
+                    // Top-level comment
+                    return { ...post, comments: [...(post.comments || []), typedComment] };
+                  }
+                });
+              });
+
+              // Also update modal if it's showing this post
+              setModalPost(currentModal => {
+                if (!currentModal || currentModal.id !== postId) return currentModal;
+                
+                const typedComment = newComment as unknown as Comment;
+                
+                if (typedComment.parent_comment_id) {
+                  const addReplyToParent = (comments: Comment[]): Comment[] => {
+                    return comments.map(c => {
+                      if (c.id === typedComment.parent_comment_id) {
+                        return {
+                          ...c,
+                          replies: [...(c.replies || []), typedComment]
+                        };
+                      }
+                      if (c.replies && c.replies.length > 0) {
+                        return { ...c, replies: addReplyToParent(c.replies) };
+                      }
+                      return c;
+                    });
+                  };
+                  return { ...currentModal, comments: addReplyToParent(currentModal.comments || []) };
+                } else {
+                  return { ...currentModal, comments: [...(currentModal.comments || []), typedComment] };
+                }
+              });
+            }
+          }
+        )
+        .subscribe();
+
       // Auto-open modal if comment is highlighted, scroll to post if only post is highlighted
       if (highlightCommentId && highlightPostId) {
         // Find the post containing the highlighted comment and open modal
@@ -359,6 +458,9 @@ function FeedContent() {
     return () => {
       if (postsSubscription) {
         supabase.removeChannel(postsSubscription);
+      }
+      if (commentsSubscription) {
+        supabase.removeChannel(commentsSubscription);
       }
       if (pollInterval) {
         clearInterval(pollInterval);
