@@ -82,7 +82,7 @@ type Props = {
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   onClose: () => void;
-  onCommentAdded: () => void;
+  onCommentAdded: (newComment?: Comment) => void;
   highlightCommentId?: string | null;
 };
 
@@ -321,9 +321,30 @@ export function PostModal({
         }
       }
 
+      // Get current user's profile info for the optimistic update
+      const { data: userData } = await supabase
+        .from("users")
+        .select("username, display_name, avatar_url")
+        .eq("id", user.id)
+        .single();
+
+      // Create the new comment object for optimistic update
+      const newComment: Comment = {
+        id: data.id,
+        content: trimmedComment,
+        created_at: new Date().toISOString(),
+        user_id: user.id,
+        parent_comment_id: replyingTo?.id || null,
+        users: userData || {
+          username: commenterUsername,
+          display_name: null,
+          avatar_url: null,
+        },
+      };
+
       setCommentText("");
       setReplyingTo(null);
-      onCommentAdded();
+      onCommentAdded(newComment);
     }
 
     setSubmitting(false);

@@ -1131,89 +1131,52 @@ function FeedContent() {
           onVote={handleVote}
           highlightCommentId={highlightCommentId}
           onClose={() => setModalPost(null)}
-          onCommentAdded={async () => {
-            // Small delay to ensure Supabase consistency
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Fetch fresh post data for the modal
-            const { data: freshPost, error } = await supabase
-              .from("posts")
-              .select(`
-                id,
-                content,
-                image_url,
-                video_url,
-                wall_user_id,
-                wall_user:users!posts_wall_user_id_fkey (
-                  username,
-                  display_name,
-                  avatar_url
-                ),
-                created_at,
-                edited_at,
-                edit_history,
-                user_id,
-                users!posts_user_id_fkey (
-                  username,
-                  display_name,
-                  avatar_url
-                ),
-                comments (
-                  id,
-                  content,
-                  created_at,
-                  user_id,
-                  parent_comment_id,
-                  users!comments_user_id_fkey (
-                    username,
-                    display_name,
-                    avatar_url
-                  )
-                )
-              `)
-              .eq("id", modalPost.id)
-              .single();
-
-            if (error) {
-              console.error("Error refreshing post:", error);
-              return;
-            }
-
-            if (freshPost) {
-              // Process comments with RECURSIVE nesting
-              const allComments = (freshPost.comments || []) as unknown as Comment[];
-              
-              // Build recursive comment tree
-              const buildCommentTree = (comments: Comment[]): Comment[] => {
-                const parentComments = comments.filter(c => !c.parent_comment_id);
+          onCommentAdded={(newComment) => {
+            if (newComment && modalPost) {
+              // Optimistically add the new comment to state immediately
+              setModalPost(prev => {
+                if (!prev) return prev;
                 
-                const attachReplies = (parent: Comment): Comment => {
-                  const directReplies = comments.filter(c => c.parent_comment_id === parent.id);
-                  return {
-                    ...parent,
-                    replies: directReplies.length > 0 
-                      ? directReplies.map(attachReplies).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                      : undefined
+                const updatedComments = [...(prev.comments || [])];
+                
+                if (newComment.parent_comment_id) {
+                  // It's a reply - find the parent and add to its replies
+                  const addReplyToParent = (comments: Comment[]): Comment[] => {
+                    return comments.map(c => {
+                      if (c.id === newComment.parent_comment_id) {
+                        return {
+                          ...c,
+                          replies: [...(c.replies || []), newComment]
+                        };
+                      }
+                      if (c.replies && c.replies.length > 0) {
+                        return {
+                          ...c,
+                          replies: addReplyToParent(c.replies)
+                        };
+                      }
+                      return c;
+                    });
                   };
-                };
-                
-                return parentComments
-                  .map(attachReplies)
-                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-              };
-              
-              const commentsWithReplies = buildCommentTree(allComments);
-              
-              setModalPost({
-                ...freshPost,
-                comments: commentsWithReplies
-              } as unknown as Post);
+                  return {
+                    ...prev,
+                    comments: addReplyToParent(updatedComments)
+                  };
+                } else {
+                  // It's a top-level comment - add to the end
+                  return {
+                    ...prev,
+                    comments: [...updatedComments, newComment]
+                  };
+                }
+              });
             }
 
-            // Also update the main posts list and votes
-            const refreshedPosts = await loadPosts();
-            await loadUserVotes(user.id);
-            await loadVoteTotals(refreshedPosts);
+            // Also update the main posts list in the background
+            loadPosts().then(async (refreshedPosts) => {
+              await loadUserVotes(user.id);
+              await loadVoteTotals(refreshedPosts);
+            });
           }}
         />
       )}
