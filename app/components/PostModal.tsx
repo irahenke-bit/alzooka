@@ -348,224 +348,266 @@ export function PostModal({
 
   const commentCount = countCommentsRecursive(post.comments || []);
 
-  // Flatten all replies into a linear thread at Level B
-  function flattenReplies(comment: Comment): Comment[] {
+  // Extract ALL comments from the nested structure into a flat array
+  // This handles both shallow and deep nesting structures
+  function extractAllComments(comments: Comment[]): Comment[] {
     const result: Comment[] = [];
-    if (comment.replies && comment.replies.length > 0) {
-      for (const reply of comment.replies) {
-        result.push(reply);
-        // Recursively get all nested replies and add them to the flat list
-        result.push(...flattenReplies(reply));
+    function traverse(commentList: Comment[]) {
+      for (const comment of commentList) {
+        result.push(comment);
+        if (comment.replies && comment.replies.length > 0) {
+          traverse(comment.replies);
+        }
       }
     }
+    traverse(comments);
     return result;
   }
 
-  // Render comment: Level A (top) or Level B (all replies flattened)
-  function renderComment(comment: Comment, isReply: boolean = false): React.JSX.Element {
-    const flatReplies = isReply ? [] : flattenReplies(comment);
-    
-    return (
-      <>
-        <div
-          key={comment.id}
-          id={`modal-comment-${comment.id}`}
-          style={{
-            marginBottom: 12,
-            marginLeft: isReply ? 40 : 0,
-            ...(highlightCommentId === comment.id
-              ? {
-                  background: "rgba(212, 168, 75, 0.2)",
-                  padding: 12,
-                  marginLeft: isReply ? 28 : -12,
-                  marginRight: -12,
-                  borderRadius: 8,
-                  boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
-                }
-              : {}),
-          }}
-        >
-          <div style={{ display: "flex", gap: 8 }}>
-            <VoteButtons
-              targetType="comment"
-              targetId={comment.id}
-              votes={votes}
-              voteTotals={voteTotals}
-              onVote={onVote}
-            />
+  // Get ALL comments as a flat array, regardless of how they were nested
+  const allCommentsFlat = extractAllComments(post.comments || []);
 
-            <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
-              <div
-                style={{
-                  marginBottom: 4,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
+  // Build the final flat list:
+  // - Top-level comments (parent_comment_id is null) at 0px
+  // - ALL replies (parent_comment_id is NOT null) at 40px, grouped under their root parent
+  const flatCommentList: Array<{ comment: Comment; isReply: boolean }> = [];
+
+  // For each top-level comment, add it and then all its descendants (flattened)
+  const topLevelComments = allCommentsFlat
+    .filter(c => !c.parent_comment_id)
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+  // Find the root parent ID for any comment (traverse up the chain)
+  function getRootParentId(comment: Comment): string | null {
+    if (!comment.parent_comment_id) return null;
+    
+    // Find the parent comment
+    let current = allCommentsFlat.find(c => c.id === comment.parent_comment_id);
+    while (current && current.parent_comment_id) {
+      current = allCommentsFlat.find(c => c.id === current!.parent_comment_id);
+    }
+    return current?.id || comment.parent_comment_id;
+  }
+
+  // Group all replies by their root parent
+  const repliesByRootParent: Record<string, Comment[]> = {};
+  allCommentsFlat.forEach(comment => {
+    if (comment.parent_comment_id) {
+      const rootId = getRootParentId(comment);
+      if (rootId) {
+        if (!repliesByRootParent[rootId]) {
+          repliesByRootParent[rootId] = [];
+        }
+        repliesByRootParent[rootId].push(comment);
+      }
+    }
+  });
+
+  // Build the final list: top-level comment followed by all its replies (sorted by time)
+  topLevelComments.forEach(topComment => {
+    flatCommentList.push({ comment: topComment, isReply: false });
+    const replies = repliesByRootParent[topComment.id] || [];
+    replies
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .forEach(reply => {
+        flatCommentList.push({ comment: reply, isReply: true });
+      });
+  });
+
+  // Render a single comment (no recursion - just renders one comment)
+  function renderSingleComment(comment: Comment, isReply: boolean): React.JSX.Element {
+    return (
+      <div
+        key={comment.id}
+        id={`modal-comment-${comment.id}`}
+        style={{
+          marginBottom: 12,
+          marginLeft: isReply ? 40 : 0,
+          ...(highlightCommentId === comment.id
+            ? {
+                background: "rgba(212, 168, 75, 0.2)",
+                padding: 12,
+                marginLeft: isReply ? 28 : -12,
+                marginRight: -12,
+                borderRadius: 8,
+                boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
+              }
+            : {}),
+        }}
+      >
+        <div style={{ display: "flex", gap: 8 }}>
+          <VoteButtons
+            targetType="comment"
+            targetId={comment.id}
+            votes={votes}
+            voteTotals={voteTotals}
+            onVote={onVote}
+          />
+
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+            <div
+              style={{
+                marginBottom: 4,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Link
+                href={`/profile/${comment.users?.username || "unknown"}`}
+                style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+                onClick={onClose}
               >
-                <Link
-                  href={`/profile/${comment.users?.username || "unknown"}`}
-                  style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
-                  onClick={onClose}
-                >
-                  {comment.users?.avatar_url ? (
-                    <img
-                      src={comment.users.avatar_url}
-                      alt=""
-                      style={{
-                        width: isReply ? 26 : 28,
-                        height: isReply ? 26 : 28,
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: isReply ? 26 : 28,
-                        height: isReply ? 26 : 28,
-                        borderRadius: "50%",
-                        background: "var(--alzooka-gold)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
-                        fontWeight: 700,
-                        fontSize: isReply ? 11 : 12,
-                      }}
-                    >
-                      {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                      {comment.users?.display_name || comment.users?.username || "Unknown"}
-                    </span>
-                    <span className="text-muted" style={{ marginLeft: 8, fontSize: isReply ? 11 : 12 }}>
-                      {formatTime(comment.created_at)}
-                    </span>
-                  </div>
-                </Link>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
+                {comment.users?.avatar_url ? (
+                  <img
+                    src={comment.users.avatar_url}
+                    alt=""
                     style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--alzooka-cream)",
-                      fontSize: 11,
-                      cursor: "pointer",
-                      opacity: 0.6,
-                      padding: "2px 6px",
-                    }}
-                  >
-                    Reply
-                  </button>
-                  {comment.user_id === user.id && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setEditingCommentId(comment.id);
-                          setEditingCommentText(comment.content);
-                        }}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "var(--alzooka-cream)",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          opacity: 0.7,
-                          padding: "2px 6px",
-                        }}
-                        title="Edit comment"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteComment(comment.id)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "#e57373",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          opacity: 0.7,
-                          padding: "2px 6px",
-                        }}
-                        title="Delete comment"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-              {editingCommentId === comment.id ? (
-                <div style={{ marginTop: 8 }}>
-                  <textarea
-                    value={editingCommentText}
-                    onChange={(e) => setEditingCommentText(e.target.value)}
-                    rows={2}
-                    style={{
-                      width: "100%",
-                      marginBottom: 8,
-                      fontSize: isReply ? 13 : 14,
-                      resize: "vertical",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
-                      background: "rgba(0, 0, 0, 0.2)",
-                      color: "var(--alzooka-cream)",
+                      width: isReply ? 26 : 28,
+                      height: isReply ? 26 : 28,
+                      borderRadius: "50%",
+                      objectFit: "cover",
                     }}
                   />
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      onClick={() => handleEditComment(comment.id)}
-                      style={{
-                        padding: "6px 12px",
-                        fontSize: 13,
-                        background: "var(--alzooka-gold)",
-                        color: "var(--alzooka-teal-dark)",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Save
-                    </button>
+                ) : (
+                  <div
+                    style={{
+                      width: isReply ? 26 : 28,
+                      height: isReply ? 26 : 28,
+                      borderRadius: "50%",
+                      background: "var(--alzooka-gold)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--alzooka-teal-dark)",
+                      fontWeight: 700,
+                      fontSize: isReply ? 11 : 12,
+                    }}
+                  >
+                    {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                    {comment.users?.display_name || comment.users?.username || "Unknown"}
+                  </span>
+                  <span className="text-muted" style={{ marginLeft: 8, fontSize: isReply ? 11 : 12 }}>
+                    {formatTime(comment.created_at)}
+                  </span>
+                </div>
+              </Link>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    opacity: 0.6,
+                    padding: "2px 6px",
+                  }}
+                >
+                  Reply
+                </button>
+                {comment.user_id === user.id && (
+                  <>
                     <button
                       onClick={() => {
-                        setEditingCommentId(null);
-                        setEditingCommentText("");
+                        setEditingCommentId(comment.id);
+                        setEditingCommentText(comment.content);
                       }}
                       style={{
-                        padding: "6px 12px",
-                        fontSize: 13,
                         background: "transparent",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        border: "none",
                         color: "var(--alzooka-cream)",
-                        borderRadius: "4px",
+                        fontSize: 11,
                         cursor: "pointer",
+                        opacity: 0.7,
+                        padding: "2px 6px",
                       }}
+                      title="Edit comment"
                     >
-                      Cancel
+                      Edit
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>{comment.content}</p>
-              )}
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        opacity: 0.7,
+                        padding: "2px 6px",
+                      }}
+                      title="Delete comment"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
+            {editingCommentId === comment.id ? (
+              <div style={{ marginTop: 8 }}>
+                <textarea
+                  value={editingCommentText}
+                  onChange={(e) => setEditingCommentText(e.target.value)}
+                  rows={2}
+                  style={{
+                    width: "100%",
+                    marginBottom: 8,
+                    fontSize: isReply ? 13 : 14,
+                    resize: "vertical",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    background: "rgba(0, 0, 0, 0.2)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => handleEditComment(comment.id)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 13,
+                      background: "var(--alzooka-gold)",
+                      color: "var(--alzooka-teal-dark)",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setEditingCommentText("");
+                    }}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 13,
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>{comment.content}</p>
+            )}
           </div>
         </div>
-
-        {/* Render flattened replies for top-level comments only */}
-        {!isReply && flatReplies.length > 0 && (
-          <>
-            {flatReplies.map((reply) => renderComment(reply, true))}
-          </>
-        )}
-      </>
+      </div>
     );
   }
 
@@ -851,8 +893,8 @@ export function PostModal({
             </span>
           </div>
 
-          {/* Comments - Facebook Style (2 levels max) */}
-          {post.comments?.map((comment) => renderComment(comment, false))}
+          {/* Comments - 2-level flat threading (top-level at 0px, ALL replies at 40px) */}
+          {flatCommentList.map(({ comment, isReply }) => renderSingleComment(comment, isReply))}
         </div>
 
         {/* Fixed Comment Input at Bottom */}
