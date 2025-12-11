@@ -9,6 +9,7 @@ import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import { PostModal } from "@/app/components/PostModal";
+import { ShareModal } from "@/app/components/ShareModal";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -72,6 +73,25 @@ type Post = {
     avatar_url: string | null;
   };
   comments: Comment[];
+  // Sharing fields
+  shared_from_post_id?: string | null;
+  shared_from_post?: {
+    id: string;
+    content: string;
+    image_url: string | null;
+    video_url: string | null;
+    user_id: string;
+    users: {
+      username: string;
+      display_name: string | null;
+      avatar_url: string | null;
+    };
+    group_id?: string | null;
+    groups?: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
 };
 
 // YouTube URL detection and parsing
@@ -573,6 +593,7 @@ function FeedContent() {
         edited_at,
         edit_history,
         user_id,
+        shared_from_post_id,
         users!posts_user_id_fkey (
           username,
           display_name,
@@ -582,6 +603,23 @@ function FeedContent() {
           username,
           display_name,
           avatar_url
+        ),
+        shared_from_post:posts!posts_shared_from_post_id_fkey (
+          id,
+          content,
+          image_url,
+          video_url,
+          user_id,
+          group_id,
+          users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          groups (
+            id,
+            name
+          )
         ),
         comments (
           id,
@@ -1555,6 +1593,7 @@ function PostCard({
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
   const [showEditHistory, setShowEditHistory] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
@@ -1670,44 +1709,93 @@ function PostCard({
                 </span>
               </div>
             </Link>
-            {(post.user_id === user.id || post.wall_user_id === user.id) && (
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--alzooka-cream)",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    opacity: 0.7,
-                    padding: "4px 8px",
-                  }}
-                  title="Edit post"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeletePost(post.id)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#e57373",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    opacity: 0.7,
-                    padding: "4px 8px",
-                  }}
-                  title="Delete post"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
+            <div style={{ display: "flex", gap: 8 }}>
+              {/* Share button - visible to everyone */}
+              <button
+                onClick={() => setShowShareModal(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--alzooka-cream)",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  opacity: 0.7,
+                  padding: "4px 8px",
+                }}
+                title="Share post"
+              >
+                Share
+              </button>
+              {/* Edit/Delete - visible to owner only */}
+              {(post.user_id === user.id || post.wall_user_id === user.id) && (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "4px 8px",
+                    }}
+                    title="Edit post"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeletePost(post.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#e57373",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "4px 8px",
+                    }}
+                    title="Delete post"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
             <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
-              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
+              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>&apos;s wall
+            </div>
+          )}
+
+          {/* Shared from attribution */}
+          {post.shared_from_post && (
+            <div style={{ 
+              marginBottom: 12, 
+              padding: "8px 12px",
+              background: "rgba(212, 168, 75, 0.1)",
+              borderRadius: 8,
+              borderLeft: "3px solid var(--alzooka-gold)",
+              fontSize: 13,
+            }}>
+              <span style={{ opacity: 0.7 }}>Shared from </span>
+              {post.shared_from_post.groups ? (
+                <Link 
+                  href={`/groups/${post.shared_from_post.groups.id}`} 
+                  style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                >
+                  {post.shared_from_post.groups.name}
+                </Link>
+              ) : (
+                <Link 
+                  href={`/profile/${post.shared_from_post.users?.username}`} 
+                  style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                >
+                  {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
+                </Link>
+              )}
+              <span style={{ opacity: 0.7 }}>&apos;s post</span>
             </div>
           )}
 
@@ -1739,9 +1827,12 @@ function PostCard({
           ) : (
             <>
               {(() => {
+                // For shared posts, use the original post's content; otherwise use this post's content
+                const contentSource = post.shared_from_post || post;
                 // If there's a video, strip the YouTube or Spotify URL from displayed content
-                let displayContent = post.content;
-                if (post.video_url && displayContent) {
+                let displayContent = contentSource.content;
+                const videoUrl = contentSource.video_url;
+                if (videoUrl && displayContent) {
                   // Remove YouTube and Spotify URLs from content
                   displayContent = displayContent
                     .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
@@ -1812,10 +1903,10 @@ function PostCard({
           )}
           
           {/* Post Image */}
-          {post.image_url && (
+          {(post.shared_from_post?.image_url || post.image_url) && (
             <div style={{ marginBottom: 16 }}>
               <img 
-                src={post.image_url} 
+                src={post.shared_from_post?.image_url || post.image_url || ""} 
                 alt="Post image"
                 style={{ 
                   maxWidth: "100%", 
@@ -1829,11 +1920,12 @@ function PostCard({
           )}
 
           {/* YouTube or Spotify Player */}
-          {post.video_url && (() => {
+          {(post.shared_from_post?.video_url || post.video_url) && (() => {
+            const videoUrl = post.shared_from_post?.video_url || post.video_url || "";
             // Check if it's a YouTube URL
-            const videoId = extractYouTubeVideoId(post.video_url);
+            const videoId = extractYouTubeVideoId(videoUrl);
             if (videoId) {
-              const playlistId = extractYouTubePlaylistId(post.video_url);
+              const playlistId = extractYouTubePlaylistId(videoUrl);
               const embedUrl = playlistId 
                 ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
                 : `https://www.youtube.com/embed/${videoId}?rel=0`;
@@ -1871,7 +1963,7 @@ function PostCard({
             }
             
             // Check if it's a Spotify URL
-            const spotifyUrl = findSpotifyUrl(post.video_url);
+            const spotifyUrl = findSpotifyUrl(videoUrl);
             if (spotifyUrl) {
               // Extract Spotify URI for embed
               const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
@@ -1914,12 +2006,31 @@ function PostCard({
             onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
           >
             <span style={{ fontSize: 16 }}>💬</span>
-            {commentCount === 0 
-              ? "Comment" 
+            {commentCount === 0
+              ? "Comment"
               : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
           </button>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal
+          postId={post.shared_from_post_id || post.id}
+          postContent={post.shared_from_post?.content || post.content}
+          originalPosterName={
+            post.shared_from_post?.users?.display_name || 
+            post.shared_from_post?.users?.username || 
+            post.users?.display_name || 
+            post.users?.username || 
+            "Unknown"
+          }
+          supabase={supabase}
+          userId={user.id}
+          onClose={() => setShowShareModal(false)}
+          onShared={onCommentAdded}
+        />
+      )}
     </article>
   );
 }
