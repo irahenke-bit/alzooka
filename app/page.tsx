@@ -134,9 +134,29 @@ function FeedContent() {
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
   const highlightCommentId = searchParams.get("comment");
-  
+  const notificationTimestamp = searchParams.get("t"); // Timestamp to force re-trigger on same notification
+
   console.log("URL params - post:", highlightPostId, "comment:", highlightCommentId);
   const supabase = createBrowserClient();
+
+  // Helper function to build recursive comment tree (handles replies to replies)
+  function buildCommentTreeRecursive(comments: Comment[]): Comment[] {
+    const parentComments = comments.filter(c => !c.parent_comment_id);
+    
+    const attachReplies = (parent: Comment): Comment => {
+      const directReplies = comments.filter(c => c.parent_comment_id === parent.id);
+      return {
+        ...parent,
+        replies: directReplies.length > 0 
+          ? directReplies.map(attachReplies).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+          : undefined
+      };
+    };
+    
+    return parentComments
+      .map(attachReplies)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }
 
   useEffect(() => {
     let postsSubscription: ReturnType<typeof supabase.channel> | null = null;
@@ -248,18 +268,9 @@ function FeedContent() {
               .single();
 
             if (newPost) {
-              // Process comments
+              // Process comments recursively (handles replies to replies)
               const allComments = (newPost.comments || []) as unknown as Comment[];
-              const parentComments = allComments
-                .filter(c => !c.parent_comment_id)
-                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-              const replies = allComments.filter(c => c.parent_comment_id);
-              const commentsWithReplies = parentComments.map(parent => ({
-                ...parent,
-                replies: replies
-                  .filter(r => r.parent_comment_id === parent.id)
-                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-              }));
+              const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
               const processedPost = {
                 ...newPost,
@@ -445,18 +456,9 @@ function FeedContent() {
           .single();
           
         if (postsData) {
-          // Process comments like we do in loadPosts
+          // Process comments recursively (handles replies to replies)
           const allComments = (postsData.comments || []) as unknown as Comment[];
-          const parentComments = allComments
-            .filter(c => !c.parent_comment_id)
-            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          const replies = allComments.filter(c => c.parent_comment_id);
-          const commentsWithReplies = parentComments.map(parent => ({
-            ...parent,
-            replies: replies
-              .filter(r => r.parent_comment_id === parent.id)
-              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-          }));
+          const commentsWithReplies = buildCommentTreeRecursive(allComments);
           
           setModalPost({
             ...postsData,
@@ -537,27 +539,7 @@ function FeedContent() {
 
         if (postsData) {
           const allComments = (postsData.comments || []) as unknown as Comment[];
-          
-          // Build recursive comment tree (handles replies to replies)
-          const buildCommentTree = (comments: Comment[]): Comment[] => {
-            const parentComments = comments.filter(c => !c.parent_comment_id);
-            
-            const attachReplies = (parent: Comment): Comment => {
-              const directReplies = comments.filter(c => c.parent_comment_id === parent.id);
-              return {
-                ...parent,
-                replies: directReplies.length > 0 
-                  ? directReplies.map(attachReplies).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                  : undefined
-              };
-            };
-            
-            return parentComments
-              .map(attachReplies)
-              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          };
-          
-          const commentsWithReplies = buildCommentTree(allComments);
+          const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
           setModalPost({
             ...postsData,
@@ -568,7 +550,7 @@ function FeedContent() {
     }
     
     openModalForComment();
-  }, [highlightCommentId, highlightPostId, loading]);
+  }, [highlightCommentId, highlightPostId, notificationTimestamp, loading]);
 
   async function loadPosts(): Promise<Post[]> {
     const { data, error } = await supabase
@@ -612,21 +594,7 @@ function FeedContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postsWithNestedComments: Post[] = (data || []).map((post: any) => {
       const allComments = (post.comments || []) as Comment[];
-      
-      // Separate parent comments (no parent_comment_id) and replies
-      const parentComments = allComments
-        .filter(c => !c.parent_comment_id)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-      
-      const replies = allComments.filter(c => c.parent_comment_id);
-      
-      // Attach replies to their parent comments
-      const commentsWithReplies = parentComments.map(parent => ({
-        ...parent,
-        replies: replies
-          .filter(r => r.parent_comment_id === parent.id)
-          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-      }));
+      const commentsWithReplies = buildCommentTreeRecursive(allComments);
       
       return {
         ...post,

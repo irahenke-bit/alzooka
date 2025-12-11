@@ -335,7 +335,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
                   />
                 ) : notification.link ? (
                   <Link
-                    href={notification.link}
+                    href={`${notification.link}${notification.link.includes('?') ? '&' : '?'}t=${Date.now()}`}
                     style={{ textDecoration: "none", color: "inherit" }}
                     onClick={() => setIsOpen(false)}
                   >
