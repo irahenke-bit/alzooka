@@ -1132,14 +1132,23 @@ function FeedContent() {
           highlightCommentId={highlightCommentId}
           onClose={() => setModalPost(null)}
           onCommentAdded={async () => {
+            // Small delay to ensure Supabase consistency
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             // Fetch fresh post data for the modal
-            const { data: freshPost } = await supabase
+            const { data: freshPost, error } = await supabase
               .from("posts")
               .select(`
                 id,
                 content,
                 image_url,
                 video_url,
+                wall_user_id,
+                wall_user:users!posts_wall_user_id_fkey (
+                  username,
+                  display_name,
+                  avatar_url
+                ),
                 created_at,
                 edited_at,
                 edit_history,
@@ -1164,6 +1173,11 @@ function FeedContent() {
               `)
               .eq("id", modalPost.id)
               .single();
+
+            if (error) {
+              console.error("Error refreshing post:", error);
+              return;
+            }
 
             if (freshPost) {
               // Process comments with RECURSIVE nesting
