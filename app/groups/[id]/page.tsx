@@ -1874,6 +1874,15 @@ function GroupPostCard({
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
 
+  // Count all comments recursively (unlimited depth)
+  const countCommentsRecursive = (comments: Comment[]): number => {
+    return comments.reduce((total, comment) => {
+      return total + 1 + (comment.replies ? countCommentsRecursive(comment.replies) : 0);
+    }, 0);
+  };
+
+  const commentCount = countCommentsRecursive(post.comments || []);
+
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
   const score = voteTotals[postKey] || 0;
@@ -1906,8 +1915,6 @@ function GroupPostCard({
     setIsEditing(false);
     setEditContent(post.content);
   }
-
-  const commentCount = (post.comments || []).reduce((t, c) => t + 1 + (c.replies?.length || 0), 0);
 
   return (
     <article className="card" style={{ marginBottom: 16 }}>
@@ -2145,7 +2152,12 @@ function GroupPostCard({
             onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
             onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
           >
-            <span style={{ fontSize: 14 }}>💬</span> Comment
+            <span style={{ fontSize: 14 }}>💬</span>
+            <span style={{ fontSize: 14 }}>
+              {commentCount === 0
+                ? "Comment"
+                : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
+            </span>
           </button>
         </div>
       </div>

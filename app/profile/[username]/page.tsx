@@ -326,22 +326,40 @@ export default function ProfilePage() {
           votesByPost[v.target_id] = (votesByPost[v.target_id] || 0) + v.value;
         });
 
+        // Helper to count comments recursively
+        const countCommentsRecursive = (comments: PostComment[]): number => {
+          return comments.reduce((total, comment) => {
+            return total + 1 + (comment.replies ? countCommentsRecursive(comment.replies) : 0);
+          }, 0);
+        };
+
         // Transform posts with counts
-        const postsWithCounts = postsData.map(post => ({
-          id: post.id,
-          user_id: post.user_id,
-          content: post.content,
-          image_url: post.image_url || null,
-          video_url: post.video_url || null,
-          wall_user_id: post.wall_user_id || null,
-          wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
-          users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
-          created_at: post.created_at,
-          edited_at: post.edited_at || null,
-          edit_history: (post.edit_history as EditHistoryEntry[] | null) || [],
-          commentCount: (post.comments as unknown[])?.length || 0,
-          voteScore: votesByPost[post.id] || 0,
-        }));
+        const postsWithCounts = postsData.map(post => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const allComments = ((post as any).comments || []) as PostComment[];
+          const parentComments = allComments.filter(c => !c.parent_comment_id);
+          const replies = allComments.filter(c => c.parent_comment_id);
+          const commentsWithReplies = parentComments.map(parent => ({
+            ...parent,
+            replies: replies.filter(r => r.parent_comment_id === parent.id)
+          }));
+          
+          return {
+            id: post.id,
+            user_id: post.user_id,
+            content: post.content,
+            image_url: post.image_url || null,
+            video_url: post.video_url || null,
+            wall_user_id: post.wall_user_id || null,
+            wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
+            users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
+            created_at: post.created_at,
+            edited_at: post.edited_at || null,
+            edit_history: (post.edit_history as EditHistoryEntry[] | null) || [],
+            commentCount: countCommentsRecursive(commentsWithReplies),
+            voteScore: votesByPost[post.id] || 0,
+          };
+        });
 
         setPosts(postsWithCounts);
       }
@@ -721,7 +739,23 @@ export default function ProfilePage() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           edit_history: (p as any).edit_history || [],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          commentCount: ((p as any).comments as unknown[] | undefined)?.length || 0,
+          // Count all comments recursively
+          commentCount: (() => {
+            const countCommentsRecursive = (comments: PostComment[]): number => {
+              return comments.reduce((total, comment) => {
+                return total + 1 + (comment.replies ? countCommentsRecursive(comment.replies) : 0);
+              }, 0);
+            };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const allComments = ((p as any).comments || []) as PostComment[];
+            const parentComments = allComments.filter((c: PostComment) => !c.parent_comment_id);
+            const replies = allComments.filter((c: PostComment) => c.parent_comment_id);
+            const commentsWithReplies = parentComments.map((parent: PostComment) => ({
+              ...parent,
+              replies: replies.filter((r: PostComment) => r.parent_comment_id === parent.id)
+            }));
+            return countCommentsRecursive(commentsWithReplies);
+          })(),
           voteScore: votesByPost[p.id] || 0,
         })));
       }
@@ -1966,7 +2000,11 @@ export default function ProfilePage() {
                               onMouseLeave={(e) => e.currentTarget.style.opacity = "0.6"}
                             >
                               <span style={{ fontSize: 14 }}>💬</span>
-                              <span style={{ fontSize: 14 }}>Comment</span>
+                              <span style={{ fontSize: 14 }}>
+                                {post.commentCount === 0
+                                  ? "Comment"
+                                  : `${post.commentCount} comment${post.commentCount !== 1 ? "s" : ""}`}
+                              </span>
                             </button>
                           </div>
                         </>

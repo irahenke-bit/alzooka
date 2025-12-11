@@ -312,9 +312,144 @@ export function PostModal({
     setCommentText("");
   }
 
-  const commentCount = (post.comments || []).reduce((total, comment) => {
-    return total + 1 + (comment.replies?.length || 0);
-  }, 0);
+  // Count all comments recursively
+  const countCommentsRecursive = (comments: Comment[]): number => {
+    return comments.reduce((total, comment) => {
+      return total + 1 + (comment.replies ? countCommentsRecursive(comment.replies) : 0);
+    }, 0);
+  };
+
+  const commentCount = countCommentsRecursive(post.comments || []);
+
+  // Recursive comment renderer for unlimited depth
+  function renderComment(comment: Comment, depth: number = 0): React.JSX.Element {
+    return (
+      <div
+        key={comment.id}
+        id={`modal-comment-${comment.id}`}
+        style={{
+          marginBottom: 12,
+          marginLeft: depth > 0 ? 32 : 0,
+          ...(highlightCommentId === comment.id
+            ? {
+                background: "rgba(212, 168, 75, 0.2)",
+                padding: 12,
+                marginLeft: depth > 0 ? 20 : -12,
+                marginRight: -12,
+                borderRadius: 8,
+                boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
+              }
+            : {}),
+        }}
+      >
+        <div style={{ display: "flex", gap: 8 }}>
+          <VoteButtons
+            targetType="comment"
+            targetId={comment.id}
+            votes={votes}
+            voteTotals={voteTotals}
+            onVote={onVote}
+          />
+
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${depth === 0 ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+            <div
+              style={{
+                marginBottom: 4,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Link
+                href={`/profile/${comment.users?.username || "unknown"}`}
+                style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+                onClick={onClose}
+              >
+                {comment.users?.avatar_url ? (
+                  <img
+                    src={comment.users.avatar_url}
+                    alt=""
+                    style={{
+                      width: Math.max(24, 28 - depth * 2),
+                      height: Math.max(24, 28 - depth * 2),
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: Math.max(24, 28 - depth * 2),
+                      height: Math.max(24, 28 - depth * 2),
+                      borderRadius: "50%",
+                      background: "var(--alzooka-gold)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--alzooka-teal-dark)",
+                      fontWeight: 700,
+                      fontSize: Math.max(10, 12 - depth),
+                    }}
+                  >
+                    {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <span style={{ fontSize: Math.max(12, 14 - depth * 0.5), fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                    {comment.users?.display_name || comment.users?.username || "Unknown"}
+                  </span>
+                  <span className="text-muted" style={{ marginLeft: 8, fontSize: Math.max(10, 12 - depth * 0.5) }}>
+                    {formatTime(comment.created_at)}
+                  </span>
+                </div>
+              </Link>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    opacity: 0.6,
+                    padding: "2px 6px",
+                  }}
+                >
+                  Reply
+                </button>
+                {comment.user_id === user.id && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#e57373",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "2px 6px",
+                    }}
+                    title="Delete comment"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+            <p style={{ margin: 0, fontSize: Math.max(12, 14 - depth * 0.5), lineHeight: 1.5 }}>{comment.content}</p>
+          </div>
+        </div>
+
+        {/* Render replies recursively */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // Don't render on server
   if (!mounted) return null;
@@ -598,234 +733,8 @@ export function PostModal({
             </span>
           </div>
 
-          {/* Comments */}
-          {post.comments?.map((comment) => (
-            <div
-              key={comment.id}
-              id={`modal-comment-${comment.id}`}
-              style={{
-                marginBottom: 16,
-                ...(highlightCommentId === comment.id
-                  ? {
-                      background: "rgba(212, 168, 75, 0.2)",
-                      padding: 12,
-                      marginLeft: -12,
-                      marginRight: -12,
-                      borderRadius: 8,
-                      boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
-                    }
-                  : {}),
-              }}
-            >
-              {/* Parent Comment */}
-              <div style={{ display: "flex", gap: 8 }}>
-                <VoteButtons
-                  targetType="comment"
-                  targetId={comment.id}
-                  votes={votes}
-                  voteTotals={voteTotals}
-                  onVote={onVote}
-                />
-
-                <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid var(--alzooka-gold)" }}>
-                  <div
-                    style={{
-                      marginBottom: 4,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Link
-                      href={`/profile/${comment.users?.username || "unknown"}`}
-                      style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
-                      onClick={onClose}
-                    >
-                      {comment.users?.avatar_url ? (
-                        <img
-                          src={comment.users.avatar_url}
-                          alt=""
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "50%",
-                            background: "var(--alzooka-gold)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "var(--alzooka-teal-dark)",
-                            fontWeight: 700,
-                            fontSize: 12,
-                          }}
-                        >
-                          {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                          {comment.users?.display_name || comment.users?.username || "Unknown"}
-                        </span>
-                        <span className="text-muted" style={{ marginLeft: 8, fontSize: 12 }}>
-                          {formatTime(comment.created_at)}
-                        </span>
-                      </div>
-                    </Link>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button
-                        onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "var(--alzooka-cream)",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          opacity: 0.6,
-                          padding: "2px 6px",
-                        }}
-                      >
-                        Reply
-                      </button>
-                      {comment.user_id === user.id && (
-                        <button
-                          onClick={() => handleDeleteComment(comment.id)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            color: "#e57373",
-                            fontSize: 11,
-                            cursor: "pointer",
-                            opacity: 0.7,
-                            padding: "2px 6px",
-                          }}
-                          title="Delete comment"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{comment.content}</p>
-                </div>
-              </div>
-
-              {/* Replies */}
-              {comment.replies && comment.replies.length > 0 && (
-                <div style={{ marginLeft: 48, marginTop: 8 }}>
-                  {comment.replies.map((reply) => (
-                    <div
-                      key={reply.id}
-                      id={`modal-comment-${reply.id}`}
-                      style={{
-                        marginBottom: 8,
-                        ...(highlightCommentId === reply.id
-                          ? {
-                              background: "rgba(212, 168, 75, 0.2)",
-                              padding: 12,
-                              marginLeft: -12,
-                              marginRight: -12,
-                              borderRadius: 8,
-                              boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
-                            }
-                          : {}),
-                      }}
-                    >
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <VoteButtons
-                          targetType="comment"
-                          targetId={reply.id}
-                          votes={votes}
-                          voteTotals={voteTotals}
-                          onVote={onVote}
-                        />
-
-                        <div style={{ flex: 1, paddingLeft: 8, borderLeft: "2px solid rgba(212, 168, 75, 0.4)" }}>
-                          <div
-                            style={{
-                              marginBottom: 4,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Link
-                              href={`/profile/${reply.users?.username || "unknown"}`}
-                              style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none" }}
-                              onClick={onClose}
-                            >
-                              {reply.users?.avatar_url ? (
-                                <img
-                                  src={reply.users.avatar_url}
-                                  alt=""
-                                  style={{
-                                    width: 24,
-                                    height: 24,
-                                    borderRadius: "50%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: 24,
-                                    height: 24,
-                                    borderRadius: "50%",
-                                    background: "var(--alzooka-gold)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "var(--alzooka-teal-dark)",
-                                    fontWeight: 700,
-                                    fontSize: 10,
-                                  }}
-                                >
-                                  {(reply.users?.display_name || reply.users?.username || "?").charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                              <div>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                                  {reply.users?.display_name || reply.users?.username || "Unknown"}
-                                </span>
-                                <span className="text-muted" style={{ marginLeft: 8, fontSize: 11 }}>
-                                  {formatTime(reply.created_at)}
-                                </span>
-                              </div>
-                            </Link>
-                            {reply.user_id === user.id && (
-                              <button
-                                onClick={() => handleDeleteComment(reply.id)}
-                                style={{
-                                  background: "transparent",
-                                  border: "none",
-                                  color: "#e57373",
-                                  fontSize: 11,
-                                  cursor: "pointer",
-                                  opacity: 0.7,
-                                  padding: "2px 6px",
-                                }}
-                                title="Delete reply"
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </div>
-                          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>{reply.content}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          {/* Comments - Recursive Rendering for Unlimited Depth */}
+          {post.comments?.map((comment) => renderComment(comment, 0))}
         </div>
 
         {/* Fixed Comment Input at Bottom */}

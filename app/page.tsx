@@ -1433,10 +1433,14 @@ function PostCard({
     setEditContent(post.content);
   }
 
-  // Count all comments including replies
-  const commentCount = (post.comments || []).reduce((total, comment) => {
-    return total + 1 + (comment.replies?.length || 0);
-  }, 0);
+  // Count all comments recursively (unlimited depth)
+  const countCommentsRecursive = (comments: Comment[]): number => {
+    return comments.reduce((total, comment) => {
+      return total + 1 + (comment.replies ? countCommentsRecursive(comment.replies) : 0);
+    }, 0);
+  };
+
+  const commentCount = countCommentsRecursive(post.comments || []);
 
   return (
     <article 
