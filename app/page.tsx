@@ -320,11 +320,22 @@ function FeedContent() {
 
             if (newComment) {
               const postId = newComment.post_id;
+              const commentId = newComment.id;
               
               // Update the post in the main feed
               setPosts(currentPosts => {
                 return currentPosts.map(post => {
                   if (post.id !== postId) return post;
+                  
+                  // Check if comment already exists (prevent duplicates from optimistic updates)
+                  const commentExists = (comments: Comment[]): boolean => {
+                    for (const c of comments) {
+                      if (c.id === commentId) return true;
+                      if (c.replies && commentExists(c.replies)) return true;
+                    }
+                    return false;
+                  };
+                  if (commentExists(post.comments || [])) return post;
                   
                   const typedComment = newComment as unknown as Comment;
                   
@@ -355,6 +366,16 @@ function FeedContent() {
               // Also update modal if it's showing this post
               setModalPost(currentModal => {
                 if (!currentModal || currentModal.id !== postId) return currentModal;
+                
+                // Check if comment already exists (prevent duplicates)
+                const commentExists = (comments: Comment[]): boolean => {
+                  for (const c of comments) {
+                    if (c.id === commentId) return true;
+                    if (c.replies && commentExists(c.replies)) return true;
+                  }
+                  return false;
+                };
+                if (commentExists(currentModal.comments || [])) return currentModal;
                 
                 const typedComment = newComment as unknown as Comment;
                 
