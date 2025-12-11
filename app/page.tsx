@@ -296,8 +296,13 @@ function FeedContent() {
             table: 'comments',
           },
           async (payload) => {
+            console.log('Realtime comment received:', payload);
+            
             // Don't add if it's our own comment (we already added it optimistically)
-            if (payload.new.user_id === user.id) return;
+            if (payload.new.user_id === user.id) {
+              console.log('Skipping own comment');
+              return;
+            }
 
             // Fetch the full comment with user data
             const { data: newComment } = await supabase
@@ -381,7 +386,9 @@ function FeedContent() {
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Comments subscription status:', status);
+        });
 
       // Auto-open modal if comment is highlighted, scroll to post if only post is highlighted
       if (highlightCommentId && highlightPostId) {
