@@ -350,12 +350,10 @@ export function PostModal({
     setSubmitting(false);
   }
 
-  function handleReply(commentId: string, username: string, isReplyToReply: boolean) {
+  function handleReply(commentId: string, username: string) {
     setReplyingTo({ id: commentId, username });
-    // Auto-insert @username when replying to a reply (Facebook-style)
-    if (isReplyToReply) {
-      setCommentText(`@${username} `);
-    }
+    // Auto-insert @username for all replies (Facebook-style)
+    setCommentText(`@${username} `);
     commentInputRef.current?.focus();
   }
 
@@ -523,7 +521,7 @@ export function PostModal({
               </Link>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown", isReply)}
+                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
                   style={{
                     background: "transparent",
                     border: "none",
