@@ -11,6 +11,7 @@ import { UserSearch } from "@/app/components/UserSearch";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
+import { ShareModal } from "@/app/components/ShareModal";
 
 type Group = {
   id: string;
@@ -1873,6 +1874,7 @@ function GroupPostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Count all comments recursively (unlimited depth)
   const countCommentsRecursive = (comments: Comment[]): number => {
@@ -1986,40 +1988,59 @@ function GroupPostCard({
                 </span>
               </div>
             </Link>
-            {post.user_id === user.id && (
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--alzooka-cream)",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    opacity: 0.7,
-                    padding: "4px 8px",
-                  }}
-                  title="Edit post"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(post.id)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#e57373",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    opacity: 0.7,
-                    padding: "4px 8px",
-                  }}
-                  title="Delete post"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
+            <div style={{ display: "flex", gap: 8 }}>
+              {/* Share button - visible to everyone */}
+              <button
+                onClick={() => setShowShareModal(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--alzooka-cream)",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  opacity: 0.7,
+                  padding: "4px 8px",
+                }}
+                title="Share post"
+              >
+                Share
+              </button>
+              {/* Edit/Delete - visible to owner only */}
+              {post.user_id === user.id && (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "4px 8px",
+                    }}
+                    title="Edit post"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(post.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#e57373",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "4px 8px",
+                    }}
+                    title="Delete post"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Post Content - Edit Mode or View Mode */}
@@ -2161,6 +2182,19 @@ function GroupPostCard({
           </button>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal
+          postId={post.id}
+          postContent={post.content}
+          originalPosterName={post.users?.display_name || post.users?.username || "Unknown"}
+          supabase={supabase}
+          userId={user.id}
+          onClose={() => setShowShareModal(false)}
+          onShared={onRefresh}
+        />
+      )}
     </article>
   );
 }

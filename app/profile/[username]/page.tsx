@@ -13,6 +13,7 @@ import { FriendButton } from "@/app/components/FriendButton";
 import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { PostModal } from "@/app/components/PostModal";
+import { ShareModal } from "@/app/components/ShareModal";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -228,6 +229,7 @@ export default function ProfilePage() {
   const [newPostContent, setNewPostContent] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [modalPost, setModalPost] = useState<any>(null);
+  const [sharePost, setSharePost] = useState<any>(null);
   const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [posting, setPosting] = useState(false);
@@ -1736,6 +1738,14 @@ export default function ProfilePage() {
 
                         {currentUser && post && post.id && (
                           <div style={{ display: "flex", gap: 8 }}>
+                            {/* Share button - visible to everyone */}
+                            <button
+                              onClick={() => setSharePost(post)}
+                              style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                              title="Share post"
+                            >
+                              Share
+                            </button>
                             {currentUser.id === post.user_id && (
                               <button
                                 onClick={() => {
@@ -2296,6 +2306,33 @@ export default function ProfilePage() {
                 await loadVoteTotals([{ ...(freshPost as any), comments: commentsWithReplies }]);
               }
             }
+          }}
+        />
+      )}
+
+      {/* Share Modal */}
+      {sharePost && currentUser && (
+        <ShareModal
+          postId={sharePost.id}
+          postContent={sharePost.content || ""}
+          originalPosterName={sharePost.users?.display_name || sharePost.users?.username || "Unknown"}
+          supabase={supabase}
+          userId={currentUser.id}
+          onClose={() => setSharePost(null)}
+          onShared={async () => {
+            // Refresh posts
+            const { data } = await supabase
+              .from("posts")
+              .select(`
+                id, content, image_url, video_url, wall_user_id, created_at, edited_at, edit_history, user_id,
+                users!posts_user_id_fkey (username, display_name, avatar_url),
+                wall_user:users!posts_wall_user_id_fkey (username, display_name, avatar_url),
+                comments (id, content, created_at, user_id, parent_comment_id, users!comments_user_id_fkey (username, display_name, avatar_url))
+              `)
+              .or(`user_id.eq.${profile.id},wall_user_id.eq.${profile.id}`)
+              .is("group_id", null)
+              .order("created_at", { ascending: false });
+            if (data) setPosts(data as any);
           }}
         />
       )}
