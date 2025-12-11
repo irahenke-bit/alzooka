@@ -288,13 +288,8 @@ export function PostModal({
       .single();
 
     if (!error && data) {
-      // Auto-upvote own comment
-      await supabase.from("votes").insert({
-        user_id: user.id,
-        target_type: "comment",
-        target_id: data.id,
-        value: 1,
-      });
+      // Auto-upvote own comment (using onVote to update both DB and UI)
+      onVote("comment", data.id, 1);
 
       // Send notifications
       if (replyingTo) {
