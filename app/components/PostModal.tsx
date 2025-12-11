@@ -445,6 +445,10 @@ export function PostModal({
           />
 
           <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+            {/* DEBUG: Remove after testing */}
+            <span style={{ fontSize: 10, background: isReply ? 'red' : 'lime', color: 'black', padding: '2px 4px', borderRadius: 2, marginRight: 8 }}>
+              {isReply ? 'REPLY-40px' : 'TOP-0px'}
+            </span>
             <div
               style={{
                 marginBottom: 4,
