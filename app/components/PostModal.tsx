@@ -630,8 +630,8 @@ export function PostModal({
             ) : (
               <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
                 {/* Render @mentions with Facebook-style highlighting */}
-                {/* Matches @Username or @First Last (names with spaces) */}
-                {comment.content.split(/(@[\w]+(?:\s[\w]+)?)/g).map((part, i) => 
+                {/* Only match @username (no spaces) - usernames should not contain spaces */}
+                {comment.content.split(/(@\w+)/g).map((part, i) => 
                   part.startsWith('@') ? (
                     <span
                       key={i} 
