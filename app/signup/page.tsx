@@ -27,8 +27,8 @@ export default function SignupPage() {
       return;
     }
 
-    if (!/^[a-zA-Z0-9_ ]+$/.test(username)) {
-      setError("Username can only contain letters, numbers, spaces, and underscores");
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setError("Username can only contain letters, numbers, and underscores (no spaces)");
       setLoading(false);
       return;
     }
