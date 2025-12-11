@@ -1933,7 +1933,7 @@ function PostCard({
               return (
                 <div style={{ marginBottom: 16 }}>
                   {playlistId && (
-                    <PlaylistTitle videoUrl={post.video_url} playlistId={playlistId} />
+                    <PlaylistTitle videoUrl={videoUrl} playlistId={playlistId} />
                   )}
                   <div style={{ 
                     position: "relative",
