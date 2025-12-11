@@ -190,8 +190,12 @@ export function PostModal({
   const [mounted, setMounted] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Clear highlight on any interaction
+  const clearHighlight = () => setActiveHighlight(null);
 
   // Ensure we're on client before rendering portal
   useEffect(() => {
@@ -208,14 +212,19 @@ export function PostModal({
 
   // Scroll to highlighted comment if present
   useEffect(() => {
-    if (highlightCommentId && commentsContainerRef.current) {
+    if (activeHighlight && commentsContainerRef.current) {
       setTimeout(() => {
-        const element = document.getElementById(`modal-comment-${highlightCommentId}`);
+        const element = document.getElementById(`modal-comment-${activeHighlight}`);
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }, 100);
     }
+  }, [activeHighlight]);
+  
+  // Reset highlight when highlightCommentId changes (new notification click)
+  useEffect(() => {
+    setActiveHighlight(highlightCommentId || null);
   }, [highlightCommentId]);
 
   // Close on escape key
@@ -355,6 +364,7 @@ export function PostModal({
     // Auto-insert @username for all replies (Facebook-style)
     setCommentText(`@${username} `);
     commentInputRef.current?.focus();
+    clearHighlight();
   }
 
   function cancelReply() {
@@ -446,7 +456,7 @@ export function PostModal({
         style={{
           marginBottom: 12,
           marginLeft: isReply ? 40 : 0,
-          ...(highlightCommentId === comment.id
+          ...(activeHighlight === comment.id
             ? {
                 background: "rgba(212, 168, 75, 0.2)",
                 padding: 12,
@@ -734,6 +744,7 @@ export function PostModal({
         {/* Scrollable Content */}
         <div
           ref={commentsContainerRef}
+          onClick={clearHighlight}
           style={{
             flex: 1,
             overflowY: "auto",
@@ -983,7 +994,8 @@ export function PostModal({
               type="text"
               placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
+              onChange={(e) => { setCommentText(e.target.value); clearHighlight(); }}
+              onFocus={clearHighlight}
               style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}
             />
             <button
