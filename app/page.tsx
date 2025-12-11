@@ -492,6 +492,73 @@ function FeedContent() {
     };
   }, []);
 
+  // Handle URL param changes for comment highlighting (e.g., from notification clicks)
+  useEffect(() => {
+    async function openModalForComment() {
+      if (highlightCommentId && highlightPostId && !loading) {
+        // Fetch the post and open modal
+        const { data: postsData } = await supabase
+          .from("posts")
+          .select(`
+            id,
+            content,
+            image_url,
+            video_url,
+            wall_user_id,
+            created_at,
+            edited_at,
+            edit_history,
+            user_id,
+            users!posts_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            wall_user:users!posts_wall_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            comments (
+              id,
+              content,
+              created_at,
+              user_id,
+              parent_comment_id,
+              users!comments_user_id_fkey (
+                username,
+                display_name,
+                avatar_url
+              )
+            )
+          `)
+          .eq("id", highlightPostId)
+          .single();
+
+        if (postsData) {
+          const allComments = (postsData.comments || []) as unknown as Comment[];
+          const parentComments = allComments
+            .filter(c => !c.parent_comment_id)
+            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          const replies = allComments.filter(c => c.parent_comment_id);
+          const commentsWithReplies = parentComments.map(parent => ({
+            ...parent,
+            replies: replies
+              .filter(r => r.parent_comment_id === parent.id)
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+          }));
+
+          setModalPost({
+            ...postsData,
+            comments: commentsWithReplies
+          } as unknown as Post);
+        }
+      }
+    }
+    
+    openModalForComment();
+  }, [highlightCommentId, highlightPostId, loading]);
+
   async function loadPosts(): Promise<Post[]> {
     const { data, error } = await supabase
       .from("posts")
