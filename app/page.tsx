@@ -1166,18 +1166,29 @@ function FeedContent() {
               .single();
 
             if (freshPost) {
-              // Process comments
+              // Process comments with RECURSIVE nesting
               const allComments = (freshPost.comments || []) as unknown as Comment[];
-              const parentComments = allComments
-                .filter(c => !c.parent_comment_id)
-                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-              const replies = allComments.filter(c => c.parent_comment_id);
-              const commentsWithReplies = parentComments.map(parent => ({
-                ...parent,
-                replies: replies
-                  .filter(r => r.parent_comment_id === parent.id)
-                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-              }));
+              
+              // Build recursive comment tree
+              const buildCommentTree = (comments: Comment[]): Comment[] => {
+                const parentComments = comments.filter(c => !c.parent_comment_id);
+                
+                const attachReplies = (parent: Comment): Comment => {
+                  const directReplies = comments.filter(c => c.parent_comment_id === parent.id);
+                  return {
+                    ...parent,
+                    replies: directReplies.length > 0 
+                      ? directReplies.map(attachReplies).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                      : undefined
+                  };
+                };
+                
+                return parentComments
+                  .map(attachReplies)
+                  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+              };
+              
+              const commentsWithReplies = buildCommentTree(allComments);
               
               setModalPost({
                 ...freshPost,
