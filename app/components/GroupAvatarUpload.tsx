@@ -128,6 +128,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
       setError("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
+      setIsHovered(false); // Reset hover state after upload
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";

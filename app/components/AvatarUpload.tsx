@@ -127,6 +127,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
       setError("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
+      setIsHovered(false); // Reset hover state after upload
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
