@@ -348,20 +348,23 @@ export function PostModal({
 
   const commentCount = countCommentsRecursive(post.comments || []);
 
-  // Recursive comment renderer for unlimited depth
+  // Reddit-style comment renderer: Max 2 visual levels, then linear
   function renderComment(comment: Comment, depth: number = 0): React.JSX.Element {
+    // Cap visual depth at 1 (only 2 levels: 0 and 1)
+    const visualDepth = Math.min(depth, 1);
+    
     return (
       <div
         key={comment.id}
         id={`modal-comment-${comment.id}`}
         style={{
           marginBottom: 12,
-          marginLeft: depth > 0 ? 32 : 0,
+          marginLeft: visualDepth > 0 ? 32 : 0,
           ...(highlightCommentId === comment.id
             ? {
                 background: "rgba(212, 168, 75, 0.2)",
                 padding: 12,
-                marginLeft: depth > 0 ? 20 : -12,
+                marginLeft: visualDepth > 0 ? 20 : -12,
                 marginRight: -12,
                 borderRadius: 8,
                 boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
@@ -378,7 +381,7 @@ export function PostModal({
             onVote={onVote}
           />
 
-          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${depth === 0 ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${visualDepth === 0 ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
             <div
               style={{
                 marginBottom: 4,
@@ -397,8 +400,8 @@ export function PostModal({
                     src={comment.users.avatar_url}
                     alt=""
                     style={{
-                      width: Math.max(24, 28 - depth * 2),
-                      height: Math.max(24, 28 - depth * 2),
+                      width: visualDepth === 0 ? 28 : 24,
+                      height: visualDepth === 0 ? 28 : 24,
                       borderRadius: "50%",
                       objectFit: "cover",
                     }}
@@ -406,8 +409,8 @@ export function PostModal({
                 ) : (
                   <div
                     style={{
-                      width: Math.max(24, 28 - depth * 2),
-                      height: Math.max(24, 28 - depth * 2),
+                      width: visualDepth === 0 ? 28 : 24,
+                      height: visualDepth === 0 ? 28 : 24,
                       borderRadius: "50%",
                       background: "var(--alzooka-gold)",
                       display: "flex",
@@ -415,17 +418,17 @@ export function PostModal({
                       justifyContent: "center",
                       color: "var(--alzooka-teal-dark)",
                       fontWeight: 700,
-                      fontSize: Math.max(10, 12 - depth),
+                      fontSize: visualDepth === 0 ? 12 : 10,
                     }}
                   >
                     {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <span style={{ fontSize: Math.max(12, 14 - depth * 0.5), fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                  <span style={{ fontSize: visualDepth === 0 ? 14 : 13, fontWeight: 600, color: "var(--alzooka-cream)" }}>
                     {comment.users?.display_name || comment.users?.username || "Unknown"}
                   </span>
-                  <span className="text-muted" style={{ marginLeft: 8, fontSize: Math.max(10, 12 - depth * 0.5) }}>
+                  <span className="text-muted" style={{ marginLeft: 8, fontSize: visualDepth === 0 ? 12 : 11 }}>
                     {formatTime(comment.created_at)}
                   </span>
                 </div>
@@ -493,7 +496,7 @@ export function PostModal({
                   style={{
                     width: "100%",
                     marginBottom: 8,
-                    fontSize: Math.max(12, 14 - depth * 0.5),
+                    fontSize: visualDepth === 0 ? 14 : 13,
                     resize: "vertical",
                     padding: "8px",
                     borderRadius: "4px",
@@ -537,7 +540,7 @@ export function PostModal({
                 </div>
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: Math.max(12, 14 - depth * 0.5), lineHeight: 1.5 }}>{comment.content}</p>
+              <p style={{ margin: 0, fontSize: visualDepth === 0 ? 14 : 13, lineHeight: 1.5 }}>{comment.content}</p>
             )}
           </div>
         </div>
