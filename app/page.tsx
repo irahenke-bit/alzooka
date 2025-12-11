@@ -545,6 +545,14 @@ function FeedContent() {
             ...postsData,
             comments: commentsWithReplies
           } as unknown as Post);
+          
+          // Scroll to the highlighted comment after modal renders
+          setTimeout(() => {
+            const commentElement = document.getElementById(`modal-comment-${highlightCommentId}`);
+            if (commentElement) {
+              commentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 150);
         }
       }
     }
