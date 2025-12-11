@@ -536,42 +536,44 @@ export function PostModal({
                 >
                   Reply
                 </button>
+                {/* Edit button - only for comment author */}
                 {comment.user_id === user.id && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setEditingCommentId(comment.id);
-                        setEditingCommentText(comment.content);
-                      }}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--alzooka-cream)",
-                        fontSize: 11,
-                        cursor: "pointer",
-                        opacity: 0.7,
-                        padding: "2px 6px",
-                      }}
-                      title="Edit comment"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "#e57373",
-                        fontSize: 11,
-                        cursor: "pointer",
-                        opacity: 0.7,
-                        padding: "2px 6px",
-                      }}
-                      title="Delete comment"
-                    >
-                      Delete
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(comment.id);
+                      setEditingCommentText(comment.content);
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "2px 6px",
+                    }}
+                    title="Edit comment"
+                  >
+                    Edit
+                  </button>
+                )}
+                {/* Delete button - for comment author OR post owner (Facebook-style) */}
+                {(comment.user_id === user.id || post.user_id === user.id) && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#e57373",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                      padding: "2px 6px",
+                    }}
+                    title="Delete comment"
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             </div>
