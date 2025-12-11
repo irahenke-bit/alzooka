@@ -304,7 +304,6 @@ export function PostModal({
 
   function handleReply(commentId: string, username: string) {
     setReplyingTo({ id: commentId, username });
-    setCommentText(`@${username} `);
     commentInputRef.current?.focus();
   }
 
@@ -849,7 +848,7 @@ export function PostModal({
                 color: "var(--alzooka-gold)",
               }}
             >
-              <span>Replying to @{replyingTo.username}</span>
+              <span>Replying to {replyingTo.username}</span>
               <button
                 onClick={cancelReply}
                 style={{
@@ -870,7 +869,7 @@ export function PostModal({
             <input
               ref={commentInputRef}
               type="text"
-              placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : "Write a comment..."}
+              placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}

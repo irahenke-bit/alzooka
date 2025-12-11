@@ -1884,7 +1884,73 @@ export default function ProfilePage() {
                               <span style={{ fontSize: 14, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1 }}>{post.voteScore}</span>
                             </div>
                             <button
-                              onClick={() => setModalPost({ ...post, edit_history: post.edit_history || [], comments: [] } as any)}
+                              onClick={async () => {
+                                // Fetch full post data with comments
+                                const { data: fullPost } = await supabase
+                                  .from("posts")
+                                  .select(`
+                                    id,
+                                    content,
+                                    image_url,
+                                    video_url,
+                                    created_at,
+                                    edited_at,
+                                    edit_history,
+                                    user_id,
+                                    wall_user_id,
+                                    users!posts_user_id_fkey (
+                                      username,
+                                      display_name,
+                                      avatar_url
+                                    ),
+                                    wall_user:users!posts_wall_user_id_fkey (
+                                      username,
+                                      display_name,
+                                      avatar_url
+                                    ),
+                                    comments (
+                                      id,
+                                      content,
+                                      created_at,
+                                      user_id,
+                                      parent_comment_id,
+                                      users!comments_user_id_fkey (
+                                        username,
+                                        display_name,
+                                        avatar_url
+                                      )
+                                    )
+                                  `)
+                                  .eq("id", post.id)
+                                  .single();
+
+                                if (fullPost) {
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  const allComments = ((fullPost as any).comments || []) as PostComment[];
+                                  const parentComments = allComments
+                                    .filter(c => !c.parent_comment_id)
+                                    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+                                  const replies = allComments.filter(c => c.parent_comment_id);
+                                  const commentsWithReplies = parentComments.map(parent => ({
+                                    ...parent,
+                                    replies: replies
+                                      .filter(r => r.parent_comment_id === parent.id)
+                                      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                                  }));
+
+                                  setModalPost({
+                                    ...(fullPost as any),
+                                    comments: commentsWithReplies,
+                                    edit_history: (fullPost as any).edit_history || []
+                                  });
+
+                                  // Load votes
+                                  if (currentUser) {
+                                    await loadUserVotes(currentUser.id);
+                                    await loadVoteTotals([{ ...(fullPost as any), comments: commentsWithReplies }]);
+                                  }
+                                }
+                              }}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -1900,7 +1966,7 @@ export default function ProfilePage() {
                               onMouseLeave={(e) => e.currentTarget.style.opacity = "0.6"}
                             >
                               <span style={{ fontSize: 14 }}>💬</span>
-                              <span style={{ fontSize: 14 }}>{post.commentCount === 0 ? "Comment" : `${post.commentCount} ${post.commentCount === 1 ? "comment" : "comments"}`}</span>
+                              <span style={{ fontSize: 14 }}>Comment</span>
                             </button>
                           </div>
                         </>
