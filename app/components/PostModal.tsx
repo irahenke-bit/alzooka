@@ -348,23 +348,20 @@ export function PostModal({
 
   const commentCount = countCommentsRecursive(post.comments || []);
 
-  // Reddit-style comment renderer: Max 2 visual levels, then linear
-  function renderComment(comment: Comment, depth: number = 0): React.JSX.Element {
-    // Cap visual depth at 1 (only 2 levels: 0 and 1)
-    const visualDepth = Math.min(depth, 1);
-    
+  // Facebook-style comment renderer: Only 2 visual levels (parent + replies)
+  function renderComment(comment: Comment, isReply: boolean = false): React.JSX.Element {
     return (
       <div
         key={comment.id}
         id={`modal-comment-${comment.id}`}
         style={{
           marginBottom: 12,
-          marginLeft: visualDepth > 0 ? 32 : 0,
+          marginLeft: isReply ? 40 : 0,
           ...(highlightCommentId === comment.id
             ? {
                 background: "rgba(212, 168, 75, 0.2)",
                 padding: 12,
-                marginLeft: visualDepth > 0 ? 20 : -12,
+                marginLeft: isReply ? 28 : -12,
                 marginRight: -12,
                 borderRadius: 8,
                 boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
@@ -381,7 +378,7 @@ export function PostModal({
             onVote={onVote}
           />
 
-          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${visualDepth === 0 ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
             <div
               style={{
                 marginBottom: 4,
@@ -400,8 +397,8 @@ export function PostModal({
                     src={comment.users.avatar_url}
                     alt=""
                     style={{
-                      width: visualDepth === 0 ? 28 : 24,
-                      height: visualDepth === 0 ? 28 : 24,
+                      width: isReply ? 26 : 28,
+                      height: isReply ? 26 : 28,
                       borderRadius: "50%",
                       objectFit: "cover",
                     }}
@@ -409,8 +406,8 @@ export function PostModal({
                 ) : (
                   <div
                     style={{
-                      width: visualDepth === 0 ? 28 : 24,
-                      height: visualDepth === 0 ? 28 : 24,
+                      width: isReply ? 26 : 28,
+                      height: isReply ? 26 : 28,
                       borderRadius: "50%",
                       background: "var(--alzooka-gold)",
                       display: "flex",
@@ -418,17 +415,17 @@ export function PostModal({
                       justifyContent: "center",
                       color: "var(--alzooka-teal-dark)",
                       fontWeight: 700,
-                      fontSize: visualDepth === 0 ? 12 : 10,
+                      fontSize: isReply ? 11 : 12,
                     }}
                   >
                     {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <span style={{ fontSize: visualDepth === 0 ? 14 : 13, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                  <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
                     {comment.users?.display_name || comment.users?.username || "Unknown"}
                   </span>
-                  <span className="text-muted" style={{ marginLeft: 8, fontSize: visualDepth === 0 ? 12 : 11 }}>
+                  <span className="text-muted" style={{ marginLeft: 8, fontSize: isReply ? 11 : 12 }}>
                     {formatTime(comment.created_at)}
                   </span>
                 </div>
@@ -496,7 +493,7 @@ export function PostModal({
                   style={{
                     width: "100%",
                     marginBottom: 8,
-                    fontSize: visualDepth === 0 ? 14 : 13,
+                    fontSize: isReply ? 13 : 14,
                     resize: "vertical",
                     padding: "8px",
                     borderRadius: "4px",
@@ -540,15 +537,15 @@ export function PostModal({
                 </div>
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: visualDepth === 0 ? 14 : 13, lineHeight: 1.5 }}>{comment.content}</p>
+              <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>{comment.content}</p>
             )}
           </div>
         </div>
 
-        {/* Render replies recursively */}
+        {/* Render ALL replies at the same level (Facebook style) */}
         {comment.replies && comment.replies.length > 0 && (
           <div style={{ marginTop: 8 }}>
-            {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+            {comment.replies.map((reply) => renderComment(reply, true))}
           </div>
         )}
       </div>
@@ -837,8 +834,8 @@ export function PostModal({
             </span>
           </div>
 
-          {/* Comments - Recursive Rendering for Unlimited Depth */}
-          {post.comments?.map((comment) => renderComment(comment, 0))}
+          {/* Comments - Facebook Style (2 levels max) */}
+          {post.comments?.map((comment) => renderComment(comment, false))}
         </div>
 
         {/* Fixed Comment Input at Bottom */}
