@@ -188,6 +188,8 @@ export function PostModal({
   const [submitting, setSubmitting] = useState(false);
   const [showEditHistory, setShowEditHistory] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
   const commentInputRef = useRef<HTMLInputElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -242,6 +244,19 @@ export function PostModal({
     onCommentAdded();
   }
 
+  async function handleEditComment(commentId: string) {
+    if (!editingCommentText.trim()) return;
+
+    await supabase
+      .from("comments")
+      .update({ content: editingCommentText.trim() })
+      .eq("id", commentId);
+
+    setEditingCommentId(null);
+    setEditingCommentText("");
+    onCommentAdded();
+  }
+
   async function handleComment(e: React.FormEvent) {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -272,7 +287,19 @@ export function PostModal({
 
       // Send notifications
       if (replyingTo) {
-        const parentComment = post.comments?.find((c) => c.id === replyingTo.id);
+        // Recursively find the parent comment
+        const findComment = (comments: Comment[]): Comment | null => {
+          for (const c of comments) {
+            if (c.id === replyingTo.id) return c;
+            if (c.replies) {
+              const found = findComment(c.replies);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        
+        const parentComment = findComment(post.comments || []);
         if (parentComment && parentComment.user_id !== user.id) {
           notifyNewReply(supabase, parentComment.user_id, commenterUsername, post.id, data.id, trimmedComment);
         }
@@ -419,25 +446,99 @@ export function PostModal({
                   Reply
                 </button>
                 {comment.user_id === user.id && (
-                  <button
-                    onClick={() => handleDeleteComment(comment.id)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "#e57373",
-                      fontSize: 11,
-                      cursor: "pointer",
-                      opacity: 0.7,
-                      padding: "2px 6px",
-                    }}
-                    title="Delete comment"
-                  >
-                    Delete
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditingCommentId(comment.id);
+                        setEditingCommentText(comment.content);
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        opacity: 0.7,
+                        padding: "2px 6px",
+                      }}
+                      title="Edit comment"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        opacity: 0.7,
+                        padding: "2px 6px",
+                      }}
+                      title="Delete comment"
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
               </div>
             </div>
-            <p style={{ margin: 0, fontSize: Math.max(12, 14 - depth * 0.5), lineHeight: 1.5 }}>{comment.content}</p>
+            {editingCommentId === comment.id ? (
+              <div style={{ marginTop: 8 }}>
+                <textarea
+                  value={editingCommentText}
+                  onChange={(e) => setEditingCommentText(e.target.value)}
+                  rows={2}
+                  style={{
+                    width: "100%",
+                    marginBottom: 8,
+                    fontSize: Math.max(12, 14 - depth * 0.5),
+                    resize: "vertical",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    background: "rgba(0, 0, 0, 0.2)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => handleEditComment(comment.id)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 13,
+                      background: "var(--alzooka-gold)",
+                      color: "var(--alzooka-teal-dark)",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setEditingCommentText("");
+                    }}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 13,
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: Math.max(12, 14 - depth * 0.5), lineHeight: 1.5 }}>{comment.content}</p>
+            )}
           </div>
         </div>
 
