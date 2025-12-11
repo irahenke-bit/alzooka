@@ -329,8 +329,12 @@ export function PostModal({
     setSubmitting(false);
   }
 
-  function handleReply(commentId: string, username: string) {
+  function handleReply(commentId: string, username: string, isReplyToReply: boolean) {
     setReplyingTo({ id: commentId, username });
+    // Auto-insert @username when replying to a reply (Facebook-style)
+    if (isReplyToReply) {
+      setCommentText(`@${username} `);
+    }
     commentInputRef.current?.focus();
   }
 
@@ -445,10 +449,6 @@ export function PostModal({
           />
 
           <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
-            {/* DEBUG: Remove after testing */}
-            <span style={{ fontSize: 10, background: isReply ? 'red' : 'lime', color: 'black', padding: '2px 4px', borderRadius: 2, marginRight: 8 }}>
-              {isReply ? 'REPLY-40px' : 'TOP-0px'}
-            </span>
             <div
               style={{
                 marginBottom: 4,
@@ -502,7 +502,7 @@ export function PostModal({
               </Link>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
+                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown", isReply)}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -607,7 +607,27 @@ export function PostModal({
                 </div>
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>{comment.content}</p>
+              <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
+                {/* Render @mentions with Facebook-style highlighting */}
+                {comment.content.split(/(@\w+)/g).map((part, i) => 
+                  part.startsWith('@') ? (
+                    <Link 
+                      key={i} 
+                      href={`/profile/${part.slice(1)}`}
+                      onClick={onClose}
+                      style={{ 
+                        color: 'var(--alzooka-gold)', 
+                        fontWeight: 600,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      {part}
+                    </Link>
+                  ) : (
+                    <span key={i}>{part}</span>
+                  )
+                )}
+              </p>
             )}
           </div>
         </div>
