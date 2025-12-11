@@ -632,20 +632,18 @@ export function PostModal({
             ) : (
               <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
                 {/* Render @mentions with Facebook-style highlighting */}
-                {comment.content.split(/(@\w+)/g).map((part, i) => 
+                {/* Matches @Username or @First Last (names with spaces) */}
+                {comment.content.split(/(@[\w]+(?:\s[\w]+)?)/g).map((part, i) => 
                   part.startsWith('@') ? (
-                    <Link 
+                    <span
                       key={i} 
-                      href={`/profile/${part.slice(1)}`}
-                      onClick={onClose}
                       style={{ 
                         color: 'var(--alzooka-gold)', 
                         fontWeight: 600,
-                        textDecoration: 'none'
                       }}
                     >
                       {part}
-                    </Link>
+                    </span>
                   ) : (
                     <span key={i}>{part}</span>
                   )
