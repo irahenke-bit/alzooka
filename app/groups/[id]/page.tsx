@@ -1511,6 +1511,7 @@ export default function GroupPage() {
               maxHeight: "80vh",
               display: "flex",
               flexDirection: "column",
+              overflow: "hidden",
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -1544,7 +1545,7 @@ export default function GroupPage() {
             />
             
             {/* Scrollable Members List */}
-            <div style={{ flex: 1, overflowY: "auto", maxHeight: 400 }}>
+            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", maxHeight: 400 }}>
               {members
                 .filter(m => {
                   if (!memberSearch) return true;
