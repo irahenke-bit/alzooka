@@ -244,6 +244,22 @@ export default function GroupPage() {
     init();
   }, [groupId]);
 
+  // Global escape key handler as a failsafe to close any stuck modal/overlay
+  useEffect(() => {
+    function handleGlobalEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setModalPost(null);
+        setShowMembers(false);
+        setShowInviteModal(false);
+        setShowBannerCrop(false);
+        setShowEditMenu(false);
+        setEditingInfo(false);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalEscape);
+    return () => window.removeEventListener("keydown", handleGlobalEscape);
+  }, []);
+
   async function loadMembers() {
     const { data } = await supabase
       .from("group_members")

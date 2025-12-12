@@ -517,6 +517,19 @@ export default function ProfilePage() {
     init();
   }, [username, showFriendsParam]);
 
+  // Global escape key handler as a failsafe to close any stuck modal
+  useEffect(() => {
+    function handleGlobalEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowBannerCrop(false);
+        setShowFriendsModal(false);
+        setProfilePictureModalData(null);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalEscape);
+    return () => window.removeEventListener("keydown", handleGlobalEscape);
+  }, []);
+
   async function loadFriends() {
     if (!profile) return;
     setLoadingFriends(true);

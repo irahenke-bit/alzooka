@@ -514,6 +514,17 @@ function FeedContent() {
     };
   }, []);
 
+  // Global escape key handler as a failsafe to close any stuck modal
+  useEffect(() => {
+    function handleGlobalEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setModalPost(null);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalEscape);
+    return () => window.removeEventListener("keydown", handleGlobalEscape);
+  }, []);
+
   // Handle URL param changes for comment highlighting (e.g., from notification clicks)
   useEffect(() => {
     async function openModalForComment() {

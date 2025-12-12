@@ -100,6 +100,17 @@ export default function GroupsPage() {
     init();
   }, []);
 
+  // Global escape key handler as a failsafe to close any stuck modal
+  useEffect(() => {
+    function handleGlobalEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowCreateModal(false);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalEscape);
+    return () => window.removeEventListener("keydown", handleGlobalEscape);
+  }, []);
+
   async function loadGroups(userId: string) {
     // Get user's memberships first
     const { data: memberships } = await supabase
