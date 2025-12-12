@@ -1809,7 +1809,7 @@ export default function ProfilePage() {
 
                     <div style={{ flex: 1 }}>
                       {/* Header: avatar, name, time, edit/delete */}
-                      <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <Link href={`/profile/${encodeURIComponent(post.users?.username || "unknown")}`} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                           {post.users?.avatar_url ? (
                             <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
@@ -1821,46 +1821,6 @@ export default function ProfilePage() {
                             <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>{formatTime(post.created_at)}</span>
                           </div>
                         </Link>
-
-                        {post.wall_user_id && post.wall_user && post.wall_user.username !== profile.username && (
-                          <div style={{ marginTop: -6, marginBottom: 6, fontSize: 13, opacity: 0.75 }}>
-                            Posted on{" "}
-                            <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
-                              {post.wall_user.display_name || post.wall_user.username}
-                            </Link>
-                            &apos;s wall
-                          </div>
-                        )}
-
-                        {/* Shared from attribution */}
-                        {post.shared_from_post && (
-                          <div style={{ 
-                            marginBottom: 12, 
-                            padding: "8px 12px",
-                            background: "rgba(212, 168, 75, 0.1)",
-                            borderRadius: 8,
-                            borderLeft: "3px solid var(--alzooka-gold)",
-                            fontSize: 13,
-                          }}>
-                            <span style={{ opacity: 0.7 }}>Shared from </span>
-                            {post.shared_from_post.groups ? (
-                              <Link 
-                                href={`/groups/${post.shared_from_post.groups.id}`} 
-                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
-                              >
-                                {post.shared_from_post.groups.name}
-                              </Link>
-                            ) : (
-                              <Link 
-                                href={`/profile/${post.shared_from_post.users?.username}`} 
-                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
-                              >
-                                {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
-                              </Link>
-                            )}
-                            <span style={{ opacity: 0.7 }}>&apos;s post</span>
-                          </div>
-                        )}
 
                         {currentUser && post && post.id && (
                           <div style={{ display: "flex", gap: 8 }}>
@@ -1900,6 +1860,47 @@ export default function ProfilePage() {
                           </div>
                         )}
                       </div>
+
+                      {/* Wall post attribution */}
+                      {post.wall_user_id && post.wall_user && post.wall_user.username !== profile.username && (
+                        <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
+                          Posted on{" "}
+                          <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
+                            {post.wall_user.display_name || post.wall_user.username}
+                          </Link>
+                          &apos;s wall
+                        </div>
+                      )}
+
+                      {/* Shared from attribution */}
+                      {post.shared_from_post && (
+                        <div style={{ 
+                          marginBottom: 12, 
+                          padding: "8px 12px",
+                          background: "rgba(212, 168, 75, 0.1)",
+                          borderRadius: 8,
+                          borderLeft: "3px solid var(--alzooka-gold)",
+                          fontSize: 13,
+                        }}>
+                          <span style={{ opacity: 0.7 }}>Shared from </span>
+                          {post.shared_from_post.groups ? (
+                            <Link 
+                              href={`/groups/${post.shared_from_post.groups.id}`} 
+                              style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                            >
+                              {post.shared_from_post.groups.name}
+                            </Link>
+                          ) : (
+                            <Link 
+                              href={`/profile/${post.shared_from_post.users?.username}`} 
+                              style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                            >
+                              {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
+                            </Link>
+                          )}
+                          &apos;s post
+                        </div>
+                      )}
 
                       {/* Edit mode */}
                       {editingPostId === post.id ? (
