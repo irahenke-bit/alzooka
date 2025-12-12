@@ -1716,8 +1716,8 @@ export default function GroupPage() {
           <div style={{ flexShrink: 0, display: "flex", gap: 8 }}>
             {isMember ? (
               <>
-                {/* Invite button for admins, or members if allowed */}
-                {group.privacy === "private" && (userRole === "admin" || group.allow_member_invites) && (
+                {/* Invite button: public groups - any member, private groups - admin or if allowed */}
+                {(group.privacy === "public" || (group.privacy === "private" && (userRole === "admin" || group.allow_member_invites))) && (
                   <button
                     onClick={() => setShowInviteModal(true)}
                     style={{
