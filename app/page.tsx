@@ -667,7 +667,7 @@ function FeedContent() {
             display_name,
             avatar_url
           ),
-          groups (
+          groups:groups!posts_group_id_fkey (
             id,
             name
           )
