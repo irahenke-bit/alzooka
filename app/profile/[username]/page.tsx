@@ -2363,6 +2363,8 @@ export default function ProfilePage() {
         <ShareModal
           postId={sharePost.id}
           postContent={sharePost.content || ""}
+          postImageUrl={sharePost.image_url}
+          postVideoUrl={sharePost.video_url}
           originalPosterName={sharePost.users?.display_name || sharePost.users?.username || "Unknown"}
           supabase={supabase}
           userId={currentUser.id}

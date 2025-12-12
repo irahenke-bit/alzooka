@@ -13,6 +13,8 @@ type Group = {
 type ShareModalProps = {
   postId: string;
   postContent: string;
+  postImageUrl?: string | null;
+  postVideoUrl?: string | null;
   originalPosterName: string;
   supabase: SupabaseClient;
   userId: string;
@@ -23,6 +25,8 @@ type ShareModalProps = {
 export function ShareModal({
   postId,
   postContent,
+  postImageUrl,
+  postVideoUrl,
   originalPosterName,
   supabase,
   userId,
@@ -69,14 +73,18 @@ export function ShareModal({
     setSharing(true);
 
     try {
-      // Create a shared post
+      // Create a shared post - copy original content so it displays properly
       const insertData: {
         content: string;
+        image_url?: string | null;
+        video_url?: string | null;
         user_id: string;
         shared_from_post_id: string;
         group_id?: string;
       } = {
-        content: "", // Shared posts can have empty content or user can add commentary
+        content: postContent, // Copy original content
+        image_url: postImageUrl || null,
+        video_url: postVideoUrl || null,
         user_id: userId,
         shared_from_post_id: postId,
       };

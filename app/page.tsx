@@ -1999,11 +1999,11 @@ function PostCard({
       {/* Share Modal */}
       {showShareModal && (
         <ShareModal
-          postId={post.shared_from_post_id || post.id}
-          postContent={post.shared_from_post?.content || post.content}
+          postId={post.id}
+          postContent={post.content}
+          postImageUrl={post.image_url}
+          postVideoUrl={post.video_url}
           originalPosterName={
-            post.shared_from_post?.users?.display_name || 
-            post.shared_from_post?.users?.username || 
             post.users?.display_name || 
             post.users?.username || 
             "Unknown"

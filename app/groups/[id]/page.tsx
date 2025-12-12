@@ -2188,6 +2188,8 @@ function GroupPostCard({
         <ShareModal
           postId={post.id}
           postContent={post.content}
+          postImageUrl={post.image_url}
+          postVideoUrl={post.video_url}
           originalPosterName={post.users?.display_name || post.users?.username || "Unknown"}
           supabase={supabase}
           userId={user.id}
