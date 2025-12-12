@@ -1877,22 +1877,24 @@ export default function ProfilePage() {
                           fontSize: 13,
                         }}>
                           <span style={{ opacity: 0.7 }}>Shared from </span>
-                          {post.shared_from_post.groups ? (
-                            <Link 
-                              href={`/groups/${post.shared_from_post.groups.id}`} 
-                              style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
-                            >
-                              {post.shared_from_post.groups.name}
-                            </Link>
-                          ) : (
-                            <Link 
-                              href={`/profile/${post.shared_from_post.users?.username}`} 
-                              style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
-                            >
-                              {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
-                            </Link>
+                          <Link 
+                            href={`/profile/${post.shared_from_post.users?.username}`} 
+                            style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                          >
+                            {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
+                          </Link>
+                          <span style={{ opacity: 0.7 }}>&apos;s post</span>
+                          {post.shared_from_post.groups && (
+                            <>
+                              <span style={{ opacity: 0.7 }}> in </span>
+                              <Link 
+                                href={`/groups/${post.shared_from_post.groups.id}`} 
+                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                              >
+                                {post.shared_from_post.groups.name}
+                              </Link>
+                            </>
                           )}
-                          &apos;s post
                         </div>
                       )}
 
