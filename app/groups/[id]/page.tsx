@@ -81,6 +81,44 @@ type Post = {
   comments: Comment[];
 };
 
+// Instant Tooltip Component
+function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  const [show, setShow] = useState(false);
+  
+  return (
+    <div 
+      style={{ position: "relative", display: "inline-block" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: 6,
+            padding: "6px 10px",
+            background: "var(--alzooka-teal-dark)",
+            color: "var(--alzooka-cream)",
+            fontSize: 12,
+            fontWeight: 500,
+            borderRadius: 4,
+            whiteSpace: "nowrap",
+            zIndex: 1000,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            border: "1px solid rgba(240, 235, 224, 0.2)",
+          }}
+        >
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // YouTube URL detection
 function findYouTubeUrl(text: string): string | null {
   const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
@@ -1601,53 +1639,56 @@ export default function GroupPage() {
                         {userRole === "admin" && !isCurrentUser && (
                           <>
                             {member.role !== "admin" ? (
-                              <button
-                                onClick={() => handleMakeAdmin(member.id, member.user_id)}
-                                style={{
-                                  background: "transparent",
-                                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                                  color: "var(--alzooka-cream)",
-                                  fontSize: 11,
-                                  padding: "6px 8px",
-                                  borderRadius: 4,
-                                  cursor: "pointer",
-                                }}
-                                title="Make Admin"
-                              >
-                                👑
-                              </button>
+                              <Tooltip text="Make Admin">
+                                <button
+                                  onClick={() => handleMakeAdmin(member.id, member.user_id)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                                    color: "var(--alzooka-cream)",
+                                    fontSize: 11,
+                                    padding: "6px 8px",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  👑
+                                </button>
+                              </Tooltip>
                             ) : (
+                              <Tooltip text="Remove Admin">
+                                <button
+                                  onClick={() => handleRemoveAdmin(member.id)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                                    color: "var(--alzooka-cream)",
+                                    fontSize: 11,
+                                    padding: "6px 8px",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  👤
+                                </button>
+                              </Tooltip>
+                            )}
+                            <Tooltip text="Ban User">
                               <button
-                                onClick={() => handleRemoveAdmin(member.id)}
+                                onClick={() => handleBanUser(member.user_id)}
                                 style={{
                                   background: "transparent",
-                                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                                  color: "var(--alzooka-cream)",
+                                  border: "1px solid #e57373",
+                                  color: "#e57373",
                                   fontSize: 11,
                                   padding: "6px 8px",
                                   borderRadius: 4,
                                   cursor: "pointer",
                                 }}
-                                title="Remove Admin"
                               >
-                                👤
+                                🚫
                               </button>
-                            )}
-                            <button
-                              onClick={() => handleBanUser(member.user_id)}
-                              style={{
-                                background: "transparent",
-                                border: "1px solid #e57373",
-                                color: "#e57373",
-                                fontSize: 11,
-                                padding: "6px 8px",
-                                borderRadius: 4,
-                                cursor: "pointer",
-                              }}
-                              title="Ban User"
-                            >
-                              🚫
-                            </button>
+                            </Tooltip>
                           </>
                         )}
                       </div>
