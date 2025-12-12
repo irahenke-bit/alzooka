@@ -358,6 +358,74 @@ export default function GroupPage() {
     };
   }, [user, groupId, userRole]);
 
+  // Realtime subscription for posts - new posts appear instantly
+  useEffect(() => {
+    if (!user || !isMember) return;
+
+    const channel = supabase
+      .channel(`group_posts_${groupId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "posts",
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          // Reload posts when any change happens
+          loadPosts();
+          loadVoteTotals();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId, isMember]);
+
+  // Realtime subscription for comments - new comments appear instantly
+  useEffect(() => {
+    if (!user || !isMember) return;
+
+    const channel = supabase
+      .channel(`group_comments_${groupId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "comments",
+        },
+        async (payload) => {
+          // Check if the comment belongs to a post in this group
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const postId = (payload.new as any)?.post_id || (payload.old as any)?.post_id;
+          if (postId) {
+            // Check if this post belongs to this group
+            const postInGroup = posts.some(p => p.id === postId);
+            if (postInGroup) {
+              await loadPosts();
+              await loadVoteTotals();
+              // Also refresh modal if open
+              if (modalPost && modalPost.id === postId) {
+                const freshPost = posts.find(p => p.id === postId);
+                if (freshPost) {
+                  setModalPost(freshPost);
+                }
+              }
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId, isMember, posts, modalPost]);
+
   // Global escape key handler as a failsafe to close any stuck modal/overlay
   useEffect(() => {
     function handleGlobalEscape(e: KeyboardEvent) {
