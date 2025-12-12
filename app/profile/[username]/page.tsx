@@ -1741,15 +1741,14 @@ export default function ProfilePage() {
               return (
                 <article key={post.id} className="card" style={{ marginBottom: 12 }}>
                   <div style={{ display: "flex", gap: 12 }}>
-                    {/* Left spacer for vote column (visual parity with feed) */}
-                    <div style={{ width: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                      <div style={{ fontSize: 14, opacity: 0.9 }}>
-                        {post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}
-                      </div>
-                      <div style={{ fontWeight: 600, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit" }}>
-                        {post.voteScore}
-                      </div>
-                    </div>
+                    {/* Vote Buttons */}
+                    <VoteButtons
+                      targetType="post"
+                      targetId={post.id}
+                      votes={votes}
+                      voteTotals={voteTotals}
+                      onVote={handleVote}
+                    />
 
                     <div style={{ flex: 1 }}>
                       {/* Header: avatar, name, time, edit/delete */}
@@ -1993,10 +1992,6 @@ export default function ProfilePage() {
 
                           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                             <span className="text-muted" style={{ fontSize: 14 }}>{formatTime(post.created_at)}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                              <span style={{ color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1, fontSize: 14 }}>{post.voteScore > 0 ? "▲" : post.voteScore < 0 ? "▼" : "▲"}</span>
-                              <span style={{ fontSize: 14, color: post.voteScore > 0 ? "var(--alzooka-gold)" : post.voteScore < 0 ? "#e57373" : "inherit", opacity: post.voteScore === 0 ? 0.5 : 1 }}>{post.voteScore}</span>
-                            </div>
                             <button
                               onClick={async () => {
                                 // Fetch full post data with comments
@@ -2417,3 +2412,72 @@ function formatTime(dateString: string): string {
   return date.toLocaleDateString();
 }
 
+// Vote Buttons Component
+function VoteButtons({
+  targetType,
+  targetId,
+  votes,
+  voteTotals,
+  onVote,
+}: {
+  targetType: "post" | "comment";
+  targetId: string;
+  votes: Record<string, { id: string; user_id: string; value: number }>;
+  voteTotals: Record<string, number>;
+  onVote: (type: "post" | "comment", id: string, value: number) => void;
+}) {
+  const key = `${targetType}-${targetId}`;
+  const userVote = votes[key]?.value || 0;
+  const score = voteTotals[key] || 0;
+
+  const scoreColor = score > 0 
+    ? "var(--alzooka-gold)" 
+    : score < 0 
+      ? "#e57373" 
+      : "var(--alzooka-cream)";
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
+      <button
+        onClick={() => onVote(targetType, targetId, 1)}
+        style={{
+          background: "transparent",
+          border: "none",
+          padding: "4px 8px",
+          cursor: "pointer",
+          color: userVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+          opacity: userVote === 1 ? 1 : 0.5,
+          fontSize: 14,
+          lineHeight: 1,
+        }}
+        title="Upvote"
+      >
+        ▲
+      </button>
+      <span style={{ 
+        fontSize: 14, 
+        fontWeight: 600, 
+        color: scoreColor,
+        opacity: score === 0 ? 0.5 : 1,
+      }}>
+        {score}
+      </span>
+      <button
+        onClick={() => onVote(targetType, targetId, -1)}
+        style={{
+          background: "transparent",
+          border: "none",
+          padding: "4px 8px",
+          cursor: "pointer",
+          color: userVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+          opacity: userVote === -1 ? 1 : 0.5,
+          fontSize: 14,
+          lineHeight: 1,
+        }}
+        title="Downvote"
+      >
+        ▼
+      </button>
+    </div>
+  );
+}
