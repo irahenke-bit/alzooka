@@ -15,62 +15,60 @@ type Props = {
 };
 
 export function LinkPreview({ url }: Props) {
-  const [data, setData] = useState<LinkPreviewData | null>(null);
+  // Extract domain immediately for instant display
+  const domain = (() => {
+    try {
+      return new URL(url).hostname.replace("www.", "");
+    } catch {
+      return url;
+    }
+  })();
+
+  const [data, setData] = useState<LinkPreviewData>({
+    url: url,
+    domain: domain,
+  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchPreview() {
       try {
-        // Use microlink.io free API for link previews
+        // Use microlink.io free API for link previews with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch(
-          `https://api.microlink.io?url=${encodeURIComponent(url)}`
+          `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+          { signal: controller.signal }
         );
+        clearTimeout(timeoutId);
+
         const result = await response.json();
 
         if (result.status === "success" && result.data) {
-          const domain = new URL(url).hostname.replace("www.", "");
+          // Check if title looks like a captcha/bot check page
+          const badTitles = ["just a moment", "verifying", "checking your browser", "access denied"];
+          const isBadTitle = badTitles.some(bad => 
+            result.data.title?.toLowerCase().includes(bad)
+          );
+
           setData({
-            title: result.data.title,
-            description: result.data.description,
+            title: isBadTitle ? undefined : result.data.title,
+            description: isBadTitle ? undefined : result.data.description,
             image: result.data.image?.url,
             url: url,
             domain: domain,
           });
-        } else {
-          setError(true);
         }
       } catch {
-        setError(true);
+        // Keep the basic data we already have
       } finally {
         setLoading(false);
       }
     }
 
     fetchPreview();
-  }, [url]);
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          background: "var(--alzooka-teal-light)",
-          borderRadius: 8,
-          padding: 16,
-          marginBottom: 16,
-          border: "1px solid rgba(240, 235, 224, 0.1)",
-        }}
-      >
-        <div style={{ color: "var(--alzooka-cream)", opacity: 0.5, fontSize: 13 }}>
-          Loading preview...
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return null; // Don't show anything if preview fails
-  }
+  }, [url, domain]);
 
   return (
     <a
@@ -128,9 +126,13 @@ export function LinkPreview({ url }: Props) {
             opacity: 0.5,
             marginBottom: 4,
             textTransform: "lowercase",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}
         >
           {data.domain}
+          {loading && <span style={{ opacity: 0.5 }}>• Loading...</span>}
         </div>
         {data.title && (
           <div
@@ -160,6 +162,17 @@ export function LinkPreview({ url }: Props) {
             }}
           >
             {data.description}
+          </div>
+        )}
+        {!loading && !data.title && !data.image && (
+          <div
+            style={{
+              fontSize: 14,
+              color: "#6b9eff",
+              marginTop: 4,
+            }}
+          >
+            Open link →
           </div>
         )}
       </div>

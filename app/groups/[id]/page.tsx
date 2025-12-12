@@ -2951,6 +2951,12 @@ function GroupPostCard({
                   .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                   .trim();
               }
+              // Also strip URLs that will have link previews (non-YouTube/Spotify URLs when no image/video)
+              if (!post.image_url && !post.video_url && displayContent) {
+                displayContent = displayContent
+                  .replace(/https?:\/\/(?!(?:www\.)?(?:youtube\.com|youtu\.be|open\.spotify\.com))[^\s]+/gi, '')
+                  .trim();
+              }
               return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithLinksAndMentions(displayContent)}</p> : null;
             })()
           )}
