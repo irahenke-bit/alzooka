@@ -523,7 +523,7 @@ export default function ProfilePage() {
       if (e.key === "Escape") {
         setShowBannerCrop(false);
         setShowFriendsModal(false);
-        setProfilePictureModalData(null);
+        setShowPictureModal(false);
       }
     }
     window.addEventListener("keydown", handleGlobalEscape);
