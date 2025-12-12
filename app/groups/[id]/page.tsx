@@ -1727,6 +1727,7 @@ export default function GroupPage() {
               await loadVoteTotals();
             }}
             userRole={userRole}
+            members={members}
           />
         ))
       )}
@@ -1761,6 +1762,8 @@ export default function GroupPage() {
               setModalPost(freshData);
             }
           }}
+          groupMembers={members.map(m => ({ user_id: m.user_id, role: m.role }))}
+          isUserGroupAdmin={userRole === "admin"}
         />
       )}
     </div>
@@ -1875,6 +1878,7 @@ function GroupPostCard({
   onOpenModal,
   onRefresh,
   userRole,
+  members,
 }: {
   post: Post;
   user: User;
@@ -1886,7 +1890,10 @@ function GroupPostCard({
   onOpenModal: () => void;
   onRefresh: () => void;
   userRole: string | null;
+  members: Member[];
 }) {
+  // Check if the post author is an admin
+  const isPostAuthorAdmin = members.some(m => m.user_id === post.user_id && m.role === "admin");
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [saving, setSaving] = useState(false);
@@ -1999,6 +2006,19 @@ function GroupPostCard({
                 <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
                   {post.users?.display_name || post.users?.username || "Unknown"}
                 </span>
+                {isPostAuthorAdmin && (
+                  <span style={{ 
+                    marginLeft: 8, 
+                    fontSize: 11, 
+                    color: "var(--alzooka-gold)",
+                    background: "rgba(201, 165, 92, 0.15)",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    fontWeight: 600,
+                  }}>
+                    Admin
+                  </span>
+                )}
                 <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
                   {formatTime(post.created_at)}
                 </span>
@@ -2021,40 +2041,41 @@ function GroupPostCard({
               >
                 Share
               </button>
-              {/* Edit/Delete - visible to owner only */}
+              {/* Edit - visible to owner only */}
               {post.user_id === user.id && (
-                <>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--alzooka-cream)",
-                      fontSize: 12,
-                      cursor: "pointer",
-                      opacity: 0.7,
-                      padding: "4px 8px",
-                    }}
-                    title="Edit post"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(post.id)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "#e57373",
-                      fontSize: 12,
-                      cursor: "pointer",
-                      opacity: 0.7,
-                      padding: "4px 8px",
-                    }}
-                    title="Delete post"
-                  >
-                    Delete
-                  </button>
-                </>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Edit post"
+                >
+                  Edit
+                </button>
+              )}
+              {/* Delete - visible to owner OR group admin */}
+              {(post.user_id === user.id || userRole === "admin") && (
+                <button
+                  onClick={() => onDelete(post.id)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#e57373",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                    padding: "4px 8px",
+                  }}
+                  title="Delete post"
+                >
+                  Delete
+                </button>
               )}
             </div>
           </div>

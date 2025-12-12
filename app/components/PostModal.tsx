@@ -74,6 +74,11 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+type GroupMember = {
+  user_id: string;
+  role: "admin" | "moderator" | "member";
+};
+
 type Props = {
   post: Post;
   user: User;
@@ -84,6 +89,8 @@ type Props = {
   onClose: () => void;
   onCommentAdded: (newComment?: Comment) => void;
   highlightCommentId?: string | null;
+  groupMembers?: GroupMember[];
+  isUserGroupAdmin?: boolean;
 };
 
 // Vote Buttons Component
@@ -182,7 +189,14 @@ export function PostModal({
   onClose,
   onCommentAdded,
   highlightCommentId,
+  groupMembers,
+  isUserGroupAdmin,
 }: Props) {
+  // Helper to check if a user is a group admin
+  const isGroupAdmin = (userId: string) => {
+    if (!groupMembers) return false;
+    return groupMembers.some(m => m.user_id === userId && m.role === "admin");
+  };
   const [commentText, setCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -521,6 +535,19 @@ export function PostModal({
                   <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
                     {comment.users?.display_name || comment.users?.username || "Unknown"}
                   </span>
+                  {isGroupAdmin(comment.user_id) && (
+                    <span style={{ 
+                      marginLeft: 8, 
+                      fontSize: 10, 
+                      color: "var(--alzooka-gold)",
+                      background: "rgba(201, 165, 92, 0.15)",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      fontWeight: 600,
+                    }}>
+                      Admin
+                    </span>
+                  )}
                   <span className="text-muted" style={{ marginLeft: 8, fontSize: isReply ? 11 : 12 }}>
                     {formatTime(comment.created_at)}
                   </span>
@@ -562,8 +589,8 @@ export function PostModal({
                     Edit
                   </button>
                 )}
-                {/* Delete button - for comment author OR post owner (Facebook-style) */}
-                {(comment.user_id === user.id || post.user_id === user.id) && (
+                {/* Delete button - for comment author OR post owner OR group admin */}
+                {(comment.user_id === user.id || post.user_id === user.id || isUserGroupAdmin) && (
                   <button
                     onClick={() => handleDeleteComment(comment.id)}
                     style={{
@@ -795,6 +822,19 @@ export function PostModal({
                     <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
                       {post.users?.display_name || post.users?.username || "Unknown"}
                     </span>
+                    {isGroupAdmin(post.user_id) && (
+                      <span style={{ 
+                        marginLeft: 8, 
+                        fontSize: 11, 
+                        color: "var(--alzooka-gold)",
+                        background: "rgba(201, 165, 92, 0.15)",
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                      }}>
+                        Admin
+                      </span>
+                    )}
                     <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
                       {formatTime(post.created_at)}
                     </span>
