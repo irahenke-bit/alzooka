@@ -397,14 +397,10 @@ export default function GroupPage() {
           schema: "public",
           table: "posts",
         },
-        (payload) => {
-          // For DELETE, check if the deleted post was in this group
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const deletedGroupId = (payload.old as any)?.group_id;
-          if (deletedGroupId === groupId) {
-            loadPosts();
-            loadVoteTotals();
-          }
+        () => {
+          // Reload posts on any delete - loadPosts already filters by groupId
+          loadPosts();
+          loadVoteTotals();
         }
       )
       .subscribe();
