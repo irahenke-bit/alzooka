@@ -73,6 +73,24 @@ type Post = {
   commentCount: number;
   voteScore: number;
   comments?: PostComment[];
+  shared_from_post_id?: string | null;
+  shared_from_post?: {
+    id: string;
+    content: string;
+    image_url: string | null;
+    video_url: string | null;
+    user_id: string;
+    users: {
+      username: string;
+      display_name: string | null;
+      avatar_url: string | null;
+    };
+    group_id?: string | null;
+    groups?: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
 };
 
 type Comment = {
@@ -295,6 +313,7 @@ export default function ProfilePage() {
           created_at,
           edited_at,
           edit_history,
+          shared_from_post_id,
           comments (id),
           users:users!posts_user_id_fkey (
             id,
@@ -307,6 +326,23 @@ export default function ProfilePage() {
             username,
             display_name,
             avatar_url
+          ),
+          shared_from_post:posts!posts_shared_from_post_id_fkey (
+            id,
+            content,
+            image_url,
+            video_url,
+            user_id,
+            group_id,
+            users!posts_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            groups (
+              id,
+              name
+            )
           )
         `)
         .or(`wall_user_id.eq.${profileData.id},and(user_id.eq.${profileData.id},group_id.is.null,wall_user_id.is.null)`)
@@ -1673,28 +1709,32 @@ export default function ProfilePage() {
             </p>
           ) : (
             posts.map((post) => {
+              // For shared posts, use the original post's content
+              const contentSource = post.shared_from_post || post;
               // Prepare display content and video id like feed
-              let displayContent = post.content;
-              if (post.video_url && displayContent) {
+              let displayContent = contentSource.content;
+              const videoUrl = contentSource.video_url;
+              const imageUrl = contentSource.image_url;
+              if (videoUrl && displayContent) {
                 displayContent = displayContent
                   .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
                   .trim();
               }
 
-              const videoId = post.video_url ? (() => {
+              const videoId = videoUrl ? (() => {
                 const patterns = [
                   /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
                   /youtube\.com\/shorts\/([^&\s?]+)/,
                 ];
                 for (const pattern of patterns) {
-                  const match = post.video_url!.match(pattern);
+                  const match = videoUrl.match(pattern);
                   if (match) return match[1];
                 }
                 return null;
               })() : null;
 
-              const playlistId = post.video_url ? (() => {
-                const match = post.video_url!.match(/[?&]list=([^&\s]+)/);
+              const playlistId = videoUrl ? (() => {
+                const match = videoUrl.match(/[?&]list=([^&\s]+)/);
                 return match ? match[1] : null;
               })() : null;
 
@@ -1733,6 +1773,36 @@ export default function ProfilePage() {
                               {post.wall_user.display_name || post.wall_user.username}
                             </Link>
                             &apos;s wall
+                          </div>
+                        )}
+
+                        {/* Shared from attribution */}
+                        {post.shared_from_post && (
+                          <div style={{ 
+                            marginBottom: 12, 
+                            padding: "8px 12px",
+                            background: "rgba(212, 168, 75, 0.1)",
+                            borderRadius: 8,
+                            borderLeft: "3px solid var(--alzooka-gold)",
+                            fontSize: 13,
+                          }}>
+                            <span style={{ opacity: 0.7 }}>Shared from </span>
+                            {post.shared_from_post.groups ? (
+                              <Link 
+                                href={`/groups/${post.shared_from_post.groups.id}`} 
+                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                              >
+                                {post.shared_from_post.groups.name}
+                              </Link>
+                            ) : (
+                              <Link 
+                                href={`/profile/${post.shared_from_post.users?.username}`} 
+                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                              >
+                                {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
+                              </Link>
+                            )}
+                            <span style={{ opacity: 0.7 }}>&apos;s post</span>
                           </div>
                         )}
 
@@ -1825,8 +1895,8 @@ export default function ProfilePage() {
                         <>
                           {displayContent && <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>{displayContent}</p>}
 
-                          {post.image_url && (
-                            <img src={post.image_url} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12 }} />
+                          {imageUrl && (
+                            <img src={imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12 }} />
                           )}
 
                       {/* Edited indicator and history */}
@@ -2011,9 +2081,9 @@ export default function ProfilePage() {
                             >
                               <span style={{ fontSize: 14 }}>💬</span>
                               <span style={{ fontSize: 14 }}>
-                                {post.commentCount === 0
+                                {(post.commentCount ?? 0) === 0
                                   ? "Comment"
-                                  : `${post.commentCount} comment${post.commentCount !== 1 ? "s" : ""}`}
+                                  : `${post.commentCount ?? 0} comment${(post.commentCount ?? 0) !== 1 ? "s" : ""}`}
                               </span>
                             </button>
                           </div>
@@ -2319,20 +2389,9 @@ export default function ProfilePage() {
           supabase={supabase}
           userId={currentUser.id}
           onClose={() => setSharePost(null)}
-          onShared={async () => {
-            // Refresh posts
-            const { data } = await supabase
-              .from("posts")
-              .select(`
-                id, content, image_url, video_url, wall_user_id, created_at, edited_at, edit_history, user_id,
-                users!posts_user_id_fkey (username, display_name, avatar_url),
-                wall_user:users!posts_wall_user_id_fkey (username, display_name, avatar_url),
-                comments (id, content, created_at, user_id, parent_comment_id, users!comments_user_id_fkey (username, display_name, avatar_url))
-              `)
-              .or(`user_id.eq.${profile.id},wall_user_id.eq.${profile.id}`)
-              .is("group_id", null)
-              .order("created_at", { ascending: false });
-            if (data) setPosts(data as any);
+          onShared={() => {
+            // Reload page to get properly formatted data
+            window.location.reload();
           }}
         />
       )}
