@@ -12,6 +12,7 @@ import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
+import { notifyGroupInvite } from "@/lib/notifications";
 
 type Group = {
   id: string;
@@ -1159,22 +1160,31 @@ export default function GroupPage() {
   }
 
   async function sendInvite(invitedUserId: string) {
-    if (!user) return;
-    
+    if (!user || !group) return;
+
     setSendingInvite(true);
-    
+
     const { error } = await supabase.from("group_invites").insert({
       group_id: groupId,
       invited_user_id: invitedUserId,
       invited_by: user.id,
     });
-    
+
     if (!error) {
+      // Send notification to invited user
+      await notifyGroupInvite(
+        supabase,
+        invitedUserId,
+        userUsername || "Someone",
+        groupId,
+        group.name
+      );
+      
       // Remove from results
       setInviteResults(prev => prev.filter(u => u.id !== invitedUserId));
       setInviteSearch("");
     }
-    
+
     setSendingInvite(false);
   }
 

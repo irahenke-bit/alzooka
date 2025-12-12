@@ -225,6 +225,24 @@ export async function notifyWallPost(
   });
 }
 
+// Notify when someone invites you to a group
+export async function notifyGroupInvite(
+  supabase: SupabaseClient,
+  invitedUserId: string,
+  inviterUsername: string,
+  groupId: string,
+  groupName: string
+) {
+  await createNotification({
+    supabase,
+    userId: invitedUserId,
+    type: "group_invite",
+    title: `@${inviterUsername} invited you to join ${groupName}`,
+    content: "Click to view the group and accept or decline",
+    link: `/groups/${groupId}`,
+  });
+}
+
 // Parse @mentions from text
 export function parseMentions(text: string): string[] {
   const mentionRegex = /@(\w+)/g;
