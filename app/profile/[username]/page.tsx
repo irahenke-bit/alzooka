@@ -770,6 +770,14 @@ export default function ProfilePage() {
       .single();
 
     if (!error && newPost) {
+      // Auto-upvote own post (like Reddit)
+      await supabase.from("votes").insert({
+        user_id: currentUser.id,
+        target_type: "post",
+        target_id: newPost.id,
+        value: 1,
+      });
+      
       if (profile.id !== currentUser.id) {
         notifyWallPost(supabase, profile.id, currentUserUsername, newPost.id, wallPostContent.trim());
       }
@@ -946,6 +954,14 @@ export default function ProfilePage() {
       .single();
 
     if (!error && newPost) {
+      // Auto-upvote own post (like Reddit)
+      await supabase.from("votes").insert({
+        user_id: currentUser.id,
+        target_type: "post",
+        target_id: newPost.id,
+        value: 1,
+      });
+      
       // Add the new post to the top of the list
       setPosts([
         {
@@ -960,7 +976,7 @@ export default function ProfilePage() {
           edited_at: null,
           edit_history: [],
           commentCount: 0,
-          voteScore: 0,
+          voteScore: 1,
           users: {
             username: profile.username,
             display_name: profile.display_name,

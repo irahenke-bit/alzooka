@@ -102,12 +102,21 @@ export function ShareModal({
         insertData.group_id = groupId;
       }
 
-      const { error } = await supabase.from("posts").insert(insertData);
+      const { data, error } = await supabase.from("posts").insert(insertData).select("id").single();
 
       if (error) {
         console.error("Share error:", error);
         alert("Failed to share post. Please try again.");
       } else {
+        // Auto-upvote own shared post (like Reddit)
+        if (data) {
+          await supabase.from("votes").insert({
+            user_id: userId,
+            target_type: "post",
+            target_id: data.id,
+            value: 1,
+          });
+        }
         onShared();
         onClose();
       }
