@@ -246,7 +246,7 @@ export default function GroupPage() {
   const [pendingInvite, setPendingInvite] = useState<GroupInvite | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteSearch, setInviteSearch] = useState("");
-  const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null}>>([]);
+  const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null; hasPendingInvite?: boolean}>>([]);
   const [sendingInvite, setSendingInvite] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
@@ -1205,18 +1205,39 @@ export default function GroupPage() {
       setInviteResults([]);
       return;
     }
-    
+
     // Get existing member IDs
     const memberIds = members.map(m => m.user_id);
-    
+
     const { data } = await supabase
       .from("users")
       .select("id, username, display_name, avatar_url")
       .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
       .not("id", "in", `(${memberIds.join(",")})`)
       .limit(10);
-    
-    setInviteResults(data || []);
+
+    if (data && data.length > 0) {
+      // Check which users already have pending invites
+      const userIds = data.map(u => u.id);
+      const { data: existingInvites } = await supabase
+        .from("group_invites")
+        .select("invited_user_id")
+        .eq("group_id", groupId)
+        .eq("status", "pending")
+        .in("invited_user_id", userIds);
+
+      const pendingUserIds = new Set((existingInvites || []).map(i => i.invited_user_id));
+      
+      // Add hasPendingInvite flag to results
+      const resultsWithPending = data.map(u => ({
+        ...u,
+        hasPendingInvite: pendingUserIds.has(u.id),
+      }));
+      
+      setInviteResults(resultsWithPending);
+    } else {
+      setInviteResults([]);
+    }
   }
 
   async function sendInvite(invitedUserId: string) {
@@ -2201,13 +2222,26 @@ export default function GroupPage() {
                       )}
                       <span style={{ fontSize: 14 }}>{u.display_name || u.username}</span>
                     </div>
-                    <button
-                      onClick={() => sendInvite(u.id)}
-                      disabled={sendingInvite}
-                      style={{ padding: "6px 12px", fontSize: 13 }}
-                    >
-                      Invite
-                    </button>
+                    {u.hasPendingInvite ? (
+                      <span
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: 13,
+                          color: "var(--alzooka-gold)",
+                          opacity: 0.7,
+                        }}
+                      >
+                        Pending
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => sendInvite(u.id)}
+                        disabled={sendingInvite}
+                        style={{ padding: "6px 12px", fontSize: 13 }}
+                      >
+                        Invite
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
