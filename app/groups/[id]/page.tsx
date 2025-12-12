@@ -2363,6 +2363,7 @@ export default function GroupPage() {
             }}
             userRole={userRole}
             members={members}
+            onBanUser={userRole === "admin" ? handleBanUser : undefined}
           />
         ))
       )}
@@ -2516,6 +2517,7 @@ function GroupPostCard({
   onRefresh,
   userRole,
   members,
+  onBanUser,
 }: {
   post: Post;
   user: User;
@@ -2528,6 +2530,7 @@ function GroupPostCard({
   onRefresh: () => void;
   userRole: string | null;
   members: Member[];
+  onBanUser?: (userId: string) => void;
 }) {
   // Check if the post author is an admin
   const isPostAuthorAdmin = members.some(m => m.user_id === post.user_id && m.role === "admin");
@@ -2713,6 +2716,24 @@ function GroupPostCard({
                 >
                   Delete
                 </button>
+              )}
+              {/* Ban User - visible to admin, not on own posts */}
+              {userRole === "admin" && post.user_id !== user.id && onBanUser && (
+                <Tooltip text="Ban User">
+                  <button
+                    onClick={() => onBanUser(post.user_id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#e57373",
+                      fontSize: 14,
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                    }}
+                  >
+                    🚫
+                  </button>
+                </Tooltip>
               )}
             </div>
           </div>
