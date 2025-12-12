@@ -390,19 +390,23 @@ export default function GroupPage() {
           loadVoteTotals();
         }
       )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "posts",
-        },
-        () => {
-          // Reload posts on any delete - loadPosts already filters by groupId
-          loadPosts();
-          loadVoteTotals();
-        }
-      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId, isMember]);
+
+  // Broadcast subscription for post deletions - more reliable than postgres_changes DELETE
+  useEffect(() => {
+    if (!user || !isMember) return;
+
+    const channel = supabase
+      .channel(`group_${groupId}_updates`)
+      .on("broadcast", { event: "post_deleted" }, () => {
+        loadPosts();
+        loadVoteTotals();
+      })
       .subscribe();
 
     return () => {
@@ -1178,6 +1182,15 @@ export default function GroupPage() {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
     await loadPosts();
+    
+    // Broadcast to other clients that a post was deleted
+    const channel = supabase.channel(`group_${groupId}_updates`);
+    await channel.send({
+      type: "broadcast",
+      event: "post_deleted",
+      payload: { postId },
+    });
+    supabase.removeChannel(channel);
   }
 
   async function handleDeleteGroup() {
