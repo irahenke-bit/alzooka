@@ -1761,11 +1761,11 @@ export default function ProfilePage() {
           ) : (
             posts.map((post) => {
               // For shared posts, use the original post's content
-              const contentSource = post.shared_from_post || post;
-              // Prepare display content and video id like feed
-              let displayContent = contentSource.content;
-              const videoUrl = contentSource.video_url;
-              const imageUrl = contentSource.image_url;
+              // Content is always on the post itself (shared posts copy the content)
+              // shared_from_post is only used for attribution
+              let displayContent = post.content;
+              const videoUrl = post.video_url;
+              const imageUrl = post.image_url;
               if (videoUrl && displayContent) {
                 displayContent = displayContent
                   .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
@@ -2012,7 +2012,7 @@ export default function ProfilePage() {
                           {videoId && (
                             <div style={{ marginBottom: 12 }}>
                               {playlistId && (
-                                <PlaylistTitle videoUrl={post.video_url!} playlistId={playlistId} />
+                                <PlaylistTitle videoUrl={videoUrl!} playlistId={playlistId} />
                               )}
                               <div style={{ 
                                 position: "relative",

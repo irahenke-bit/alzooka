@@ -1890,11 +1890,11 @@ function PostCard({
           ) : (
             <>
               {(() => {
-                // For shared posts, use the original post's content; otherwise use this post's content
-                const contentSource = post.shared_from_post || post;
+                // Content is always on the post itself (shared posts copy the content)
+                // shared_from_post is only used for attribution
                 // If there's a video, strip the YouTube or Spotify URL from displayed content
-                let displayContent = contentSource.content;
-                const videoUrl = contentSource.video_url;
+                let displayContent = post.content;
+                const videoUrl = post.video_url;
                 if (videoUrl && displayContent) {
                   // Remove YouTube and Spotify URLs from content
                   displayContent = displayContent
