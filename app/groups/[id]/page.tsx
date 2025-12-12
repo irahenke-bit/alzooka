@@ -12,6 +12,7 @@ import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
+import { LinkPreview } from "@/app/components/LinkPreview";
 import { notifyGroupInvite } from "@/lib/notifications";
 
 type Group = {
@@ -2953,6 +2954,16 @@ function GroupPostCard({
               return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithLinksAndMentions(displayContent)}</p> : null;
             })()
           )}
+          {/* Link Preview for non-YouTube/Spotify URLs */}
+          {!post.image_url && !post.video_url && post.content && (() => {
+            // Find URLs that are not YouTube or Spotify
+            const urlRegex = /https?:\/\/[^\s]+/gi;
+            const urls = post.content.match(urlRegex) || [];
+            const previewUrl = urls.find(url => 
+              !url.match(/youtube\.com|youtu\.be|spotify\.com/i)
+            );
+            return previewUrl ? <LinkPreview url={previewUrl} /> : null;
+          })()}
           {post.image_url && (
             <div style={{ marginBottom: 16 }}>
               <img
