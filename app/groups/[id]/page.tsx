@@ -202,6 +202,7 @@ export default function GroupPage() {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const [bannedUsers, setBannedUsers] = useState<Array<{id: string; user_id: string; users: {username: string; display_name: string | null; avatar_url: string | null}}>>([]);
+  const [isUserBanned, setIsUserBanned] = useState(false);
   const [showBannedModal, setShowBannedModal] = useState(false);
   const [userFriendships, setUserFriendships] = useState<Record<string, string>>({}); // user_id -> friendship status
   const [pendingFriendActions, setPendingFriendActions] = useState<Record<string, boolean>>({});
@@ -241,6 +242,17 @@ export default function GroupPage() {
       }
 
       setGroup(groupData);
+
+      // Check if user is banned from this group
+      const { data: banCheck } = await supabase
+        .from("group_bans")
+        .select("id")
+        .eq("group_id", groupId)
+        .eq("user_id", user.id)
+        .single();
+      
+      const userIsBanned = !!banCheck;
+      setIsUserBanned(userIsBanned);
 
       // Check membership
       const { data: membership } = await supabase
@@ -346,7 +358,7 @@ export default function GroupPage() {
         )
       `)
       .eq("group_id", groupId);
-    
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formatted = (data || []).map((ban: any) => ({
       id: ban.id,
@@ -354,6 +366,18 @@ export default function GroupPage() {
       users: Array.isArray(ban.users) ? ban.users[0] : ban.users,
     }));
     setBannedUsers(formatted);
+  }
+
+  async function checkIfUserBanned(userId: string) {
+    const { data } = await supabase
+      .from("group_bans")
+      .select("id")
+      .eq("group_id", groupId)
+      .eq("user_id", userId)
+      .single();
+    
+    setIsUserBanned(!!data);
+    return !!data;
   }
 
   async function loadFriendships(userId: string) {
@@ -679,6 +703,12 @@ export default function GroupPage() {
     e.preventDefault();
     if ((!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview) || !user) return;
 
+    // Check if user is banned
+    if (isUserBanned) {
+      alert("You have been banned from interacting with this group.");
+      return;
+    }
+
     setPosting(true);
 
     let imageUrl: string | null = null;
@@ -738,11 +768,24 @@ export default function GroupPage() {
 
   async function handleJoin() {
     if (!user) return;
-    await supabase.from("group_members").insert({
+    
+    // Check if user is banned
+    if (isUserBanned) {
+      alert("You have been banned from interacting with this group.");
+      return;
+    }
+    
+    const { error } = await supabase.from("group_members").insert({
       group_id: groupId,
       user_id: user.id,
       role: "member",
     });
+    
+    if (error) {
+      alert("Unable to join group. You may have been banned.");
+      return;
+    }
+    
     setIsMember(true);
     setUserRole("member");
     await loadMembers();
@@ -1451,6 +1494,10 @@ export default function GroupPage() {
                   </button>
                 )}
               </>
+            ) : isUserBanned ? (
+              <span style={{ fontSize: 14, color: "#e57373", opacity: 0.9 }}>
+                🚫 Banned
+              </span>
             ) : group.privacy === "private" ? (
               pendingInvite ? (
                 <div style={{ display: "flex", gap: 8 }}>
@@ -2020,8 +2067,15 @@ export default function GroupPage() {
         </div>
       )}
 
-      {/* Post Form (members only) */}
-      {isMember && (
+      {/* Banned User Message */}
+      {isUserBanned && (
+        <div className="card" style={{ marginBottom: 24, textAlign: "center", padding: 20, background: "rgba(229, 115, 115, 0.1)", border: "1px solid rgba(229, 115, 115, 0.3)" }}>
+          <p style={{ margin: 0, color: "#e57373" }}>🚫 You have been banned from interacting with this group.</p>
+        </div>
+      )}
+
+      {/* Post Form (members only, not banned) */}
+      {isMember && !isUserBanned && (
         <form onSubmit={handlePost} style={{ marginBottom: 24 }}>
           <textarea
             placeholder={`Share something with ${group.name}... Paste a YouTube or Spotify link to share`}
