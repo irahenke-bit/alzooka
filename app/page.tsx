@@ -656,7 +656,7 @@ function FeedContent() {
     let sharedPostsMap: Record<string, any> = {};
     
     if (sharedPostIds.length > 0) {
-      const { data: sharedPostsData } = await supabase
+      const { data: sharedPostsData, error: sharedError } = await supabase
         .from("posts")
         .select(`
           id,
@@ -674,6 +674,8 @@ function FeedContent() {
         `)
         .in("id", sharedPostIds);
       
+      console.log("Shared posts query - IDs:", sharedPostIds, "Data:", sharedPostsData, "Error:", sharedError);
+      
       if (sharedPostsData) {
         sharedPostsData.forEach((sp: { id: string; user_id: string; group_id?: string | null; users: unknown; groups: unknown }) => {
           sharedPostsMap[sp.id] = {
@@ -685,6 +687,7 @@ function FeedContent() {
           };
         });
       }
+      console.log("Shared posts map:", sharedPostsMap);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
