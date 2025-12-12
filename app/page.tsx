@@ -647,14 +647,67 @@ function FeedContent() {
       .is("group_id", null)  // Only show feed posts, not group posts
       .order("created_at", { ascending: false });
 
+    // Fetch original posts for shared posts
+    const sharedPostIds = (data || [])
+      .filter((p: { shared_from_post_id?: string | null }) => p.shared_from_post_id)
+      .map((p: { shared_from_post_id: string }) => p.shared_from_post_id);
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let sharedPostsMap: Record<string, any> = {};
+    
+    if (sharedPostIds.length > 0) {
+      const { data: sharedPostsData } = await supabase
+        .from("posts")
+        .select(`
+          id,
+          user_id,
+          group_id,
+          users:users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          groups (
+            id,
+            name
+          )
+        `)
+        .in("id", sharedPostIds);
+      
+      if (sharedPostsData) {
+        sharedPostsData.forEach((sp: { id: string; user_id: string; group_id?: string | null; users: unknown; groups: unknown }) => {
+          sharedPostsMap[sp.id] = {
+            id: sp.id,
+            user_id: sp.user_id,
+            users: Array.isArray(sp.users) ? sp.users[0] : sp.users,
+            group_id: sp.group_id,
+            groups: Array.isArray(sp.groups) ? sp.groups[0] : sp.groups,
+          };
+        });
+      }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postsWithNestedComments: Post[] = (data || []).map((post: any) => {
       const allComments = (post.comments || []) as Comment[];
       const commentsWithReplies = buildCommentTreeRecursive(allComments);
       
+      // Get shared post info if this is a shared post
+      const sharedFrom = post.shared_from_post_id ? sharedPostsMap[post.shared_from_post_id] : null;
+      
       return {
         ...post,
-        comments: commentsWithReplies
+        comments: commentsWithReplies,
+        shared_from_post: sharedFrom ? {
+          id: sharedFrom.id,
+          content: '',
+          image_url: null,
+          video_url: null,
+          user_id: sharedFrom.user_id,
+          users: sharedFrom.users,
+          group_id: sharedFrom.group_id,
+          groups: sharedFrom.groups,
+        } : null,
       } as Post;
     });
 

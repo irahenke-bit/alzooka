@@ -354,6 +354,47 @@ export default function ProfilePage() {
           }, 0);
         };
 
+        // Fetch original posts for shared posts
+        const sharedPostIds = postsData
+          .filter(p => p.shared_from_post_id)
+          .map(p => p.shared_from_post_id as string);
+        
+        let sharedPostsMap: Record<string, { id: string; user_id: string; users: { username: string; display_name: string | null; avatar_url: string | null }; group_id?: string | null; groups?: { id: string; name: string } | null }> = {};
+        
+        if (sharedPostIds.length > 0) {
+          const { data: sharedPostsData } = await supabase
+            .from("posts")
+            .select(`
+              id,
+              user_id,
+              group_id,
+              users:users!posts_user_id_fkey (
+                username,
+                display_name,
+                avatar_url
+              ),
+              groups (
+                id,
+                name
+              )
+            `)
+            .in("id", sharedPostIds);
+          
+          if (sharedPostsData) {
+            sharedPostsData.forEach(sp => {
+              sharedPostsMap[sp.id] = {
+                id: sp.id,
+                user_id: sp.user_id,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                users: Array.isArray(sp.users) ? sp.users[0] : sp.users as any,
+                group_id: sp.group_id,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                groups: Array.isArray(sp.groups) ? sp.groups[0] : sp.groups as any,
+              };
+            });
+          }
+        }
+
         // Transform posts with counts
         const postsWithCounts = postsData.map(post => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -364,6 +405,9 @@ export default function ProfilePage() {
             ...parent,
             replies: replies.filter(r => r.parent_comment_id === parent.id)
           }));
+          
+          // Get shared post info if this is a shared post
+          const sharedFrom = post.shared_from_post_id ? sharedPostsMap[post.shared_from_post_id] : null;
           
           return {
             id: post.id,
@@ -379,6 +423,17 @@ export default function ProfilePage() {
             edit_history: (post.edit_history as EditHistoryEntry[] | null) || [],
             commentCount: countCommentsRecursive(commentsWithReplies),
             voteScore: votesByPost[post.id] || 0,
+            shared_from_post_id: post.shared_from_post_id || null,
+            shared_from_post: sharedFrom ? {
+              id: sharedFrom.id,
+              content: '',
+              image_url: null,
+              video_url: null,
+              user_id: sharedFrom.user_id,
+              users: sharedFrom.users,
+              group_id: sharedFrom.group_id,
+              groups: sharedFrom.groups,
+            } : null,
           };
         });
 
