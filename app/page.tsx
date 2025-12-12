@@ -604,23 +604,6 @@ function FeedContent() {
           display_name,
           avatar_url
         ),
-        shared_from_post:posts!posts_shared_from_post_id_fkey (
-          id,
-          content,
-          image_url,
-          video_url,
-          user_id,
-          group_id,
-          users!posts_user_id_fkey (
-            username,
-            display_name,
-            avatar_url
-          ),
-          groups (
-            id,
-            name
-          )
-        ),
         comments (
           id,
           content,
