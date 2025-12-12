@@ -119,6 +119,65 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
   );
 }
 
+// Helper function to render text with @mentions and URLs as clickable links
+function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
+  // Regex to match URLs (http, https, or www)
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  // Regex to match @mentions
+  const mentionRegex = /(@\w+)/g;
+  
+  // Combined regex to split by both URLs and mentions
+  const combinedRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|@\w+)/gi;
+  
+  const parts = text.split(combinedRegex);
+  
+  return parts.map((part, i) => {
+    if (!part) return null;
+    
+    // Check if it's a URL
+    if (urlRegex.test(part)) {
+      // Reset lastIndex after test
+      urlRegex.lastIndex = 0;
+      const href = part.startsWith('http') ? part : `https://${part}`;
+      return (
+        <a
+          key={i}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: '#6b9eff',
+            textDecoration: 'none',
+            wordBreak: 'break-all',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    
+    // Check if it's a @mention
+    if (mentionRegex.test(part)) {
+      mentionRegex.lastIndex = 0;
+      return (
+        <span
+          key={i}
+          style={{
+            color: 'var(--alzooka-gold)',
+            fontWeight: 600,
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    
+    // Regular text
+    return <span key={i}>{part}</span>;
+  }).filter(Boolean);
+}
+
 // YouTube URL detection
 function findYouTubeUrl(text: string): string | null {
   const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+)/i;
@@ -2891,7 +2950,7 @@ function GroupPostCard({
                   .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                   .trim();
               }
-              return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p> : null;
+              return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithLinksAndMentions(displayContent)}</p> : null;
             })()
           )}
           {post.image_url && (
