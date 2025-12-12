@@ -438,6 +438,13 @@ export default function ProfilePage() {
         });
 
         setPosts(postsWithCounts);
+        
+        // Populate voteTotals state for VoteButtons component
+        const postVoteTotals: Record<string, number> = {};
+        postsWithCounts.forEach(p => {
+          postVoteTotals[`post-${p.id}`] = p.voteScore;
+        });
+        setVoteTotals(prev => ({ ...prev, ...postVoteTotals }));
       }
 
       // Get comments by this user
@@ -855,6 +862,13 @@ export default function ProfilePage() {
           })(),
           voteScore: votesByPost[p.id] || 0,
         })));
+        
+        // Update voteTotals state
+        const newVoteTotals: Record<string, number> = {};
+        refreshed.data.forEach(p => {
+          newVoteTotals[`post-${p.id}`] = votesByPost[p.id] || 0;
+        });
+        setVoteTotals(prev => ({ ...prev, ...newVoteTotals }));
       }
       setWallPostContent("");
     } else if (error) {
@@ -985,6 +999,10 @@ export default function ProfilePage() {
         },
         ...posts,
       ]);
+      
+      // Update voteTotals state for the new post
+      setVoteTotals(prev => ({ ...prev, [`post-${newPost.id}`]: 1 }));
+      
       setNewPostContent("");
       setActiveTab("posts"); // Switch to posts tab to show new post
     }
