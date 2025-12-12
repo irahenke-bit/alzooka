@@ -74,16 +74,24 @@ export default function GroupsPage() {
             table: 'groups'
           },
           async () => {
-            // Refresh groups list whenever a group is created or deleted
-            await loadGroups(user.id);
+            try {
+              // Refresh groups list whenever a group is created or deleted
+              await loadGroups(user.id);
+            } catch (err) {
+              console.error("Error in groups subscription:", err);
+            }
           }
         )
         .subscribe();
 
       // Refresh when page becomes visible (in case user had page open when group was deleted)
       const handleVisibilityChange = async () => {
-        if (document.visibilityState === 'visible') {
-          await loadGroups(user.id);
+        try {
+          if (document.visibilityState === 'visible') {
+            await loadGroups(user.id);
+          }
+        } catch (err) {
+          console.error("Error in visibility handler:", err);
         }
       };
       document.addEventListener('visibilitychange', handleVisibilityChange);

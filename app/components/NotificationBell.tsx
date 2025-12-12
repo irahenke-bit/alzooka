@@ -56,8 +56,12 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+          try {
+            setNotifications((prev) => [payload.new as Notification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+          } catch (err) {
+            console.error("Error in notifications subscription:", err);
+          }
         }
       )
       .subscribe();

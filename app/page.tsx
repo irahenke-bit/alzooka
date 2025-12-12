@@ -217,17 +217,25 @@ function FeedContent() {
 
       // Fallback: poll periodically in case realtime misses an event (every 15s)
       pollInterval = setInterval(async () => {
-        const refreshedPosts = await loadPosts();
-        await loadUserVotes(user.id);
-        await loadVoteTotals(refreshedPosts);
+        try {
+          const refreshedPosts = await loadPosts();
+          await loadUserVotes(user.id);
+          await loadVoteTotals(refreshedPosts);
+        } catch (err) {
+          console.error("Error in poll interval:", err);
+        }
       }, 15000);
 
       // Also refresh when the tab becomes visible again
       visibilityHandler = async () => {
-        if (document.visibilityState === "visible") {
-          const refreshedPosts = await loadPosts();
-          await loadUserVotes(user.id);
-          await loadVoteTotals(refreshedPosts);
+        try {
+          if (document.visibilityState === "visible") {
+            const refreshedPosts = await loadPosts();
+            await loadUserVotes(user.id);
+            await loadVoteTotals(refreshedPosts);
+          }
+        } catch (err) {
+          console.error("Error in visibility handler:", err);
         }
       };
       document.addEventListener("visibilitychange", visibilityHandler);
@@ -243,74 +251,78 @@ function FeedContent() {
             table: 'posts',
           },
           async (payload) => {
-            // Don't add if it's our own post (we already added it optimistically)
-            if (payload.new.user_id === user.id) return;
-            
-            // Skip group posts - only show feed posts
-            if (payload.new.group_id) return;
+            try {
+              // Don't add if it's our own post (we already added it optimistically)
+              if (payload.new.user_id === user.id) return;
+              
+              // Skip group posts - only show feed posts
+              if (payload.new.group_id) return;
 
-            // Fetch the full post with user data
-            const { data: newPost } = await supabase
-              .from("posts")
-              .select(`
-                id,
-                content,
-                image_url,
-                video_url,
-                created_at,
-                edited_at,
-                edit_history,
-                user_id,
-                users!posts_user_id_fkey (
-                  username,
-                  display_name,
-                  avatar_url
-                ),
-                wall_user:users!posts_wall_user_id_fkey (
-                  username,
-                  display_name,
-                  avatar_url
-                ),
-                comments (
+              // Fetch the full post with user data
+              const { data: newPost } = await supabase
+                .from("posts")
+                .select(`
                   id,
                   content,
+                  image_url,
+                  video_url,
                   created_at,
+                  edited_at,
+                  edit_history,
                   user_id,
-                  parent_comment_id,
-                  users!comments_user_id_fkey (
+                  users!posts_user_id_fkey (
                     username,
                     display_name,
                     avatar_url
+                  ),
+                  wall_user:users!posts_wall_user_id_fkey (
+                    username,
+                    display_name,
+                    avatar_url
+                  ),
+                  comments (
+                    id,
+                    content,
+                    created_at,
+                    user_id,
+                    parent_comment_id,
+                    users!comments_user_id_fkey (
+                      username,
+                      display_name,
+                      avatar_url
+                    )
                   )
-                )
-              `)
-              .eq("id", payload.new.id)
-              .single();
+                `)
+                .eq("id", payload.new.id)
+                .single();
 
-            if (newPost) {
-              // Process comments recursively (handles replies to replies)
-              const allComments = (newPost.comments || []) as unknown as Comment[];
-              const commentsWithReplies = buildCommentTreeRecursive(allComments);
+              if (newPost) {
+                // Process comments recursively (handles replies to replies)
+                const allComments = (newPost.comments || []) as unknown as Comment[];
+                const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
-              const processedPost = {
-                ...newPost,
-                comments: commentsWithReplies
-              } as unknown as Post;
+                const processedPost = {
+                  ...newPost,
+                  comments: commentsWithReplies
+                } as unknown as Post;
 
-              // Add to top of posts list
-              let updatedPosts: Post[] = [];
-              setPosts(currentPosts => {
-                // Check if post already exists
-                if (currentPosts.some(p => p.id === processedPost.id)) {
-                  updatedPosts = currentPosts;
-                  return currentPosts;
-                }
-                updatedPosts = [processedPost, ...currentPosts];
-                return updatedPosts;
-              });
+                // Add to top of posts list
+                let updatedPosts: Post[] = [];
+                setPosts(currentPosts => {
+                  // Check if post already exists
+                  if (currentPosts.some(p => p.id === processedPost.id)) {
+                    updatedPosts = currentPosts;
+                    return currentPosts;
+                  }
+                  updatedPosts = [processedPost, ...currentPosts];
+                  return updatedPosts;
+                });
 
-              // Load vote totals for the new post using the fresh list
-              await loadVoteTotals(updatedPosts);
+                // Load vote totals for the new post using the fresh list
+                await loadVoteTotals(updatedPosts);
+              }
+            } catch (err) {
+              console.error("Error in posts subscription:", err);
             }
           }
         )
@@ -327,38 +339,79 @@ function FeedContent() {
             table: 'comments',
           },
           async (payload) => {
-            // Don't add if it's our own comment (we already added it optimistically)
-            if (payload.new.user_id === user.id) return;
+            try {
+              // Don't add if it's our own comment (we already added it optimistically)
+              if (payload.new.user_id === user.id) return;
 
-            // Fetch the full comment with user data
-            const { data: newComment } = await supabase
-              .from("comments")
-              .select(`
-                id,
-                content,
-                created_at,
-                user_id,
-                post_id,
-                parent_comment_id,
-                users!comments_user_id_fkey (
-                  username,
-                  display_name,
-                  avatar_url
-                )
-              `)
-              .eq("id", payload.new.id)
-              .single();
+              // Fetch the full comment with user data
+              const { data: newComment } = await supabase
+                .from("comments")
+                .select(`
+                  id,
+                  content,
+                  created_at,
+                  user_id,
+                  post_id,
+                  parent_comment_id,
+                  users!comments_user_id_fkey (
+                    username,
+                    display_name,
+                    avatar_url
+                  )
+                `)
+                .eq("id", payload.new.id)
+                .single();
 
-            if (newComment) {
-              const postId = newComment.post_id;
-              const commentId = newComment.id;
-              
-              // Update the post in the main feed
-              setPosts(currentPosts => {
-                return currentPosts.map(post => {
-                  if (post.id !== postId) return post;
+              if (newComment) {
+                const postId = newComment.post_id;
+                const commentId = newComment.id;
+                
+                // Update the post in the main feed
+                setPosts(currentPosts => {
+                  return currentPosts.map(post => {
+                    if (post.id !== postId) return post;
+                    
+                    // Check if comment already exists (prevent duplicates from optimistic updates)
+                    const commentExists = (comments: Comment[]): boolean => {
+                      for (const c of comments) {
+                        if (c.id === commentId) return true;
+                        if (c.replies && commentExists(c.replies)) return true;
+                      }
+                      return false;
+                    };
+                    if (commentExists(post.comments || [])) return post;
+                    
+                    const typedComment = newComment as unknown as Comment;
+                    
+                    if (typedComment.parent_comment_id) {
+                      // It's a reply - add to parent's replies
+                      const addReplyToParent = (comments: Comment[]): Comment[] => {
+                        return comments.map(c => {
+                          if (c.id === typedComment.parent_comment_id) {
+                            return {
+                              ...c,
+                              replies: [...(c.replies || []), typedComment]
+                            };
+                          }
+                          if (c.replies && c.replies.length > 0) {
+                            return { ...c, replies: addReplyToParent(c.replies) };
+                          }
+                          return c;
+                        });
+                      };
+                      return { ...post, comments: addReplyToParent(post.comments || []) };
+                    } else {
+                      // Top-level comment
+                      return { ...post, comments: [...(post.comments || []), typedComment] };
+                    }
+                  });
+                });
+
+                // Also update modal if it's showing this post
+                setModalPost(currentModal => {
+                  if (!currentModal || currentModal.id !== postId) return currentModal;
                   
-                  // Check if comment already exists (prevent duplicates from optimistic updates)
+                  // Check if comment already exists (prevent duplicates)
                   const commentExists = (comments: Comment[]): boolean => {
                     for (const c of comments) {
                       if (c.id === commentId) return true;
@@ -366,12 +419,11 @@ function FeedContent() {
                     }
                     return false;
                   };
-                  if (commentExists(post.comments || [])) return post;
+                  if (commentExists(currentModal.comments || [])) return currentModal;
                   
                   const typedComment = newComment as unknown as Comment;
                   
                   if (typedComment.parent_comment_id) {
-                    // It's a reply - add to parent's replies
                     const addReplyToParent = (comments: Comment[]): Comment[] => {
                       return comments.map(c => {
                         if (c.id === typedComment.parent_comment_id) {
@@ -386,50 +438,14 @@ function FeedContent() {
                         return c;
                       });
                     };
-                    return { ...post, comments: addReplyToParent(post.comments || []) };
+                    return { ...currentModal, comments: addReplyToParent(currentModal.comments || []) };
                   } else {
-                    // Top-level comment
-                    return { ...post, comments: [...(post.comments || []), typedComment] };
+                    return { ...currentModal, comments: [...(currentModal.comments || []), typedComment] };
                   }
                 });
-              });
-
-              // Also update modal if it's showing this post
-              setModalPost(currentModal => {
-                if (!currentModal || currentModal.id !== postId) return currentModal;
-                
-                // Check if comment already exists (prevent duplicates)
-                const commentExists = (comments: Comment[]): boolean => {
-                  for (const c of comments) {
-                    if (c.id === commentId) return true;
-                    if (c.replies && commentExists(c.replies)) return true;
-                  }
-                  return false;
-                };
-                if (commentExists(currentModal.comments || [])) return currentModal;
-                
-                const typedComment = newComment as unknown as Comment;
-                
-                if (typedComment.parent_comment_id) {
-                  const addReplyToParent = (comments: Comment[]): Comment[] => {
-                    return comments.map(c => {
-                      if (c.id === typedComment.parent_comment_id) {
-                        return {
-                          ...c,
-                          replies: [...(c.replies || []), typedComment]
-                        };
-                      }
-                      if (c.replies && c.replies.length > 0) {
-                        return { ...c, replies: addReplyToParent(c.replies) };
-                      }
-                      return c;
-                    });
-                  };
-                  return { ...currentModal, comments: addReplyToParent(currentModal.comments || []) };
-                } else {
-                  return { ...currentModal, comments: [...(currentModal.comments || []), typedComment] };
-                }
-              });
+              }
+            } catch (err) {
+              console.error("Error in comments subscription:", err);
             }
           }
         )
