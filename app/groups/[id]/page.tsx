@@ -367,15 +367,44 @@ export default function GroupPage() {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "posts",
           filter: `group_id=eq.${groupId}`,
         },
         () => {
-          // Reload posts when any change happens
           loadPosts();
           loadVoteTotals();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "posts",
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          loadPosts();
+          loadVoteTotals();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "posts",
+        },
+        (payload) => {
+          // For DELETE, check if the deleted post was in this group
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const deletedGroupId = (payload.old as any)?.group_id;
+          if (deletedGroupId === groupId) {
+            loadPosts();
+            loadVoteTotals();
+          }
         }
       )
       .subscribe();
