@@ -161,6 +161,12 @@ export default function GroupPage() {
   const [editingInfo, setEditingInfo] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [bannedUsers, setBannedUsers] = useState<Array<{id: string; user_id: string; users: {username: string; display_name: string | null; avatar_url: string | null}}>>([]);
+  const [showBannedModal, setShowBannedModal] = useState(false);
+  const [userFriendships, setUserFriendships] = useState<Record<string, string>>({}); // user_id -> friendship status
+  const [pendingFriendActions, setPendingFriendActions] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     async function init() {
@@ -226,6 +232,14 @@ export default function GroupPage() {
       if (membership || groupData.privacy === "public") {
         // eslint-disable-next-line react-hooks/immutability
         await loadMembers();
+        // eslint-disable-next-line react-hooks/immutability
+        await loadFriendships(user.id);
+      }
+
+      // Load banned users if admin
+      if (membership?.role === "admin") {
+        // eslint-disable-next-line react-hooks/immutability
+        await loadBannedUsers();
       }
 
       // Load posts if member or public group
@@ -250,6 +264,8 @@ export default function GroupPage() {
       if (e.key === "Escape") {
         setModalPost(null);
         setShowMembers(false);
+        setShowMembersModal(false);
+        setShowBannedModal(false);
         setShowInviteModal(false);
         setShowBannerCrop(false);
         setShowEditMenu(false);
@@ -277,6 +293,127 @@ export default function GroupPage() {
       .order("role", { ascending: true });
 
     setMembers((data as unknown as Member[]) || []);
+  }
+
+  async function loadBannedUsers() {
+    const { data } = await supabase
+      .from("group_bans")
+      .select(`
+        id,
+        user_id,
+        users (
+          username,
+          display_name,
+          avatar_url
+        )
+      `)
+      .eq("group_id", groupId);
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formatted = (data || []).map((ban: any) => ({
+      id: ban.id,
+      user_id: ban.user_id,
+      users: Array.isArray(ban.users) ? ban.users[0] : ban.users,
+    }));
+    setBannedUsers(formatted);
+  }
+
+  async function loadFriendships(userId: string) {
+    // Get all friendships for current user
+    const { data } = await supabase
+      .from("friendships")
+      .select("id, user_id, friend_id, status")
+      .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
+    
+    if (data) {
+      const friendMap: Record<string, string> = {};
+      data.forEach((f: { user_id: string; friend_id: string; status: string }) => {
+        const otherUserId = f.user_id === userId ? f.friend_id : f.user_id;
+        friendMap[otherUserId] = f.status;
+      });
+      setUserFriendships(friendMap);
+    }
+  }
+
+  async function handleBanUser(userId: string) {
+    if (!user || !confirm("Ban this user from the group? They will no longer be able to view or interact with this group.")) return;
+    
+    // Insert ban record
+    const { error: banError } = await supabase
+      .from("group_bans")
+      .insert({ group_id: groupId, user_id: userId, banned_by: user.id });
+    
+    if (banError) {
+      alert("Failed to ban user: " + banError.message);
+      return;
+    }
+    
+    // Remove from group members
+    await supabase
+      .from("group_members")
+      .delete()
+      .eq("group_id", groupId)
+      .eq("user_id", userId);
+    
+    await loadMembers();
+    await loadBannedUsers();
+  }
+
+  async function handleUnbanUser(odLid: string) {
+    if (!confirm("Unban this user? They will be able to rejoin the group.")) return;
+    
+    await supabase
+      .from("group_bans")
+      .delete()
+      .eq("id", odLid);
+    
+    await loadBannedUsers();
+  }
+
+  async function handleMakeAdmin(memberId: string, userId: string) {
+    if (!confirm("Make this user an admin? They will have full control over the group.")) return;
+    
+    const { error } = await supabase
+      .from("group_members")
+      .update({ role: "admin" })
+      .eq("id", memberId);
+    
+    if (error) {
+      alert("Failed to update role: " + error.message);
+    } else {
+      await loadMembers();
+    }
+  }
+
+  async function handleRemoveAdmin(memberId: string) {
+    if (!confirm("Remove admin privileges from this user?")) return;
+    
+    const { error } = await supabase
+      .from("group_members")
+      .update({ role: "member" })
+      .eq("id", memberId);
+    
+    if (error) {
+      alert("Failed to update role: " + error.message);
+    } else {
+      await loadMembers();
+    }
+  }
+
+  async function handleAddFriend(friendId: string) {
+    if (!user) return;
+    
+    setPendingFriendActions(prev => ({ ...prev, [friendId]: true }));
+    
+    const { error } = await supabase
+      .from("friendships")
+      .insert({ user_id: user.id, friend_id: friendId, status: "pending" });
+    
+    if (!error) {
+      setUserFriendships(prev => ({ ...prev, [friendId]: "pending" }));
+    }
+    
+    setPendingFriendActions(prev => ({ ...prev, [friendId]: false }));
   }
 
   async function loadPosts() {
@@ -1148,6 +1285,26 @@ export default function GroupPage() {
                   )}
                   
                   <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setShowBannedModal(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    🚫 Banned Users {bannedUsers.length > 0 && `(${bannedUsers.length})`}
+                  </button>
+                  
+                  <button
                     onClick={handleDeleteGroup}
                     style={{
                       width: "100%",
@@ -1210,7 +1367,7 @@ export default function GroupPage() {
             <h1 style={{ margin: "0 0 8px 0", fontSize: 26, textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>{group.name}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
               <button
-                onClick={() => setShowMembers(!showMembers)}
+                onClick={() => setShowMembersModal(true)}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -1289,48 +1446,358 @@ export default function GroupPage() {
           <p style={{ margin: "12px 0 0 0", opacity: 0.9, lineHeight: 1.5, fontSize: 14 }}>{group.description}</p>
         )}
 
-        {/* Members List */}
-        {showMembers && (
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.2)" }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: 14, opacity: 0.8 }}>Members</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-              {members.map(member => (
-                <Link
-                  key={member.id}
-                  href={`/profile/${encodeURIComponent(member.users.username)}`}
-                  style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit" }}
-                >
-                  {member.users.avatar_url ? (
-                    <img src={member.users.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
-                  ) : (
-                    <div style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: "var(--alzooka-gold)",
+      </div>
+
+      {/* Members Modal */}
+      {showMembersModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowMembersModal(false);
+            setMemberSearch("");
+          }}
+        >
+          <div
+            className="card"
+            style={{ 
+              width: "90%", 
+              maxWidth: 480, 
+              maxHeight: "80vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 18 }}>Members ({members.length})</h2>
+              <button
+                onClick={() => {
+                  setShowMembersModal(false);
+                  setMemberSearch("");
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--alzooka-cream)",
+                  fontSize: 24,
+                  cursor: "pointer",
+                  padding: "0 8px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Search Bar */}
+            <input
+              type="text"
+              placeholder="Search members..."
+              value={memberSearch}
+              onChange={e => setMemberSearch(e.target.value)}
+              style={{ marginBottom: 16 }}
+            />
+            
+            {/* Scrollable Members List */}
+            <div style={{ flex: 1, overflowY: "auto", maxHeight: 400 }}>
+              {members
+                .filter(m => {
+                  if (!memberSearch) return true;
+                  const search = memberSearch.toLowerCase();
+                  return (
+                    m.users.username.toLowerCase().includes(search) ||
+                    (m.users.display_name?.toLowerCase().includes(search))
+                  );
+                })
+                .map(member => {
+                  const friendStatus = userFriendships[member.user_id];
+                  const isCurrentUser = member.user_id === user?.id;
+                  const isPending = pendingFriendActions[member.user_id];
+                  
+                  return (
+                    <div
+                      key={member.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "12px 0",
+                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        gap: 12,
+                      }}
+                    >
+                      {/* Avatar */}
+                      <Link href={`/profile/${encodeURIComponent(member.users.username)}`} onClick={() => setShowMembersModal(false)}>
+                        {member.users.avatar_url ? (
+                          <img src={member.users.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: "50%",
+                            background: "var(--alzooka-gold)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "var(--alzooka-teal-dark)",
+                            fontWeight: 700,
+                            fontSize: 16,
+                          }}>
+                            {(member.users.display_name || member.users.username).charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </Link>
+                      
+                      {/* Name & Role */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link 
+                          href={`/profile/${encodeURIComponent(member.users.username)}`} 
+                          onClick={() => setShowMembersModal(false)}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <div style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                            {member.users.display_name || member.users.username}
+                          </div>
+                        </Link>
+                        {member.role === "admin" && (
+                          <span style={{ fontSize: 12, color: "var(--alzooka-gold)" }}>Admin</span>
+                        )}
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                        {/* Friend Button - not for self */}
+                        {!isCurrentUser && (
+                          friendStatus === "accepted" ? (
+                            <span style={{ fontSize: 12, color: "var(--alzooka-gold)", padding: "6px 10px" }}>✓ Friends</span>
+                          ) : friendStatus === "pending" ? (
+                            <span style={{ fontSize: 12, opacity: 0.6, padding: "6px 10px" }}>Pending</span>
+                          ) : (
+                            <button
+                              onClick={() => handleAddFriend(member.user_id)}
+                              disabled={isPending}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid var(--alzooka-gold)",
+                                color: "var(--alzooka-gold)",
+                                fontSize: 12,
+                                padding: "6px 10px",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {isPending ? "..." : "Add Friend"}
+                            </button>
+                          )
+                        )}
+                        
+                        {/* Admin Controls */}
+                        {userRole === "admin" && !isCurrentUser && (
+                          <>
+                            {member.role !== "admin" ? (
+                              <button
+                                onClick={() => handleMakeAdmin(member.id, member.user_id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                                  color: "var(--alzooka-cream)",
+                                  fontSize: 11,
+                                  padding: "6px 8px",
+                                  borderRadius: 4,
+                                  cursor: "pointer",
+                                }}
+                                title="Make Admin"
+                              >
+                                👑
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleRemoveAdmin(member.id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                                  color: "var(--alzooka-cream)",
+                                  fontSize: 11,
+                                  padding: "6px 8px",
+                                  borderRadius: 4,
+                                  cursor: "pointer",
+                                }}
+                                title="Remove Admin"
+                              >
+                                👤
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleBanUser(member.user_id)}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid #e57373",
+                                color: "#e57373",
+                                fontSize: 11,
+                                padding: "6px 8px",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                              }}
+                              title="Ban User"
+                            >
+                              🚫
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowMembersModal(false);
+                setMemberSearch("");
+              }}
+              style={{
+                marginTop: 16,
+                width: "100%",
+                background: "transparent",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: "var(--alzooka-cream)",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Banned Users Modal */}
+      {showBannedModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowBannedModal(false)}
+        >
+          <div
+            className="card"
+            style={{ 
+              width: "90%", 
+              maxWidth: 480, 
+              maxHeight: "80vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 18 }}>Banned Users ({bannedUsers.length})</h2>
+              <button
+                onClick={() => setShowBannedModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--alzooka-cream)",
+                  fontSize: 24,
+                  cursor: "pointer",
+                  padding: "0 8px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Banned Users List */}
+            <div style={{ flex: 1, overflowY: "auto", maxHeight: 400 }}>
+              {bannedUsers.length === 0 ? (
+                <p className="text-muted" style={{ textAlign: "center", padding: 20 }}>
+                  No banned users
+                </p>
+              ) : (
+                bannedUsers.map(ban => (
+                  <div
+                    key={ban.id}
+                    style={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      color: "var(--alzooka-teal-dark)",
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}>
-                      {(member.users.display_name || member.users.username).charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <span style={{ fontSize: 14 }}>{member.users.display_name || member.users.username}</span>
-                    {member.role === "admin" && (
-                      <span style={{ marginLeft: 6, fontSize: 11, color: "var(--alzooka-gold)" }}>Admin</span>
+                      padding: "12px 0",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      gap: 12,
+                    }}
+                  >
+                    {/* Avatar */}
+                    {ban.users?.avatar_url ? (
+                      <img src={ban.users.avatar_url} alt="" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        background: "#666",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 16,
+                      }}>
+                        {(ban.users?.display_name || ban.users?.username || "?").charAt(0).toUpperCase()}
+                      </div>
                     )}
+                    
+                    {/* Name */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                        {ban.users?.display_name || ban.users?.username || "Unknown"}
+                      </div>
+                      <div style={{ fontSize: 12, opacity: 0.6 }}>Banned</div>
+                    </div>
+                    
+                    {/* Unban Button */}
+                    <button
+                      onClick={() => handleUnbanUser(ban.id)}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid var(--alzooka-gold)",
+                        color: "var(--alzooka-gold)",
+                        fontSize: 12,
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Unban
+                    </button>
                   </div>
-                </Link>
-              ))}
+                ))
+              )}
             </div>
+            
+            <button
+              onClick={() => setShowBannedModal(false)}
+              style={{
+                marginTop: 16,
+                width: "100%",
+                background: "transparent",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: "var(--alzooka-cream)",
+              }}
+            >
+              Close
+            </button>
           </div>
-        )}
-
-      </div>
+        </div>
+      )}
 
       {/* Invite Modal */}
       {showInviteModal && (
