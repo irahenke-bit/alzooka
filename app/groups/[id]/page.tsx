@@ -84,9 +84,9 @@ type Post = {
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   const [show, setShow] = useState(false);
-  
+
   return (
-    <div 
+    <div
       style={{ position: "relative", display: "inline-block" }}
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
@@ -97,8 +97,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
           style={{
             position: "absolute",
             bottom: "100%",
-            left: "50%",
-            transform: "translateX(-50%)",
+            right: 0,
             marginBottom: 6,
             padding: "6px 10px",
             background: "var(--alzooka-teal-dark)",
@@ -107,7 +106,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             fontWeight: 500,
             borderRadius: 4,
             whiteSpace: "nowrap",
-            zIndex: 1000,
+            zIndex: 9999,
             boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
             border: "1px solid rgba(240, 235, 224, 0.2)",
           }}
@@ -346,24 +345,40 @@ export default function GroupPage() {
   }
 
   async function loadBannedUsers() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("group_bans")
       .select(`
         id,
-        user_id,
-        users (
-          username,
-          display_name,
-          avatar_url
-        )
+        user_id
       `)
       .eq("group_id", groupId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formatted = (data || []).map((ban: any) => ({
+    if (error) {
+      console.error("Error loading banned users:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setBannedUsers([]);
+      return;
+    }
+
+    // Fetch user details separately
+    const userIds = data.map(ban => ban.user_id);
+    const { data: usersData } = await supabase
+      .from("users")
+      .select("id, username, display_name, avatar_url")
+      .in("id", userIds);
+
+    const usersMap: Record<string, { username: string; display_name: string | null; avatar_url: string | null }> = {};
+    (usersData || []).forEach((u: { id: string; username: string; display_name: string | null; avatar_url: string | null }) => {
+      usersMap[u.id] = { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url };
+    });
+
+    const formatted = data.map(ban => ({
       id: ban.id,
       user_id: ban.user_id,
-      users: Array.isArray(ban.users) ? ban.users[0] : ban.users,
+      users: usersMap[ban.user_id] || { username: "Unknown", display_name: null, avatar_url: null },
     }));
     setBannedUsers(formatted);
   }
@@ -563,6 +578,12 @@ export default function GroupPage() {
 
   async function handleVote(targetType: "post" | "comment", targetId: string, value: number) {
     if (!user) return;
+
+    // Check if user is banned
+    if (isUserBanned) {
+      alert("You have been banned from interacting with this group.");
+      return;
+    }
 
     const key = `${targetType}-${targetId}`;
     const existingVote = votes[key];
@@ -2318,7 +2339,7 @@ export default function GroupPage() {
             await loadPosts();
             await loadUserVotes(user.id);
             await loadVoteTotals();
-            
+
             // Refresh the modal post data
             const freshData = posts.find(p => p.id === modalPost.id);
             if (freshData) {
@@ -2327,6 +2348,7 @@ export default function GroupPage() {
           }}
           groupMembers={members.map(m => ({ user_id: m.user_id, role: m.role }))}
           isUserGroupAdmin={userRole === "admin"}
+          isUserBanned={isUserBanned}
         />
       )}
     </div>

@@ -91,6 +91,7 @@ type Props = {
   highlightCommentId?: string | null;
   groupMembers?: GroupMember[];
   isUserGroupAdmin?: boolean;
+  isUserBanned?: boolean;
 };
 
 // Vote Buttons Component
@@ -191,6 +192,7 @@ export function PostModal({
   highlightCommentId,
   groupMembers,
   isUserGroupAdmin,
+  isUserBanned,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -285,6 +287,12 @@ export function PostModal({
   async function handleComment(e: React.FormEvent) {
     e.preventDefault();
     if (!commentText.trim()) return;
+
+    // Check if user is banned
+    if (isUserBanned) {
+      alert("You have been banned from interacting with this group.");
+      return;
+    }
 
     setSubmitting(true);
     const trimmedComment = commentText.trim();
@@ -997,52 +1005,60 @@ export function PostModal({
             borderRadius: "0 0 12px 12px",
           }}
         >
-          {replyingTo && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 8,
-                fontSize: 13,
-                color: "var(--alzooka-gold)",
-              }}
-            >
-              <span>Replying to {replyingTo.username}</span>
-              <button
-                onClick={cancelReply}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--alzooka-cream)",
-                  fontSize: 12,
-                  cursor: "pointer",
-                  opacity: 0.6,
-                  padding: "2px 6px",
-                }}
-              >
-                ✕ Cancel
-              </button>
+          {isUserBanned ? (
+            <div style={{ textAlign: "center", color: "#e57373", fontSize: 14 }}>
+              🚫 You have been banned from interacting with this group.
             </div>
+          ) : (
+            <>
+              {replyingTo && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                    fontSize: 13,
+                    color: "var(--alzooka-gold)",
+                  }}
+                >
+                  <span>Replying to {replyingTo.username}</span>
+                  <button
+                    onClick={cancelReply}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      opacity: 0.6,
+                      padding: "2px 6px",
+                    }}
+                  >
+                    ✕ Cancel
+                  </button>
+                </div>
+              )}
+              <form onSubmit={handleComment} style={{ display: "flex", gap: 8 }}>
+                <input
+                  ref={commentInputRef}
+                  type="text"
+                  placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
+                  value={commentText}
+                  onChange={(e) => { setCommentText(e.target.value); clearHighlight(); }}
+                  onFocus={clearHighlight}
+                  style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}
+                />
+                <button
+                  type="submit"
+                  disabled={submitting || !commentText.trim()}
+                  style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24 }}
+                >
+                  {submitting ? "..." : replyingTo ? "Reply" : "Post"}
+                </button>
+              </form>
+            </>
           )}
-          <form onSubmit={handleComment} style={{ display: "flex", gap: 8 }}>
-            <input
-              ref={commentInputRef}
-              type="text"
-              placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
-              value={commentText}
-              onChange={(e) => { setCommentText(e.target.value); clearHighlight(); }}
-              onFocus={clearHighlight}
-              style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}
-            />
-            <button
-              type="submit"
-              disabled={submitting || !commentText.trim()}
-              style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24 }}
-            >
-              {submitting ? "..." : replyingTo ? "Reply" : "Post"}
-            </button>
-          </form>
         </div>
       </div>
     </div>
