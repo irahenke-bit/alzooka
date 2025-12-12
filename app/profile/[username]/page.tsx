@@ -355,7 +355,6 @@ export default function ProfilePage() {
         };
 
         // Fetch original posts for shared posts
-        console.log("Profile - Posts data shared_from_post_id values:", postsData.map(p => ({ id: p.id, shared_from_post_id: p.shared_from_post_id })));
         const sharedPostIds = postsData
           .filter(p => p.shared_from_post_id)
           .map(p => p.shared_from_post_id as string);
@@ -381,8 +380,6 @@ export default function ProfilePage() {
             `)
             .in("id", sharedPostIds);
           
-          console.log("Profile - Shared posts query - IDs:", sharedPostIds, "Data:", sharedPostsData, "Error:", sharedError);
-          
           if (sharedPostsData) {
             sharedPostsData.forEach(sp => {
               sharedPostsMap[sp.id] = {
@@ -396,9 +393,6 @@ export default function ProfilePage() {
               };
             });
           }
-          console.log("Profile - Shared posts map:", sharedPostsMap);
-        } else {
-          console.log("Profile - No shared post IDs found in posts");
         }
 
         // Transform posts with counts

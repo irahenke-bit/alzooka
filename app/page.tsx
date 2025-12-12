@@ -674,8 +674,6 @@ function FeedContent() {
         `)
         .in("id", sharedPostIds);
       
-      console.log("Shared posts query - IDs:", sharedPostIds, "Data:", sharedPostsData, "Error:", sharedError);
-      
       if (sharedPostsData) {
         sharedPostsData.forEach((sp: { id: string; user_id: string; group_id?: string | null; users: unknown; groups: unknown }) => {
           sharedPostsMap[sp.id] = {
@@ -687,7 +685,6 @@ function FeedContent() {
           };
         });
       }
-      console.log("Shared posts map:", sharedPostsMap);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
