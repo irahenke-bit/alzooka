@@ -307,6 +307,57 @@ export default function GroupPage() {
     init();
   }, [groupId]);
 
+  // Realtime subscription for bans - instantly notify user when they are banned
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`group_bans_${groupId}_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "group_bans",
+          filter: `group_id=eq.${groupId}`,
+        },
+        (payload) => {
+          // Check if the banned user is the current user
+          if (payload.new && payload.new.user_id === user.id) {
+            setIsUserBanned(true);
+          }
+          // Reload banned users list for admins
+          if (userRole === "admin") {
+            loadBannedUsers();
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "group_bans",
+          filter: `group_id=eq.${groupId}`,
+        },
+        (payload) => {
+          // Check if the unbanned user is the current user
+          if (payload.old && payload.old.user_id === user.id) {
+            setIsUserBanned(false);
+          }
+          // Reload banned users list for admins
+          if (userRole === "admin") {
+            loadBannedUsers();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, groupId, userRole]);
+
   // Global escape key handler as a failsafe to close any stuck modal/overlay
   useEffect(() => {
     function handleGlobalEscape(e: KeyboardEvent) {
