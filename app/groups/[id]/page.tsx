@@ -2349,6 +2349,7 @@ export default function GroupPage() {
           groupMembers={members.map(m => ({ user_id: m.user_id, role: m.role }))}
           isUserGroupAdmin={userRole === "admin"}
           isUserBanned={isUserBanned}
+          onBanUser={userRole === "admin" ? handleBanUser : undefined}
         />
       )}
     </div>

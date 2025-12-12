@@ -13,6 +13,43 @@ import {
   getUserIdsByUsernames,
 } from "@/lib/notifications";
 
+// Instant Tooltip Component
+function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-block" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            right: 0,
+            marginBottom: 6,
+            padding: "6px 10px",
+            background: "var(--alzooka-teal-dark)",
+            color: "var(--alzooka-cream)",
+            fontSize: 12,
+            fontWeight: 500,
+            borderRadius: 4,
+            whiteSpace: "nowrap",
+            zIndex: 9999,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            border: "1px solid rgba(240, 235, 224, 0.2)",
+          }}
+        >
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Vote = {
   id: string;
   user_id: string;
@@ -92,6 +129,7 @@ type Props = {
   groupMembers?: GroupMember[];
   isUserGroupAdmin?: boolean;
   isUserBanned?: boolean;
+  onBanUser?: (userId: string) => void;
 };
 
 // Vote Buttons Component
@@ -193,6 +231,7 @@ export function PostModal({
   groupMembers,
   isUserGroupAdmin,
   isUserBanned,
+  onBanUser,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -614,6 +653,24 @@ export function PostModal({
                   >
                     Delete
                   </button>
+                )}
+                {/* Ban button - only for group admins, not on their own comments */}
+                {isUserGroupAdmin && comment.user_id !== user.id && onBanUser && (
+                  <Tooltip text="Ban User">
+                    <button
+                      onClick={() => onBanUser(comment.user_id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        padding: "2px 6px",
+                      }}
+                    >
+                      🚫
+                    </button>
+                  </Tooltip>
                 )}
               </div>
             </div>
