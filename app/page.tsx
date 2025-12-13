@@ -185,7 +185,16 @@ function FeedContent() {
     let visibilityHandler: (() => void) | null = null;
 
     async function init() {
-      // First, get the current session - this will also process any OAuth tokens in the URL
+      // Check for OAuth callback tokens in URL hash
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
+        // Give Supabase client time to process the hash tokens
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Clear the hash from URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+      
+      // First, get the current session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {

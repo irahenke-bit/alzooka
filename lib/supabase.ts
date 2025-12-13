@@ -12,7 +12,13 @@ export function createBrowserClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   
-  browserClient = createClient(url, key)
+  browserClient = createClient(url, key, {
+    auth: {
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    }
+  })
   return browserClient
 }
 
