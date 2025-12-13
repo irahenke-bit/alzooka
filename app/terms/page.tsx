@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogoWithText } from "@/app/components/Logo";
+import { Logo } from "@/app/components/Logo";
 
 export default function TermsPage() {
   return (
@@ -16,8 +16,11 @@ export default function TermsPage() {
           justifyContent: "space-between",
         }}
       >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <LogoWithText />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <Logo size={32} />
+          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>
+            Alzooka
+          </h1>
         </Link>
       </header>
 
