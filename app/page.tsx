@@ -73,6 +73,12 @@ type Post = {
     avatar_url: string | null;
   };
   comments: Comment[];
+  // Group fields
+  group_id?: string | null;
+  groups?: {
+    id: string;
+    name: string;
+  } | null;
   // Sharing fields
   shared_from_post_id?: string | null;
   shared_from_post?: {
@@ -92,6 +98,15 @@ type Post = {
       name: string;
     } | null;
   } | null;
+};
+
+type GroupPreference = {
+  group_id: string;
+  include_in_feed: boolean;
+  max_posts_per_day: number;
+  whitelist_members: string[];
+  mute_members: string[];
+  friends_only: boolean;
 };
 
 // YouTube URL detection and parsing
@@ -137,6 +152,8 @@ function FeedContent() {
   const [allowWallPosts, setAllowWallPosts] = useState<boolean>(true);
   const [wallFriendsOnly, setWallFriendsOnly] = useState<boolean>(true);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [userFriends, setUserFriends] = useState<string[]>([]);
+  const [groupPreferences, setGroupPreferences] = useState<GroupPreference[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [content, setContent] = useState("");
@@ -224,8 +241,29 @@ function FeedContent() {
       setAllowWallPosts(userData.allow_wall_posts ?? true);
       setWallFriendsOnly(userData.wall_friends_only ?? true);
       
+      // Load user's friends for group feed filtering
+      const { data: friendships } = await supabase
+        .from("friendships")
+        .select("user_id, friend_id")
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq("status", "accepted");
+      
+      const friendIds = (friendships || []).map(f => 
+        f.user_id === user.id ? f.friend_id : f.user_id
+      );
+      setUserFriends(friendIds);
+      
+      // Load group feed preferences
+      const { data: prefs } = await supabase
+        .from("user_group_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("include_in_feed", true);
+      
+      setGroupPreferences((prefs || []) as GroupPreference[]);
+      
       // eslint-disable-next-line react-hooks/immutability
-      const loadedPosts = await loadPosts();
+      const loadedPosts = await loadPosts(friendIds, (prefs || []) as GroupPreference[]);
       // eslint-disable-next-line react-hooks/immutability
       await loadUserVotes(user.id);
       // eslint-disable-next-line react-hooks/immutability
@@ -624,8 +662,12 @@ function FeedContent() {
     openModalForComment();
   }, [highlightCommentId, highlightPostId, notificationTimestamp, loading]);
 
-  async function loadPosts(): Promise<Post[]> {
-    const { data, error } = await supabase
+  async function loadPosts(
+    friends: string[] = userFriends,
+    prefs: GroupPreference[] = groupPreferences
+  ): Promise<Post[]> {
+    // 1. Load regular feed posts (non-group posts)
+    const { data: feedPosts } = await supabase
       .from("posts")
       .select(`
         id,
@@ -637,6 +679,7 @@ function FeedContent() {
         edited_at,
         edit_history,
         user_id,
+        group_id,
         shared_from_post_id,
         users!posts_user_id_fkey (
           username,
@@ -647,6 +690,10 @@ function FeedContent() {
           username,
           display_name,
           avatar_url
+        ),
+        groups:groups!posts_group_id_fkey (
+          id,
+          name
         ),
         comments (
           id,
@@ -661,11 +708,107 @@ function FeedContent() {
           )
         )
       `)
-      .is("group_id", null)  // Only show feed posts, not group posts
+      .is("group_id", null)
       .order("created_at", { ascending: false });
 
+    // 2. Load group posts based on user preferences
+    let groupPosts: typeof feedPosts = [];
+    
+    if (prefs.length > 0) {
+      const groupIds = prefs.map(p => p.group_id);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const { data: rawGroupPosts } = await supabase
+        .from("posts")
+        .select(`
+          id,
+          content,
+          image_url,
+          video_url,
+          wall_user_id,
+          created_at,
+          edited_at,
+          edit_history,
+          user_id,
+          group_id,
+          shared_from_post_id,
+          users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          wall_user:users!posts_wall_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          groups:groups!posts_group_id_fkey (
+            id,
+            name
+          ),
+          comments (
+            id,
+            content,
+            created_at,
+            user_id,
+            parent_comment_id,
+            users!comments_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            )
+          )
+        `)
+        .in("group_id", groupIds)
+        .gte("created_at", today.toISOString())
+        .order("created_at", { ascending: false });
+      
+      // Apply filters per group
+      const filteredGroupPosts: typeof rawGroupPosts = [];
+      const groupPostCounts: Record<string, number> = {};
+      
+      for (const post of rawGroupPosts || []) {
+        const pref = prefs.find(p => p.group_id === post.group_id);
+        if (!pref) continue;
+        
+        // Initialize count for this group
+        if (!groupPostCounts[post.group_id!]) {
+          groupPostCounts[post.group_id!] = 0;
+        }
+        
+        // Check max_posts_per_day limit
+        if (groupPostCounts[post.group_id!] >= pref.max_posts_per_day) {
+          continue;
+        }
+        
+        // Check mute_members filter
+        if (pref.mute_members.includes(post.user_id)) {
+          continue;
+        }
+        
+        // Check friends_only filter
+        if (pref.friends_only && !friends.includes(post.user_id)) {
+          continue;
+        }
+        
+        // Post passes all filters
+        groupPostCounts[post.group_id!]++;
+        
+        // Prioritize whitelisted members by boosting them (we'll sort later)
+        const isWhitelisted = pref.whitelist_members.includes(post.user_id);
+        filteredGroupPosts.push({ ...post, _whitelisted: isWhitelisted } as typeof post);
+      }
+      
+      groupPosts = filteredGroupPosts;
+    }
+
+    // 3. Merge feed posts and group posts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allRawPosts = [...(feedPosts || []), ...(groupPosts || [])] as any[];
+
     // Fetch original posts for shared posts
-    const sharedPostIds = (data || [])
+    const sharedPostIds = allRawPosts
       .filter((p: { shared_from_post_id?: string | null }) => p.shared_from_post_id)
       .map((p: { shared_from_post_id: string }) => p.shared_from_post_id);
     
@@ -673,7 +816,7 @@ function FeedContent() {
     let sharedPostsMap: Record<string, any> = {};
     
     if (sharedPostIds.length > 0) {
-      const { data: sharedPostsData, error: sharedError } = await supabase
+      const { data: sharedPostsData } = await supabase
         .from("posts")
         .select(`
           id,
@@ -705,7 +848,7 @@ function FeedContent() {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const postsWithNestedComments: Post[] = (data || []).map((post: any) => {
+    const postsWithNestedComments: Post[] = allRawPosts.map((post: any) => {
       const allComments = (post.comments || []) as Comment[];
       const commentsWithReplies = buildCommentTreeRecursive(allComments);
       
@@ -714,6 +857,7 @@ function FeedContent() {
       
       return {
         ...post,
+        groups: Array.isArray(post.groups) ? post.groups[0] : post.groups,
         comments: commentsWithReplies,
         shared_from_post: sharedFrom ? {
           id: sharedFrom.id,
@@ -727,6 +871,11 @@ function FeedContent() {
         } : null,
       } as Post;
     });
+
+    // Sort by created_at descending (whitelisted posts could be boosted here if needed)
+    postsWithNestedComments.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     setPosts(postsWithNestedComments);
     return postsWithNestedComments;
@@ -1846,6 +1995,13 @@ function PostCard({
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
             <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
               Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>&apos;s wall
+            </div>
+          )}
+
+          {/* Group attribution */}
+          {post.group_id && post.groups && (
+            <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
+              Posted in <Link href={`/groups/${post.group_id}`} style={{ color: "var(--alzooka-gold)" }}>{post.groups.name}</Link>
             </div>
           )}
 

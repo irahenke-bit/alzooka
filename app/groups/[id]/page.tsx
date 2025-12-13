@@ -266,6 +266,17 @@ export default function GroupPage() {
   const [showBannedModal, setShowBannedModal] = useState(false);
   const [userFriendships, setUserFriendships] = useState<Record<string, string>>({}); // user_id -> friendship status
   const [pendingFriendActions, setPendingFriendActions] = useState<Record<string, boolean>>({});
+  
+  // Feed preferences state
+  const [showFeedPrefsModal, setShowFeedPrefsModal] = useState(false);
+  const [feedPrefs, setFeedPrefs] = useState({
+    include_in_feed: false,
+    max_posts_per_day: 3,
+    whitelist_members: [] as string[],
+    mute_members: [] as string[],
+    friends_only: false,
+  });
+  const [savingFeedPrefs, setSavingFeedPrefs] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -360,6 +371,26 @@ export default function GroupPage() {
         await loadUserVotes(user.id);
         // eslint-disable-next-line react-hooks/immutability
         await loadVoteTotals();
+      }
+
+      // Load feed preferences if member
+      if (membership) {
+        const { data: prefs } = await supabase
+          .from("user_group_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("group_id", groupId)
+          .single();
+        
+        if (prefs) {
+          setFeedPrefs({
+            include_in_feed: prefs.include_in_feed ?? false,
+            max_posts_per_day: prefs.max_posts_per_day ?? 3,
+            whitelist_members: prefs.whitelist_members ?? [],
+            mute_members: prefs.mute_members ?? [],
+            friends_only: prefs.friends_only ?? false,
+          });
+        }
       }
 
       setLoading(false);
@@ -1030,6 +1061,59 @@ export default function GroupPage() {
     setIsMember(false);
     setUserRole(null);
     await loadMembers();
+  }
+
+  async function saveFeedPreferences() {
+    if (!user) return;
+    setSavingFeedPrefs(true);
+    
+    await supabase
+      .from("user_group_preferences")
+      .upsert({
+        user_id: user.id,
+        group_id: groupId,
+        include_in_feed: feedPrefs.include_in_feed,
+        max_posts_per_day: feedPrefs.max_posts_per_day,
+        whitelist_members: feedPrefs.whitelist_members,
+        mute_members: feedPrefs.mute_members,
+        friends_only: feedPrefs.friends_only,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: "user_id,group_id",
+      });
+    
+    setSavingFeedPrefs(false);
+    setShowFeedPrefsModal(false);
+  }
+
+  function toggleWhitelist(userId: string) {
+    setFeedPrefs(prev => {
+      const isWhitelisted = prev.whitelist_members.includes(userId);
+      // Remove from mute if adding to whitelist
+      const newMute = isWhitelisted ? prev.mute_members : prev.mute_members.filter(id => id !== userId);
+      return {
+        ...prev,
+        whitelist_members: isWhitelisted 
+          ? prev.whitelist_members.filter(id => id !== userId)
+          : [...prev.whitelist_members, userId],
+        mute_members: newMute,
+      };
+    });
+  }
+
+  function toggleMute(userId: string) {
+    setFeedPrefs(prev => {
+      const isMuted = prev.mute_members.includes(userId);
+      // Remove from whitelist if adding to mute
+      const newWhitelist = isMuted ? prev.whitelist_members : prev.whitelist_members.filter(id => id !== userId);
+      return {
+        ...prev,
+        mute_members: isMuted 
+          ? prev.mute_members.filter(id => id !== userId)
+          : [...prev.mute_members, userId],
+        whitelist_members: newWhitelist,
+      };
+    });
   }
 
   async function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1757,6 +1841,17 @@ export default function GroupPage() {
               {/* Buttons */}
               {isMember ? (
                 <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => setShowFeedPrefsModal(true)}
+                    style={{
+                      background: "rgba(0,0,0,0.4)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                    }}
+                    title="Feed Settings"
+                  >
+                    ⚙️ Feed
+                  </button>
                   {(group.privacy === "public" || (group.privacy === "private" && (userRole === "admin" || group.allow_member_invites))) && (
                     <button
                       onClick={() => setShowInviteModal(true)}
@@ -2173,6 +2268,183 @@ export default function GroupPage() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Feed Preferences Modal */}
+      {showFeedPrefsModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowFeedPrefsModal(false)}
+        >
+          <div
+            className="card"
+            style={{ width: "90%", maxWidth: 500, maxHeight: "80vh", overflowY: "auto" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Feed Settings for {group?.name}</h2>
+            
+            {/* Include in Feed Toggle */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={feedPrefs.include_in_feed}
+                  onChange={e => setFeedPrefs(prev => ({ ...prev, include_in_feed: e.target.checked }))}
+                  style={{ width: 20, height: 20 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>Include posts in my feed</div>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>Show posts from this group in your main newsfeed</div>
+                </div>
+              </label>
+            </div>
+
+            {feedPrefs.include_in_feed && (
+              <>
+                {/* Max Posts Per Day */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
+                    Max posts per day: {feedPrefs.max_posts_per_day}
+                  </label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={20}
+                    value={feedPrefs.max_posts_per_day}
+                    onChange={e => setFeedPrefs(prev => ({ ...prev, max_posts_per_day: parseInt(e.target.value) }))}
+                    style={{ width: "100%" }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.5 }}>
+                    <span>1</span>
+                    <span>20</span>
+                  </div>
+                </div>
+
+                {/* Friends Only Toggle */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={feedPrefs.friends_only}
+                      onChange={e => setFeedPrefs(prev => ({ ...prev, friends_only: e.target.checked }))}
+                      style={{ width: 20, height: 20 }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 600 }}>Friends only</div>
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>Only show posts from your friends in this group</div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Member Controls */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 12 }}>Member Controls</div>
+                  <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 12 }}>
+                    Prioritize or mute specific members
+                  </div>
+                  <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                    {members.map(member => (
+                      <div
+                        key={member.user_id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 0",
+                          borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          {member.users.avatar_url ? (
+                            <img src={member.users.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: "50%",
+                              background: "var(--alzooka-gold)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "var(--alzooka-teal-dark)",
+                              fontWeight: 700,
+                              fontSize: 12,
+                            }}>
+                              {(member.users.display_name || member.users.username).charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span style={{ fontSize: 14 }}>{member.users.display_name || member.users.username}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={() => toggleWhitelist(member.user_id)}
+                            style={{
+                              background: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--alzooka-gold)" : "transparent",
+                              border: "1px solid var(--alzooka-gold)",
+                              color: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--alzooka-teal-dark)" : "var(--alzooka-gold)",
+                              padding: "4px 8px",
+                              fontSize: 11,
+                              cursor: "pointer",
+                              borderRadius: 4,
+                            }}
+                            title="Prioritize posts from this member"
+                          >
+                            ⭐
+                          </button>
+                          <button
+                            onClick={() => toggleMute(member.user_id)}
+                            style={{
+                              background: feedPrefs.mute_members.includes(member.user_id) ? "#e57373" : "transparent",
+                              border: "1px solid #e57373",
+                              color: feedPrefs.mute_members.includes(member.user_id) ? "white" : "#e57373",
+                              padding: "4px 8px",
+                              fontSize: 11,
+                              cursor: "pointer",
+                              borderRadius: 4,
+                            }}
+                            title="Mute posts from this member"
+                          >
+                            🔇
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Save/Cancel Buttons */}
+            <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+              <button
+                onClick={saveFeedPreferences}
+                disabled={savingFeedPrefs}
+                style={{ flex: 1 }}
+              >
+                {savingFeedPrefs ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => setShowFeedPrefsModal(false)}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
