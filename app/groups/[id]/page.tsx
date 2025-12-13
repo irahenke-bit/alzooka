@@ -1455,12 +1455,12 @@ export default function GroupPage() {
       </header>
 
       {/* Group Header - Banner with overlay content */}
-      <div 
-        style={{ 
-          marginBottom: 24, 
-          borderRadius: 12, 
+      <div
+        style={{
+          marginBottom: 24,
+          borderRadius: 12,
           overflow: "hidden",
-          background: group.banner_url 
+          background: group.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 70%), url(${group.banner_url}) center/cover`
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
           position: "relative",
@@ -1471,6 +1471,26 @@ export default function GroupPage() {
           justifyContent: "flex-end",
         }}
       >
+        {/* Post Count - Upper Left */}
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            textAlign: "center",
+            background: "rgba(0, 0, 0, 0.5)",
+            padding: "8px 14px",
+            borderRadius: 8,
+          }}
+        >
+          <div style={{ fontSize: 11, color: "var(--alzooka-gold)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Total Posts
+          </div>
+          <div style={{ fontSize: 20, color: "var(--alzooka-gold)", fontWeight: 700 }}>
+            {posts.length}
+          </div>
+        </div>
+
         {/* Admin Edit button for banner */}
         {userRole === "admin" && (
           <>
