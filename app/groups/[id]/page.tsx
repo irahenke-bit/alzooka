@@ -1874,17 +1874,17 @@ export default function GroupPage() {
               <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
-              {/* Spacer to push buttons to the right */}
-              <div style={{ flex: 1 }} />
               {/* Buttons */}
               {isMember ? (
-                <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", gap: 6 }}>
                   <button
                     onClick={() => setShowFeedPrefsModal(true)}
                     style={{
                       background: "rgba(0,0,0,0.4)",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
                       color: "var(--alzooka-cream)",
+                      fontSize: 11,
+                      padding: "6px 10px",
                     }}
                     title="Feed Settings"
                   >
@@ -1897,6 +1897,8 @@ export default function GroupPage() {
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
                         color: "var(--alzooka-cream)",
+                        fontSize: 11,
+                        padding: "6px 10px",
                       }}
                     >
                       ➕ Invite
@@ -1909,6 +1911,8 @@ export default function GroupPage() {
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
                         color: "var(--alzooka-cream)",
+                        fontSize: 11,
+                        padding: "6px 10px",
                       }}
                     >
                       Leave Group
