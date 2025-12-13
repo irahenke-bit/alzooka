@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/app/components/Logo";
+import { LogoWithText } from "@/app/components/Logo";
 
 export default function TermsPage() {
   return (
@@ -17,7 +17,7 @@ export default function TermsPage() {
         }}
       >
         <Link href="/" style={{ textDecoration: "none" }}>
-          <Logo />
+          <LogoWithText />
         </Link>
       </header>
 
