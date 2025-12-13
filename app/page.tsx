@@ -185,28 +185,15 @@ function FeedContent() {
     let visibilityHandler: (() => void) | null = null;
 
     async function init() {
-      // Check if this is an OAuth callback (has hash fragment with tokens or code param)
-      const hash = window.location.hash;
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
+      // First, get the current session - this will also process any OAuth tokens in the URL
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (hash.includes("access_token") || code) {
-        // OAuth callback - wait for Supabase to process
-        if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
-          // Clear the code from URL
-          window.history.replaceState({}, "", "/");
-        }
-        // Give Supabase a moment to process hash tokens
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      if (!session) {
         router.push("/login");
         return;
       }
+      
+      const user = session.user;
       
       setUser(user);
       
