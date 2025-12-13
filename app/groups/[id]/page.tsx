@@ -267,10 +267,10 @@ export default function GroupPage() {
   const [userFriendships, setUserFriendships] = useState<Record<string, string>>({}); // user_id -> friendship status
   const [pendingFriendActions, setPendingFriendActions] = useState<Record<string, boolean>>({});
   
-  // Feed preferences state
+  // Feed preferences state (default to include in feed when joining)
   const [showFeedPrefsModal, setShowFeedPrefsModal] = useState(false);
   const [feedPrefs, setFeedPrefs] = useState({
-    include_in_feed: false,
+    include_in_feed: true,
     max_posts_per_day: 3,
     whitelist_members: [] as string[],
     mute_members: [] as string[],
@@ -1029,24 +1029,43 @@ export default function GroupPage() {
 
   async function handleJoin() {
     if (!user) return;
-    
+
     // Check if user is banned
     if (isUserBanned) {
       alert("You have been banned from interacting with this group.");
       return;
     }
-    
+
     const { error } = await supabase.from("group_members").insert({
       group_id: groupId,
       user_id: user.id,
       role: "member",
     });
-    
+
     if (error) {
       alert("Unable to join group. You may have been banned.");
       return;
     }
-    
+
+    // Auto-create feed preferences with include_in_feed = true
+    await supabase.from("user_group_preferences").upsert({
+      user_id: user.id,
+      group_id: groupId,
+      include_in_feed: true,
+      max_posts_per_day: 3,
+      whitelist_members: [],
+      mute_members: [],
+      friends_only: false,
+    }, { onConflict: "user_id,group_id" });
+
+    setFeedPrefs({
+      include_in_feed: true,
+      max_posts_per_day: 3,
+      whitelist_members: [],
+      mute_members: [],
+      friends_only: false,
+    });
+
     setIsMember(true);
     setUserRole("member");
     await loadMembers();
@@ -1247,20 +1266,39 @@ export default function GroupPage() {
 
   async function acceptInvite() {
     if (!user || !pendingInvite) return;
-    
+
     // Update invite status
     await supabase
       .from("group_invites")
       .update({ status: "accepted" })
       .eq("id", pendingInvite.id);
-    
+
     // Join the group
     await supabase.from("group_members").insert({
       group_id: groupId,
       user_id: user.id,
       role: "member",
     });
-    
+
+    // Auto-create feed preferences with include_in_feed = true
+    await supabase.from("user_group_preferences").upsert({
+      user_id: user.id,
+      group_id: groupId,
+      include_in_feed: true,
+      max_posts_per_day: 3,
+      whitelist_members: [],
+      mute_members: [],
+      friends_only: false,
+    }, { onConflict: "user_id,group_id" });
+
+    setFeedPrefs({
+      include_in_feed: true,
+      max_posts_per_day: 3,
+      whitelist_members: [],
+      mute_members: [],
+      friends_only: false,
+    });
+
     setIsMember(true);
     setUserRole("member");
     setPendingInvite(null);
