@@ -31,13 +31,13 @@ function NoProfileContent() {
         border: "1px solid rgba(240, 235, 224, 0.2)",
       }}>
         <h2 style={{ marginBottom: 16, fontSize: 22, color: "var(--alzooka-gold)" }}>
-          Account Not Found
+          No Profile Found
         </h2>
         <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--alzooka-cream)" }}>
-          We could not find a profile associated with <strong>{email}</strong>.
+          No profile has been found associated with this Google account: <strong>{email}</strong>
         </p>
         <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--text-muted)" }}>
-          Please sign up to join Alzooka.
+          Please sign up to create your Alzooka profile.
         </p>
         <Link
           href="/signup"
