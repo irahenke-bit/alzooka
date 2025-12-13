@@ -1733,9 +1733,9 @@ export default function GroupPage() {
               {group.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1 }}>
             <h1 style={{ margin: "0 0 8px 0", fontSize: 26, textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>{group.name}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <button
                 onClick={() => setShowMembersModal(true)}
                 style={{
@@ -1745,74 +1745,70 @@ export default function GroupPage() {
                   cursor: "pointer",
                   padding: 0,
                   fontSize: 14,
-                  whiteSpace: "nowrap",
                 }}
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              <span style={{ fontSize: 14, color: "var(--alzooka-cream)", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
-            </div>
-          </div>
-          <div style={{ flexShrink: 0, display: "flex", gap: 8, flexWrap: "nowrap", alignItems: "center" }}>
-            {isMember ? (
-              <>
-                {/* Invite button: public groups - any member, private groups - admin or if allowed */}
-                {(group.privacy === "public" || (group.privacy === "private" && (userRole === "admin" || group.allow_member_invites))) && (
-                  <button
-                    onClick={() => setShowInviteModal(true)}
-                    style={{
-                      background: "rgba(0,0,0,0.4)",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
-                    }}
-                  >
-                    ➕ Invite
-                  </button>
-                )}
-                {userRole !== "admin" && (
-                  <button
-                    onClick={handleLeave}
-                    style={{
-                      background: "rgba(0,0,0,0.4)",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
-                    }}
-                  >
-                    Leave Group
-                  </button>
-                )}
-              </>
-            ) : isUserBanned ? (
-              <span style={{ fontSize: 14, color: "#e57373", opacity: 0.9 }}>
-                🚫 Banned
-              </span>
-            ) : group.privacy === "private" ? (
-              pendingInvite ? (
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
-                    ✓ Accept Invite
-                  </button>
-                  <button
-                    onClick={declineInvite}
-                    style={{
-                      background: "rgba(0,0,0,0.4)",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
-                    }}
-                  >
-                    ✕ Decline
-                  </button>
-                </div>
-              ) : (
-                <span style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
-                  🔒 Invite only
+              {isMember ? (
+                <>
+                  {(group.privacy === "public" || (group.privacy === "private" && (userRole === "admin" || group.allow_member_invites))) && (
+                    <button
+                      onClick={() => setShowInviteModal(true)}
+                      style={{
+                        background: "rgba(0,0,0,0.4)",
+                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        color: "var(--alzooka-cream)",
+                      }}
+                    >
+                      ➕ Invite
+                    </button>
+                  )}
+                  {userRole !== "admin" && (
+                    <button
+                      onClick={handleLeave}
+                      style={{
+                        background: "rgba(0,0,0,0.4)",
+                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        color: "var(--alzooka-cream)",
+                      }}
+                    >
+                      Leave Group
+                    </button>
+                  )}
+                </>
+              ) : isUserBanned ? (
+                <span style={{ fontSize: 14, color: "#e57373", opacity: 0.9 }}>
+                  🚫 Banned
                 </span>
-              )
-            ) : (
-              <button onClick={handleJoin}>Join Group</button>
-            )}
+              ) : group.privacy === "private" ? (
+                pendingInvite ? (
+                  <>
+                    <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
+                      ✓ Accept Invite
+                    </button>
+                    <button
+                      onClick={declineInvite}
+                      style={{
+                        background: "rgba(0,0,0,0.4)",
+                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        color: "var(--alzooka-cream)",
+                      }}
+                    >
+                      ✕ Decline
+                    </button>
+                  </>
+                ) : (
+                  <span style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+                    🔒 Invite only
+                  </span>
+                )
+              ) : (
+                <button onClick={handleJoin}>Join Group</button>
+              )}
+            </div>
           </div>
         </div>
 
