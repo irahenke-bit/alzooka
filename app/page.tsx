@@ -185,33 +185,16 @@ function FeedContent() {
     let visibilityHandler: (() => void) | null = null;
 
     async function init() {
-      // Check for OAuth code in URL (PKCE flow)
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
-      
-      if (code) {
-        // Exchange code for session
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        // Clear the code from URL
-        window.history.replaceState({}, '', '/');
-        
-        if (error) {
-          console.error("Code exchange error:", error);
-          router.push("/login");
-          return;
-        }
-      }
-      
       // Check for OAuth callback tokens in URL hash (implicit flow)
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
         // Give Supabase client time to process the hash tokens
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         // Clear the hash from URL
         window.history.replaceState({}, '', '/');
       }
       
-      // First, get the current session
+      // Get the current session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
