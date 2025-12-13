@@ -1733,9 +1733,9 @@ export default function GroupPage() {
               {group.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ margin: "0 0 8px 0", fontSize: 26, textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>{group.name}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <button
                 onClick={() => setShowMembersModal(true)}
                 style={{
@@ -1752,8 +1752,11 @@ export default function GroupPage() {
               <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
+              {/* Spacer to push buttons to the right */}
+              <div style={{ flex: 1 }} />
+              {/* Buttons */}
               {isMember ? (
-                <>
+                <div style={{ display: "flex", gap: 8 }}>
                   {(group.privacy === "public" || (group.privacy === "private" && (userRole === "admin" || group.allow_member_invites))) && (
                     <button
                       onClick={() => setShowInviteModal(true)}
@@ -1778,14 +1781,14 @@ export default function GroupPage() {
                       Leave Group
                     </button>
                   )}
-                </>
+                </div>
               ) : isUserBanned ? (
                 <span style={{ fontSize: 14, color: "#e57373", opacity: 0.9 }}>
                   🚫 Banned
                 </span>
               ) : group.privacy === "private" ? (
                 pendingInvite ? (
-                  <>
+                  <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
                       ✓ Accept Invite
                     </button>
@@ -1799,7 +1802,7 @@ export default function GroupPage() {
                     >
                       ✕ Decline
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <span style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
                     🔒 Invite only
