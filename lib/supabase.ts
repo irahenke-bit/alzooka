@@ -17,6 +17,7 @@ export function createBrowserClient() {
       detectSessionInUrl: true,
       persistSession: true,
       autoRefreshToken: true,
+      flowType: 'pkce',
     }
   })
   return browserClient
