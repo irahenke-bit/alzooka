@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,8 +11,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [noProfileEmail, setNoProfileEmail] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createBrowserClient();
+
+  // Check if user is authenticated but has no profile
+  useEffect(() => {
+    async function checkAuthState() {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // User is authenticated - check if they have a profile
+        const { data: profile } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", user.id)
+          .single();
+        
+        if (profile) {
+          // Has profile, redirect to home
+          router.push("/");
+        } else {
+          // Authenticated but no profile - show the message
+          setNoProfileEmail(user.email || "your account");
+        }
+      }
+    }
+    
+    checkAuthState();
+  }, [supabase, router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +67,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/login`,
       },
     });
 
@@ -63,6 +90,45 @@ export default function LoginPage() {
       <div style={{ marginBottom: 40 }}>
         <LogoWithText />
       </div>
+
+      {/* No Profile Message */}
+      {noProfileEmail && (
+        <div style={{
+          width: "100%",
+          maxWidth: 400,
+          marginBottom: 32,
+          padding: 24,
+          background: "var(--alzooka-teal-dark)",
+          borderRadius: 12,
+          border: "1px solid var(--alzooka-gold)",
+          textAlign: "center",
+        }}>
+          <h2 style={{ marginBottom: 12, fontSize: 20, color: "var(--alzooka-gold)" }}>
+            Account Not Found
+          </h2>
+          <p style={{ marginBottom: 16, lineHeight: 1.6, color: "var(--alzooka-cream)" }}>
+            We could not find a profile associated with <strong>{noProfileEmail}</strong>.
+          </p>
+          <p style={{ marginBottom: 20, lineHeight: 1.6, color: "var(--text-muted)", fontSize: 14 }}>
+            Please sign up to create your Alzooka account.
+          </p>
+          <Link
+            href="/signup"
+            style={{
+              display: "inline-block",
+              padding: "12px 32px",
+              background: "var(--alzooka-gold)",
+              color: "var(--alzooka-teal-dark)",
+              borderRadius: 6,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: 16,
+            }}
+          >
+            Sign Up
+          </Link>
+        </div>
+      )}
 
       {/* Login Form */}
       <div style={{ width: "100%", maxWidth: 360 }}>
