@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,72 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [noProfileEmail, setNoProfileEmail] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>("");
   const router = useRouter();
   const supabase = createBrowserClient();
-
-  // Check if user is authenticated but has no profile
-  useEffect(() => {
-    async function checkAuthState() {
-      let debug = "Starting check... ";
-      
-      // First, check if there's an OAuth code in the URL that needs to be exchanged
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get("code");
-      
-      debug += `Code in URL: ${code ? "YES" : "NO"}. `;
-      
-      if (code) {
-        // Exchange the code for a session
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          debug += `Exchange error: ${exchangeError.message}. `;
-          setDebugInfo(debug);
-          setError("Authentication failed. Please try again.");
-          return;
-        }
-        debug += "Code exchanged OK. ";
-        // Clear the code from URL
-        window.history.replaceState({}, "", "/login");
-      }
-      
-      // Now check for authenticated user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      debug += `User: ${user ? user.email : "none"}. `;
-      if (userError) debug += `User error: ${userError.message}. `;
-      
-      if (user) {
-        // User is authenticated - check if they have a profile
-        const { data: profile, error: profileError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("id", user.id)
-          .single();
-        
-        debug += `Profile: ${profile ? "EXISTS" : "NONE"}. `;
-        if (profileError) debug += `Profile error: ${profileError.message}. `;
-        
-        if (profile) {
-          // Has profile, redirect to home
-          debug += "Redirecting to home...";
-          setDebugInfo(debug);
-          router.push("/");
-        } else {
-          // Authenticated but no profile - show the message
-          debug += "Showing no-profile message.";
-          setDebugInfo(debug);
-          setNoProfileEmail(user.email || "your account");
-        }
-      } else {
-        debug += "No authenticated user.";
-        setDebugInfo(debug);
-      }
-    }
-    
-    checkAuthState();
-  }, [supabase, router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -103,9 +39,6 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/login`,
-      },
     });
 
     if (error) {
@@ -127,63 +60,6 @@ export default function LoginPage() {
       <div style={{ marginBottom: 40 }}>
         <LogoWithText />
       </div>
-
-      {/* Debug Info - REMOVE AFTER TESTING */}
-      {debugInfo && (
-        <div style={{
-          width: "100%",
-          maxWidth: 500,
-          marginBottom: 16,
-          padding: 12,
-          background: "#333",
-          borderRadius: 8,
-          fontSize: 12,
-          fontFamily: "monospace",
-          color: "#0f0",
-          wordBreak: "break-all",
-        }}>
-          {debugInfo}
-        </div>
-      )}
-
-      {/* No Profile Message */}
-      {noProfileEmail && (
-        <div style={{
-          width: "100%",
-          maxWidth: 400,
-          marginBottom: 32,
-          padding: 24,
-          background: "var(--alzooka-teal-dark)",
-          borderRadius: 12,
-          border: "1px solid var(--alzooka-gold)",
-          textAlign: "center",
-        }}>
-          <h2 style={{ marginBottom: 12, fontSize: 20, color: "var(--alzooka-gold)" }}>
-            Account Not Found
-          </h2>
-          <p style={{ marginBottom: 16, lineHeight: 1.6, color: "var(--alzooka-cream)" }}>
-            We could not find a profile associated with <strong>{noProfileEmail}</strong>.
-          </p>
-          <p style={{ marginBottom: 20, lineHeight: 1.6, color: "var(--text-muted)", fontSize: 14 }}>
-            Please sign up to create your Alzooka account.
-          </p>
-          <Link
-            href="/signup"
-            style={{
-              display: "inline-block",
-              padding: "12px 32px",
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
-              borderRadius: 6,
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: 16,
-            }}
-          >
-            Sign Up
-          </Link>
-        </div>
-      )}
 
       {/* Login Form */}
       <div style={{ width: "100%", maxWidth: 360 }}>
