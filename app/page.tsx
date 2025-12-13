@@ -200,12 +200,17 @@ function FeedContent() {
         .select("username, avatar_url, allow_wall_posts, wall_friends_only")
         .eq("id", user.id)
         .single();
-      if (userData) {
-        setUserUsername(userData.username);
-        setUserAvatarUrl(userData.avatar_url);
-        setAllowWallPosts(userData.allow_wall_posts ?? true);
-        setWallFriendsOnly(userData.wall_friends_only ?? true);
+      
+      if (!userData) {
+        // User is authenticated but has no profile - redirect to no-profile page
+        router.push(`/auth/no-profile?email=${encodeURIComponent(user.email || "")}`);
+        return;
       }
+      
+      setUserUsername(userData.username);
+      setUserAvatarUrl(userData.avatar_url);
+      setAllowWallPosts(userData.allow_wall_posts ?? true);
+      setWallFriendsOnly(userData.wall_friends_only ?? true);
       
       // eslint-disable-next-line react-hooks/immutability
       const loadedPosts = await loadPosts();
