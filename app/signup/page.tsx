@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -19,6 +20,13 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Validate terms acceptance
+    if (!termsAccepted) {
+      setError("You must agree to the Terms and Conditions to create an account");
+      setLoading(false);
+      return;
+    }
 
     // Validate username
     if (username.length < 3) {
@@ -61,6 +69,7 @@ export default function SignupPage() {
 
     // Sign up with Supabase Auth (profile created automatically via trigger)
     const trimmedUsername = username.trim();
+    const termsAcceptedAt = new Date().toISOString();
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -68,6 +77,7 @@ export default function SignupPage() {
         data: {
           username: trimmedUsername,
           display_name: trimmedUsername,
+          terms_accepted_at: termsAcceptedAt,
         }
       }
     });
@@ -84,6 +94,12 @@ export default function SignupPage() {
   }
 
   async function handleGoogleSignUp() {
+    // Validate terms acceptance for Google signup too
+    if (!termsAccepted) {
+      setError("You must agree to the Terms and Conditions to create an account");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -186,6 +202,40 @@ export default function SignupPage() {
             />
           </div>
 
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ 
+              display: "flex", 
+              alignItems: "flex-start", 
+              gap: 10, 
+              cursor: "pointer",
+              fontSize: 14,
+            }}>
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                style={{ 
+                  marginTop: 2,
+                  width: 18, 
+                  height: 18, 
+                  accentColor: "var(--alzooka-gold)",
+                  cursor: "pointer",
+                }}
+              />
+              <span>
+                I agree to the{" "}
+                <Link 
+                  href="/terms" 
+                  target="_blank"
+                  style={{ color: "var(--alzooka-gold)", textDecoration: "underline" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms and Conditions
+                </Link>
+              </span>
+            </label>
+          </div>
+
           {error && (
             <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
               {error}
@@ -203,9 +253,6 @@ export default function SignupPage() {
         <Link href="/login">Sign in</Link>
       </p>
 
-      <p className="text-muted" style={{ marginTop: 32, fontSize: 12, textAlign: "center", maxWidth: 300 }}>
-        By signing up, you agree to maintain one identity and act in good faith.
-      </p>
     </div>
   );
 }
