@@ -12,46 +12,66 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [noProfileEmail, setNoProfileEmail] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
   const router = useRouter();
   const supabase = createBrowserClient();
 
   // Check if user is authenticated but has no profile
   useEffect(() => {
     async function checkAuthState() {
+      let debug = "Starting check... ";
+      
       // First, check if there's an OAuth code in the URL that needs to be exchanged
       const url = new URL(window.location.href);
       const code = url.searchParams.get("code");
+      
+      debug += `Code in URL: ${code ? "YES" : "NO"}. `;
       
       if (code) {
         // Exchange the code for a session
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (exchangeError) {
-          console.error("Failed to exchange code:", exchangeError);
+          debug += `Exchange error: ${exchangeError.message}. `;
+          setDebugInfo(debug);
           setError("Authentication failed. Please try again.");
           return;
         }
+        debug += "Code exchanged OK. ";
         // Clear the code from URL
         window.history.replaceState({}, "", "/login");
       }
       
       // Now check for authenticated user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      debug += `User: ${user ? user.email : "none"}. `;
+      if (userError) debug += `User error: ${userError.message}. `;
       
       if (user) {
         // User is authenticated - check if they have a profile
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("id")
           .eq("id", user.id)
           .single();
         
+        debug += `Profile: ${profile ? "EXISTS" : "NONE"}. `;
+        if (profileError) debug += `Profile error: ${profileError.message}. `;
+        
         if (profile) {
           // Has profile, redirect to home
+          debug += "Redirecting to home...";
+          setDebugInfo(debug);
           router.push("/");
         } else {
           // Authenticated but no profile - show the message
+          debug += "Showing no-profile message.";
+          setDebugInfo(debug);
           setNoProfileEmail(user.email || "your account");
         }
+      } else {
+        debug += "No authenticated user.";
+        setDebugInfo(debug);
       }
     }
     
@@ -107,6 +127,24 @@ export default function LoginPage() {
       <div style={{ marginBottom: 40 }}>
         <LogoWithText />
       </div>
+
+      {/* Debug Info - REMOVE AFTER TESTING */}
+      {debugInfo && (
+        <div style={{
+          width: "100%",
+          maxWidth: 500,
+          marginBottom: 16,
+          padding: 12,
+          background: "#333",
+          borderRadius: 8,
+          fontSize: 12,
+          fontFamily: "monospace",
+          color: "#0f0",
+          wordBreak: "break-all",
+        }}>
+          {debugInfo}
+        </div>
+      )}
 
       {/* No Profile Message */}
       {noProfileEmail && (
