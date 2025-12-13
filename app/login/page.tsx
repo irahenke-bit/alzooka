@@ -18,6 +18,23 @@ export default function LoginPage() {
   // Check if user is authenticated but has no profile
   useEffect(() => {
     async function checkAuthState() {
+      // First, check if there's an OAuth code in the URL that needs to be exchanged
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      
+      if (code) {
+        // Exchange the code for a session
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          console.error("Failed to exchange code:", exchangeError);
+          setError("Authentication failed. Please try again.");
+          return;
+        }
+        // Clear the code from URL
+        window.history.replaceState({}, "", "/login");
+      }
+      
+      // Now check for authenticated user
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
