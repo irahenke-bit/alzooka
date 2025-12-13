@@ -1698,7 +1698,7 @@ export default function GroupPage() {
         )}
 
         {/* Group Info - overlaid on banner */}
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 20, flexWrap: "nowrap" }}>
           {/* Avatar - editable for admins, static for others */}
           {userRole === "admin" ? (
             <GroupAvatarUpload
@@ -1735,7 +1735,7 @@ export default function GroupPage() {
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ margin: "0 0 8px 0", fontSize: 26, textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>{group.name}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <button
                 onClick={() => setShowMembersModal(true)}
                 style={{
@@ -1745,16 +1745,17 @@ export default function GroupPage() {
                   cursor: "pointer",
                   padding: 0,
                   fontSize: 14,
+                  whiteSpace: "nowrap",
                 }}
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
+              <span style={{ fontSize: 14, color: "var(--alzooka-cream)", whiteSpace: "nowrap" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
             </div>
           </div>
-          <div style={{ flexShrink: 0, display: "flex", gap: 8 }}>
+          <div style={{ flexShrink: 0, display: "flex", gap: 8, flexWrap: "nowrap", alignItems: "center" }}>
             {isMember ? (
               <>
                 {/* Invite button: public groups - any member, private groups - admin or if allowed */}
