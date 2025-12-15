@@ -233,6 +233,7 @@ export default function GroupPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [totalPostCount, setTotalPostCount] = useState(0);
+  const [currentlyPlayingVideo, setCurrentlyPlayingVideo] = useState<string | null>(null);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   const POSTS_PER_PAGE = 15;
@@ -2959,6 +2960,8 @@ export default function GroupPage() {
           hasMore={hasMorePosts}
           loadingMore={loadingMorePosts}
           onLoadMore={loadMorePosts}
+          currentlyPlayingVideo={currentlyPlayingVideo}
+          onPlayVideo={setCurrentlyPlayingVideo}
         />
       )}
 
@@ -3112,6 +3115,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
   userRole,
   members,
   onBanUser,
+  currentlyPlayingVideo,
+  onPlayVideo,
 }: {
   post: Post;
   user: User;
@@ -3125,6 +3130,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
   userRole: string | null;
   members: Member[];
   onBanUser?: (userId: string) => void;
+  currentlyPlayingVideo: string | null;
+  onPlayVideo: (videoId: string) => void;
 }) {
   const handleOpen = useCallback(() => {
     onOpenModal(post);
@@ -3144,6 +3151,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
       userRole={userRole}
       members={members}
       onBanUser={onBanUser}
+      currentlyPlayingVideo={currentlyPlayingVideo}
+      onPlayVideo={onPlayVideo}
     />
   );
 });
@@ -3165,6 +3174,8 @@ function PaginatedPostsList({
   hasMore,
   loadingMore,
   onLoadMore,
+  currentlyPlayingVideo,
+  onPlayVideo,
 }: {
   posts: Post[];
   user: User;
@@ -3181,6 +3192,8 @@ function PaginatedPostsList({
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
+  currentlyPlayingVideo: string | null;
+  onPlayVideo: (videoId: string) => void;
 }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -3238,6 +3251,8 @@ function PaginatedPostsList({
           userRole={userRole}
           members={members}
           onBanUser={onBanUser}
+          currentlyPlayingVideo={currentlyPlayingVideo}
+          onPlayVideo={onPlayVideo}
         />
       ))}
       
@@ -3264,13 +3279,15 @@ function PaginatedPostsList({
 // YouTube Thumbnail Component - Click to load iframe (performance optimization)
 function YouTubeThumbnail({ 
   videoId, 
-  playlistId 
+  playlistId,
+  isPlaying,
+  onPlay,
 }: { 
   videoId: string; 
   playlistId?: string | null;
+  isPlaying: boolean;
+  onPlay: () => void;
 }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-
   const embedUrl = playlistId
     ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0&autoplay=1`
     : `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
@@ -3296,7 +3313,7 @@ function YouTubeThumbnail({
 
   return (
     <div 
-      onClick={() => setIsPlaying(true)}
+      onClick={onPlay}
       style={{
         position: "absolute",
         top: 0,
@@ -3366,6 +3383,8 @@ const GroupPostCard = memo(function GroupPostCard({
   userRole,
   members,
   onBanUser,
+  currentlyPlayingVideo,
+  onPlayVideo,
 }: {
   post: Post;
   user: User;
@@ -3379,6 +3398,8 @@ const GroupPostCard = memo(function GroupPostCard({
   userRole: string | null;
   members: Member[];
   onBanUser?: (userId: string) => void;
+  currentlyPlayingVideo: string | null;
+  onPlayVideo: (videoId: string) => void;
 }) {
   // Check if the post author is an admin
   const isPostAuthorAdmin = members.some(m => m.user_id === post.user_id && m.role === "admin");
@@ -3671,7 +3692,12 @@ const GroupPostCard = memo(function GroupPostCard({
                     borderRadius: 8,
                     background: "#000",
                   }}>
-                    <YouTubeThumbnail videoId={videoId} playlistId={playlistId} />
+                    <YouTubeThumbnail 
+                      videoId={videoId} 
+                      playlistId={playlistId}
+                      isPlaying={currentlyPlayingVideo === videoId}
+                      onPlay={() => onPlayVideo(videoId)}
+                    />
                   </div>
                 </div>
               );
