@@ -3138,7 +3138,7 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
   );
 });
 
-// Paginated Posts Component with manual "Load More" button
+// Paginated Posts Component with automatic infinite scroll
 function PaginatedPostsList({
   posts,
   user,
@@ -3172,6 +3172,40 @@ function PaginatedPostsList({
   loadingMore: boolean;
   onLoadMore: () => void;
 }) {
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Mark initial load as done after first render
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoadDone(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Intersection Observer for infinite scroll - only after initial load
+  useEffect(() => {
+    if (!initialLoadDone) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+
+    const sentinel = loadMoreRef.current;
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) {
+        observer.unobserve(sentinel);
+      }
+    };
+  }, [hasMore, loadingMore, onLoadMore, initialLoadDone]);
+
   // Stable callback
   const handleOpenModal = useCallback((post: Post) => {
     onOpenModal(post);
@@ -3197,20 +3231,13 @@ function PaginatedPostsList({
         />
       ))}
       
-      {/* Load More button */}
-      {hasMore && (
+      {/* Sentinel for infinite scroll */}
+      <div ref={loadMoreRef} style={{ height: 20 }} />
+      
+      {/* Loading indicator */}
+      {loadingMore && (
         <div style={{ textAlign: "center", padding: 20 }}>
-          <button
-            onClick={onLoadMore}
-            disabled={loadingMore}
-            style={{
-              padding: "12px 24px",
-              fontSize: 16,
-              cursor: loadingMore ? "wait" : "pointer",
-            }}
-          >
-            {loadingMore ? "Loading..." : "Load More Posts"}
-          </button>
+          <p className="text-muted">Loading more posts...</p>
         </div>
       )}
       
