@@ -1071,6 +1071,7 @@ export default function GroupPage() {
       setYoutubePreview(null);
       setSpotifyPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      setTotalPostCount(prev => prev + 1);
       await loadPosts();
       await loadUserVotes(user.id);
       await loadVoteTotals();
@@ -1446,6 +1447,7 @@ export default function GroupPage() {
   async function handleDeletePost(postId: string) {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
+    setTotalPostCount(prev => prev - 1);
     await loadPosts();
     
     // Broadcast to other clients that a post was deleted
