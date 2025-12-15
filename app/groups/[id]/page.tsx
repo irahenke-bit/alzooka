@@ -232,6 +232,7 @@ export default function GroupPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [totalPostCount, setTotalPostCount] = useState(0);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   const POSTS_PER_PAGE = 15;
@@ -370,6 +371,13 @@ export default function GroupPage() {
 
       // Load posts if member or public group
       if (membership || groupData.privacy === "public") {
+        // Get total post count first
+        const { count } = await supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("group_id", groupId);
+        setTotalPostCount(count || 0);
+        
         // eslint-disable-next-line react-hooks/immutability
         await loadPosts();
         // eslint-disable-next-line react-hooks/immutability
@@ -1653,7 +1661,7 @@ export default function GroupPage() {
             Total Posts
           </div>
           <div style={{ fontSize: 20, color: "var(--alzooka-gold)", fontWeight: 700 }}>
-            {posts.length}
+            {totalPostCount}
           </div>
         </div>
 
