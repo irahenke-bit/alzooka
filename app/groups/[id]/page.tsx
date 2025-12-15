@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
+// Virtualization library - available for future use if needed
+// import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -230,6 +232,9 @@ export default function GroupPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+  const POSTS_PER_PAGE = 15;
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -733,8 +738,17 @@ export default function GroupPage() {
     setPendingFriendActions(prev => ({ ...prev, [friendId]: false }));
   }
 
-  async function loadPosts() {
-    const { data } = await supabase
+  async function loadPosts(reset: boolean = true) {
+    // Prevent concurrent loads
+    if (loadingMorePosts) return;
+    
+    setLoadingMorePosts(true);
+    
+    const offset = reset ? 0 : posts.length;
+    
+    console.log(`[loadPosts] reset=${reset}, offset=${offset}, loading posts ${offset} to ${offset + POSTS_PER_PAGE - 1}`);
+    
+    const { data, error } = await supabase
       .from("posts")
       .select(`
         id,
@@ -763,7 +777,10 @@ export default function GroupPage() {
         )
       `)
       .eq("group_id", groupId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + POSTS_PER_PAGE - 1);
+    
+    console.log(`[loadPosts] Got ${data?.length || 0} posts`, error ? `Error: ${error.message}` : '');
 
     if (data) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -781,9 +798,36 @@ export default function GroupPage() {
         }));
         return { ...post, comments: commentsWithReplies };
       });
-      setPosts(postsWithNestedComments as unknown as Post[]);
+      
+      // Check if there are more posts to load
+      setHasMorePosts(data.length === POSTS_PER_PAGE);
+      
+      if (reset) {
+        setPosts(postsWithNestedComments as unknown as Post[]);
+      } else {
+        setPosts(prev => [...prev, ...(postsWithNestedComments as unknown as Post[])]);
+      }
     }
+    
+    setLoadingMorePosts(false);
   }
+  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loadMorePosts = useCallback(() => {
+    if (!loadingMorePosts && hasMorePosts) {
+      loadPosts(false);
+    }
+  }, [loadingMorePosts, hasMorePosts]);
+  
+  // Memoized refresh callback to prevent re-renders
+  const handleRefreshPosts = useCallback(async () => {
+    await loadPosts();
+    if (user) {
+      await loadUserVotes(user.id);
+      await loadVoteTotals();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   async function loadUserVotes(userId: string) {
     const { data } = await supabase
@@ -2889,27 +2933,23 @@ export default function GroupPage() {
           No posts yet. {isMember ? "Be the first to share something!" : ""}
         </p>
       ) : (
-        posts.map(post => (
-          <GroupPostCard
-            key={post.id}
-            post={post}
-            user={user!}
-            supabase={supabase}
-            votes={votes}
-            voteTotals={voteTotals}
-            onVote={handleVote}
-            onDelete={handleDeletePost}
-            onOpenModal={() => setModalPost(post)}
-            onRefresh={async () => {
-              await loadPosts();
-              await loadUserVotes(user!.id);
-              await loadVoteTotals();
-            }}
-            userRole={userRole}
-            members={members}
-            onBanUser={userRole === "admin" ? handleBanUser : undefined}
-          />
-        ))
+        <PaginatedPostsList
+          posts={posts}
+          user={user!}
+          supabase={supabase}
+          votes={votes}
+          voteTotals={voteTotals}
+          onVote={handleVote}
+          onDelete={handleDeletePost}
+          onOpenModal={setModalPost}
+          onRefresh={handleRefreshPosts}
+          userRole={userRole}
+          members={members}
+          onBanUser={userRole === "admin" ? handleBanUser : undefined}
+          hasMore={hasMorePosts}
+          loadingMore={loadingMorePosts}
+          onLoadMore={loadMorePosts}
+        />
       )}
 
       {/* Banner Crop Modal */}
@@ -3048,8 +3088,235 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
   );
 }
 
-// Simplified Post Card for Groups
-function GroupPostCard({
+// Wrapper to handle post-specific callbacks without breaking memoization
+const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
+  post,
+  user,
+  supabase,
+  votes,
+  voteTotals,
+  onVote,
+  onDelete,
+  onOpenModal,
+  onRefresh,
+  userRole,
+  members,
+  onBanUser,
+}: {
+  post: Post;
+  user: User;
+  supabase: ReturnType<typeof createBrowserClient>;
+  votes: Record<string, Vote>;
+  voteTotals: Record<string, number>;
+  onVote: (type: "post" | "comment", id: string, value: number) => void;
+  onDelete: (id: string) => void;
+  onOpenModal: (post: Post) => void;
+  onRefresh: () => void;
+  userRole: string | null;
+  members: Member[];
+  onBanUser?: (userId: string) => void;
+}) {
+  const handleOpen = useCallback(() => {
+    onOpenModal(post);
+  }, [onOpenModal, post]);
+
+  return (
+    <GroupPostCard
+      post={post}
+      user={user}
+      supabase={supabase}
+      votes={votes}
+      voteTotals={voteTotals}
+      onVote={onVote}
+      onDelete={onDelete}
+      onOpenModal={handleOpen}
+      onRefresh={onRefresh}
+      userRole={userRole}
+      members={members}
+      onBanUser={onBanUser}
+    />
+  );
+});
+
+// Paginated Posts Component with manual "Load More" button
+function PaginatedPostsList({
+  posts,
+  user,
+  supabase,
+  votes,
+  voteTotals,
+  onVote,
+  onDelete,
+  onOpenModal,
+  onRefresh,
+  userRole,
+  members,
+  onBanUser,
+  hasMore,
+  loadingMore,
+  onLoadMore,
+}: {
+  posts: Post[];
+  user: User;
+  supabase: ReturnType<typeof createBrowserClient>;
+  votes: Record<string, Vote>;
+  voteTotals: Record<string, number>;
+  onVote: (type: "post" | "comment", id: string, value: number) => void;
+  onDelete: (id: string) => void;
+  onOpenModal: (post: Post) => void;
+  onRefresh: () => void;
+  userRole: string | null;
+  members: Member[];
+  onBanUser?: (userId: string) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
+}) {
+  // Stable callback
+  const handleOpenModal = useCallback((post: Post) => {
+    onOpenModal(post);
+  }, [onOpenModal]);
+
+  return (
+    <div>
+      {posts.map((post) => (
+        <MemoizedPostWrapper
+          key={post.id}
+          post={post}
+          user={user}
+          supabase={supabase}
+          votes={votes}
+          voteTotals={voteTotals}
+          onVote={onVote}
+          onDelete={onDelete}
+          onOpenModal={handleOpenModal}
+          onRefresh={onRefresh}
+          userRole={userRole}
+          members={members}
+          onBanUser={onBanUser}
+        />
+      ))}
+      
+      {/* Load More button */}
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: 20 }}>
+          <button
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            style={{
+              padding: "12px 24px",
+              fontSize: 16,
+              cursor: loadingMore ? "wait" : "pointer",
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More Posts"}
+          </button>
+        </div>
+      )}
+      
+      {/* End of posts indicator */}
+      {!hasMore && posts.length > 0 && (
+        <div style={{ textAlign: "center", padding: 20 }}>
+          <p className="text-muted">You&apos;ve reached the end!</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// YouTube Thumbnail Component - Click to load iframe (performance optimization)
+function YouTubeThumbnail({ 
+  videoId, 
+  playlistId 
+}: { 
+  videoId: string; 
+  playlistId?: string | null;
+}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const embedUrl = playlistId
+    ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0&autoplay=1`
+    : `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
+
+  if (isPlaying) {
+    return (
+      <iframe
+        src={embedUrl}
+        title="YouTube video"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        allowFullScreen
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div 
+      onClick={() => setIsPlaying(true)}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        cursor: "pointer",
+      }}
+    >
+      {/* Thumbnail image */}
+      <img
+        src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+        onError={(e) => {
+          // Fallback to lower res thumbnail if maxres doesn't exist
+          (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }}
+        alt="Video thumbnail"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      />
+      {/* Play button overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 68,
+          height: 48,
+          backgroundColor: "rgba(255, 0, 0, 0.9)",
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background-color 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 1)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.9)";
+        }}
+      >
+        {/* Play triangle */}
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// Simplified Post Card for Groups - Memoized to prevent unnecessary re-renders
+const GroupPostCard = memo(function GroupPostCard({
   post,
   user,
   supabase,
@@ -3353,9 +3620,6 @@ function GroupPostCard({
             const videoId = extractYouTubeVideoId(post.video_url);
             if (videoId) {
               const playlistId = extractYouTubePlaylistId(post.video_url);
-              const embedUrl = playlistId
-                ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
-                : `https://www.youtube.com/embed/${videoId}?rel=0`;
 
               return (
                 <div style={{ marginBottom: 16 }}>
@@ -3370,20 +3634,7 @@ function GroupPostCard({
                     borderRadius: 8,
                     background: "#000",
                   }}>
-                    <iframe
-                      src={embedUrl}
-                      title="YouTube video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                      allowFullScreen
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                      }}
-                    />
+                    <YouTubeThumbnail videoId={videoId} playlistId={playlistId} />
                   </div>
                 </div>
               );
@@ -3454,7 +3705,7 @@ function GroupPostCard({
       )}
     </article>
   );
-}
+});
 
 function formatTime(dateString: string): string {
   const date = new Date(dateString);
