@@ -37,29 +37,40 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Auto-search with debounce
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || "Search failed");
+          setResults([]);
+        } else {
+          setResults(data.videos || []);
+        }
+      } catch {
+        setError("Failed to search YouTube");
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Search failed");
-        setResults([]);
-      } else {
-        setResults(data.videos || []);
-      }
-    } catch {
-      setError("Failed to search YouTube");
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
   }
 
   function handleSelect(video: Video) {

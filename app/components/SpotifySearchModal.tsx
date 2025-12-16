@@ -39,31 +39,42 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifyS
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Auto-search with debounce
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await fetch(
+          `/api/spotify/search?q=${encodeURIComponent(query)}&type=${searchType}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || "Search failed");
+          setResults([]);
+        } else {
+          setResults(data.results || []);
+        }
+      } catch {
+        setError("Failed to search Spotify");
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [query, searchType]);
+
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(
-        `/api/spotify/search?q=${encodeURIComponent(query)}&type=${searchType}`
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Search failed");
-        setResults([]);
-      } else {
-        setResults(data.results || []);
-      }
-    } catch {
-      setError("Failed to search Spotify");
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
   }
 
   function handleSelect(result: SpotifyResult) {
