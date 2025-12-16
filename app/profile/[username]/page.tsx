@@ -14,6 +14,8 @@ import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
+import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
+import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -271,10 +273,16 @@ export default function ProfilePage() {
   const [wallPostContent, setWallPostContent] = useState("");
   const [postingWall, setPostingWall] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
-  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
-  const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
+  const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
+  const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
+  const [wallSpotifyPreview, setWallSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [loadingWallPreview, setLoadingWallPreview] = useState(false);
+  const [showYouTubeSearch, setShowYouTubeSearch] = useState(false);
+  const [showSpotifySearch, setShowSpotifySearch] = useState(false);
+  const [showWallYouTubeSearch, setShowWallYouTubeSearch] = useState(false);
+  const [showWallSpotifySearch, setShowWallSpotifySearch] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -764,7 +772,7 @@ export default function ProfilePage() {
   }
 
   async function handleWallPost() {
-    if ((!wallPostContent.trim() && !wallYoutubePreview) || !currentUser || !profile) return;
+    if ((!wallPostContent.trim() && !wallYoutubePreview && !wallSpotifyPreview) || !currentUser || !profile) return;
 
     // Permission guard
     if (!profile.allow_wall_posts && !isOwnProfile) {
@@ -779,7 +787,14 @@ export default function ProfilePage() {
     setPostingWall(true);
 
     // Use preview URL if available, otherwise detect from content
-    const videoUrl = wallYoutubePreview?.url || findYouTubeUrl(wallPostContent);
+    const videoUrl = wallYoutubePreview?.url || wallSpotifyPreview?.url || findYouTubeUrl(wallPostContent);
+    
+    // Build video title with search query
+    let videoTitle = wallYoutubePreview?.title || wallSpotifyPreview?.title || null;
+    const searchQuery = wallYoutubePreview?.searchQuery || wallSpotifyPreview?.searchQuery;
+    if (searchQuery && videoTitle && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+      videoTitle = `${searchQuery} - ${videoTitle}`;
+    }
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -788,7 +803,7 @@ export default function ProfilePage() {
         wall_user_id: profile.id,
         content: wallPostContent.trim(),
         video_url: videoUrl,
-        video_title: wallYoutubePreview?.title || null,
+        video_title: videoTitle,
       })
       .select("id, content, image_url, video_url, wall_user_id, created_at")
       .single();
@@ -889,6 +904,7 @@ export default function ProfilePage() {
       }
       setWallPostContent("");
       setWallYoutubePreview(null);
+      setWallSpotifyPreview(null);
     } else if (error) {
       console.error("Wall post insert failed:", error);
       alert(`Couldn't post to the wall: ${error.message}`);
@@ -968,12 +984,19 @@ export default function ProfilePage() {
   }
 
   async function handlePost() {
-    if ((!newPostContent.trim() && !youtubePreview) || !currentUser || !profile) return;
+    if ((!newPostContent.trim() && !youtubePreview && !spotifyPreview) || !currentUser || !profile) return;
 
     setPosting(true);
 
     // Use preview URL if available, otherwise detect from content
-    const videoUrl = youtubePreview?.url || findYouTubeUrl(newPostContent);
+    const videoUrl = youtubePreview?.url || spotifyPreview?.url || findYouTubeUrl(newPostContent);
+    
+    // Build video title with search query
+    let videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
+    if (searchQuery && videoTitle && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+      videoTitle = `${searchQuery} - ${videoTitle}`;
+    }
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -981,7 +1004,7 @@ export default function ProfilePage() {
         user_id: currentUser.id,
         content: newPostContent.trim(),
         video_url: videoUrl,
-        video_title: youtubePreview?.title || null,
+        video_title: videoTitle,
       })
       .select()
       .single();
@@ -1024,6 +1047,7 @@ export default function ProfilePage() {
       
       setNewPostContent("");
       setYoutubePreview(null);
+      setSpotifyPreview(null);
       setActiveTab("posts"); // Switch to posts tab to show new post
     }
 
@@ -1820,19 +1844,99 @@ export default function ProfilePage() {
             </div>
           )}
           
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {spotifyPreview && (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <div style={{
+                background: "var(--alzooka-teal-dark)",
+                borderRadius: 8,
+                overflow: "hidden",
+                border: "1px solid rgba(240, 235, 224, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: 12,
+              }}>
+                <img
+                  src={spotifyPreview.thumbnail}
+                  alt=""
+                  style={{ width: 80, height: 80, borderRadius: 4, objectFit: "cover" }}
+                />
+                <div>
+                  <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: "#1DB954" }}>
+                    SPOTIFY
+                  </p>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                    {spotifyPreview.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSpotifyPreview(null)}
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: 28,
+                  height: 28,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "white",
+                  fontSize: 16,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <span style={{ fontSize: 12, opacity: 0.5 }}>
               {newPostContent.length}/500
             </span>
-            <button
-              onClick={handlePost}
-              disabled={posting || (!newPostContent.trim() && !youtubePreview)}
-              style={{
-                opacity: (!newPostContent.trim() && !youtubePreview) ? 0.5 : 1,
-              }}
-            >
-              {posting ? "Posting..." : "Post"}
-            </button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={() => setShowYouTubeSearch(true)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ color: "#ff0000" }}>▶</span> YouTube
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSpotifySearch(true)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ color: "#1DB954" }}>●</span> Spotify
+              </button>
+              <button
+                onClick={handlePost}
+                disabled={posting || (!newPostContent.trim() && !youtubePreview && !spotifyPreview)}
+                style={{
+                  opacity: (!newPostContent.trim() && !youtubePreview && !spotifyPreview) ? 0.5 : 1,
+                }}
+              >
+                {posting ? "Posting..." : "Post"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1932,19 +2036,99 @@ export default function ProfilePage() {
                 </div>
               )}
               
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              {wallSpotifyPreview && (
+                <div style={{ position: "relative", marginBottom: 12 }}>
+                  <div style={{
+                    background: "var(--alzooka-teal-dark)",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: 12,
+                  }}>
+                    <img
+                      src={wallSpotifyPreview.thumbnail}
+                      alt=""
+                      style={{ width: 80, height: 80, borderRadius: 4, objectFit: "cover" }}
+                    />
+                    <div>
+                      <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: "#1DB954" }}>
+                        SPOTIFY
+                      </p>
+                      <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                        {wallSpotifyPreview.title}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setWallSpotifyPreview(null)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      background: "rgba(0, 0, 0, 0.7)",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: "white",
+                      fontSize: 16,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                 <span style={{ fontSize: 12, opacity: 0.5 }}>
                   {wallPostContent.length}/500
                 </span>
-                <button
-                  onClick={handleWallPost}
-                  disabled={postingWall || (!wallPostContent.trim() && !wallYoutubePreview)}
-                  style={{
-                    opacity: (!wallPostContent.trim() && !wallYoutubePreview) ? 0.5 : 1,
-                  }}
-                >
-                  {postingWall ? "Posting..." : "Post to wall"}
-                </button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowWallYouTubeSearch(true)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                      padding: "8px 16px",
+                      fontSize: 14,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span style={{ color: "#ff0000" }}>▶</span> YouTube
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowWallSpotifySearch(true)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      color: "var(--alzooka-cream)",
+                      padding: "8px 16px",
+                      fontSize: 14,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span style={{ color: "#1DB954" }}>●</span> Spotify
+                  </button>
+                  <button
+                    onClick={handleWallPost}
+                    disabled={postingWall || (!wallPostContent.trim() && !wallYoutubePreview && !wallSpotifyPreview)}
+                    style={{
+                      opacity: (!wallPostContent.trim() && !wallYoutubePreview && !wallSpotifyPreview) ? 0.5 : 1,
+                    }}
+                  >
+                    {postingWall ? "Posting..." : "Post to wall"}
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -2674,6 +2858,236 @@ export default function ProfilePage() {
           onShared={() => {
             // Reload page to get properly formatted data
             window.location.reload();
+          }}
+        />
+      )}
+
+      {/* YouTube Search Modal (own profile) */}
+      {showYouTubeSearch && (
+        <YouTubeSearchModal
+          onClose={() => setShowYouTubeSearch(false)}
+          onSelect={(video, searchQuery) => {
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            setYoutubePreview({
+              videoId: video.videoId,
+              url: youtubeUrl,
+              title: displayTitle,
+              searchQuery: searchQuery,
+            });
+            setShowYouTubeSearch(false);
+          }}
+          onDirectPost={async (video, searchQuery) => {
+            if (!currentUser || !profile) return;
+            
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: youtubeUrl,
+                video_title: videoTitle,
+                user_id: currentUser.id,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: currentUser.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              window.location.reload();
+            }
+          }}
+        />
+      )}
+
+      {/* Spotify Search Modal (own profile) */}
+      {showSpotifySearch && (
+        <SpotifySearchModal
+          onClose={() => setShowSpotifySearch(false)}
+          onSelect={(result, searchQuery) => {
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: displayTitle,
+              thumbnail: result.image,
+              type: result.type,
+              searchQuery: searchQuery,
+            });
+            setShowSpotifySearch(false);
+          }}
+          onDirectPost={async (result, searchQuery) => {
+            if (!currentUser || !profile) return;
+            
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: spotifyUrl,
+                video_title: videoTitle,
+                user_id: currentUser.id,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: currentUser.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              window.location.reload();
+            }
+          }}
+        />
+      )}
+
+      {/* YouTube Search Modal (wall post) */}
+      {showWallYouTubeSearch && (
+        <YouTubeSearchModal
+          onClose={() => setShowWallYouTubeSearch(false)}
+          onSelect={(video, searchQuery) => {
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            setWallYoutubePreview({
+              videoId: video.videoId,
+              url: youtubeUrl,
+              title: displayTitle,
+              searchQuery: searchQuery,
+            });
+            setShowWallYouTubeSearch(false);
+          }}
+          onDirectPost={async (video, searchQuery) => {
+            if (!currentUser || !profile) return;
+            
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: youtubeUrl,
+                video_title: videoTitle,
+                user_id: currentUser.id,
+                wall_user_id: profile.id,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: currentUser.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              if (profile.id !== currentUser.id) {
+                notifyWallPost(supabase, profile.id, currentUserUsername, data.id, "");
+              }
+              window.location.reload();
+            }
+          }}
+        />
+      )}
+
+      {/* Spotify Search Modal (wall post) */}
+      {showWallSpotifySearch && (
+        <SpotifySearchModal
+          onClose={() => setShowWallSpotifySearch(false)}
+          onSelect={(result, searchQuery) => {
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            setWallSpotifyPreview({
+              url: spotifyUrl,
+              title: displayTitle,
+              thumbnail: result.image,
+              type: result.type,
+              searchQuery: searchQuery,
+            });
+            setShowWallSpotifySearch(false);
+          }}
+          onDirectPost={async (result, searchQuery) => {
+            if (!currentUser || !profile) return;
+            
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: spotifyUrl,
+                video_title: videoTitle,
+                user_id: currentUser.id,
+                wall_user_id: profile.id,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: currentUser.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              if (profile.id !== currentUser.id) {
+                notifyWallPost(supabase, profile.id, currentUserUsername, data.id, "");
+              }
+              window.location.reload();
+            }
           }}
         />
       )}
