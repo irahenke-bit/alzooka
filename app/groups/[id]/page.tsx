@@ -1087,24 +1087,15 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
-    // Build insert data - video_title is optional (requires column in DB)
-    const insertData: Record<string, unknown> = {
-      content: content.trim(),
-      image_url: imageUrl,
-      video_url: youtubePreview?.url || spotifyPreview?.url || null,
-      user_id: user.id,
-      group_id: groupId,
-    };
-    
-    // Try to include video_title if the column exists
-    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
-    if (videoTitle) {
-      insertData.video_title = videoTitle;
-    }
-
     const { data, error } = await supabase
       .from("posts")
-      .insert(insertData)
+      .insert({
+        content: content.trim(),
+        image_url: imageUrl,
+        video_url: youtubePreview?.url || spotifyPreview?.url || null,
+        user_id: user.id,
+        group_id: groupId,
+      })
       .select()
       .single();
 
