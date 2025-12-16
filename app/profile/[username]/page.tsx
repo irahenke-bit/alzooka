@@ -116,6 +116,18 @@ function findYouTubeUrl(text: string): string | null {
   return match ? match[1] : null;
 }
 
+function extractYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
 // Playlist Title Component - fetches and displays YouTube playlist title
 function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId: string }) {
   const [title, setTitle] = useState<string | null>(null);
@@ -259,6 +271,10 @@ export default function ProfilePage() {
   const [wallPostContent, setWallPostContent] = useState("");
   const [postingWall, setPostingWall] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string} | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [loadingWallPreview, setLoadingWallPreview] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -748,7 +764,7 @@ export default function ProfilePage() {
   }
 
   async function handleWallPost() {
-    if (!wallPostContent.trim() || !currentUser || !profile) return;
+    if ((!wallPostContent.trim() && !wallYoutubePreview) || !currentUser || !profile) return;
 
     // Permission guard
     if (!profile.allow_wall_posts && !isOwnProfile) {
@@ -762,8 +778,8 @@ export default function ProfilePage() {
 
     setPostingWall(true);
 
-    // Detect YouTube URL in content
-    const youtubeUrl = findYouTubeUrl(wallPostContent);
+    // Use preview URL if available, otherwise detect from content
+    const videoUrl = wallYoutubePreview?.url || findYouTubeUrl(wallPostContent);
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -771,7 +787,8 @@ export default function ProfilePage() {
         user_id: currentUser.id,
         wall_user_id: profile.id,
         content: wallPostContent.trim(),
-        video_url: youtubeUrl,
+        video_url: videoUrl,
+        video_title: wallYoutubePreview?.title || null,
       })
       .select("id, content, image_url, video_url, wall_user_id, created_at")
       .single();
@@ -871,6 +888,7 @@ export default function ProfilePage() {
         setVoteTotals(prev => ({ ...prev, ...newVoteTotals }));
       }
       setWallPostContent("");
+      setWallYoutubePreview(null);
     } else if (error) {
       console.error("Wall post insert failed:", error);
       alert(`Couldn't post to the wall: ${error.message}`);
@@ -950,19 +968,20 @@ export default function ProfilePage() {
   }
 
   async function handlePost() {
-    if (!newPostContent.trim() || !currentUser || !profile) return;
+    if ((!newPostContent.trim() && !youtubePreview) || !currentUser || !profile) return;
 
     setPosting(true);
 
-    // Detect YouTube URL in content
-    const youtubeUrl = findYouTubeUrl(newPostContent);
+    // Use preview URL if available, otherwise detect from content
+    const videoUrl = youtubePreview?.url || findYouTubeUrl(newPostContent);
 
     const { data: newPost, error } = await supabase
       .from("posts")
       .insert({
         user_id: currentUser.id,
         content: newPostContent.trim(),
-        video_url: youtubeUrl,
+        video_url: videoUrl,
+        video_title: youtubePreview?.title || null,
       })
       .select()
       .single();
@@ -983,7 +1002,7 @@ export default function ProfilePage() {
           user_id: currentUser.id,
           content: newPost.content,
           image_url: null,
-          video_url: youtubeUrl,
+          video_url: videoUrl,
           wall_user_id: null,
           wall_user: null,
           created_at: newPost.created_at,
@@ -1004,6 +1023,7 @@ export default function ProfilePage() {
       setVoteTotals(prev => ({ ...prev, [`post-${newPost.id}`]: 1 }));
       
       setNewPostContent("");
+      setYoutubePreview(null);
       setActiveTab("posts"); // Switch to posts tab to show new post
     }
 
@@ -1716,21 +1736,99 @@ export default function ProfilePage() {
         <div className="card" style={{ marginBottom: 24 }}>
           <textarea
             value={newPostContent}
-            onChange={(e) => setNewPostContent(e.target.value)}
-            placeholder="What's on your mind?"
+            onChange={async (e) => {
+              const newContent = e.target.value;
+              setNewPostContent(newContent);
+              
+              // Detect YouTube URL
+              if (!youtubePreview && !loadingPreview) {
+                const youtubeUrl = findYouTubeUrl(newContent);
+                if (youtubeUrl) {
+                  const videoId = extractYouTubeVideoId(youtubeUrl);
+                  if (videoId) {
+                    setLoadingPreview(true);
+                    try {
+                      const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+                      const data = await response.json();
+                      const title = data.author_name && data.title 
+                        ? `${data.author_name} - ${data.title}`
+                        : data.title || "YouTube Video";
+                      setYoutubePreview({ videoId, url: youtubeUrl, title });
+                    } catch {
+                      setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+                    }
+                    setLoadingPreview(false);
+                  }
+                }
+              }
+            }}
+            placeholder="What's on your mind? Paste a YouTube or Spotify link to share"
             rows={3}
             maxLength={500}
             style={{ marginBottom: 12, resize: "vertical" }}
           />
+          
+          {/* YouTube Preview */}
+          {loadingPreview && (
+            <div style={{ marginBottom: 12, padding: 12, background: "rgba(240, 235, 224, 0.05)", borderRadius: 8 }}>
+              <p style={{ margin: 0, opacity: 0.6 }}>Loading video preview...</p>
+            </div>
+          )}
+          {youtubePreview && (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <div style={{
+                background: "var(--alzooka-teal-dark)",
+                borderRadius: 8,
+                overflow: "hidden",
+                border: "1px solid rgba(240, 235, 224, 0.2)"
+              }}>
+                <img
+                  src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
+                  alt="YouTube thumbnail"
+                  style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                />
+                <div style={{ padding: "10px 12px" }}>
+                  <p style={{ margin: 0, fontSize: 11, opacity: 0.6, textTransform: "uppercase" }}>
+                    YouTube.com
+                  </p>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                    {youtubePreview.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setYoutubePreview(null)}
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: 28,
+                  height: 28,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "white",
+                  fontSize: 16,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 12, opacity: 0.5 }}>
               {newPostContent.length}/500
             </span>
             <button
               onClick={handlePost}
-              disabled={posting || !newPostContent.trim()}
+              disabled={posting || (!newPostContent.trim() && !youtubePreview)}
               style={{
-                opacity: !newPostContent.trim() ? 0.5 : 1,
+                opacity: (!newPostContent.trim() && !youtubePreview) ? 0.5 : 1,
               }}
             >
               {posting ? "Posting..." : "Post"}
@@ -1750,21 +1848,99 @@ export default function ProfilePage() {
             <div className="card" style={{ marginBottom: 24 }}>
               <textarea
                 value={wallPostContent}
-                onChange={(e) => setWallPostContent(e.target.value)}
-                placeholder={`Post on ${profile.display_name || profile.username}'s wall...`}
+                onChange={async (e) => {
+                  const newContent = e.target.value;
+                  setWallPostContent(newContent);
+                  
+                  // Detect YouTube URL
+                  if (!wallYoutubePreview && !loadingWallPreview) {
+                    const youtubeUrl = findYouTubeUrl(newContent);
+                    if (youtubeUrl) {
+                      const videoId = extractYouTubeVideoId(youtubeUrl);
+                      if (videoId) {
+                        setLoadingWallPreview(true);
+                        try {
+                          const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+                          const data = await response.json();
+                          const title = data.author_name && data.title 
+                            ? `${data.author_name} - ${data.title}`
+                            : data.title || "YouTube Video";
+                          setWallYoutubePreview({ videoId, url: youtubeUrl, title });
+                        } catch {
+                          setWallYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+                        }
+                        setLoadingWallPreview(false);
+                      }
+                    }
+                  }
+                }}
+                placeholder={`Post on ${profile.display_name || profile.username}'s wall... Paste a YouTube link to share`}
                 rows={3}
                 maxLength={500}
                 style={{ marginBottom: 12, resize: "vertical" }}
               />
+              
+              {/* YouTube Preview */}
+              {loadingWallPreview && (
+                <div style={{ marginBottom: 12, padding: 12, background: "rgba(240, 235, 224, 0.05)", borderRadius: 8 }}>
+                  <p style={{ margin: 0, opacity: 0.6 }}>Loading video preview...</p>
+                </div>
+              )}
+              {wallYoutubePreview && (
+                <div style={{ position: "relative", marginBottom: 12 }}>
+                  <div style={{
+                    background: "var(--alzooka-teal-dark)",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    border: "1px solid rgba(240, 235, 224, 0.2)"
+                  }}>
+                    <img
+                      src={`https://img.youtube.com/vi/${wallYoutubePreview.videoId}/hqdefault.jpg`}
+                      alt="YouTube thumbnail"
+                      style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                    />
+                    <div style={{ padding: "10px 12px" }}>
+                      <p style={{ margin: 0, fontSize: 11, opacity: 0.6, textTransform: "uppercase" }}>
+                        YouTube.com
+                      </p>
+                      <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                        {wallYoutubePreview.title}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setWallYoutubePreview(null)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      background: "rgba(0, 0, 0, 0.7)",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: "white",
+                      fontSize: 16,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, opacity: 0.5 }}>
                   {wallPostContent.length}/500
                 </span>
                 <button
                   onClick={handleWallPost}
-                  disabled={postingWall || !wallPostContent.trim()}
+                  disabled={postingWall || (!wallPostContent.trim() && !wallYoutubePreview)}
                   style={{
-                    opacity: !wallPostContent.trim() ? 0.5 : 1,
+                    opacity: (!wallPostContent.trim() && !wallYoutubePreview) ? 0.5 : 1,
                   }}
                 >
                   {postingWall ? "Posting..." : "Post to wall"}
