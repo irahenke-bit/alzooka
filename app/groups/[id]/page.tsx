@@ -3956,7 +3956,11 @@ const GroupPostCard = memo(function GroupPostCard({
               return (
                 <div style={{ marginBottom: 16 }}>
                   {/* Always show header for YouTube videos */}
-                  {post.video_title ? (
+                  {playlistId ? (
+                    /* For playlists, use the PlaylistTitle component which fetches album name */
+                    <PlaylistTitle videoUrl={post.video_url} playlistId={playlistId} />
+                  ) : post.video_title ? (
+                    /* For single videos, show the saved video_title */
                     <div style={{
                       display: "flex",
                       alignItems: "center",
@@ -3971,22 +3975,15 @@ const GroupPostCard = memo(function GroupPostCard({
                         <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
                           {post.video_title}
                         </p>
-                        {playlistId && (
-                          <p style={{ margin: "2px 0 0", fontSize: 11, opacity: 0.6 }}>
-                            Playlist • Multiple tracks
-                          </p>
-                        )}
                       </div>
                     </div>
-                  ) : playlistId ? (
-                    <PlaylistTitle videoUrl={post.video_url} playlistId={playlistId} />
                   ) : null}
                   <div style={{
                     position: "relative",
                     paddingBottom: "56.25%",
                     height: 0,
                     overflow: "hidden",
-                    borderRadius: post.video_title ? "0 0 8px 8px" : "8px",
+                    borderRadius: (playlistId || post.video_title) ? "0 0 8px 8px" : "8px",
                     background: "#000",
                   }}>
                     <YouTubeThumbnail 
