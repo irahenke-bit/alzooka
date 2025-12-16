@@ -8,6 +8,7 @@ type PostResult = {
   id: string;
   content: string;
   video_url: string | null;
+  video_title: string | null;
   created_at: string;
   users: {
     username: string;
@@ -54,13 +55,14 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
       setLoading(true);
 
       try {
-        // Build the search query - only use columns that definitely exist
+        // Build the search query
         let searchQuery = supabase
           .from("posts")
           .select(`
             id,
             content,
             video_url,
+            video_title,
             created_at,
             users!posts_user_id_fkey (
               username,
@@ -76,9 +78,9 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           searchQuery = searchQuery.eq("group_id", groupId);
         }
 
-        // Search in content only (video_title column may not exist yet)
+        // Search in content OR video_title
         const searchTerm = `%${query}%`;
-        searchQuery = searchQuery.ilike("content", searchTerm);
+        searchQuery = searchQuery.or(`content.ilike.${searchTerm},video_title.ilike.${searchTerm}`);
 
         const { data, error } = await searchQuery;
 
@@ -373,7 +375,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
 
                     {/* Post info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Content preview */}
+                      {/* Title or content preview */}
                       <div
                         style={{
                           color: "var(--alzooka-cream)",
@@ -384,7 +386,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {truncate(post.content || "(Video post)", 50)}
+                        {post.video_title || truncate(post.content || "(Video post)", 50)}
                       </div>
 
                       {/* Metadata */}

@@ -805,6 +805,7 @@ export default function GroupPage() {
         content,
         image_url,
         video_url,
+        video_title,
         created_at,
         edited_at,
         user_id,
@@ -1093,6 +1094,7 @@ export default function GroupPage() {
         content: content.trim(),
         image_url: imageUrl,
         video_url: youtubePreview?.url || spotifyPreview?.url || null,
+        video_title: youtubePreview?.title || spotifyPreview?.title || null,
         user_id: user.id,
         group_id: groupId,
       })
