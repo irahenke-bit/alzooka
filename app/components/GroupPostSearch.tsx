@@ -55,7 +55,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
       setLoading(true);
 
       try {
-        // Build the search query
+        // Build the search query - fetch recent posts and filter client-side
         let searchQuery = supabase
           .from("posts")
           .select(`
@@ -71,26 +71,30 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
             )
           `)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(100); // Fetch more to filter from
 
         // If group scoped, only search this group
         if (isGroupScoped) {
           searchQuery = searchQuery.eq("group_id", groupId);
         }
 
-        // Search in content OR video_title (encode % for URL safety)
-        const encodedQuery = encodeURIComponent(query);
-        searchQuery = searchQuery.or(`content.ilike.*${encodedQuery}*,video_title.ilike.*${encodedQuery}*`);
-
         const { data, error } = await searchQuery;
+        
+        // Filter client-side for search matches
+        const searchLower = query.toLowerCase();
+        const filteredData = data?.filter((post: { content: string | null; video_title: string | null }) => {
+          const contentMatch = post.content?.toLowerCase().includes(searchLower);
+          const titleMatch = post.video_title?.toLowerCase().includes(searchLower);
+          return contentMatch || titleMatch;
+        }) || [];
 
         if (error) {
           console.error("Search error:", error);
           setResults([]);
-        } else if (data) {
+        } else {
           // Transform data to match expected structure
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transformedData = data.map((post: any) => {
+          const transformedData = filteredData.slice(0, 15).map((post: any) => {
             const users = Array.isArray(post.users) ? post.users[0] : post.users;
             return {
               ...post,
