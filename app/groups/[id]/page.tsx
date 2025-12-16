@@ -3955,15 +3955,38 @@ const GroupPostCard = memo(function GroupPostCard({
 
               return (
                 <div style={{ marginBottom: 16 }}>
-                  {playlistId && (
+                  {/* Always show header for YouTube videos */}
+                  {post.video_title ? (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "10px 12px",
+                      background: "rgba(240, 235, 224, 0.05)",
+                      borderRadius: "8px 8px 0 0",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}>
+                      <span style={{ fontSize: 18 }}>🎵</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                          {post.video_title}
+                        </p>
+                        {playlistId && (
+                          <p style={{ margin: "2px 0 0", fontSize: 11, opacity: 0.6 }}>
+                            Playlist • Multiple tracks
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : playlistId ? (
                     <PlaylistTitle videoUrl={post.video_url} playlistId={playlistId} />
-                  )}
+                  ) : null}
                   <div style={{
                     position: "relative",
                     paddingBottom: "56.25%",
                     height: 0,
                     overflow: "hidden",
-                    borderRadius: 8,
+                    borderRadius: post.video_title ? "0 0 8px 8px" : "8px",
                     background: "#000",
                   }}>
                     <YouTubeThumbnail 
