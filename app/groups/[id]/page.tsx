@@ -16,6 +16,7 @@ import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
+import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { notifyGroupInvite } from "@/lib/notifications";
 
 type Group = {
@@ -275,7 +276,8 @@ export default function GroupPage() {
   const [inviteSearch, setInviteSearch] = useState("");
   const [inviteResults, setInviteResults] = useState<Array<{id: string; username: string; display_name: string | null; avatar_url: string | null; hasPendingInvite?: boolean}>>([]);
   const [sendingInvite, setSendingInvite] = useState(false);
-  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string} | null>(null);
+  const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string; searchQuery?: string} | null>(null);
+  const [showYouTubeSearch, setShowYouTubeSearch] = useState(false);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
@@ -1096,8 +1098,15 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
-    // Get video title before insert
-    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    // Get video title before insert - include search query for better searchability
+    let videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    // If we have a search query from YouTube search, prepend it to make artist searchable
+    if (youtubePreview?.searchQuery && videoTitle) {
+      // Only add if the search query isn't already in the title
+      if (!videoTitle.toLowerCase().includes(youtubePreview.searchQuery.toLowerCase())) {
+        videoTitle = `${youtubePreview.searchQuery} - ${videoTitle}`;
+      }
+    }
     console.log("[handlePost] Saving post with video_title:", videoTitle);
     
     const { data, error } = await supabase
@@ -2962,11 +2971,46 @@ export default function GroupPage() {
             >
               📷 Photo
             </button>
+            <button
+              type="button"
+              onClick={() => setShowYouTubeSearch(true)}
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: "var(--alzooka-cream)",
+                padding: "8px 16px",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ color: "#ff0000" }}>▶</span> YouTube
+            </button>
             <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview)}>
               {posting ? "Posting..." : "Post"}
             </button>
           </div>
         </form>
+      )}
+
+      {/* YouTube Search Modal */}
+      {showYouTubeSearch && (
+        <YouTubeSearchModal
+          onClose={() => setShowYouTubeSearch(false)}
+          onSelect={(video, searchQuery) => {
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            // Combine channel name with title for display
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            setYoutubePreview({
+              videoId: video.videoId,
+              url: youtubeUrl,
+              title: displayTitle,
+              searchQuery: searchQuery,
+            });
+            setShowYouTubeSearch(false);
+          }}
+        />
       )}
 
       {/* Posts */}
