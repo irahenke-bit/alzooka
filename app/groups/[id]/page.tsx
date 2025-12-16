@@ -1100,10 +1100,8 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
-    // Use search query as video title (what user typed = artist - album)
-    // Fall back to the preview title if no search query
-    const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
-    const videoTitle = searchQuery || youtubePreview?.title || spotifyPreview?.title || null;
+    // Use the video/album title (usually contains Artist - Album)
+    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
     console.log("[handlePost] Saving post with video_title:", videoTitle);
     
     const { data, error } = await supabase
@@ -3023,9 +3021,8 @@ export default function GroupPage() {
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
             
-            // Use search query as primary title (artist - album), fall back to video title
-            // The search query is what the user typed, which is the most accurate
-            let videoTitle = searchQuery || video.title;
+            // Use the video title from YouTube (usually contains Artist - Album)
+            const videoTitle = video.title;
             
             const { data, error } = await supabase
               .from("posts")

@@ -792,9 +792,8 @@ export default function ProfilePage() {
     // Use preview URL if available, otherwise detect from content
     const videoUrl = wallYoutubePreview?.url || wallSpotifyPreview?.url || findYouTubeUrl(wallPostContent);
     
-    // Use search query as video title (what user typed = artist - album)
-    const searchQuery = wallYoutubePreview?.searchQuery || wallSpotifyPreview?.searchQuery;
-    const videoTitle = searchQuery || wallYoutubePreview?.title || wallSpotifyPreview?.title || null;
+    // Use the video/album title (usually contains Artist - Album)
+    const videoTitle = wallYoutubePreview?.title || wallSpotifyPreview?.title || null;
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -991,9 +990,8 @@ export default function ProfilePage() {
     // Use preview URL if available, otherwise detect from content
     const videoUrl = youtubePreview?.url || spotifyPreview?.url || findYouTubeUrl(newPostContent);
     
-    // Use search query as video title (what user typed = artist - album)
-    const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
-    const videoTitle = searchQuery || youtubePreview?.title || spotifyPreview?.title || null;
+    // Use the video/album title (usually contains Artist - Album)
+    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -2893,13 +2891,13 @@ export default function ProfilePage() {
             });
             setShowYouTubeSearch(false);
           }}
-          onDirectPost={async (video, searchQuery) => {
+          onDirectPost={async (video) => {
             if (!currentUser || !profile) return;
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
             
-            // Use search query as primary title (artist - album), fall back to video title
-            const videoTitle = searchQuery || video.title;
+            // Use the video title from YouTube (usually contains Artist - Album)
+            const videoTitle = video.title;
             
             const { data, error } = await supabase
               .from("posts")
@@ -2986,23 +2984,22 @@ export default function ProfilePage() {
       {showWallYouTubeSearch && (
         <YouTubeSearchModal
           onClose={() => setShowWallYouTubeSearch(false)}
-          onSelect={(video, searchQuery) => {
+          onSelect={(video) => {
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
             setWallYoutubePreview({
               videoId: video.videoId,
               url: youtubeUrl,
               title: video.title,
-              searchQuery: searchQuery,
             });
             setShowWallYouTubeSearch(false);
           }}
-          onDirectPost={async (video, searchQuery) => {
+          onDirectPost={async (video) => {
             if (!currentUser || !profile) return;
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
             
-            // Use search query as primary title (artist - album), fall back to video title
-            const videoTitle = searchQuery || video.title;
+            // Use the video title from YouTube (usually contains Artist - Album)
+            const videoTitle = video.title;
             
             const { data, error } = await supabase
               .from("posts")
