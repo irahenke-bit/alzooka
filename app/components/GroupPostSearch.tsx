@@ -78,9 +78,9 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           searchQuery = searchQuery.eq("group_id", groupId);
         }
 
-        // Search in content OR video_title
-        const searchTerm = `%${query}%`;
-        searchQuery = searchQuery.or(`content.ilike.${searchTerm},video_title.ilike.${searchTerm}`);
+        // Search in content OR video_title (encode % for URL safety)
+        const encodedQuery = encodeURIComponent(query);
+        searchQuery = searchQuery.or(`content.ilike.*${encodedQuery}*,video_title.ilike.*${encodedQuery}*`);
 
         const { data, error } = await searchQuery;
 
