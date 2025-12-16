@@ -17,6 +17,7 @@ import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
+import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { notifyGroupInvite } from "@/lib/notifications";
 
 type Group = {
@@ -278,8 +279,9 @@ export default function GroupPage() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string; searchQuery?: string} | null>(null);
   const [showYouTubeSearch, setShowYouTubeSearch] = useState(false);
+  const [showSpotifySearch, setShowSpotifySearch] = useState(false);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
-  const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
+  const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(null);
@@ -1100,11 +1102,13 @@ export default function GroupPage() {
 
     // Get video title before insert - include search query for better searchability
     let videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
-    // If we have a search query from YouTube search, prepend it to make artist searchable
-    if (youtubePreview?.searchQuery && videoTitle) {
+    // Get search query from either YouTube or Spotify
+    const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
+    // If we have a search query, prepend it to make artist searchable
+    if (searchQuery && videoTitle) {
       // Only add if the search query isn't already in the title
-      if (!videoTitle.toLowerCase().includes(youtubePreview.searchQuery.toLowerCase())) {
-        videoTitle = `${youtubePreview.searchQuery} - ${videoTitle}`;
+      if (!videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+        videoTitle = `${searchQuery} - ${videoTitle}`;
       }
     }
     console.log("[handlePost] Saving post with video_title:", videoTitle);
@@ -2985,6 +2989,20 @@ export default function GroupPage() {
             >
               <span style={{ color: "#ff0000" }}>▶</span> YouTube
             </button>
+            <button
+              type="button"
+              onClick={() => setShowSpotifySearch(true)}
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: "var(--alzooka-cream)",
+                padding: "8px 16px",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ color: "#1DB954" }}>●</span> Spotify
+            </button>
             <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview)}>
               {posting ? "Posting..." : "Post"}
             </button>
@@ -3009,6 +3027,29 @@ export default function GroupPage() {
               searchQuery: searchQuery,
             });
             setShowYouTubeSearch(false);
+          }}
+        />
+      )}
+
+      {/* Spotify Search Modal */}
+      {showSpotifySearch && (
+        <SpotifySearchModal
+          onClose={() => setShowSpotifySearch(false)}
+          onSelect={(result, searchQuery) => {
+            // Convert Spotify URI to URL
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            // Combine artist with name for display
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            setSpotifyPreview({
+              url: spotifyUrl,
+              title: displayTitle,
+              thumbnail: result.image,
+              type: result.type,
+              searchQuery: searchQuery,
+            });
+            setShowSpotifySearch(false);
           }}
         />
       )}
