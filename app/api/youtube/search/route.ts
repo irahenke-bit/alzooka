@@ -12,8 +12,11 @@ export async function GET(request: NextRequest) {
   const apiKey = process.env.YOUTUBE_API_KEY;
 
   if (!apiKey) {
-    console.error("YOUTUBE_API_KEY is not set");
-    return NextResponse.json({ error: "YouTube API not configured" }, { status: 500 });
+    console.error("YOUTUBE_API_KEY is not set. Available env vars:", Object.keys(process.env).filter(k => k.includes('YOUTUBE') || k.includes('API')));
+    return NextResponse.json({ 
+      error: "YouTube API not configured",
+      debug: "API key not found in environment"
+    }, { status: 500 });
   }
 
   try {
