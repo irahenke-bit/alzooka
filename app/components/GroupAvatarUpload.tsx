@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import { AvatarCropModal } from "./AvatarCropModal";
 
 type GroupAvatarUploadProps = {
   currentAvatarUrl: string | null;
@@ -10,64 +11,16 @@ type GroupAvatarUploadProps = {
   onUpload: (url: string) => void;
 };
 
-// Resize image to target size while maintaining quality
-async function resizeImage(file: File, targetSize: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    img.onload = () => {
-      // Calculate dimensions for center crop
-      const size = Math.min(img.width, img.height);
-      const offsetX = (img.width - size) / 2;
-      const offsetY = (img.height - size) / 2;
-
-      canvas.width = targetSize;
-      canvas.height = targetSize;
-
-      if (!ctx) {
-        reject(new Error("Could not get canvas context"));
-        return;
-      }
-
-      // Use high quality settings
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      // Draw cropped and resized image
-      ctx.drawImage(
-        img,
-        offsetX, offsetY, size, size,  // Source crop
-        0, 0, targetSize, targetSize    // Destination
-      );
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error("Could not create blob"));
-          }
-        },
-        "image/jpeg",
-        0.92  // High quality JPEG
-      );
-    };
-
-    img.onerror = () => reject(new Error("Could not load image"));
-    img.src = URL.createObjectURL(file);
-  });
-}
-
 export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUpload }: GroupAvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [isHovered, setIsHovered] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createBrowserClient();
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -77,27 +30,48 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
       return;
     }
 
-    // Validate file size (max 10MB for original - we'll resize it)
+    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError("Image must be less than 10MB");
       return;
     }
 
-    setUploading(true);
     setError("");
+    
+    // Create object URL for cropping
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setShowCropModal(true);
+  }
+
+  function handleCropCancel() {
+    setShowCropModal(false);
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleCropSave(croppedBlob: Blob) {
+    setShowCropModal(false);
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setUploading(true);
 
     try {
-      // Resize image to 400x400 for crisp display at all sizes
-      const resizedBlob = await resizeImage(file, 400);
-      
       // Create unique filename
       const fileName = `group-${groupId}-${Date.now()}.jpg`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload resized image to Supabase Storage
+      // Upload cropped image to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, resizedBlob, {
+        .upload(filePath, croppedBlob, {
           cacheControl: "3600",
           upsert: true,
           contentType: "image/jpeg",
@@ -128,8 +102,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
       setError("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
-      setIsHovered(false); // Reset hover state after upload
-      // Reset file input
+      setIsHovered(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -230,6 +203,15 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
         }}>
           {error}
         </p>
+      )}
+
+      {/* Crop Modal */}
+      {showCropModal && imageToCrop && (
+        <AvatarCropModal
+          imageSrc={imageToCrop}
+          onCancel={handleCropCancel}
+          onSave={handleCropSave}
+        />
       )}
     </div>
   );
