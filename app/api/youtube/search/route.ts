@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// YouTube Search API - uses YOUTUBE_API_KEY env variable
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
