@@ -57,6 +57,7 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  video_title?: string | null;
   user_id: string;
   users: {
     username: string;
@@ -333,6 +334,7 @@ export default function ProfilePage() {
           content,
           image_url,
           video_url,
+          video_title,
           wall_user_id,
           created_at,
           edited_at,
@@ -439,6 +441,7 @@ export default function ProfilePage() {
             content: post.content,
             image_url: post.image_url || null,
             video_url: post.video_url || null,
+            video_title: (post as any).video_title || null,
             wall_user_id: post.wall_user_id || null,
             wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
             users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
@@ -2428,19 +2431,39 @@ export default function ProfilePage() {
 
                           {videoId && (
                             <div style={{ marginBottom: 12 }}>
-                              {playlistId && (
+                              {/* Always show header for YouTube videos */}
+                              {playlistId ? (
+                                /* For playlists, use the PlaylistTitle component which fetches album name */
                                 <PlaylistTitle videoUrl={videoUrl!} playlistId={playlistId} />
-                              )}
-                              <div style={{ 
+                              ) : post.video_title ? (
+                                /* For single videos, show the saved video_title */
+                                <div style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  padding: "10px 12px",
+                                  background: "rgba(240, 235, 224, 0.05)",
+                                  borderRadius: "8px 8px 0 0",
+                                  borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                                }}>
+                                  <span style={{ fontSize: 18 }}>🎵</span>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                                      {post.video_title}
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : null}
+                              <div style={{
                                 position: "relative",
                                 paddingBottom: "56.25%",
                                 height: 0,
                                 overflow: "hidden",
-                                borderRadius: 8,
+                                borderRadius: (playlistId || post.video_title) ? "0 0 8px 8px" : "8px",
                                 background: "#000",
                               }}>
                                 <iframe
-                                  src={playlistId 
+                                  src={playlistId
                                     ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
                                     : `https://www.youtube.com/embed/${videoId}?rel=0`}
                                   title="YouTube video"
