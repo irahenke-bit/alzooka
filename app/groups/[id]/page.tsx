@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 // Virtualization library - available for future use if needed
 // import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { createBrowserClient } from "@/lib/supabase";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import { GroupPostSearch } from "@/app/components/GroupPostSearch";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
@@ -74,6 +75,7 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  video_title: string | null;
   created_at: string;
   edited_at: string | null;
   user_id: string;
@@ -83,6 +85,22 @@ type Post = {
     avatar_url: string | null;
   };
   comments: Comment[];
+  // Sharing fields
+  shared_from_post_id?: string | null;
+  shared_from_post?: {
+    id: string;
+    user_id: string;
+    users: {
+      username: string;
+      display_name: string | null;
+      avatar_url: string | null;
+    };
+    group_id?: string | null;
+    groups?: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
 };
 
 // Instant Tooltip Component
@@ -221,6 +239,8 @@ export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const highlightPostId = searchParams.get("post");
   const supabase = createBrowserClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -579,6 +599,27 @@ export default function GroupPage() {
     return () => window.removeEventListener("keydown", handleGlobalEscape);
   }, []);
 
+  // Scroll to highlighted post from search
+  useEffect(() => {
+    if (highlightPostId && posts.length > 0 && !loading) {
+      // Small delay to ensure DOM is rendered
+      setTimeout(() => {
+        const postElement = document.getElementById(`post-${highlightPostId}`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Add highlight effect
+          postElement.style.transition = "box-shadow 0.3s ease";
+          postElement.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
+          setTimeout(() => {
+            postElement.style.boxShadow = "";
+          }, 2000);
+        }
+        // Clear the query param after scrolling
+        router.replace(`/groups/${groupId}`, { scroll: false });
+      }, 300);
+    }
+  }, [highlightPostId, posts.length, loading, groupId, router]);
+
   async function loadMembers() {
     const { data } = await supabase
       .from("group_members")
@@ -764,13 +805,29 @@ export default function GroupPage() {
         content,
         image_url,
         video_url,
+        video_title,
         created_at,
         edited_at,
         user_id,
+        shared_from_post_id,
         users!posts_user_id_fkey (
           username,
           display_name,
           avatar_url
+        ),
+        shared_from_post:posts!posts_shared_from_post_id_fkey (
+          id,
+          user_id,
+          users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          group_id,
+          groups (
+            id,
+            name
+          )
         ),
         comments (
           id,
@@ -1052,6 +1109,7 @@ export default function GroupPage() {
         content: content.trim(),
         image_url: imageUrl,
         video_url: youtubePreview?.url || spotifyPreview?.url || null,
+        video_title: youtubePreview?.title || spotifyPreview?.title || null,
         user_id: user.id,
         group_id: groupId,
       })
@@ -1554,7 +1612,7 @@ export default function GroupPage() {
           <Logo size={32} />
           <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>Alzooka</h1>
         </Link>
-        <UserSearch />
+        <GroupPostSearch groupId={groupId} groupName={group.name} />
         <Link href="/groups" style={{ color: "var(--alzooka-cream)", fontSize: 14, textDecoration: "none", opacity: 0.8 }}>
           Groups
         </Link>
@@ -3469,7 +3527,7 @@ const GroupPostCard = memo(function GroupPostCard({
   }
 
   return (
-    <article className="card" style={{ marginBottom: 16 }}>
+    <article id={`post-${post.id}`} className="card" style={{ marginBottom: 16 }}>
       <div style={{ display: "flex", gap: 12 }}>
         {/* Votes */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 32 }}>
@@ -3624,6 +3682,38 @@ const GroupPostCard = memo(function GroupPostCard({
               )}
             </div>
           </div>
+
+          {/* Shared from attribution */}
+          {post.shared_from_post && (
+            <div style={{
+              marginBottom: 12,
+              padding: "8px 12px",
+              background: "rgba(212, 168, 75, 0.1)",
+              borderRadius: 8,
+              borderLeft: "3px solid var(--alzooka-gold)",
+              fontSize: 13,
+            }}>
+              <span style={{ opacity: 0.7 }}>Shared from </span>
+              <Link
+                href={`/profile/${post.shared_from_post.users?.username}`}
+                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+              >
+                {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
+              </Link>
+              <span style={{ opacity: 0.7 }}>&apos;s post</span>
+              {post.shared_from_post.groups && (
+                <>
+                  <span style={{ opacity: 0.7 }}> in </span>
+                  <Link
+                    href={`/groups/${post.shared_from_post.groups.id}`}
+                    style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                  >
+                    {post.shared_from_post.groups.name}
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Post Content - Edit Mode or View Mode */}
           {isEditing ? (
