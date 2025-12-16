@@ -792,12 +792,9 @@ export default function ProfilePage() {
     // Use preview URL if available, otherwise detect from content
     const videoUrl = wallYoutubePreview?.url || wallSpotifyPreview?.url || findYouTubeUrl(wallPostContent);
     
-    // Build video title with search query
-    let videoTitle = wallYoutubePreview?.title || wallSpotifyPreview?.title || null;
+    // Use search query as video title (what user typed = artist - album)
     const searchQuery = wallYoutubePreview?.searchQuery || wallSpotifyPreview?.searchQuery;
-    if (searchQuery && videoTitle && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-      videoTitle = `${searchQuery} - ${videoTitle}`;
-    }
+    const videoTitle = searchQuery || wallYoutubePreview?.title || wallSpotifyPreview?.title || null;
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -994,12 +991,9 @@ export default function ProfilePage() {
     // Use preview URL if available, otherwise detect from content
     const videoUrl = youtubePreview?.url || spotifyPreview?.url || findYouTubeUrl(newPostContent);
     
-    // Build video title with search query
-    let videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    // Use search query as video title (what user typed = artist - album)
     const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
-    if (searchQuery && videoTitle && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-      videoTitle = `${searchQuery} - ${videoTitle}`;
-    }
+    const videoTitle = searchQuery || youtubePreview?.title || spotifyPreview?.title || null;
 
     const { data: newPost, error } = await supabase
       .from("posts")
@@ -2891,13 +2885,10 @@ export default function ProfilePage() {
           onClose={() => setShowYouTubeSearch(false)}
           onSelect={(video, searchQuery) => {
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
             setYoutubePreview({
               videoId: video.videoId,
               url: youtubeUrl,
-              title: displayTitle,
+              title: video.title,
               searchQuery: searchQuery,
             });
             setShowYouTubeSearch(false);
@@ -2906,14 +2897,9 @@ export default function ProfilePage() {
             if (!currentUser || !profile) return;
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
             
-            let videoTitle = displayTitle;
-            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-              videoTitle = `${searchQuery} - ${videoTitle}`;
-            }
+            // Use search query as primary title (artist - album), fall back to video title
+            const videoTitle = searchQuery || video.title;
             
             const { data, error } = await supabase
               .from("posts")
@@ -3002,13 +2988,10 @@ export default function ProfilePage() {
           onClose={() => setShowWallYouTubeSearch(false)}
           onSelect={(video, searchQuery) => {
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
             setWallYoutubePreview({
               videoId: video.videoId,
               url: youtubeUrl,
-              title: displayTitle,
+              title: video.title,
               searchQuery: searchQuery,
             });
             setShowWallYouTubeSearch(false);
@@ -3017,14 +3000,9 @@ export default function ProfilePage() {
             if (!currentUser || !profile) return;
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
             
-            let videoTitle = displayTitle;
-            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-              videoTitle = `${searchQuery} - ${videoTitle}`;
-            }
+            // Use search query as primary title (artist - album), fall back to video title
+            const videoTitle = searchQuery || video.title;
             
             const { data, error } = await supabase
               .from("posts")

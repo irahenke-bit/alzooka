@@ -1100,17 +1100,10 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
-    // Get video title before insert - include search query for better searchability
-    let videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
-    // Get search query from either YouTube or Spotify
+    // Use search query as video title (what user typed = artist - album)
+    // Fall back to the preview title if no search query
     const searchQuery = youtubePreview?.searchQuery || spotifyPreview?.searchQuery;
-    // If we have a search query, prepend it to make artist searchable
-    if (searchQuery && videoTitle) {
-      // Only add if the search query isn't already in the title
-      if (!videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-        videoTitle = `${searchQuery} - ${videoTitle}`;
-      }
-    }
+    const videoTitle = searchQuery || youtubePreview?.title || spotifyPreview?.title || null;
     console.log("[handlePost] Saving post with video_title:", videoTitle);
     
     const { data, error } = await supabase
@@ -3016,14 +3009,11 @@ export default function GroupPage() {
           onClose={() => setShowYouTubeSearch(false)}
           onSelect={(video, searchQuery) => {
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            // Combine channel name with title for display
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
+            // Just use the video title - search query will be added separately for searchability
             setYoutubePreview({
               videoId: video.videoId,
               url: youtubeUrl,
-              title: displayTitle,
+              title: video.title,
               searchQuery: searchQuery,
             });
             setShowYouTubeSearch(false);
@@ -3032,16 +3022,10 @@ export default function GroupPage() {
             if (!user) return;
             
             const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-            // Combine channel name with title for display
-            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
-              ? `${video.channelTitle} - ${video.title}`
-              : video.title;
             
-            // Build video title with search query for searchability
-            let videoTitle = displayTitle;
-            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-              videoTitle = `${searchQuery} - ${videoTitle}`;
-            }
+            // Use search query as primary title (artist - album), fall back to video title
+            // The search query is what the user typed, which is the most accurate
+            let videoTitle = searchQuery || video.title;
             
             const { data, error } = await supabase
               .from("posts")
