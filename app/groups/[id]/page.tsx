@@ -3311,6 +3311,9 @@ function YouTubeThumbnail({
     );
   }
 
+  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState(false);
+
   return (
     <div 
       onClick={onPlay}
@@ -3321,22 +3324,37 @@ function YouTubeThumbnail({
         width: "100%",
         height: "100%",
         cursor: "pointer",
+        backgroundColor: "#1a1a1a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {/* Thumbnail image */}
       <img
-        src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-        onError={(e) => {
-          // Fallback to lower res thumbnail if maxres doesn't exist
-          (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-        }}
+        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+        onLoad={() => setThumbnailLoaded(true)}
+        onError={() => setThumbnailError(true)}
         alt="Video thumbnail"
         style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          opacity: thumbnailLoaded ? 1 : 0,
+          transition: "opacity 0.2s",
         }}
       />
+      {/* Loading/error state */}
+      {!thumbnailLoaded && !thumbnailError && (
+        <div style={{ position: "absolute", color: "#666", fontSize: 14 }}>
+          Loading...
+        </div>
+      )}
+      {thumbnailError && (
+        <div style={{ position: "absolute", color: "#888", fontSize: 14, textAlign: "center" }}>
+          Click to play video
+        </div>
+      )}
       {/* Play button overlay */}
       <div
         style={{
