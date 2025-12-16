@@ -8,19 +8,12 @@ type PostResult = {
   id: string;
   content: string;
   video_url: string | null;
-  video_title: string | null;
   created_at: string;
   users: {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
   };
-  shared_from_post?: {
-    groups?: {
-      id: string;
-      name: string;
-    } | null;
-  } | null;
 };
 
 type GroupPostSearchProps = {
@@ -61,40 +54,31 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
       setLoading(true);
 
       try {
-        // Build the search query
+        // Build the search query - only use columns that definitely exist
         let searchQuery = supabase
           .from("posts")
           .select(`
             id,
             content,
             video_url,
-            video_title,
             created_at,
             users!posts_user_id_fkey (
               username,
               display_name,
               avatar_url
-            ),
-            shared_from_post:posts!posts_shared_from_post_id_fkey (
-              groups (
-                id,
-                name
-              )
             )
           `)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(20);
 
         // If group scoped, only search this group
         if (isGroupScoped) {
           searchQuery = searchQuery.eq("group_id", groupId);
         }
 
-        // Search in content, video_title, or shared group name
+        // Search in content only (video_title column may not exist yet)
         const searchTerm = `%${query}%`;
-        searchQuery = searchQuery.or(
-          `content.ilike.${searchTerm},video_title.ilike.${searchTerm}`
-        );
+        searchQuery = searchQuery.ilike("content", searchTerm);
 
         const { data, error } = await searchQuery;
 
@@ -102,44 +86,13 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           console.error("Search error:", error);
           setResults([]);
         } else if (data) {
-          // Filter results that match the shared group name (if searching for that)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const filteredData = data.filter((post: any) => {
-            // Always include if content or video_title matches
-            const contentMatches = post.content?.toLowerCase().includes(query.toLowerCase());
-            const titleMatches = post.video_title?.toLowerCase().includes(query.toLowerCase());
-            
-            // Check if shared group name matches (handle nested relation)
-            const sharedPost = Array.isArray(post.shared_from_post) 
-              ? post.shared_from_post[0] 
-              : post.shared_from_post;
-            const sharedGroups = sharedPost?.groups;
-            const sharedGroupName = Array.isArray(sharedGroups) 
-              ? sharedGroups[0]?.name 
-              : sharedGroups?.name;
-            const sharedGroupMatches = sharedGroupName
-              ?.toLowerCase()
-              .includes(query.toLowerCase());
-            
-            return contentMatches || titleMatches || sharedGroupMatches;
-          });
-          
           // Transform data to match expected structure
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transformedData = filteredData.map((post: any) => {
+          const transformedData = data.map((post: any) => {
             const users = Array.isArray(post.users) ? post.users[0] : post.users;
-            const sharedPost = Array.isArray(post.shared_from_post) 
-              ? post.shared_from_post[0] 
-              : post.shared_from_post;
-            const sharedGroups = sharedPost?.groups;
-            const groups = Array.isArray(sharedGroups) ? sharedGroups[0] : sharedGroups;
-            
             return {
               ...post,
               users,
-              shared_from_post: sharedPost ? {
-                groups: groups || null
-              } : null
             };
           });
           
@@ -354,7 +307,6 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               {results.map((post) => {
                 const videoId = post.video_url ? extractYouTubeId(post.video_url) : null;
                 const displayName = post.users?.display_name || post.users?.username || "Unknown";
-                const sharedFromGroup = post.shared_from_post?.groups?.name;
 
                 return (
                   <div
@@ -421,7 +373,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
 
                     {/* Post info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Title or content preview */}
+                      {/* Content preview */}
                       <div
                         style={{
                           color: "var(--alzooka-cream)",
@@ -432,7 +384,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {post.video_title || truncate(post.content || "(No text)", 50)}
+                        {truncate(post.content || "(Video post)", 50)}
                       </div>
 
                       {/* Metadata */}
@@ -448,14 +400,6 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                         }}
                       >
                         <span>by {displayName}</span>
-                        {sharedFromGroup && (
-                          <>
-                            <span>•</span>
-                            <span style={{ color: "var(--alzooka-gold)" }}>
-                              from {sharedFromGroup}
-                            </span>
-                          </>
-                        )}
                       </div>
                     </div>
                   </div>

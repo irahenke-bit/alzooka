@@ -75,7 +75,7 @@ type Post = {
   content: string;
   image_url: string | null;
   video_url: string | null;
-  video_title: string | null;
+  video_title?: string | null;
   created_at: string;
   edited_at: string | null;
   user_id: string;
@@ -85,7 +85,7 @@ type Post = {
     avatar_url: string | null;
   };
   comments: Comment[];
-  // Sharing fields
+  // Sharing fields (optional - for shared posts display)
   shared_from_post_id?: string | null;
   shared_from_post?: {
     id: string;
@@ -805,29 +805,13 @@ export default function GroupPage() {
         content,
         image_url,
         video_url,
-        video_title,
         created_at,
         edited_at,
         user_id,
-        shared_from_post_id,
         users!posts_user_id_fkey (
           username,
           display_name,
           avatar_url
-        ),
-        shared_from_post:posts!posts_shared_from_post_id_fkey (
-          id,
-          user_id,
-          users!posts_user_id_fkey (
-            username,
-            display_name,
-            avatar_url
-          ),
-          group_id,
-          groups (
-            id,
-            name
-          )
         ),
         comments (
           id,
@@ -1103,16 +1087,24 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
+    // Build insert data - video_title is optional (requires column in DB)
+    const insertData: Record<string, unknown> = {
+      content: content.trim(),
+      image_url: imageUrl,
+      video_url: youtubePreview?.url || spotifyPreview?.url || null,
+      user_id: user.id,
+      group_id: groupId,
+    };
+    
+    // Try to include video_title if the column exists
+    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    if (videoTitle) {
+      insertData.video_title = videoTitle;
+    }
+
     const { data, error } = await supabase
       .from("posts")
-      .insert({
-        content: content.trim(),
-        image_url: imageUrl,
-        video_url: youtubePreview?.url || spotifyPreview?.url || null,
-        video_title: youtubePreview?.title || spotifyPreview?.title || null,
-        user_id: user.id,
-        group_id: groupId,
-      })
+      .insert(insertData)
       .select()
       .single();
 
