@@ -14,12 +14,14 @@ type Video = {
 type YouTubeSearchModalProps = {
   onClose: () => void;
   onSelect: (video: Video, searchQuery: string) => void;
+  onDirectPost?: (video: Video, searchQuery: string) => Promise<void>;
 };
 
-export function YouTubeSearchModal({ onClose, onSelect }: YouTubeSearchModalProps) {
+export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeSearchModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Video[]>([]);
   const [loading, setLoading] = useState(false);
+  const [postingId, setPostingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -63,6 +65,19 @@ export function YouTubeSearchModal({ onClose, onSelect }: YouTubeSearchModalProp
   function handleSelect(video: Video) {
     onSelect(video, query);
     onClose();
+  }
+
+  async function handleDirectPost(video: Video, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!onDirectPost || postingId) return;
+    
+    setPostingId(video.videoId);
+    try {
+      await onDirectPost(video, query);
+      onClose();
+    } catch {
+      setPostingId(null);
+    }
   }
 
   if (!mounted) return null;
@@ -190,14 +205,13 @@ export function YouTubeSearchModal({ onClose, onSelect }: YouTubeSearchModalProp
           {results.map((video) => (
             <div
               key={video.videoId}
-              onClick={() => handleSelect(video)}
               style={{
                 display: "flex",
                 gap: 12,
                 padding: "12px 20px",
-                cursor: "pointer",
                 borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
                 transition: "background 0.15s",
+                alignItems: "center",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(240, 235, 224, 0.05)";
@@ -236,6 +250,24 @@ export function YouTubeSearchModal({ onClose, onSelect }: YouTubeSearchModalProp
                   {video.channelTitle}
                 </div>
               </div>
+              <button
+                onClick={(e) => handleDirectPost(video, e)}
+                disabled={postingId !== null}
+                style={{
+                  padding: "8px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "var(--alzooka-gold)",
+                  color: "var(--alzooka-teal-dark)",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: postingId !== null ? "not-allowed" : "pointer",
+                  opacity: postingId !== null ? 0.6 : 1,
+                  flexShrink: 0,
+                }}
+              >
+                {postingId === video.videoId ? "Posting..." : "Post"}
+              </button>
             </div>
           ))}
         </div>

@@ -15,13 +15,15 @@ type SpotifyResult = {
 type SpotifySearchModalProps = {
   onClose: () => void;
   onSelect: (result: SpotifyResult, searchQuery: string) => void;
+  onDirectPost?: (result: SpotifyResult, searchQuery: string) => Promise<void>;
 };
 
-export function SpotifySearchModal({ onClose, onSelect }: SpotifySearchModalProps) {
+export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifySearchModalProps) {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<"album" | "track">("album");
   const [results, setResults] = useState<SpotifyResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [postingId, setPostingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -67,6 +69,19 @@ export function SpotifySearchModal({ onClose, onSelect }: SpotifySearchModalProp
   function handleSelect(result: SpotifyResult) {
     onSelect(result, query);
     onClose();
+  }
+
+  async function handleDirectPost(result: SpotifyResult, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!onDirectPost || postingId) return;
+    
+    setPostingId(result.id);
+    try {
+      await onDirectPost(result, query);
+      onClose();
+    } catch {
+      setPostingId(null);
+    }
   }
 
   if (!mounted) return null;
@@ -230,14 +245,13 @@ export function SpotifySearchModal({ onClose, onSelect }: SpotifySearchModalProp
           {results.map((result) => (
             <div
               key={result.id}
-              onClick={() => handleSelect(result)}
               style={{
                 display: "flex",
                 gap: 12,
                 padding: "12px 20px",
-                cursor: "pointer",
                 borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
                 transition: "background 0.15s",
+                alignItems: "center",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(240, 235, 224, 0.05)";
@@ -296,6 +310,24 @@ export function SpotifySearchModal({ onClose, onSelect }: SpotifySearchModalProp
                   {result.type === "album" ? "Album" : result.type === "track" ? "Track" : "Artist"}
                 </div>
               </div>
+              <button
+                onClick={(e) => handleDirectPost(result, e)}
+                disabled={postingId !== null}
+                style={{
+                  padding: "8px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "#1DB954",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: postingId !== null ? "not-allowed" : "pointer",
+                  opacity: postingId !== null ? 0.6 : 1,
+                  flexShrink: 0,
+                }}
+              >
+                {postingId === result.id ? "Posting..." : "Post"}
+              </button>
             </div>
           ))}
         </div>

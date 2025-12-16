@@ -3028,6 +3028,47 @@ export default function GroupPage() {
             });
             setShowYouTubeSearch(false);
           }}
+          onDirectPost={async (video, searchQuery) => {
+            if (!user) return;
+            
+            const youtubeUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+            // Combine channel name with title for display
+            const displayTitle = video.channelTitle && !video.title.toLowerCase().includes(video.channelTitle.toLowerCase())
+              ? `${video.channelTitle} - ${video.title}`
+              : video.title;
+            
+            // Build video title with search query for searchability
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: youtubeUrl,
+                video_title: videoTitle,
+                user_id: user.id,
+                group_id: groupId,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: user.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              setTotalPostCount(prev => prev + 1);
+              await loadPosts();
+              await loadUserVotes(user.id);
+              await loadVoteTotals();
+            }
+          }}
         />
       )}
 
@@ -3050,6 +3091,47 @@ export default function GroupPage() {
               searchQuery: searchQuery,
             });
             setShowSpotifySearch(false);
+          }}
+          onDirectPost={async (result, searchQuery) => {
+            if (!user) return;
+            
+            const spotifyUrl = `https://open.spotify.com/${result.type}/${result.id}`;
+            // Combine artist with name for display
+            const displayTitle = result.artist 
+              ? `${result.artist} - ${result.name}`
+              : result.name;
+            
+            // Build video title with search query for searchability
+            let videoTitle = displayTitle;
+            if (searchQuery && !videoTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
+              videoTitle = `${searchQuery} - ${videoTitle}`;
+            }
+            
+            const { data, error } = await supabase
+              .from("posts")
+              .insert({
+                content: "",
+                image_url: null,
+                video_url: spotifyUrl,
+                video_title: videoTitle,
+                user_id: user.id,
+                group_id: groupId,
+              })
+              .select()
+              .single();
+            
+            if (!error && data) {
+              await supabase.from("votes").insert({
+                user_id: user.id,
+                target_type: "post",
+                target_id: data.id,
+                value: 1,
+              });
+              setTotalPostCount(prev => prev + 1);
+              await loadPosts();
+              await loadUserVotes(user.id);
+              await loadVoteTotals();
+            }
           }}
         />
       )}
