@@ -56,6 +56,15 @@ export async function GET(request: NextRequest) {
       description: item.snippet.description,
     }));
 
+    // Sort to prioritize "full album" videos at the top
+    videos.sort((a: { title: string }, b: { title: string }) => {
+      const aIsFullAlbum = a.title.toLowerCase().includes("full album");
+      const bIsFullAlbum = b.title.toLowerCase().includes("full album");
+      if (aIsFullAlbum && !bIsFullAlbum) return -1;
+      if (!aIsFullAlbum && bIsFullAlbum) return 1;
+      return 0;
+    });
+
     return NextResponse.json({ videos });
   } catch (error) {
     console.error("YouTube search error:", error);
