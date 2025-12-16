@@ -1006,10 +1006,18 @@ export default function GroupPage() {
               }
             }
             
+            // Combine author (channel name, often the artist) with title for better searchability
+            const authorName = data.author_name || "";
+            const videoTitle = data.title || "YouTube Video";
+            // Create a searchable title that includes the artist/channel if not already in title
+            const fullTitle = authorName && !videoTitle.toLowerCase().includes(authorName.toLowerCase())
+              ? `${authorName} - ${videoTitle}`
+              : videoTitle;
+            
             setYoutubePreview({
               videoId,
               url: youtubeUrl,
-              title: data.title || "YouTube Video",
+              title: fullTitle,
               playlistId: playlistId || undefined,
               playlistTitle,
             });
