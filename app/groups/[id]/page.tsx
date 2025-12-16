@@ -1088,18 +1088,24 @@ export default function GroupPage() {
       imageUrl = publicUrl;
     }
 
+    // Get video title before insert
+    const videoTitle = youtubePreview?.title || spotifyPreview?.title || null;
+    console.log("[handlePost] Saving post with video_title:", videoTitle);
+    
     const { data, error } = await supabase
       .from("posts")
       .insert({
         content: content.trim(),
         image_url: imageUrl,
         video_url: youtubePreview?.url || spotifyPreview?.url || null,
-        video_title: youtubePreview?.title || spotifyPreview?.title || null,
+        video_title: videoTitle,
         user_id: user.id,
         group_id: groupId,
       })
       .select()
       .single();
+    
+    console.log("[handlePost] Insert result:", { data, error });
 
     if (!error && data) {
       await supabase.from("votes").insert({
