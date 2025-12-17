@@ -214,6 +214,26 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 }}
               >
                 <Link
+                  href="/"
+                  onClick={() => setShowUserMenu(false)}
+                  style={{
+                    display: "block",
+                    padding: "10px 16px",
+                    color: "var(--alzooka-cream)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  🏠 My Feed
+                </Link>
+                <Link
                   href={`/profile/${userUsername}`}
                   onClick={() => setShowUserMenu(false)}
                   style={{
