@@ -16,6 +16,39 @@ type Notification = {
   related_user_id: string | null;
 };
 
+// Instant tooltip component
+function InstantTooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  return (
+    <div style={{ position: "relative", display: "inline-flex" }} className="instant-tooltip-wrapper">
+      {children}
+      <span className="instant-tooltip">{text}</span>
+      <style>{`
+        .instant-tooltip-wrapper .instant-tooltip {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.85);
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 4px;
+          font-size: 12px;
+          white-space: nowrap;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.1s, visibility 0.1s;
+          pointer-events: none;
+          z-index: 1001;
+        }
+        .instant-tooltip-wrapper:hover .instant-tooltip {
+          opacity: 1;
+          visibility: visible;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export function NotificationBell({ userId, currentUsername }: { userId: string; currentUsername?: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -204,43 +237,43 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
   return (
     <div ref={dropdownRef} style={{ position: "relative" }}>
       {/* Bell Button */}
-      <button
-        onClick={() => {
-          const wasOpen = isOpen;
-          setIsOpen(!isOpen);
-          // Mark all as read when opening the dropdown (except friend requests)
-          if (!wasOpen && unreadCount > 0) {
-            // Only mark non-friend-request notifications as read
-            const nonFriendRequestUnread = notifications.filter(
-              n => !n.is_read && n.type !== "friend_request"
-            );
-            if (nonFriendRequestUnread.length > 0) {
-              nonFriendRequestUnread.forEach(n => markAsRead(n.id));
+      <InstantTooltip text="Notifications">
+        <button
+          onClick={() => {
+            const wasOpen = isOpen;
+            setIsOpen(!isOpen);
+            // Mark all as read when opening the dropdown (except friend requests)
+            if (!wasOpen && unreadCount > 0) {
+              // Only mark non-friend-request notifications as read
+              const nonFriendRequestUnread = notifications.filter(
+                n => !n.is_read && n.type !== "friend_request"
+              );
+              if (nonFriendRequestUnread.length > 0) {
+                nonFriendRequestUnread.forEach(n => markAsRead(n.id));
+              }
             }
-          }
-        }}
-        style={{
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
-        }}
-        title="Notifications"
-      >
-        <span style={{ fontSize: 22, color: "#c9a227" }}>🔔</span>
+          }}
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          <span style={{ fontSize: 22, color: "#c9a227" }}>🔔</span>
         {unreadCount > 0 && (
           <span
             style={{
@@ -262,7 +295,8 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </button>
+        </button>
+      </InstantTooltip>
 
       {/* Dropdown */}
       {isOpen && (
