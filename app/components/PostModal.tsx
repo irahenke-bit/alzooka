@@ -638,6 +638,16 @@ export function PostModal({
         commentInputRef.current.style.height = 'auto';
       }
       onCommentAdded(newComment);
+      
+      // Scroll to bottom to show the new comment
+      setTimeout(() => {
+        if (commentsContainerRef.current) {
+          commentsContainerRef.current.scrollTo({
+            top: commentsContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
     }
 
     setSubmitting(false);
