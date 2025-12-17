@@ -74,7 +74,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
       {searchComponent || <UserSearch />}
 
       {/* Navigation Icons */}
-      <nav style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {/* Groups */}
         <Link
           href="/groups"
@@ -96,11 +96,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
             e.currentTarget.style.background = "transparent";
           }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a227" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="9" cy="7" r="3"/>
-            <circle cx="17" cy="7" r="3"/>
-            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-            <path d="M17 11a4 4 0 0 1 4 4v2"/>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
+            <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58A2.01 2.01 0 0 0 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85A6.95 6.95 0 0 0 20 14c-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/>
           </svg>
         </Link>
 
@@ -126,11 +123,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               e.currentTarget.style.background = "transparent";
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a227" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
+              <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
           </Link>
         )}
