@@ -74,34 +74,34 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
       {searchComponent || <UserSearch />}
 
       {/* Navigation Icons */}
-      <nav style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <nav style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {/* Groups */}
         <Link
           href="/groups"
           title="Groups"
           style={{
-            color: "var(--alzooka-cream)",
-            textDecoration: "none",
-            opacity: 0.8,
-            fontSize: 20,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             borderRadius: "50%",
             transition: "all 0.2s",
+            textDecoration: "none",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = "1";
             e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = "0.8";
             e.currentTarget.style.background = "transparent";
           }}
         >
-          👥
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a227" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="9" cy="7" r="3"/>
+            <circle cx="17" cy="7" r="3"/>
+            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+            <path d="M17 11a4 4 0 0 1 4 4v2"/>
+          </svg>
         </Link>
 
         {/* Friends */}
@@ -110,28 +110,28 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
             href={`/profile/${userUsername}?showFriends=true`}
             title="Friends"
             style={{
-              color: "var(--alzooka-cream)",
-              textDecoration: "none",
-              opacity: 0.8,
-              fontSize: 20,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               borderRadius: "50%",
               transition: "all 0.2s",
+              textDecoration: "none",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "1";
               e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "0.8";
               e.currentTarget.style.background = "transparent";
             }}
           >
-            🧑‍🤝‍🧑
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a227" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
           </Link>
         )}
 
