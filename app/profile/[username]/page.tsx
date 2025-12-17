@@ -2473,6 +2473,49 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           )}
+                          
+                          {/* Spotify embed */}
+                          {!videoId && videoUrl && videoUrl.includes('spotify.com') && (() => {
+                            const match = videoUrl.match(/spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+                            if (match) {
+                              const [, type, id] = match;
+                              return (
+                                <div style={{ marginBottom: 12 }}>
+                                  {post.video_title && (
+                                    <div style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 8,
+                                      padding: "10px 12px",
+                                      background: "rgba(240, 235, 224, 0.05)",
+                                      borderRadius: "8px 8px 0 0",
+                                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                                    }}>
+                                      <span style={{ fontSize: 18, color: "#1DB954" }}>●</span>
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                                          {post.video_title}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <iframe
+                                    style={{ 
+                                      borderRadius: post.video_title ? "0 0 12px 12px" : 12, 
+                                      width: "100%", 
+                                      height: type === "track" || type === "episode" ? 152 : 380 
+                                    }}
+                                    src={`https://open.spotify.com/embed/${type}/${id}?utm_source=generator`}
+                                    frameBorder="0"
+                                    allowFullScreen
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
 
                           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                             <span className="text-muted" style={{ fontSize: 14 }}>{formatTime(post.created_at)}</span>
