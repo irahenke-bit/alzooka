@@ -436,7 +436,7 @@ export function PostModal({
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
   const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
-  const commentInputRef = useRef<HTMLInputElement>(null);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
   
   // Clear highlight on any interaction
@@ -633,6 +633,10 @@ export function PostModal({
       setCommentText("");
       setReplyingTo(null);
       setCommentLinkPreview(null);
+      // Reset textarea height
+      if (commentInputRef.current) {
+        commentInputRef.current.style.height = 'auto';
+      }
       onCommentAdded(newComment);
     }
 
@@ -1449,7 +1453,7 @@ export function PostModal({
                   )}
                 </div>
               )}
-              <form onSubmit={handleComment} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <form onSubmit={handleComment} style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
                 {/* Quote Button */}
                 <Tooltip text="Insert quote">
                   <button
@@ -1497,24 +1501,50 @@ export function PostModal({
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
+                      marginBottom: 4,
                     }}
                   >
                     "
                   </button>
                 </Tooltip>
-                <input
+                <textarea
                   ref={commentInputRef}
-                  type="text"
                   placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
                   value={commentText}
-                  onChange={(e) => handleCommentTextChange(e.target.value)}
+                  onChange={(e) => {
+                    handleCommentTextChange(e.target.value);
+                    // Auto-resize textarea
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 144) + 'px'; // 144px ≈ 6 lines
+                  }}
                   onFocus={clearHighlight}
-                  style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}
+                  onKeyDown={(e) => {
+                    // Submit on Enter (without Shift)
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (commentText.trim() && !submitting) {
+                        handleComment(e as unknown as React.FormEvent);
+                      }
+                    }
+                  }}
+                  rows={1}
+                  style={{ 
+                    flex: 1, 
+                    padding: "12px 16px", 
+                    fontSize: 14, 
+                    borderRadius: 16,
+                    resize: "none",
+                    minHeight: 44,
+                    maxHeight: 144, // ~6 lines
+                    overflowY: "auto",
+                    lineHeight: 1.4,
+                    fontFamily: "inherit",
+                  }}
                 />
                 <button
                   type="submit"
                   disabled={submitting || !commentText.trim()}
-                  style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24 }}
+                  style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24, marginBottom: 4 }}
                 >
                   {submitting ? "..." : replyingTo ? "Reply" : "Post"}
                 </button>
