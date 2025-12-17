@@ -111,9 +111,10 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
 }
 
 // Helper function to render text with quotes styled as quote blocks
+// Only quotes wrapped in special markers 「...」 (from quote button) get styled
 function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.ReactNode[] {
-  // Split by quoted text (text between double quotes)
-  const quoteRegex = /"([^"]+)"/g;
+  // Split by special quote markers (Japanese brackets) - only these get styled
+  const quoteRegex = /「([^」]+)」/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -138,22 +139,19 @@ function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.R
       <span
         key={keyIndex++}
         style={{
-          display: "inline-flex",
-          alignItems: "flex-start",
-          gap: 6,
-          padding: "4px 10px",
-          margin: "2px 4px",
+          display: "inline-block",
+          padding: "8px 12px",
+          margin: "4px 0",
           background: "rgba(201, 162, 39, 0.1)",
           borderLeft: "3px solid var(--alzooka-gold)",
           borderRadius: "0 4px 4px 0",
           fontStyle: "italic",
           color: "var(--alzooka-cream)",
           opacity: 0.9,
+          width: "100%",
         }}
       >
-        <span style={{ opacity: 0.5 }}>"</span>
         {quotedText}
-        <span style={{ opacity: 0.5 }}>"</span>
       </span>
     );
     
@@ -172,7 +170,7 @@ function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.R
     }
   }
   
-  // If no quotes found, just render normally
+  // If no special quotes found, just render normally
   if (parts.length === 0) {
     return stripUrls ? renderTextWithMentionsOnly(text) : renderTextWithLinksAndMentions(text);
   }
@@ -1532,20 +1530,20 @@ export function PostModal({
                       const text = commentText;
                       
                       if (start !== end) {
-                        // Text is selected - wrap it in quotes
+                        // Text is selected - wrap it in special quote markers
                         const selectedText = text.substring(start, end);
-                        const newText = text.substring(0, start) + `"${selectedText}"` + text.substring(end);
+                        const newText = text.substring(0, start) + `「${selectedText}」` + text.substring(end);
                         setCommentText(newText);
-                        // Move cursor after the closing quote
+                        // Move cursor after the closing marker
                         setTimeout(() => {
                           input.focus();
                           input.setSelectionRange(end + 2, end + 2);
                         }, 0);
                       } else {
-                        // No selection - insert empty quotes and place cursor inside
-                        const newText = text.substring(0, start) + '""' + text.substring(start);
+                        // No selection - insert empty quote markers and place cursor inside
+                        const newText = text.substring(0, start) + '「」' + text.substring(start);
                         setCommentText(newText);
-                        // Place cursor between the quotes
+                        // Place cursor between the markers
                         setTimeout(() => {
                           input.focus();
                           input.setSelectionRange(start + 1, start + 1);
