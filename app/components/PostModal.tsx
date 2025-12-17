@@ -1649,20 +1649,19 @@ export function PostModal({
                         }
                       }}
                       style={{
-                        background: "rgba(240, 235, 224, 0.1)",
-                        border: "none",
-                        color: "var(--alzooka-cream)",
-                        width: 28,
-                        height: 28,
+                        background: "rgba(201, 162, 39, 0.2)",
+                        border: "1px solid var(--alzooka-gold)",
+                        color: "var(--alzooka-gold)",
+                        width: 32,
+                        height: 32,
                         borderRadius: "50%",
                         cursor: "pointer",
-                        fontSize: 14,
+                        fontSize: 18,
                         fontWeight: 700,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
-                        opacity: 0.7,
                       }}
                     >
                       "
