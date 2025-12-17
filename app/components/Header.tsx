@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase";
-import Logo from "./Logo";
-import UserSearch from "./UserSearch";
-import NotificationBell from "./NotificationBell";
+import { Logo } from "./Logo";
+import { UserSearch } from "./UserSearch";
+import { NotificationBell } from "./NotificationBell";
 
 type HeaderProps = {
   user: { id: string } | null;
