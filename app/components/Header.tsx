@@ -85,6 +85,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
       {/* Logo - always links home */}
       <Link
         href="/"
+        prefetch={true}
         style={{
           display: "flex",
           alignItems: "center",
@@ -113,6 +114,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         <InstantTooltip text="Groups">
           <Link
             href="/groups"
+            prefetch={true}
             style={{
               display: "flex",
               alignItems: "center",
@@ -246,6 +248,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 {currentPage !== "feed" && (
                 <Link
                   href="/"
+                  prefetch={true}
                   onClick={() => setShowUserMenu(false)}
                   style={{
                     display: "block",
@@ -268,6 +271,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               {currentPage !== "profile" && (
                 <Link
                   href={`/profile/${userUsername}`}
+                  prefetch={true}
                   onClick={() => setShowUserMenu(false)}
                   style={{
                     display: "block",
