@@ -525,7 +525,7 @@ export default function GroupPage() {
     };
   }, [user, groupId, isMember]);
 
-  // Realtime subscription for comments - new comments appear instantly
+  // Realtime subscription for comments - refresh posts list (but NOT modal - modal uses optimistic updates)
   useEffect(() => {
     if (!user || !isMember) return;
 
@@ -546,13 +546,22 @@ export default function GroupPage() {
             // Check if this post belongs to this group
             const postInGroup = posts.some(p => p.id === postId);
             if (postInGroup) {
-              await loadPosts();
+              // Only refresh the posts list, NOT the modal
+              // The modal uses optimistic updates, so we don't want to overwrite it with stale data
+              const freshPosts = await loadPosts();
               await loadVoteTotals();
-              // Also refresh modal if open
+              
+              // Only update the modal if it's from another user's comment (not our own optimistic update)
+              // We can detect this by checking if the comment already exists in the modal
               if (modalPost && modalPost.id === postId) {
-                const freshPost = posts.find(p => p.id === postId);
+                const freshPost = freshPosts.find(p => p.id === postId);
                 if (freshPost) {
-                  setModalPost(freshPost);
+                  // Check if the fresh post has MORE comments than the modal (meaning someone else commented)
+                  const modalCommentCount = (modalPost.comments || []).length;
+                  const freshCommentCount = (freshPost.comments || []).length;
+                  if (freshCommentCount > modalCommentCount) {
+                    setModalPost(freshPost);
+                  }
                 }
               }
             }
