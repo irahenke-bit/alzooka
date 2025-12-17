@@ -434,8 +434,24 @@ export function PostModal({
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
   const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Fetch current user's avatar
+  useEffect(() => {
+    async function fetchUserAvatar() {
+      const { data } = await supabase
+        .from("users")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+      if (data) {
+        setCurrentUserAvatar(data.avatar_url);
+      }
+    }
+    fetchUserAvatar();
+  }, [user.id, supabase]);
   
   // Clear highlight on any interaction
   const clearHighlight = () => setActiveHighlight(null);
@@ -1520,6 +1536,41 @@ export function PostModal({
                 </div>
               )}
               <form onSubmit={handleComment} style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                {/* Current User Avatar */}
+                {currentUserAvatar ? (
+                  <img
+                    src={currentUserAvatar}
+                    alt=""
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                      marginBottom: 4,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "var(--alzooka-gold)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "var(--alzooka-teal-dark)",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      flexShrink: 0,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {(user.user_metadata?.username || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                
                 {/* Quote Button */}
                 <Tooltip text="Insert quote">
                   <button
