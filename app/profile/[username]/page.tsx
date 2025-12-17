@@ -1769,9 +1769,7 @@ export default function ProfilePage() {
                     try {
                       const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
                       const data = await response.json();
-                      const title = data.author_name && data.title 
-                        ? `${data.author_name} - ${data.title}`
-                        : data.title || "YouTube Video";
+                      const title = data.title || "YouTube Video";
                       setYoutubePreview({ videoId, url: youtubeUrl, title });
                     } catch {
                       setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
@@ -1961,9 +1959,7 @@ export default function ProfilePage() {
                         try {
                           const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
                           const data = await response.json();
-                          const title = data.author_name && data.title 
-                            ? `${data.author_name} - ${data.title}`
-                            : data.title || "YouTube Video";
+                          const title = data.title || "YouTube Video";
                           setWallYoutubePreview({ videoId, url: youtubeUrl, title });
                         } catch {
                           setWallYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
