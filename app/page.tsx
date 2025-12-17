@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import Header from "@/app/components/Header";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { 
@@ -1228,122 +1229,11 @@ function FeedContent() {
 
   return (
     <>
-      {/* Header - Centered */}
-      <header style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center",
-        gap: 24,
-        padding: "20px 40px",
-        borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <Logo size={32} />
-          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>
-            Alzooka
-          </h1>
-        </Link>
-        <UserSearch />
-        <Link 
-          href="/groups"
-          style={{ 
-            color: "var(--alzooka-cream)",
-            textDecoration: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            opacity: 0.85,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>👥</span>
-          <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
-        </Link>
-        {user && userUsername && (
-          <Link 
-            href={`/profile/${userUsername}?showFriends=true`}
-            style={{ 
-              color: "var(--alzooka-cream)",
-              textDecoration: "none",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-              opacity: 0.85,
-            }}
-          >
-            <span style={{ fontSize: 18 }}>🧑‍🤝‍🧑</span>
-            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Friends</span>
-          </Link>
-        )}
-        {user && (
-          <NotificationBell userId={user.id} currentUsername={userUsername} />
-        )}
-        <Link 
-          href={`/profile/${userUsername}`}
-          title="My Profile"
-          style={{ display: "block", flexShrink: 0 }}
-        >
-          {userAvatarUrl ? (
-            <img 
-              src={userAvatarUrl} 
-              alt="Profile"
-              style={{
-                width: 34,
-                height: 34,
-                minWidth: 34,
-                minHeight: 34,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid var(--alzooka-gold)",
-                display: "block",
-              }}
-            />
-          ) : (
-            <div style={{
-              width: 34,
-              height: 34,
-              minWidth: 34,
-              minHeight: 34,
-              borderRadius: "50%",
-              background: "var(--alzooka-gold)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--alzooka-teal-dark)",
-              fontWeight: 700,
-              fontSize: 14,
-            }}>
-              {(userUsername || "?").charAt(0).toUpperCase()}
-            </div>
-          )}
-        </Link>
-        <button 
-          onClick={handleLogout}
-          style={{ 
-            background: "rgba(240, 235, 224, 0.1)", 
-            color: "var(--alzooka-cream)",
-            padding: "8px 14px",
-            fontSize: 12,
-            fontWeight: 500,
-            border: "none",
-            cursor: "pointer",
-            borderRadius: 20,
-            opacity: 0.9,
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)";
-            e.currentTarget.style.opacity = "1";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-            e.currentTarget.style.opacity = "0.9";
-          }}
-        >
-          Sign Out
-        </button>
-      </header>
+      <Header
+        user={user}
+        userUsername={userUsername}
+        userAvatarUrl={userAvatarUrl}
+      />
 
       <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
 

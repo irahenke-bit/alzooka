@@ -11,6 +11,7 @@ import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import { GroupPostSearch } from "@/app/components/GroupPostSearch";
+import Header from "@/app/components/Header";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
 import { GroupAvatarUpload } from "@/app/components/GroupAvatarUpload";
 import { PostModal } from "@/app/components/PostModal";
@@ -1598,97 +1599,15 @@ export default function GroupPage() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
-      {/* Header */}
-      <header style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center",
-        gap: 24,
-        padding: "20px 40px",
-        marginBottom: 32,
-        borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <Logo size={32} />
-          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>Alzooka</h1>
-        </Link>
-        <GroupPostSearch groupId={groupId} groupName={group.name} />
-        <Link href="/groups" style={{ color: "var(--alzooka-cream)", fontSize: 14, textDecoration: "none", opacity: 0.8 }}>
-          Groups
-        </Link>
-        <Link href="/" style={{ color: "var(--alzooka-cream)", fontSize: 14, textDecoration: "none", opacity: 0.8 }}>
-          Feed
-        </Link>
-        {user && <NotificationBell userId={user.id} currentUsername={userUsername} />}
-        <Link 
-          href={`/profile/${userUsername}`}
-          title="My Profile"
-          style={{ display: "block", flexShrink: 0 }}
-        >
-          {userAvatarUrl ? (
-            <img 
-              src={userAvatarUrl} 
-              alt="Profile"
-              style={{
-                width: 34,
-                height: 34,
-                minWidth: 34,
-                minHeight: 34,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid var(--alzooka-gold)",
-                display: "block",
-              }}
-            />
-          ) : (
-            <div style={{
-              width: 34,
-              height: 34,
-              minWidth: 34,
-              minHeight: 34,
-              borderRadius: "50%",
-              background: "var(--alzooka-gold)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--alzooka-teal-dark)",
-              fontWeight: 700,
-              fontSize: 14,
-            }}>
-              {(userUsername || "?").charAt(0).toUpperCase()}
-            </div>
-          )}
-        </Link>
-        <button 
-          onClick={async () => {
-            await supabase.auth.signOut();
-            router.push("/login");
-          }}
-          style={{ 
-            background: "rgba(240, 235, 224, 0.1)", 
-            color: "var(--alzooka-cream)",
-            padding: "8px 14px",
-            fontSize: 12,
-            fontWeight: 500,
-            border: "none",
-            cursor: "pointer",
-            borderRadius: 20,
-            opacity: 0.9,
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)";
-            e.currentTarget.style.opacity = "1";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-            e.currentTarget.style.opacity = "0.9";
-          }}
-        >
-          Sign Out
-        </button>
-      </header>
+    <>
+      <Header
+        user={user}
+        userUsername={userUsername}
+        userAvatarUrl={userAvatarUrl}
+        searchComponent={<GroupPostSearch groupId={groupId} groupName={group.name} />}
+      />
+
+      <div className="container" style={{ paddingTop: 20, paddingBottom: 40, marginTop: 0 }}>
 
       {/* Group Header - Banner with overlay content */}
       <div
@@ -3204,7 +3123,8 @@ export default function GroupPage() {
           onBanUser={userRole === "admin" ? handleBanUser : undefined}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

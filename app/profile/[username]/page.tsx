@@ -9,6 +9,7 @@ import { Logo } from "@/app/components/Logo";
 import { AvatarUpload } from "@/app/components/AvatarUpload";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
+import Header from "@/app/components/Header";
 import { FriendButton } from "@/app/components/FriendButton";
 import { ProfilePictureModal } from "@/app/components/ProfilePictureModal";
 import { BannerCropModal } from "@/app/components/BannerCropModal";
@@ -237,6 +238,7 @@ export default function ProfilePage() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
+  const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isFriend, setIsFriend] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -294,15 +296,16 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
-      // Get current user's username from the users table
+      // Get current user's username and avatar from the users table
       if (user) {
         const { data: currentUserData } = await supabase
           .from("users")
-          .select("username")
+          .select("username, avatar_url")
           .eq("id", user.id)
           .single();
         if (currentUserData) {
           setCurrentUserUsername(currentUserData.username);
+          setCurrentUserAvatarUrl(currentUserData.avatar_url);
         }
       }
 
@@ -1174,136 +1177,11 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* Header - Centered */}
-      <header style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center",
-        gap: 24,
-        padding: "20px 40px",
-        borderBottom: "1px solid rgba(240, 235, 224, 0.2)"
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <Logo size={32} />
-          <span style={{ fontSize: 24, fontWeight: 400, color: "var(--alzooka-cream)" }}>
-            Alzooka
-          </span>
-        </Link>
-        <UserSearch />
-        <Link 
-          href="/groups"
-          style={{ 
-            color: "var(--alzooka-cream)",
-            textDecoration: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            opacity: 0.85,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>👥</span>
-          <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Groups</span>
-        </Link>
-        {currentUser && (
-          <button
-            onClick={async () => {
-              setLoadingFriends(true);
-              // Load current user's friends
-              const { data: friendships } = await supabase
-                .from("friendships")
-                .select("requester_id, addressee_id")
-                .eq("status", "accepted")
-                .or(`requester_id.eq.${currentUser.id},addressee_id.eq.${currentUser.id}`);
-              
-              if (friendships && friendships.length > 0) {
-                const friendIds = friendships.map(f => 
-                  f.requester_id === currentUser.id ? f.addressee_id : f.requester_id
-                );
-                const { data: friendsData } = await supabase
-                  .from("users")
-                  .select("id, username, display_name, avatar_url")
-                  .in("id", friendIds);
-                setFriendsList(friendsData || []);
-              } else {
-                setFriendsList([]);
-              }
-              setLoadingFriends(false);
-              setShowFriendsModal(true);
-            }}
-            style={{ 
-              background: "transparent",
-              border: "none",
-              color: "var(--alzooka-cream)",
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-              opacity: 0.85,
-              padding: 0,
-            }}
-          >
-            <span style={{ fontSize: 18 }}>🧑‍🤝‍🧑</span>
-            <span style={{ fontSize: 10, letterSpacing: 0.5 }}>Friends</span>
-          </button>
-        )}
-        {currentUser && <NotificationBell userId={currentUser.id} currentUsername={currentUserUsername} />}
-          {currentUser && !isOwnProfile && currentUserUsername && (
-            <Link 
-              href={`/profile/${encodeURIComponent(currentUserUsername)}`}
-              style={{ 
-                color: "var(--alzooka-cream)",
-                fontSize: 14,
-                textDecoration: "none",
-                opacity: 0.8,
-                whiteSpace: "nowrap",
-              }}
-            >
-              My Profile
-            </Link>
-          )}
-          <Link 
-            href="/"
-            style={{ 
-              color: "var(--alzooka-cream)",
-              fontSize: 14,
-              textDecoration: "none",
-              opacity: 0.8,
-              whiteSpace: "nowrap",
-            }}
-          >
-            ← Back to Feed
-          </Link>
-          <button 
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.push("/login");
-            }}
-            style={{ 
-              background: "rgba(240, 235, 224, 0.1)", 
-              color: "var(--alzooka-cream)",
-              padding: "8px 14px",
-              fontSize: 12,
-              fontWeight: 500,
-              border: "none",
-              cursor: "pointer",
-              borderRadius: 20,
-              opacity: 0.9,
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)";
-              e.currentTarget.style.opacity = "1";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-              e.currentTarget.style.opacity = "0.9";
-            }}
-          >
-            Sign Out
-          </button>
-      </header>
+      <Header
+        user={currentUser}
+        userUsername={currentUserUsername}
+        userAvatarUrl={currentUserAvatarUrl}
+      />
 
       <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
       {/* Profile Card with Banner - unified like groups */}
