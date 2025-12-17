@@ -701,13 +701,13 @@ export default function GroupPage() {
     // Get all friendships for current user
     const { data } = await supabase
       .from("friendships")
-      .select("id, user_id, friend_id, status")
-      .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
+      .select("id, requester_id, addressee_id, status")
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
     
     if (data) {
       const friendMap: Record<string, string> = {};
-      data.forEach((f: { user_id: string; friend_id: string; status: string }) => {
-        const otherUserId = f.user_id === userId ? f.friend_id : f.user_id;
+      data.forEach((f: { requester_id: string; addressee_id: string; status: string }) => {
+        const otherUserId = f.requester_id === userId ? f.addressee_id : f.requester_id;
         friendMap[otherUserId] = f.status;
       });
       setUserFriendships(friendMap);
