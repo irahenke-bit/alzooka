@@ -84,7 +84,7 @@ button:disabled {
 
 /* Utility classes */
 .container {
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 20px;
 }
