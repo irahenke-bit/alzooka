@@ -2162,7 +2162,10 @@ function PostCard({
           {!post.image_url && !post.video_url && post.content && (() => {
             // Find URLs that are not YouTube or Spotify
             const urlRegex = /https?:\/\/[^\s]+/gi;
-            const urls = post.content.match(urlRegex) || [];
+            const urls = (post.content.match(urlRegex) || []).map(url =>
+              // Strip trailing punctuation that might be part of the sentence, not the URL
+              url.replace(/[.,;:!?)]+$/, '')
+            );
             const previewUrl = urls.find(url =>
               !url.match(/youtube\.com|youtu\.be|spotify\.com/i)
             );
