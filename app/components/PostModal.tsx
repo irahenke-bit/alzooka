@@ -925,19 +925,36 @@ export function PostModal({
             {editingCommentId === comment.id ? (
               <div style={{ marginTop: 8 }}>
                 <textarea
+                  ref={(el) => {
+                    // Auto-resize on mount to fit content
+                    if (el) {
+                      el.style.height = 'auto';
+                      el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+                    }
+                  }}
                   value={editingCommentText}
-                  onChange={(e) => setEditingCommentText(e.target.value)}
-                  rows={2}
+                  onChange={(e) => {
+                    setEditingCommentText(e.target.value);
+                    // Auto-resize textarea
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 144) + 'px';
+                  }}
+                  rows={1}
                   style={{
                     width: "100%",
                     marginBottom: 8,
                     fontSize: isReply ? 13 : 14,
-                    resize: "vertical",
-                    padding: "8px",
-                    borderRadius: "4px",
+                    resize: "none",
+                    padding: "12px",
+                    borderRadius: "8px",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
                     background: "rgba(0, 0, 0, 0.2)",
                     color: "var(--alzooka-cream)",
+                    minHeight: 44,
+                    maxHeight: 144,
+                    overflowY: "auto",
+                    lineHeight: 1.4,
+                    fontFamily: "inherit",
                   }}
                 />
                 <div style={{ display: "flex", gap: 8 }}>
