@@ -843,9 +843,13 @@ export default function GroupPage() {
       } else {
         setPosts(prev => [...prev, ...(postsWithNestedComments as unknown as Post[])]);
       }
+      
+      setLoadingMorePosts(false);
+      return postsWithNestedComments as unknown as Post[];
     }
     
     setLoadingMorePosts(false);
+    return [];
   }
   
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3084,16 +3088,52 @@ export default function GroupPage() {
           voteTotals={voteTotals}
           onVote={handleVote}
           onClose={() => setModalPost(null)}
-          onCommentAdded={async () => {
-            await loadPosts();
-            await loadUserVotes(user.id);
-            await loadVoteTotals();
-
-            // Refresh the modal post data
-            const freshData = posts.find(p => p.id === modalPost.id);
-            if (freshData) {
-              setModalPost(freshData);
+          onCommentAdded={(newComment) => {
+            if (newComment && modalPost) {
+              // Optimistically add the new comment to state immediately
+              setModalPost((prev: Post | null) => {
+                if (!prev) return prev;
+                
+                const updatedComments = [...(prev.comments || [])];
+                
+                if (newComment.parent_comment_id) {
+                  // It's a reply - find the parent and add to its replies
+                  const addReplyToParent = (comments: Comment[]): Comment[] => {
+                    return comments.map(c => {
+                      if (c.id === newComment.parent_comment_id) {
+                        return {
+                          ...c,
+                          replies: [...(c.replies || []), newComment]
+                        };
+                      }
+                      if (c.replies && c.replies.length > 0) {
+                        return {
+                          ...c,
+                          replies: addReplyToParent(c.replies)
+                        };
+                      }
+                      return c;
+                    });
+                  };
+                  return {
+                    ...prev,
+                    comments: addReplyToParent(updatedComments)
+                  };
+                } else {
+                  // It's a top-level comment - add to the end
+                  return {
+                    ...prev,
+                    comments: [...updatedComments, newComment]
+                  };
+                }
+              });
             }
+
+            // Also update the main posts list in the background
+            loadPosts().then(async (refreshedPosts) => {
+              await loadUserVotes(user.id);
+              await loadVoteTotals();
+            });
           }}
           groupMembers={members.map(m => ({ user_id: m.user_id, role: m.role }))}
           isUserGroupAdmin={userRole === "admin"}
