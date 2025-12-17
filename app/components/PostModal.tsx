@@ -12,6 +12,7 @@ import {
   parseMentions,
   getUserIdsByUsernames,
 } from "@/lib/notifications";
+import { LinkPreview } from "./LinkPreview";
 
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -170,6 +171,23 @@ function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
+function extractYouTubePlaylistId(url: string): string | null {
+  const match = url.match(/[?&]list=([^&]+)/);
+  return match ? match[1] : null;
+}
+
+// Spotify URL parsing
+function findSpotifyUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/open\.spotify\.com\/(track|album|playlist|episode|show)\/[a-zA-Z0-9]+/i);
+  return match ? match[0] : null;
+}
+
+// Find any URL in text
+function findFirstUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s]+/i);
+  return match ? match[0] : null;
+}
+
 type GroupMember = {
   user_id: string;
   role: "admin" | "moderator" | "member";
@@ -305,11 +323,43 @@ export function PostModal({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
+  const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
   
   // Clear highlight on any interaction
   const clearHighlight = () => setActiveHighlight(null);
+
+  // Detect links in comment text
+  function handleCommentTextChange(text: string) {
+    setCommentText(text);
+    clearHighlight();
+    
+    // Check for YouTube URL
+    const youtubeVideoId = extractYouTubeVideoId(text);
+    if (youtubeVideoId) {
+      const playlistId = extractYouTubePlaylistId(text);
+      setCommentLinkPreview({ url: text, type: 'youtube', videoId: youtubeVideoId, playlistId: playlistId || undefined });
+      return;
+    }
+    
+    // Check for Spotify URL
+    const spotifyUrl = findSpotifyUrl(text);
+    if (spotifyUrl) {
+      setCommentLinkPreview({ url: spotifyUrl, type: 'spotify' });
+      return;
+    }
+    
+    // Check for any other URL
+    const anyUrl = findFirstUrl(text);
+    if (anyUrl && !anyUrl.match(/youtube\.com|youtu\.be|spotify\.com/i)) {
+      setCommentLinkPreview({ url: anyUrl, type: 'link' });
+      return;
+    }
+    
+    // No link found
+    setCommentLinkPreview(null);
+  }
 
   // Ensure we're on client before rendering portal
   useEffect(() => {
@@ -470,6 +520,7 @@ export function PostModal({
 
       setCommentText("");
       setReplyingTo(null);
+      setCommentLinkPreview(null);
       onCommentAdded(newComment);
     }
 
@@ -786,10 +837,90 @@ export function PostModal({
                 </div>
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
-                {/* Render @mentions and URLs with highlighting/linking */}
-                {renderTextWithLinksAndMentions(comment.content)}
-              </p>
+              <>
+                <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
+                  {/* Render @mentions and URLs with highlighting/linking */}
+                  {renderTextWithLinksAndMentions(comment.content)}
+                </p>
+                
+                {/* YouTube Embed in Comment */}
+                {(() => {
+                  const videoId = extractYouTubeVideoId(comment.content);
+                  if (videoId) {
+                    const playlistId = extractYouTubePlaylistId(comment.content);
+                    const embedUrl = playlistId 
+                      ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
+                      : `https://www.youtube.com/embed/${videoId}?rel=0`;
+                    return (
+                      <div style={{ marginTop: 8, borderRadius: 8, overflow: "hidden" }}>
+                        <div style={{ 
+                          position: "relative",
+                          paddingBottom: "56.25%",
+                          height: 0,
+                          background: "#000",
+                        }}>
+                          <iframe
+                            src={embedUrl}
+                            title="YouTube video"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                            allowFullScreen
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                
+                {/* Spotify Embed in Comment */}
+                {(() => {
+                  const spotifyUrl = findSpotifyUrl(comment.content);
+                  if (spotifyUrl) {
+                    const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+                    if (match) {
+                      const [, type, id] = match;
+                      return (
+                        <div style={{ marginTop: 8 }}>
+                          <iframe
+                            style={{ borderRadius: 12, width: "100%", height: type === "track" || type === "episode" ? 152 : 352 }}
+                            src={`https://open.spotify.com/embed/${type}/${id}?utm_source=generator`}
+                            frameBorder="0"
+                            allowFullScreen
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                          />
+                        </div>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
+                
+                {/* Link Preview for non-YouTube/Spotify URLs in Comment */}
+                {(() => {
+                  const youtubeId = extractYouTubeVideoId(comment.content);
+                  const spotifyUrl = findSpotifyUrl(comment.content);
+                  if (youtubeId || spotifyUrl) return null;
+                  
+                  const anyUrl = findFirstUrl(comment.content);
+                  if (anyUrl) {
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        <LinkPreview url={anyUrl} />
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </>
             )}
           </div>
         </div>
@@ -1140,13 +1271,59 @@ export function PostModal({
                   </button>
                 </div>
               )}
+              {/* Link Preview for Comment */}
+              {commentLinkPreview && (
+                <div style={{ marginBottom: 12, position: "relative" }}>
+                  <button
+                    onClick={() => setCommentLinkPreview(null)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      background: "rgba(0,0,0,0.6)",
+                      border: "none",
+                      color: "#fff",
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      zIndex: 10,
+                    }}
+                  >
+                    ×
+                  </button>
+                  {commentLinkPreview.type === 'youtube' && commentLinkPreview.videoId && (
+                    <div style={{ borderRadius: 8, overflow: "hidden" }}>
+                      <img
+                        src={`https://img.youtube.com/vi/${commentLinkPreview.videoId}/hqdefault.jpg`}
+                        alt="YouTube thumbnail"
+                        style={{ width: "100%", maxHeight: 150, objectFit: "cover" }}
+                      />
+                      <div style={{ padding: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, color: "var(--alzooka-cream)" }}>
+                        YouTube Video {commentLinkPreview.playlistId && "(Playlist)"}
+                      </div>
+                    </div>
+                  )}
+                  {commentLinkPreview.type === 'spotify' && (
+                    <div style={{ padding: 12, background: "rgba(30, 215, 96, 0.1)", borderRadius: 8, border: "1px solid rgba(30, 215, 96, 0.3)" }}>
+                      <span style={{ color: "#1DB954", fontWeight: 600 }}>🎵 Spotify Link</span>
+                    </div>
+                  )}
+                  {commentLinkPreview.type === 'link' && (
+                    <div style={{ maxHeight: 120, overflow: "hidden" }}>
+                      <LinkPreview url={commentLinkPreview.url} />
+                    </div>
+                  )}
+                </div>
+              )}
               <form onSubmit={handleComment} style={{ display: "flex", gap: 8 }}>
                 <input
                   ref={commentInputRef}
                   type="text"
                   placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
                   value={commentText}
-                  onChange={(e) => { setCommentText(e.target.value); clearHighlight(); }}
+                  onChange={(e) => handleCommentTextChange(e.target.value)}
                   onFocus={clearHighlight}
                   style={{ flex: 1, padding: "12px 16px", fontSize: 14, borderRadius: 24 }}
                 />
