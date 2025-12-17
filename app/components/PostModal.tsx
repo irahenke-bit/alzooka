@@ -110,6 +110,48 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
   }).filter(Boolean);
 }
 
+// Helper function to render text with @mentions only - URLs are stripped (used when preview is shown)
+function renderTextWithMentionsOnly(text: string): React.ReactNode[] {
+  // Regex to match URLs (http, https, or www) - these will be stripped
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  // Regex to match @mentions
+  const mentionRegex = /(@\w+)/g;
+  
+  // Combined regex to split by both URLs and mentions
+  const combinedRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|@\w+)/gi;
+  
+  const parts = text.split(combinedRegex);
+  
+  return parts.map((part, i) => {
+    if (!part) return null;
+    
+    // Check if it's a URL - skip it (don't render)
+    if (urlRegex.test(part)) {
+      urlRegex.lastIndex = 0;
+      return null;
+    }
+    
+    // Check if it's a @mention
+    if (mentionRegex.test(part)) {
+      mentionRegex.lastIndex = 0;
+      return (
+        <span
+          key={i}
+          style={{
+            color: 'var(--alzooka-gold)',
+            fontWeight: 600,
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    
+    // Regular text
+    return <span key={i}>{part}</span>;
+  }).filter(Boolean);
+}
+
 type Vote = {
   id: string;
   user_id: string;
@@ -838,10 +880,32 @@ export function PostModal({
               </div>
             ) : (
               <>
-                <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
-                  {/* Render @mentions and URLs with highlighting/linking */}
-                  {renderTextWithLinksAndMentions(comment.content)}
-                </p>
+                {/* Render text - strip URL if there's a preview to show */}
+                {(() => {
+                  const hasYouTube = !!extractYouTubeVideoId(comment.content);
+                  const hasSpotify = !!findSpotifyUrl(comment.content);
+                  const hasOtherUrl = !hasYouTube && !hasSpotify && !!findFirstUrl(comment.content);
+                  const hasAnyPreview = hasYouTube || hasSpotify || hasOtherUrl;
+                  
+                  // Strip URLs from text if there's a preview
+                  const textContent = hasAnyPreview 
+                    ? renderTextWithMentionsOnly(comment.content)
+                    : renderTextWithLinksAndMentions(comment.content);
+                  
+                  // Check if there's any actual text left after stripping URLs
+                  const textOnly = comment.content.replace(/https?:\/\/[^\s]+/gi, '').trim();
+                  
+                  if (!textOnly && hasAnyPreview) {
+                    // No text, just URL - don't render paragraph
+                    return null;
+                  }
+                  
+                  return (
+                    <p style={{ margin: 0, fontSize: isReply ? 13 : 14, lineHeight: 1.5 }}>
+                      {textContent}
+                    </p>
+                  );
+                })()}
                 
                 {/* YouTube Embed in Comment */}
                 {(() => {
