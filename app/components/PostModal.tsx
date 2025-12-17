@@ -1536,132 +1536,144 @@ export function PostModal({
                 </div>
               )}
               <form onSubmit={handleComment} style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
-                {/* Current User Avatar */}
-                {currentUserAvatar ? (
-                  <img
-                    src={currentUserAvatar}
-                    alt=""
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      flexShrink: 0,
-                      marginBottom: 4,
+                {/* Input container with avatar inside */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "flex-end",
+                    gap: 10,
+                    padding: "8px 12px",
+                    background: "var(--alzooka-teal-dark)",
+                    borderRadius: 20,
+                    border: "1px solid rgba(240, 235, 224, 0.15)",
+                  }}
+                >
+                  {/* Current User Avatar */}
+                  {currentUserAvatar ? (
+                    <img
+                      src={currentUserAvatar}
+                      alt=""
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: "var(--alzooka-gold)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--alzooka-teal-dark)",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {(user.user_metadata?.username || "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  
+                  <textarea
+                    ref={commentInputRef}
+                    placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
+                    value={commentText}
+                    onChange={(e) => {
+                      handleCommentTextChange(e.target.value);
+                      // Auto-resize textarea
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 144) + 'px';
+                    }}
+                    onFocus={clearHighlight}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (commentText.trim() && !submitting) {
+                          handleComment(e as unknown as React.FormEvent);
+                        }
+                      }
+                    }}
+                    rows={1}
+                    style={{ 
+                      flex: 1, 
+                      padding: "6px 0", 
+                      fontSize: 14, 
+                      border: "none",
+                      background: "transparent",
+                      resize: "none",
+                      minHeight: 32,
+                      maxHeight: 144,
+                      overflowY: "auto",
+                      lineHeight: 1.4,
+                      fontFamily: "inherit",
+                      color: "var(--alzooka-cream)",
+                      outline: "none",
                     }}
                   />
-                ) : (
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: "var(--alzooka-gold)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "var(--alzooka-teal-dark)",
-                      fontWeight: 700,
-                      fontSize: 14,
-                      flexShrink: 0,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {(user.user_metadata?.username || "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
+                  
+                  {/* Quote Button */}
+                  <Tooltip text="Insert quote">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const input = commentInputRef.current;
+                        if (!input) return;
+                        
+                        const start = input.selectionStart || 0;
+                        const end = input.selectionEnd || 0;
+                        const text = commentText;
+                        
+                        if (start !== end) {
+                          const selectedText = text.substring(start, end);
+                          const newText = text.substring(0, start) + `「${selectedText}」` + text.substring(end);
+                          setCommentText(newText);
+                          setTimeout(() => {
+                            input.focus();
+                            input.setSelectionRange(end + 2, end + 2);
+                          }, 0);
+                        } else {
+                          const newText = text.substring(0, start) + '「」' + text.substring(start);
+                          setCommentText(newText);
+                          setTimeout(() => {
+                            input.focus();
+                            input.setSelectionRange(start + 1, start + 1);
+                          }, 0);
+                        }
+                      }}
+                      style={{
+                        background: "rgba(240, 235, 224, 0.1)",
+                        border: "none",
+                        color: "var(--alzooka-cream)",
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        opacity: 0.7,
+                      }}
+                    >
+                      "
+                    </button>
+                  </Tooltip>
+                </div>
                 
-                {/* Quote Button */}
-                <Tooltip text="Insert quote">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const input = commentInputRef.current;
-                      if (!input) return;
-                      
-                      const start = input.selectionStart || 0;
-                      const end = input.selectionEnd || 0;
-                      const text = commentText;
-                      
-                      if (start !== end) {
-                        // Text is selected - wrap it in special quote markers
-                        const selectedText = text.substring(start, end);
-                        const newText = text.substring(0, start) + `「${selectedText}」` + text.substring(end);
-                        setCommentText(newText);
-                        // Move cursor after the closing marker
-                        setTimeout(() => {
-                          input.focus();
-                          input.setSelectionRange(end + 2, end + 2);
-                        }, 0);
-                      } else {
-                        // No selection - insert empty quote markers and place cursor inside
-                        const newText = text.substring(0, start) + '「」' + text.substring(start);
-                        setCommentText(newText);
-                        // Place cursor between the markers
-                        setTimeout(() => {
-                          input.focus();
-                          input.setSelectionRange(start + 1, start + 1);
-                        }, 0);
-                      }
-                    }}
-                    style={{
-                      background: "rgba(240, 235, 224, 0.1)",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
-                      color: "var(--alzooka-cream)",
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      marginBottom: 4,
-                    }}
-                  >
-                    "
-                  </button>
-                </Tooltip>
-                <textarea
-                  ref={commentInputRef}
-                  placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
-                  value={commentText}
-                  onChange={(e) => {
-                    handleCommentTextChange(e.target.value);
-                    // Auto-resize textarea
-                    e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 144) + 'px'; // 144px ≈ 6 lines
-                  }}
-                  onFocus={clearHighlight}
-                  onKeyDown={(e) => {
-                    // Submit on Enter (without Shift)
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (commentText.trim() && !submitting) {
-                        handleComment(e as unknown as React.FormEvent);
-                      }
-                    }
-                  }}
-                  rows={1}
-                  style={{ 
-                    flex: 1, 
-                    padding: "12px 16px", 
-                    fontSize: 14, 
-                    borderRadius: 16,
-                    resize: "none",
-                    minHeight: 44,
-                    maxHeight: 144, // ~6 lines
-                    overflowY: "auto",
-                    lineHeight: 1.4,
-                    fontFamily: "inherit",
-                  }}
-                />
                 <button
                   type="submit"
                   disabled={submitting || !commentText.trim()}
-                  style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24, marginBottom: 4 }}
+                  style={{ padding: "12px 20px", fontSize: 14, borderRadius: 24 }}
                 >
                   {submitting ? "..." : replyingTo ? "Reply" : "Post"}
                 </button>
