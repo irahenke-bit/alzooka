@@ -3088,7 +3088,7 @@ export default function GroupPage() {
           voteTotals={voteTotals}
           onVote={handleVote}
           onClose={() => setModalPost(null)}
-          onCommentAdded={(newComment) => {
+          onCommentAdded={(newComment, deletedCommentId) => {
             if (newComment && modalPost) {
               // Optimistically add the new comment to state immediately
               setModalPost((prev: Post | null) => {
@@ -3128,9 +3128,31 @@ export default function GroupPage() {
                 }
               });
             }
+            
+            // Handle comment deletion optimistically
+            if (deletedCommentId && modalPost) {
+              setModalPost((prev: Post | null) => {
+                if (!prev) return prev;
+                
+                // Remove comment from top level or from replies
+                const removeComment = (comments: Comment[]): Comment[] => {
+                  return comments
+                    .filter(c => c.id !== deletedCommentId)
+                    .map(c => ({
+                      ...c,
+                      replies: c.replies ? removeComment(c.replies) : []
+                    }));
+                };
+                
+                return {
+                  ...prev,
+                  comments: removeComment(prev.comments || [])
+                };
+              });
+            }
 
             // Also update the main posts list in the background
-            loadPosts().then(async (refreshedPosts) => {
+            loadPosts().then(async () => {
               await loadUserVotes(user.id);
               await loadVoteTotals();
             });

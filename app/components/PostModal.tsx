@@ -313,7 +313,7 @@ type Props = {
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   onClose: () => void;
-  onCommentAdded: (newComment?: Comment) => void;
+  onCommentAdded: (newComment?: Comment, deletedCommentId?: string) => void;
   highlightCommentId?: string | null;
   groupMembers?: GroupMember[];
   isUserGroupAdmin?: boolean;
@@ -528,7 +528,7 @@ export function PostModal({
     if (!confirm("Delete this comment?")) return;
 
     await supabase.from("comments").delete().eq("id", commentId);
-    onCommentAdded();
+    onCommentAdded(undefined, commentId);
   }
 
   async function handleEditComment(commentId: string) {

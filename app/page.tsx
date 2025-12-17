@@ -1478,7 +1478,7 @@ function FeedContent() {
           onVote={handleVote}
           highlightCommentId={highlightCommentId}
           onClose={() => setModalPost(null)}
-          onCommentAdded={(newComment) => {
+          onCommentAdded={(newComment, deletedCommentId) => {
             if (newComment && modalPost) {
               // Optimistically add the new comment to state immediately
               setModalPost(prev => {
@@ -1516,6 +1516,27 @@ function FeedContent() {
                     comments: [...updatedComments, newComment]
                   };
                 }
+              });
+            }
+            
+            // Handle comment deletion optimistically
+            if (deletedCommentId && modalPost) {
+              setModalPost(prev => {
+                if (!prev) return prev;
+                
+                const removeComment = (comments: Comment[]): Comment[] => {
+                  return comments
+                    .filter(c => c.id !== deletedCommentId)
+                    .map(c => ({
+                      ...c,
+                      replies: c.replies ? removeComment(c.replies) : []
+                    }));
+                };
+                
+                return {
+                  ...prev,
+                  comments: removeComment(prev.comments || [])
+                };
               });
             }
 
