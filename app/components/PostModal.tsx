@@ -505,6 +505,18 @@ export function PostModal({
     setActiveHighlight(highlightCommentId || null);
   }, [highlightCommentId]);
 
+  // Auto-scroll to comments section when modal opens (unless highlighting a specific comment)
+  useEffect(() => {
+    if (!highlightCommentId && mounted) {
+      setTimeout(() => {
+        const commentsHeader = document.getElementById('comments-section-header');
+        if (commentsHeader && commentsContainerRef.current) {
+          commentsHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    }
+  }, [mounted, highlightCommentId]);
+
   // Close on escape key
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -1384,6 +1396,7 @@ export function PostModal({
 
           {/* Comments Section Divider */}
           <div
+            id="comments-section-header"
             style={{
               borderTop: "1px solid rgba(240, 235, 224, 0.15)",
               paddingTop: 16,
