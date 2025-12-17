@@ -533,9 +533,12 @@ export default function GroupPage() {
 
     const channel = supabase
       .channel(`group_${groupId}_updates`)
-      .on("broadcast", { event: "post_deleted" }, () => {
-        loadPosts();
-        loadVoteTotals();
+      .on("broadcast", { event: "post_deleted" }, (payload) => {
+        const deletedPostId = payload.payload?.postId;
+        if (deletedPostId) {
+          setPosts(prev => prev.filter(p => p.id !== deletedPostId));
+          setTotalPostCount(prev => prev - 1);
+        }
       })
       .subscribe();
 
@@ -1505,7 +1508,7 @@ export default function GroupPage() {
     if (!confirm("Delete this post?")) return;
     await supabase.from("posts").delete().eq("id", postId);
     setTotalPostCount(prev => prev - 1);
-    await loadPosts();
+    setPosts(prev => prev.filter(p => p.id !== postId));
     
     // Broadcast to other clients that a post was deleted
     const channel = supabase.channel(`group_${groupId}_updates`);
