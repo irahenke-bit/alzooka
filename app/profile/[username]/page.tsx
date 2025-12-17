@@ -1180,6 +1180,7 @@ export default function ProfilePage() {
       <Header
         user={currentUser}
         userUsername={currentUserUsername}
+        currentPage="profile"
         userAvatarUrl={currentUserAvatarUrl}
       />
 

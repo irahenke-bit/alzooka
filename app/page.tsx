@@ -1232,6 +1232,7 @@ function FeedContent() {
       <Header
         user={user}
         userUsername={userUsername}
+        currentPage="feed"
         userAvatarUrl={userAvatarUrl}
       />
 

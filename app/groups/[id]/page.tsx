@@ -1603,6 +1603,7 @@ export default function GroupPage() {
       <Header
         user={user}
         userUsername={userUsername}
+        currentPage="group"
         userAvatarUrl={userAvatarUrl}
         searchComponent={<GroupPostSearch groupId={groupId} groupName={group.name} />}
       />

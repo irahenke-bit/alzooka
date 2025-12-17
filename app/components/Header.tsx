@@ -13,9 +13,10 @@ type HeaderProps = {
   userUsername: string | null;
   userAvatarUrl: string | null;
   searchComponent?: React.ReactNode; // Optional custom search (e.g., GroupPostSearch)
+  currentPage?: "feed" | "profile" | "group" | "other"; // For context-aware dropdown
 };
 
-export default function Header({ user, userUsername, userAvatarUrl, searchComponent }: HeaderProps) {
+export default function Header({ user, userUsername, userAvatarUrl, searchComponent, currentPage = "other" }: HeaderProps) {
   const router = useRouter();
   const supabase = createBrowserClient();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -207,6 +208,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                   zIndex: 1000,
                 }}
               >
+                {currentPage !== "feed" && (
                 <Link
                   href="/"
                   onClick={() => setShowUserMenu(false)}
@@ -227,6 +229,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 >
                   🏠 My Feed
                 </Link>
+              )}
+              {currentPage !== "profile" && (
                 <Link
                   href={`/profile/${userUsername}`}
                   onClick={() => setShowUserMenu(false)}
@@ -247,6 +251,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 >
                   👤 My Profile
                 </Link>
+              )}
                 <div
                   style={{
                     height: 1,
