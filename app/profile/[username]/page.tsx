@@ -299,27 +299,21 @@ export default function ProfilePage() {
       // PARALLEL FETCH: Get current user data and profile data at once
       const trimmedUsername = username.trim().toLowerCase();
       
-      const parallelQueries: Promise<unknown>[] = [
-        supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, is_active, deactivated_at, scheduled_deletion_at").ilike("username", trimmedUsername).single(),
-      ];
+      const profilePromise = (async () => {
+        const { data } = await supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, is_active, deactivated_at, scheduled_deletion_at").ilike("username", trimmedUsername).single();
+        return data;
+      })();
       
-      if (user) {
-        parallelQueries.push(
-          supabase.from("users").select("username, avatar_url").eq("id", user.id).single()
-        );
-      }
+      const currentUserPromise = user ? (async () => {
+        const { data } = await supabase.from("users").select("username, avatar_url").eq("id", user.id).single();
+        return data;
+      })() : Promise.resolve(null);
       
-      const results = await Promise.all(parallelQueries);
+      const [profileData, currentUserData] = await Promise.all([profilePromise, currentUserPromise]);
       
-      const profileResult = results[0] as { data: typeof profile };
-      const profileData = profileResult.data;
-      
-      if (user && results[1]) {
-        const currentUserResult = results[1] as { data: { username: string; avatar_url: string | null } | null };
-        if (currentUserResult.data) {
-          setCurrentUserUsername(currentUserResult.data.username);
-          setCurrentUserAvatarUrl(currentUserResult.data.avatar_url);
-        }
+      if (currentUserData) {
+        setCurrentUserUsername(currentUserData.username);
+        setCurrentUserAvatarUrl(currentUserData.avatar_url);
       }
 
       if (!profileData) {

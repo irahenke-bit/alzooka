@@ -369,43 +369,37 @@ export default function GroupPage() {
       const canViewContent = membership || groupData.privacy === "public";
       
       if (canViewContent) {
-        // Start all loads in parallel
-        const parallelLoads: Promise<unknown>[] = [
+        // Start all loads in parallel using async wrappers
+        const postCountPromise = (async () => {
+          const { count } = await supabase.from("posts").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+          return count;
+        })();
+        
+        const feedPrefsPromise = membership ? (async () => {
+          const { data } = await supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("group_id", groupId).single();
+          return data;
+        })() : Promise.resolve(null);
+        
+        // Run all in parallel
+        const [, , postCount, , prefs] = await Promise.all([
           loadMembers(),
           loadFriendships(user.id),
-          supabase.from("posts").select("*", { count: "exact", head: true }).eq("group_id", groupId),
+          postCountPromise,
           loadPosts(),
-        ];
+          feedPrefsPromise,
+          membership?.role === "admin" ? loadBannedUsers() : Promise.resolve(),
+        ]);
         
-        if (membership?.role === "admin") {
-          parallelLoads.push(loadBannedUsers());
-        }
+        setTotalPostCount(postCount || 0);
         
-        if (membership) {
-          parallelLoads.push(
-            supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("group_id", groupId).single()
-          );
-        }
-        
-        const results = await Promise.all(parallelLoads);
-        
-        // Extract post count (index 2)
-        const postCountResult = results[2] as { count: number | null };
-        setTotalPostCount(postCountResult.count || 0);
-        
-        // Extract feed prefs if membership exists (last item if added)
-        if (membership) {
-          const prefsResult = results[results.length - 1] as { data: { include_in_feed?: boolean; max_posts_per_day?: number; whitelist_members?: string[]; mute_members?: string[]; friends_only?: boolean } | null };
-          const prefs = prefsResult.data;
-          if (prefs) {
-            setFeedPrefs({
-              include_in_feed: prefs.include_in_feed ?? false,
-              max_posts_per_day: prefs.max_posts_per_day ?? 3,
-              whitelist_members: prefs.whitelist_members ?? [],
-              mute_members: prefs.mute_members ?? [],
-              friends_only: prefs.friends_only ?? false,
-            });
-          }
+        if (prefs) {
+          setFeedPrefs({
+            include_in_feed: prefs.include_in_feed ?? false,
+            max_posts_per_day: prefs.max_posts_per_day ?? 3,
+            whitelist_members: prefs.whitelist_members ?? [],
+            mute_members: prefs.mute_members ?? [],
+            friends_only: prefs.friends_only ?? false,
+          });
         }
         
         // Load votes in parallel after posts are loaded
