@@ -553,7 +553,7 @@ export default function GroupPage() {
               
               // Only update the modal if it's from another user's comment (not our own optimistic update)
               // We can detect this by checking if the comment already exists in the modal
-              if (modalPost && modalPost.id === postId) {
+              if (modalPost && modalPost.id === postId && freshPosts) {
                 const freshPost = freshPosts.find(p => p.id === postId);
                 if (freshPost) {
                   // Check if the fresh post has MORE comments than the modal (meaning someone else commented)
