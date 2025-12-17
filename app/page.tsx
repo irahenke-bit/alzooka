@@ -11,6 +11,7 @@ import { UserSearch } from "@/app/components/UserSearch";
 import Header from "@/app/components/Header";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
+import { LinkPreview } from "@/app/components/LinkPreview";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -274,9 +275,18 @@ function FeedContent() {
       // Fallback: poll periodically in case realtime misses an event (every 15s)
       pollInterval = setInterval(async () => {
         try {
-          const refreshedPosts = await loadPosts();
-          await loadUserVotes(user.id);
-          await loadVoteTotals(refreshedPosts);
+          // Re-fetch current group preferences to ensure we have fresh data
+          const { data: freshPrefs } = await supabase
+            .from("user_group_preferences")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("include_in_feed", true);
+          
+          const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[]);
+          if (refreshedPosts && refreshedPosts.length > 0) {
+            await loadUserVotes(user.id);
+            await loadVoteTotals(refreshedPosts);
+          }
         } catch (err) {
           console.error("Error in poll interval:", err);
         }
@@ -286,9 +296,18 @@ function FeedContent() {
       visibilityHandler = async () => {
         try {
           if (document.visibilityState === "visible") {
-            const refreshedPosts = await loadPosts();
-            await loadUserVotes(user.id);
-            await loadVoteTotals(refreshedPosts);
+            // Re-fetch current group preferences to ensure we have fresh data
+            const { data: freshPrefs } = await supabase
+              .from("user_group_preferences")
+              .select("*")
+              .eq("user_id", user.id)
+              .eq("include_in_feed", true);
+            
+            const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[]);
+            if (refreshedPosts && refreshedPosts.length > 0) {
+              await loadUserVotes(user.id);
+              await loadVoteTotals(refreshedPosts);
+            }
           }
         } catch (err) {
           console.error("Error in visibility handler:", err);
@@ -2114,6 +2133,17 @@ function PostCard({
             }
             
             return null;
+          })()}
+
+          {/* Link Preview for non-YouTube/Spotify URLs */}
+          {!post.image_url && !post.video_url && post.content && (() => {
+            // Find URLs that are not YouTube or Spotify
+            const urlRegex = /https?:\/\/[^\s]+/gi;
+            const urls = post.content.match(urlRegex) || [];
+            const previewUrl = urls.find(url =>
+              !url.match(/youtube\.com|youtu\.be|spotify\.com/i)
+            );
+            return previewUrl ? <LinkPreview url={previewUrl} /> : null;
           })()}
 
           {/* Comment Button - Opens Modal */}
