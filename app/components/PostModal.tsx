@@ -110,6 +110,76 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
   }).filter(Boolean);
 }
 
+// Helper function to render text with quotes styled as quote blocks
+function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.ReactNode[] {
+  // Split by quoted text (text between double quotes)
+  const quoteRegex = /"([^"]+)"/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+  
+  while ((match = quoteRegex.exec(text)) !== null) {
+    // Add text before the quote
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      if (beforeText.trim()) {
+        parts.push(
+          <span key={keyIndex++}>
+            {stripUrls ? renderTextWithMentionsOnly(beforeText) : renderTextWithLinksAndMentions(beforeText)}
+          </span>
+        );
+      }
+    }
+    
+    // Add the quoted text as a styled block
+    const quotedText = match[1];
+    parts.push(
+      <span
+        key={keyIndex++}
+        style={{
+          display: "inline-flex",
+          alignItems: "flex-start",
+          gap: 6,
+          padding: "4px 10px",
+          margin: "2px 4px",
+          background: "rgba(201, 162, 39, 0.1)",
+          borderLeft: "3px solid var(--alzooka-gold)",
+          borderRadius: "0 4px 4px 0",
+          fontStyle: "italic",
+          color: "var(--alzooka-cream)",
+          opacity: 0.9,
+        }}
+      >
+        <span style={{ opacity: 0.5 }}>"</span>
+        {quotedText}
+        <span style={{ opacity: 0.5 }}>"</span>
+      </span>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text after the last quote
+  if (lastIndex < text.length) {
+    const afterText = text.substring(lastIndex);
+    if (afterText.trim()) {
+      parts.push(
+        <span key={keyIndex++}>
+          {stripUrls ? renderTextWithMentionsOnly(afterText) : renderTextWithLinksAndMentions(afterText)}
+        </span>
+      );
+    }
+  }
+  
+  // If no quotes found, just render normally
+  if (parts.length === 0) {
+    return stripUrls ? renderTextWithMentionsOnly(text) : renderTextWithLinksAndMentions(text);
+  }
+  
+  return parts;
+}
+
 // Helper function to render text with @mentions only - URLs are stripped (used when preview is shown)
 function renderTextWithMentionsOnly(text: string): React.ReactNode[] {
   // Regex to match URLs (http, https, or www) - these will be stripped
@@ -887,10 +957,8 @@ export function PostModal({
                   const hasOtherUrl = !hasYouTube && !hasSpotify && !!findFirstUrl(comment.content);
                   const hasAnyPreview = hasYouTube || hasSpotify || hasOtherUrl;
                   
-                  // Strip URLs from text if there's a preview
-                  const textContent = hasAnyPreview 
-                    ? renderTextWithMentionsOnly(comment.content)
-                    : renderTextWithLinksAndMentions(comment.content);
+                  // Render text with quotes styled, strip URLs if there's a preview
+                  const textContent = renderTextWithQuotes(comment.content, hasAnyPreview);
                   
                   // Check if there's any actual text left after stripping URLs
                   const textOnly = comment.content.replace(/https?:\/\/[^\s]+/gi, '').trim();
@@ -1381,7 +1449,59 @@ export function PostModal({
                   )}
                 </div>
               )}
-              <form onSubmit={handleComment} style={{ display: "flex", gap: 8 }}>
+              <form onSubmit={handleComment} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {/* Quote Button */}
+                <Tooltip text="Insert quote">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = commentInputRef.current;
+                      if (!input) return;
+                      
+                      const start = input.selectionStart || 0;
+                      const end = input.selectionEnd || 0;
+                      const text = commentText;
+                      
+                      if (start !== end) {
+                        // Text is selected - wrap it in quotes
+                        const selectedText = text.substring(start, end);
+                        const newText = text.substring(0, start) + `"${selectedText}"` + text.substring(end);
+                        setCommentText(newText);
+                        // Move cursor after the closing quote
+                        setTimeout(() => {
+                          input.focus();
+                          input.setSelectionRange(end + 2, end + 2);
+                        }, 0);
+                      } else {
+                        // No selection - insert empty quotes and place cursor inside
+                        const newText = text.substring(0, start) + '""' + text.substring(start);
+                        setCommentText(newText);
+                        // Place cursor between the quotes
+                        setTimeout(() => {
+                          input.focus();
+                          input.setSelectionRange(start + 1, start + 1);
+                        }, 0);
+                      }
+                    }}
+                    style={{
+                      background: "rgba(240, 235, 224, 0.1)",
+                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      color: "var(--alzooka-cream)",
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    "
+                  </button>
+                </Tooltip>
                 <input
                   ref={commentInputRef}
                   type="text"
