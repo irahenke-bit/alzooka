@@ -1227,14 +1227,25 @@ export function PostModal({
                 </div>
               )}
 
-              {/* Post Text - strip YouTube URL if video is embedded */}
+              {/* Post Text - strip URLs when there's a preview */}
               {(() => {
                 let displayContent = post.content;
+                
+                // Strip YouTube/Spotify URLs if video exists
                 if (post.video_url && displayContent) {
                   displayContent = displayContent
                     .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                    .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                     .trim();
                 }
+                
+                // Strip ALL URLs when no image/video (link preview will show instead)
+                if (!post.image_url && !post.video_url && displayContent) {
+                  displayContent = displayContent
+                    .replace(/https?:\/\/[^\s]+/gi, '')
+                    .trim();
+                }
+                
                 return displayContent ? (
                   <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p>
                 ) : null;
@@ -1343,6 +1354,20 @@ export function PostModal({
                     </div>
                   </div>
                 );
+              })()}
+              
+              {/* Link Preview for non-YouTube/Spotify URLs */}
+              {!post.image_url && !post.video_url && post.content && (() => {
+                const urlRegex = /https?:\/\/[^\s]+/gi;
+                const urls = post.content.match(urlRegex) || [];
+                const previewUrl = urls.find(url =>
+                  !url.match(/youtube\.com|youtu\.be|spotify\.com/i)
+                );
+                return previewUrl ? (
+                  <div style={{ marginBottom: 16 }}>
+                    <LinkPreview url={previewUrl} />
+                  </div>
+                ) : null;
               })()}
             </div>
           </div>
