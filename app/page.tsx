@@ -225,12 +225,16 @@ function FeedContent() {
       
       setUser(user);
       
-      // Fetch current user's username and avatar from the users table
-      const { data: userData } = await supabase
-        .from("users")
-        .select("username, avatar_url, allow_wall_posts, wall_friends_only")
-        .eq("id", user.id)
-        .single();
+      // PARALLEL FETCH: Get user data, friendships, and group prefs all at once
+      const [userDataResult, friendshipsResult, prefsResult] = await Promise.all([
+        supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only").eq("id", user.id).single(),
+        supabase.from("friendships").select("user_id, friend_id").or(`user_id.eq.${user.id},friend_id.eq.${user.id}`).eq("status", "accepted"),
+        supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("include_in_feed", true),
+      ]);
+      
+      const userData = userDataResult.data;
+      const friendships = friendshipsResult.data;
+      const prefs = prefsResult.data;
       
       if (!userData) {
         // User is authenticated but has no profile - redirect to no-profile page
@@ -243,33 +247,22 @@ function FeedContent() {
       setAllowWallPosts(userData.allow_wall_posts ?? true);
       setWallFriendsOnly(userData.wall_friends_only ?? true);
       
-      // Load user's friends for group feed filtering
-      const { data: friendships } = await supabase
-        .from("friendships")
-        .select("user_id, friend_id")
-        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
-        .eq("status", "accepted");
-      
       const friendIds = (friendships || []).map(f => 
         f.user_id === user.id ? f.friend_id : f.user_id
       );
       setUserFriends(friendIds);
       
-      // Load group feed preferences
-      const { data: prefs } = await supabase
-        .from("user_group_preferences")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("include_in_feed", true);
-      
       setGroupPreferences((prefs || []) as GroupPreference[]);
       
-      // eslint-disable-next-line react-hooks/immutability
+      // Load posts first
       const loadedPosts = await loadPosts(friendIds, (prefs || []) as GroupPreference[]);
-      // eslint-disable-next-line react-hooks/immutability
-      await loadUserVotes(user.id);
-      // eslint-disable-next-line react-hooks/immutability
-      await loadVoteTotals(loadedPosts);
+      
+      // Load votes in parallel
+      await Promise.all([
+        loadUserVotes(user.id),
+        loadVoteTotals(loadedPosts),
+      ]);
+      
       setLoading(false);
 
       // Fallback: poll periodically in case realtime misses an event (every 15s)

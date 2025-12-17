@@ -321,23 +321,23 @@ export default function GroupPage() {
       
       setUser(user);
 
-      // Get username and avatar
-      const { data: userData } = await supabase
-        .from("users")
-        .select("username, avatar_url")
-        .eq("id", user.id)
-        .single();
+      // PARALLEL FETCH: Get user data, group info, ban check, and membership all at once
+      const [userDataResult, groupDataResult, banCheckResult, membershipResult] = await Promise.all([
+        supabase.from("users").select("username, avatar_url").eq("id", user.id).single(),
+        supabase.from("groups").select("*").eq("id", groupId).single(),
+        supabase.from("group_bans").select("id").eq("group_id", groupId).eq("user_id", user.id).single(),
+        supabase.from("group_members").select("role").eq("group_id", groupId).eq("user_id", user.id).single(),
+      ]);
+
+      const userData = userDataResult.data;
+      const groupData = groupDataResult.data;
+      const banCheck = banCheckResult.data;
+      const membership = membershipResult.data;
+
       if (userData) {
         setUserUsername(userData.username);
         setUserAvatarUrl(userData.avatar_url);
       }
-
-      // Get group info
-      const { data: groupData } = await supabase
-        .from("groups")
-        .select("*")
-        .eq("id", groupId)
-        .single();
 
       if (!groupData) {
         setLoading(false);
@@ -345,25 +345,9 @@ export default function GroupPage() {
       }
 
       setGroup(groupData);
-
-      // Check if user is banned from this group
-      const { data: banCheck } = await supabase
-        .from("group_bans")
-        .select("id")
-        .eq("group_id", groupId)
-        .eq("user_id", user.id)
-        .single();
       
       const userIsBanned = !!banCheck;
       setIsUserBanned(userIsBanned);
-
-      // Check membership
-      const { data: membership } = await supabase
-        .from("group_members")
-        .select("role")
-        .eq("group_id", groupId)
-        .eq("user_id", user.id)
-        .single();
 
       setIsMember(!!membership);
       setUserRole(membership?.role || null);
@@ -381,55 +365,54 @@ export default function GroupPage() {
         setPendingInvite(invite || null);
       }
 
-      // Load members only if member or public
-      if (membership || groupData.privacy === "public") {
-        // eslint-disable-next-line react-hooks/immutability
-        await loadMembers();
-        // eslint-disable-next-line react-hooks/immutability
-        await loadFriendships(user.id);
-      }
-
-      // Load banned users if admin
-      if (membership?.role === "admin") {
-        // eslint-disable-next-line react-hooks/immutability
-        await loadBannedUsers();
-      }
-
-      // Load posts if member or public group
-      if (membership || groupData.privacy === "public") {
-        // Get total post count first
-        const { count } = await supabase
-          .from("posts")
-          .select("*", { count: "exact", head: true })
-          .eq("group_id", groupId);
-        setTotalPostCount(count || 0);
+      // PARALLEL: Load members, friendships, banned users, posts, post count, and feed prefs
+      const canViewContent = membership || groupData.privacy === "public";
+      
+      if (canViewContent) {
+        // Start all loads in parallel
+        const parallelLoads: Promise<unknown>[] = [
+          loadMembers(),
+          loadFriendships(user.id),
+          supabase.from("posts").select("*", { count: "exact", head: true }).eq("group_id", groupId),
+          loadPosts(),
+        ];
         
-        // eslint-disable-next-line react-hooks/immutability
-        await loadPosts();
-        // eslint-disable-next-line react-hooks/immutability
-        await loadUserVotes(user.id);
-        // eslint-disable-next-line react-hooks/immutability
-        await loadVoteTotals();
-      }
-
-      // Load feed preferences if member
-      if (membership) {
-        const { data: prefs } = await supabase
-          .from("user_group_preferences")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("group_id", groupId)
-          .single();
-        
-        if (prefs) {
-          setFeedPrefs({
-            include_in_feed: prefs.include_in_feed ?? false,
-            max_posts_per_day: prefs.max_posts_per_day ?? 3,
-            whitelist_members: prefs.whitelist_members ?? [],
-            mute_members: prefs.mute_members ?? [],
-            friends_only: prefs.friends_only ?? false,
-          });
+        if (membership?.role === "admin") {
+          parallelLoads.push(loadBannedUsers());
         }
+        
+        if (membership) {
+          parallelLoads.push(
+            supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("group_id", groupId).single()
+          );
+        }
+        
+        const results = await Promise.all(parallelLoads);
+        
+        // Extract post count (index 2)
+        const postCountResult = results[2] as { count: number | null };
+        setTotalPostCount(postCountResult.count || 0);
+        
+        // Extract feed prefs if membership exists (last item if added)
+        if (membership) {
+          const prefsResult = results[results.length - 1] as { data: { include_in_feed?: boolean; max_posts_per_day?: number; whitelist_members?: string[]; mute_members?: string[]; friends_only?: boolean } | null };
+          const prefs = prefsResult.data;
+          if (prefs) {
+            setFeedPrefs({
+              include_in_feed: prefs.include_in_feed ?? false,
+              max_posts_per_day: prefs.max_posts_per_day ?? 3,
+              whitelist_members: prefs.whitelist_members ?? [],
+              mute_members: prefs.mute_members ?? [],
+              friends_only: prefs.friends_only ?? false,
+            });
+          }
+        }
+        
+        // Load votes in parallel after posts are loaded
+        await Promise.all([
+          loadUserVotes(user.id),
+          loadVoteTotals(),
+        ]);
       }
 
       setLoading(false);
