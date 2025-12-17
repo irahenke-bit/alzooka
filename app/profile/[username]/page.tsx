@@ -2051,9 +2051,19 @@ export default function ProfilePage() {
               let displayContent = post.content;
               const videoUrl = post.video_url;
               const imageUrl = post.image_url;
+              
+              // Strip YouTube/Spotify URLs if video exists
               if (videoUrl && displayContent) {
                 displayContent = displayContent
                   .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
+                  .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
+                  .trim();
+              }
+              
+              // Strip ALL URLs when no image/video (link preview will show instead)
+              if (!imageUrl && !videoUrl && displayContent) {
+                displayContent = displayContent
+                  .replace(/https?:\/\/[^\s]+/gi, '')
                   .trim();
               }
 

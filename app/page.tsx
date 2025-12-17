@@ -1977,16 +1977,25 @@ function PostCard({
               {(() => {
                 // Content is always on the post itself (shared posts copy the content)
                 // shared_from_post is only used for attribution
-                // If there's a video, strip the YouTube or Spotify URL from displayed content
+                // Strip URLs from displayed content when there's a preview
                 let displayContent = post.content;
                 const videoUrl = post.video_url;
+                
+                // Strip YouTube/Spotify URLs if video exists
                 if (videoUrl && displayContent) {
-                  // Remove YouTube and Spotify URLs from content
                   displayContent = displayContent
                     .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
                     .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                     .trim();
                 }
+                
+                // Strip ALL URLs when no image/video (link preview will show instead)
+                if (!post.image_url && !post.video_url && displayContent) {
+                  displayContent = displayContent
+                    .replace(/https?:\/\/[^\s]+/gi, '')
+                    .trim();
+                }
+                
                 return displayContent ? (
                   <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p>
                 ) : null;

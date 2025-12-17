@@ -3810,20 +3810,24 @@ const GroupPostCard = memo(function GroupPostCard({
             </div>
           ) : (
             post.content && (() => {
-              // Strip YouTube or Spotify URL from displayed content if video exists
+              // Strip URLs from displayed content when there's a preview (video or link preview)
               let displayContent = post.content;
+              
+              // Strip YouTube/Spotify URLs if video exists
               if (post.video_url && displayContent) {
                 displayContent = displayContent
                   .replace(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)[^\s]+/gi, '')
                   .replace(/https?:\/\/open\.spotify\.com\/(?:track|album|playlist|episode|show)\/[^\s]+/gi, '')
                   .trim();
               }
-              // Also strip URLs that will have link previews (non-YouTube/Spotify URLs when no image/video)
+              
+              // Strip ALL URLs when no image/video (link preview will show instead)
               if (!post.image_url && !post.video_url && displayContent) {
                 displayContent = displayContent
-                  .replace(/https?:\/\/(?!(?:www\.)?(?:youtube\.com|youtu\.be|open\.spotify\.com))[^\s]+/gi, '')
+                  .replace(/https?:\/\/[^\s]+/gi, '')
                   .trim();
               }
+              
               return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithLinksAndMentions(displayContent)}</p> : null;
             })()
           )}
