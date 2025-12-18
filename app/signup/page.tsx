@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,7 +69,8 @@ export default function SignupPage() {
     }
 
     // Sign up with Supabase Auth (profile created automatically via trigger)
-    const trimmedUsername = username.trim();
+    const trimmedUsername = username.trim().toLowerCase();
+    const trimmedDisplayName = displayName.trim() || trimmedUsername;
     const termsAcceptedAt = new Date().toISOString();
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
@@ -76,7 +78,7 @@ export default function SignupPage() {
       options: {
         data: {
           username: trimmedUsername,
-          display_name: trimmedUsername,
+          display_name: trimmedDisplayName,
           terms_accepted_at: termsAcceptedAt,
         }
       }
@@ -177,7 +179,17 @@ export default function SignupPage() {
           <div style={{ marginBottom: 16 }}>
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Display Name (e.g. Ira Lloyd Cheddar)"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="text"
+              placeholder="Username (letters, numbers, underscores only)"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
