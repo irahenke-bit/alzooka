@@ -1649,9 +1649,9 @@ export function PostModal({
                         }
                       }}
                       style={{
-                        background: "rgba(201, 162, 39, 0.2)",
-                        border: "1px solid var(--alzooka-gold)",
-                        color: "var(--alzooka-gold)",
+                        background: "var(--alzooka-gold)",
+                        border: "none",
+                        color: "var(--alzooka-teal-dark)",
                         width: 32,
                         height: 32,
                         borderRadius: "50%",
