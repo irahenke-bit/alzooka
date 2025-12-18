@@ -37,19 +37,29 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
       const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
       const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
 
-      canvas.width = completedCrop.width;
-      canvas.height = completedCrop.height;
+      // Use the ACTUAL image dimensions, not the displayed size
+      const sourceX = completedCrop.x * scaleX;
+      const sourceY = completedCrop.y * scaleY;
+      const sourceWidth = completedCrop.width * scaleX;
+      const sourceHeight = completedCrop.height * scaleY;
+
+      // Canvas should be the full resolution of the cropped area
+      canvas.width = sourceWidth;
+      canvas.height = sourceHeight;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       ctx.drawImage(
         imgRef.current,
-        completedCrop.x * scaleX,
-        completedCrop.y * scaleY,
-        completedCrop.width * scaleX,
-        completedCrop.height * scaleY,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
         0,
         0,
-        completedCrop.width,
-        completedCrop.height
+        sourceWidth,
+        sourceHeight
       );
 
       canvas.toBlob(
