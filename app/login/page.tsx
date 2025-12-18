@@ -131,13 +131,16 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            backgroundColor: "transparent",
-            color: "var(--alzooka-cream)",
-            border: "2px solid rgba(240, 235, 224, 0.3)",
+            background: "linear-gradient(135deg, #4A90A4 0%, #2D5A6B 100%)",
+            color: "#fff",
+            border: "2px solid var(--alzooka-gold)",
           }}
         >
-          <span style={{ fontSize: 18 }}>✉️</span>
-          Email me a sign-in link
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M22 7l-10 6L2 7"/>
+          </svg>
+          Sign in with Email Link
         </button>
 
         {/* Magic Link Form (shown when selected) */}
