@@ -12,6 +12,7 @@ import Header from "@/app/components/Header";
 import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
+import { EmojiButton } from "@/app/components/EmojiButton";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -168,6 +169,7 @@ function FeedContent() {
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [modalPost, setModalPost] = useState<Post | null>(null);
@@ -1287,6 +1289,7 @@ function FeedContent() {
       <form onSubmit={handlePost} style={{ marginBottom: 32 }}>
         <div style={{ position: "relative", marginBottom: 12 }}>
           <textarea
+            ref={textareaRef}
             placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
             value={content}
             onChange={(e) => handleContentChange(e.target.value)}
@@ -1508,7 +1511,7 @@ function FeedContent() {
         />
 
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button 
+          <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
@@ -1525,6 +1528,24 @@ function FeedContent() {
           >
             📷 Photo
           </button>
+          <EmojiButton
+            onEmojiSelect={(emoji) => {
+              const textarea = textareaRef.current;
+              if (textarea) {
+                const start = textarea.selectionStart || 0;
+                const end = textarea.selectionEnd || 0;
+                const newContent = content.slice(0, start) + emoji + content.slice(end);
+                setContent(newContent);
+                // Restore cursor position after emoji
+                setTimeout(() => {
+                  textarea.focus();
+                  textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                }, 0);
+              } else {
+                setContent(content + emoji);
+              }
+            }}
+          />
           <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
             {posting ? "Posting..." : "Post"}
           </button>

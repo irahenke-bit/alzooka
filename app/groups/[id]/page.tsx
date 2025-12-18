@@ -19,6 +19,7 @@ import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
+import { EmojiButton } from "@/app/components/EmojiButton";
 import { notifyGroupInvite } from "@/lib/notifications";
 
 type Group = {
@@ -248,6 +249,7 @@ export default function GroupPage() {
   const supabase = createBrowserClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [user, setUser] = useState<User | null>(null);
   const [uploadingBanner, setUploadingBanner] = useState(false);
@@ -2758,6 +2760,7 @@ export default function GroupPage() {
         <form onSubmit={handlePost} style={{ marginBottom: 24 }}>
           <div style={{ position: "relative", marginBottom: 12 }}>
             <textarea
+              ref={textareaRef}
               placeholder={`Share something with ${group.name}... Paste a YouTube or Spotify link to share`}
               value={content}
               onChange={e => handleContentChange(e.target.value)}
@@ -3013,6 +3016,23 @@ export default function GroupPage() {
             >
               <span style={{ color: "#1DB954" }}>●</span> Spotify
             </button>
+            <EmojiButton
+              onEmojiSelect={(emoji) => {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                  const start = textarea.selectionStart || 0;
+                  const end = textarea.selectionEnd || 0;
+                  const newContent = content.slice(0, start) + emoji + content.slice(end);
+                  setContent(newContent);
+                  setTimeout(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                  }, 0);
+                } else {
+                  setContent(content + emoji);
+                }
+              }}
+            />
             <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
               {posting ? "Posting..." : "Post"}
             </button>

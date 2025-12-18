@@ -17,6 +17,7 @@ import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
+import { EmojiButton } from "@/app/components/EmojiButton";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -296,6 +297,7 @@ export default function ProfilePage() {
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const wallImageInputRef = useRef<HTMLInputElement>(null);
+  const postTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
 
@@ -1752,6 +1754,7 @@ export default function ProfilePage() {
         <div className="card" style={{ marginBottom: 24 }}>
           <div style={{ position: "relative", marginBottom: 12 }}>
             <textarea
+              ref={postTextareaRef}
               value={newPostContent}
               onChange={async (e) => {
                 const newContent = e.target.value;
@@ -2035,6 +2038,23 @@ export default function ProfilePage() {
                 multiple
                 onChange={(e) => handleImageSelect(e, false)}
                 style={{ display: "none" }}
+              />
+              <EmojiButton
+                onEmojiSelect={(emoji) => {
+                  const textarea = postTextareaRef.current;
+                  if (textarea) {
+                    const start = textarea.selectionStart || 0;
+                    const end = textarea.selectionEnd || 0;
+                    const newContent = newPostContent.slice(0, start) + emoji + newPostContent.slice(end);
+                    setNewPostContent(newContent);
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                    }, 0);
+                  } else {
+                    setNewPostContent(newPostContent + emoji);
+                  }
+                }}
               />
               <button
                 onClick={handlePost}

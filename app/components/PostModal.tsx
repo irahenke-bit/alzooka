@@ -13,6 +13,7 @@ import {
   getUserIdsByUsernames,
 } from "@/lib/notifications";
 import { LinkPreview } from "./LinkPreview";
+import { EmojiButton } from "./EmojiButton";
 
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -1710,6 +1711,26 @@ export function PostModal({
                       "
                     </button>
                   </Tooltip>
+                  
+                  {/* Emoji Button */}
+                  <EmojiButton
+                    buttonSize={32}
+                    onEmojiSelect={(emoji) => {
+                      const input = commentInputRef.current;
+                      if (input) {
+                        const start = input.selectionStart || 0;
+                        const end = input.selectionEnd || 0;
+                        const newText = commentText.slice(0, start) + emoji + commentText.slice(end);
+                        setCommentText(newText);
+                        setTimeout(() => {
+                          input.focus();
+                          input.setSelectionRange(start + emoji.length, start + emoji.length);
+                        }, 0);
+                      } else {
+                        setCommentText(commentText + emoji);
+                      }
+                    }}
+                  />
                 </div>
                 
                 <button
