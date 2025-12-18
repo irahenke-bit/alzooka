@@ -69,53 +69,83 @@ export default function AuthCallbackPage() {
         
         if (profile) {
           router.push("/");
-        } else if (isSignup) {
-          // This is a signup - create profile automatically
-          // Generate username from email or Google name
-          const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
-          const emailPrefix = user.email?.split("@")[0] || "user";
-          let baseUsername = googleName 
-            ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
-            : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
-          
-          // Make username unique by checking and adding numbers if needed
-          let username = baseUsername;
-          let attempt = 0;
-          while (attempt < 100) {
-            const { data: existing } = await supabase
-              .from("users")
-              .select("username")
-              .eq("username", username)
-              .single();
-            
-            if (!existing) break;
-            attempt++;
-            username = `${baseUsername}${attempt}`;
-          }
-          
-          // Create the profile
-          const { error: insertError } = await supabase
-            .from("users")
-            .insert({
-              id: user.id,
-              username: username,
-              display_name: googleName || emailPrefix,
-              avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-              terms_accepted_at: new Date().toISOString(),
-            });
-          
-          if (insertError) {
-            setErrorMsg(`Failed to create profile: ${insertError.message}`);
-            setStatus("error");
-            return;
-          }
-          
-          // Success - go to feed
-          router.push("/");
         } else {
-          // Not a signup, show no-profile message
-          setEmail(user.email || "your account");
-          setStatus("no-profile");
+          // No profile - check for pending email/password signup data first
+          const pendingSignupRaw = localStorage.getItem("alzooka_pending_signup");
+          localStorage.removeItem("alzooka_pending_signup");
+          
+          if (pendingSignupRaw) {
+            // Email/password signup that was verified
+            try {
+              const pendingSignup = JSON.parse(pendingSignupRaw);
+              const { error: insertError } = await supabase
+                .from("users")
+                .insert({
+                  id: user.id,
+                  username: pendingSignup.username,
+                  display_name: pendingSignup.displayName,
+                  terms_accepted_at: pendingSignup.termsAcceptedAt,
+                });
+              
+              if (insertError) {
+                console.error("Failed to create profile:", insertError);
+              }
+              
+              router.push("/");
+              return;
+            } catch (e) {
+              console.error("Error parsing pending signup:", e);
+            }
+          }
+          
+          if (isSignup) {
+            // This is a Google signup - create profile automatically
+            // Generate username from email or Google name
+            const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+            const emailPrefix = user.email?.split("@")[0] || "user";
+            let baseUsername = googleName 
+              ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
+              : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
+            
+            // Make username unique by checking and adding numbers if needed
+            let username = baseUsername;
+            let attempt = 0;
+            while (attempt < 100) {
+              const { data: existing } = await supabase
+                .from("users")
+                .select("username")
+                .eq("username", username)
+                .single();
+              
+              if (!existing) break;
+              attempt++;
+              username = `${baseUsername}${attempt}`;
+            }
+            
+            // Create the profile
+            const { error: insertError } = await supabase
+              .from("users")
+              .insert({
+                id: user.id,
+                username: username,
+                display_name: googleName || emailPrefix,
+                avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                terms_accepted_at: new Date().toISOString(),
+              });
+          
+            if (insertError) {
+              setErrorMsg(`Failed to create profile: ${insertError.message}`);
+              setStatus("error");
+              return;
+            }
+          
+            // Success - go to feed
+            router.push("/");
+          } else {
+            // Not a signup, show no-profile message
+            setEmail(user.email || "your account");
+            setStatus("no-profile");
+          }
         }
       } catch (err) {
         setErrorMsg(String(err));

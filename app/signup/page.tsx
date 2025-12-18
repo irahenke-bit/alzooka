@@ -90,7 +90,25 @@ export default function SignupPage() {
       return;
     }
 
-    // Create profile in users table explicitly
+    // Check if email confirmation is required (session will be null if so)
+    if (signUpData.user && !signUpData.session) {
+      // Email confirmation required - show message instead of redirecting
+      // Store signup data in localStorage so we can create profile after verification
+      localStorage.setItem("alzooka_pending_signup", JSON.stringify({
+        userId: signUpData.user.id,
+        username: trimmedUsername,
+        displayName: trimmedDisplayName,
+        termsAcceptedAt: termsAcceptedAt,
+      }));
+      
+      setLoading(false);
+      setError("");
+      alert("Please check your email to verify your account before signing in.");
+      router.push("/login");
+      return;
+    }
+
+    // No email confirmation required - create profile and redirect
     if (signUpData.user) {
       const { error: profileError } = await supabase
         .from("users")
