@@ -179,20 +179,35 @@ export default function SignupPage() {
           <div style={{ marginBottom: 16 }}>
             <input
               type="text"
-              placeholder="Display Name (e.g. Ira Lloyd Cheddar)"
+              placeholder="Display Name (e.g. Display Name Jones)"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
             />
           </div>
 
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 16, position: "relative" }}>
+            <span
+              style={{
+                position: "absolute",
+                left: 16,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--alzooka-gold)",
+                fontSize: 16,
+                fontWeight: 600,
+                pointerEvents: "none",
+              }}
+            >
+              @
+            </span>
             <input
               type="text"
-              placeholder="Username (letters, numbers, underscores only)"
+              placeholder="User_name_Jones17"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              style={{ paddingLeft: 32 }}
             />
           </div>
 
