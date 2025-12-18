@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import EmojiPicker, { Theme, EmojiClickData, SkinTones, SkinTonePickerLocation } from "emoji-picker-react";
+import EmojiPicker, { Theme, EmojiClickData } from "emoji-picker-react";
 
 interface EmojiButtonProps {
   onEmojiSelect: (emoji: string) => void;
@@ -85,10 +85,8 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32, direction = "up" }
             width={320}
             height={400}
             searchPlaceholder="Search emojis..."
-            previewConfig={{ showPreview: true }}
-            skinTonesDisabled={false}
-            defaultSkinTone={SkinTones.NEUTRAL}
-            skinTonePickerLocation={SkinTonePickerLocation.PREVIEW}
+            previewConfig={{ showPreview: false }}
+            skinTonesDisabled={true}
           />
         </div>
       )}
