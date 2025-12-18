@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
+import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+
+// Banner aspect ratio (width:height) - matches the profile banner display area
+const BANNER_ASPECT = 4 / 1;
 
 type Props = {
   imageSrc: string;
@@ -10,17 +13,34 @@ type Props = {
   onSave: (croppedBlob: Blob) => void;
 };
 
+// Create a centered crop with the banner aspect ratio
+function createInitialCrop(mediaWidth: number, mediaHeight: number): Crop {
+  return centerCrop(
+    makeAspectCrop(
+      {
+        unit: "%",
+        width: 90,
+      },
+      BANNER_ASPECT,
+      mediaWidth,
+      mediaHeight
+    ),
+    mediaWidth,
+    mediaHeight
+  );
+}
+
 export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
-  const [crop, setCrop] = useState<Crop>({
-    unit: "%",
-    width: 90,
-    height: 50,
-    x: 5,
-    y: 25,
-  });
+  const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const [saving, setSaving] = useState(false);
+
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const { width, height } = e.currentTarget;
+    const initialCrop = createInitialCrop(width, height);
+    setCrop(initialCrop);
+  }
 
   async function handleSave() {
     if (!completedCrop || !imgRef.current) return;
@@ -145,8 +165,9 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
       }}>
         <ReactCrop
           crop={crop}
-          onChange={(c) => setCrop(c)}
+          onChange={(_, percentCrop) => setCrop(percentCrop)}
           onComplete={(c) => setCompletedCrop(c)}
+          aspect={BANNER_ASPECT}
           style={{
             maxWidth: "100%",
             maxHeight: "100%",
@@ -156,6 +177,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
             ref={imgRef}
             src={imageSrc}
             alt="Crop preview"
+            onLoad={onImageLoad}
             style={{
               maxWidth: "100%",
               maxHeight: "calc(100vh - 200px)",
