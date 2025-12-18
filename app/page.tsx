@@ -159,8 +159,9 @@ function FeedContent() {
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
   const [content, setContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; playlistId?: string; playlistTitle?: string} | null>(null);
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
@@ -1033,31 +1034,58 @@ function FeedContent() {
   }
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+    const previews: string[] = [];
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select image files only");
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max 10MB per image.`);
+        continue;
+      }
+      validFiles.push(file);
+      previews.push(URL.createObjectURL(file));
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be less than 5MB");
-      return;
-    }
-
-    setSelectedImage(file);
-    setImagePreview(URL.createObjectURL(file));
+    const newImages = [...selectedImages, ...validFiles].slice(0, 10);
+    const newPreviews = [...imagePreviews, ...previews].slice(0, 10);
+    setSelectedImages(newImages);
+    setImagePreviews(newPreviews);
+    e.target.value = "";
   }
 
-  function removeSelectedImage() {
-    setSelectedImage(null);
-    setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  function removeImage(index: number) {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const validFiles: File[] = [];
+    const previews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) continue;
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max 10MB per image.`);
+        continue;
+      }
+      validFiles.push(file);
+      previews.push(URL.createObjectURL(file));
     }
+
+    const newImages = [...selectedImages, ...validFiles].slice(0, 10);
+    const newPreviews = [...imagePreviews, ...previews].slice(0, 10);
+    setSelectedImages(newImages);
+    setImagePreviews(newPreviews);
   }
 
   function removeYoutubePreview() {
@@ -1150,21 +1178,22 @@ function FeedContent() {
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
     // Allow posting if there's content, image, YouTube video, or Spotify
-    if ((!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview) || !user) return;
+    if ((!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) || !user) return;
 
     setPosting(true);
 
     let imageUrl: string | null = null;
 
-    // Upload image if selected
-    if (selectedImage) {
-      const fileExt = selectedImage.name.split(".").pop();
+    // Upload first image if selected (database currently supports single image)
+    if (selectedImages.length > 0) {
+      const file = selectedImages[0];
+      const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `posts/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("post-images")
-        .upload(filePath, selectedImage, {
+        .upload(filePath, file, {
           cacheControl: "3600",
           upsert: false,
         });
@@ -1206,8 +1235,9 @@ function FeedContent() {
       });
       
       setContent("");
-      setSelectedImage(null);
-      setImagePreview(null);
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      setSelectedImages([]);
+      setImagePreviews([]);
       setYoutubePreview(null);
       setSpotifyPreview(null);
       if (fileInputRef.current) {
@@ -1252,49 +1282,107 @@ function FeedContent() {
 
       {/* New Post Form */}
       <form onSubmit={handlePost} style={{ marginBottom: 32 }}>
-        <textarea
-          placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
-          value={content}
-          onChange={(e) => handleContentChange(e.target.value)}
-          rows={3}
-          style={{ marginBottom: 12, resize: "vertical" }}
-        />
-        
-        {/* Image Preview */}
-        {imagePreview && (
-          <div style={{ position: "relative", marginBottom: 12, display: "inline-block" }}>
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
-              style={{ 
-                maxWidth: "100%", 
-                maxHeight: 200, 
-                borderRadius: 8,
-                border: "1px solid rgba(240, 235, 224, 0.2)"
-              }} 
-            />
-            <button
-              type="button"
-              onClick={removeSelectedImage}
+        <div style={{ position: "relative", marginBottom: 12 }}>
+          <textarea
+            placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
+            value={content}
+            onChange={(e) => handleContentChange(e.target.value)}
+            onDragOver={(e) => e.preventDefault()}
+            onDragEnter={() => setIsDraggingOver(true)}
+            onDragLeave={(e) => {
+              if (e.currentTarget === e.target) setIsDraggingOver(false);
+            }}
+            onDrop={handleDrop}
+            rows={3}
+            style={{ 
+              resize: "vertical",
+              borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
+              borderWidth: isDraggingOver ? 2 : undefined,
+            }}
+          />
+          {isDraggingOver && (
+            <div
               style={{
                 position: "absolute",
-                top: 8,
-                right: 8,
-                background: "rgba(0, 0, 0, 0.7)",
-                border: "none",
-                borderRadius: "50%",
-                width: 28,
-                height: 28,
-                color: "white",
-                cursor: "pointer",
-                fontSize: 16,
+                inset: 0,
+                background: "rgba(201, 162, 92, 0.15)",
+                border: "2px dashed var(--alzooka-gold)",
+                borderRadius: 4,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                pointerEvents: "none",
               }}
             >
-              ×
-            </button>
+              <span style={{ 
+                background: "var(--alzooka-gold)", 
+                color: "var(--alzooka-teal-dark)",
+                padding: "8px 16px",
+                borderRadius: 20,
+                fontWeight: 600,
+                fontSize: 14,
+              }}>
+                📷 Drop images here
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {/* Image Previews */}
+        {imagePreviews.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+            {imagePreviews.map((preview, index) => (
+              <div key={index} style={{ position: "relative" }}>
+                <img
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    right: -8,
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: "#e57373",
+                    border: "none",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {imagePreviews.length < 10 && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: 8,
+                  border: "2px dashed rgba(240, 235, 224, 0.3)",
+                  background: "transparent",
+                  color: "var(--alzooka-cream)",
+                  cursor: "pointer",
+                  fontSize: 24,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                +
+              </button>
+            )}
           </div>
         )}
 
@@ -1411,6 +1499,7 @@ function FeedContent() {
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handleImageSelect}
           style={{ display: "none" }}
         />
@@ -1433,7 +1522,7 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <button type="submit" disabled={posting || (!content.trim() && !selectedImage && !youtubePreview && !spotifyPreview)}>
+          <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
             {posting ? "Posting..." : "Post"}
           </button>
         </div>
