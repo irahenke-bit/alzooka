@@ -103,8 +103,14 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
+    // Get the current origin for redirect
+    const origin = window.location.origin;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${origin}/auth/callback?signup=true`,
+      },
     });
 
     if (error) {
