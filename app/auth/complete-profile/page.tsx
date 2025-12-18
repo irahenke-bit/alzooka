@@ -5,13 +5,82 @@ import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { LogoWithText } from "@/app/components/Logo";
 
+// Generate username from display name with numbering rules:
+// - First person: blazefoley (no number)
+// - Second: blazefoley01, then blazefoley06, blazefoley11, etc. (increment by 5)
+// - When 2-digit exhausted (96), move to 3-digit: 101, 106, etc.
+async function generateUsername(displayName: string, supabase: ReturnType<typeof createBrowserClient>): Promise<string> {
+  // Create base username from display name
+  const baseUsername = displayName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "") // Remove spaces and special chars
+    .substring(0, 20); // Limit length
+  
+  if (!baseUsername || baseUsername.length < 2) {
+    return `user${Date.now().toString().slice(-6)}`;
+  }
+
+  // Check if base username is available
+  const { data: exactMatch } = await supabase
+    .from("users")
+    .select("username")
+    .eq("username", baseUsername)
+    .single();
+
+  if (!exactMatch) {
+    return baseUsername; // First person gets clean username
+  }
+
+  // Find all existing usernames with this base
+  const { data: existingUsers } = await supabase
+    .from("users")
+    .select("username")
+    .ilike("username", `${baseUsername}%`);
+
+  // Extract the highest number suffix used
+  let highestNumber = 0;
+  const regex = new RegExp(`^${baseUsername}(\\d+)$`, "i");
+  
+  if (existingUsers) {
+    for (const user of existingUsers) {
+      const match = user.username.match(regex);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > highestNumber) {
+          highestNumber = num;
+        }
+      }
+    }
+  }
+
+  // Calculate next number (increment by 5, minimum 2 digits starting at 01)
+  let nextNumber: number;
+  if (highestNumber === 0) {
+    // No numbered versions exist yet, start at 01
+    nextNumber = 1;
+  } else {
+    // Find next number that's at least 5 more than highest
+    nextNumber = highestNumber + 5;
+    // Round up to next multiple of 5 that ends in 1 or 6
+    const remainder = nextNumber % 5;
+    if (remainder !== 1 && remainder !== 0) {
+      nextNumber = nextNumber + (5 - remainder) + 1;
+    }
+  }
+
+  // Format with minimum 2 digits
+  const suffix = nextNumber.toString().padStart(2, "0");
+  
+  return `${baseUsername}${suffix}`;
+}
+
 function CompleteProfileContent() {
   const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
+  const [generatedUsername, setGeneratedUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [generatingUsername, setGeneratingUsername] = useState(false);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -43,31 +112,29 @@ function CompleteProfileContent() {
     // Pre-fill display name from email if available
     const emailPrefix = user.email?.split("@")[0] || "";
     if (emailPrefix) {
-      setDisplayName(emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1));
+      const formatted = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+      setDisplayName(formatted);
     }
 
     setChecking(false);
   }
 
-  // Check username availability with debounce
+  // Generate username when display name changes
   useEffect(() => {
-    if (!username.trim() || username.length < 3) {
-      setUsernameAvailable(null);
+    if (!displayName.trim() || displayName.length < 2) {
+      setGeneratedUsername("");
       return;
     }
 
     const timer = setTimeout(async () => {
-      const { data } = await supabase
-        .from("users")
-        .select("id")
-        .ilike("username", username.trim())
-        .single();
-      
-      setUsernameAvailable(!data);
+      setGeneratingUsername(true);
+      const username = await generateUsername(displayName.trim(), supabase);
+      setGeneratedUsername(username);
+      setGeneratingUsername(false);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username]);
+  }, [displayName, supabase]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,18 +145,8 @@ function CompleteProfileContent() {
       return;
     }
 
-    if (!username.trim() || username.length < 3) {
-      setError("Username must be at least 3 characters");
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError("Username can only contain letters, numbers, and underscores");
-      return;
-    }
-
-    if (usernameAvailable === false) {
-      setError("That username is already taken");
+    if (!generatedUsername) {
+      setError("Please wait for username to be generated");
       return;
     }
 
@@ -104,11 +161,14 @@ function CompleteProfileContent() {
         return;
       }
 
+      // Generate fresh username at submit time to avoid race conditions
+      const finalUsername = await generateUsername(displayName.trim(), supabase);
+
       const { error: insertError } = await supabase
         .from("users")
         .insert({
           id: user.id,
-          username: username.trim().toLowerCase(),
+          username: finalUsername,
           display_name: displayName.trim(),
           avatar_url: null,
           bio: null,
@@ -116,7 +176,10 @@ function CompleteProfileContent() {
 
       if (insertError) {
         if (insertError.message.includes("duplicate") || insertError.message.includes("unique")) {
-          setError("That username is already taken");
+          setError("Username conflict - please try again");
+          // Regenerate username
+          const newUsername = await generateUsername(displayName.trim(), supabase);
+          setGeneratedUsername(newUsername);
         } else {
           setError(insertError.message);
         }
@@ -179,7 +242,7 @@ function CompleteProfileContent() {
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 24 }}>
             <label style={{ 
               display: "block", 
               marginBottom: 6, 
@@ -190,60 +253,50 @@ function CompleteProfileContent() {
             </label>
             <input
               type="text"
-              placeholder="How you want to be called"
+              placeholder="Your name (e.g. Blaze Foley)"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               maxLength={50}
               style={{ width: "100%" }}
+              autoFocus
             />
             <p style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
-              This is shown on your profile and posts
+              This is how your name appears on posts and your profile
             </p>
           </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ 
-              display: "block", 
-              marginBottom: 6, 
-              fontSize: 14,
-              fontWeight: 500,
+          {/* Username Preview */}
+          {displayName.trim().length >= 2 && (
+            <div style={{ 
+              marginBottom: 24,
+              padding: 16,
+              background: "rgba(240, 235, 224, 0.05)",
+              borderRadius: 8,
+              border: "1px solid rgba(240, 235, 224, 0.1)",
             }}>
-              Username
-            </label>
-            <div style={{ position: "relative" }}>
-              <span style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                opacity: 0.5,
-                fontSize: 14,
+              <p style={{ 
+                fontSize: 13, 
+                opacity: 0.7, 
+                marginBottom: 8,
               }}>
-                @
-              </span>
-              <input
-                type="text"
-                placeholder="your_username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
-                maxLength={30}
-                style={{ width: "100%", paddingLeft: 28 }}
-              />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-              <p style={{ fontSize: 12, opacity: 0.6 }}>
-                Letters, numbers, underscores only
+                Your username will be:
               </p>
-              {username.length >= 3 && usernameAvailable !== null && (
-                <p style={{ 
-                  fontSize: 12, 
-                  color: usernameAvailable ? "#81c784" : "#e57373",
-                }}>
-                  {usernameAvailable ? "✓ Available" : "✗ Taken"}
-                </p>
-              )}
+              <p style={{ 
+                fontSize: 18, 
+                fontWeight: 600,
+                color: "var(--alzooka-gold)",
+              }}>
+                {generatingUsername ? (
+                  <span style={{ opacity: 0.5 }}>generating...</span>
+                ) : (
+                  `@${generatedUsername}`
+                )}
+              </p>
+              <p style={{ fontSize: 12, opacity: 0.5, marginTop: 8 }}>
+                Others can mention you with this @username
+              </p>
             </div>
-          </div>
+          )}
 
           {error && (
             <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
@@ -253,7 +306,7 @@ function CompleteProfileContent() {
 
           <button 
             type="submit" 
-            disabled={loading || usernameAvailable === false}
+            disabled={loading || generatingUsername || !generatedUsername}
             style={{ width: "100%" }}
           >
             {loading ? "Creating profile..." : "Create My Profile"}
