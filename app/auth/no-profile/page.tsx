@@ -3,11 +3,106 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { LogoWithText } from "@/app/components/Logo";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { createBrowserClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 function NoProfileContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "your Google account";
+  const [isCreating, setIsCreating] = useState(false);
+  const router = useRouter();
+  const supabase = createBrowserClient();
+
+  useEffect(() => {
+    // Check if this was a signup flow
+    const isSignup = localStorage.getItem("alzooka_signup") === "true";
+    localStorage.removeItem("alzooka_signup");
+
+    if (isSignup) {
+      // Auto-create profile
+      setIsCreating(true);
+      createProfile();
+    }
+
+    async function createProfile() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsCreating(false);
+        return;
+      }
+
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      if (existingProfile) {
+        router.push("/");
+        return;
+      }
+
+      // Generate username from Google name or email
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+      const emailPrefix = user.email?.split("@")[0] || "user";
+      let baseUsername = googleName
+        ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
+        : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
+
+      // Make username unique
+      let username = baseUsername;
+      let attempt = 0;
+      while (attempt < 100) {
+        const { data: existing } = await supabase
+          .from("users")
+          .select("username")
+          .eq("username", username)
+          .single();
+
+        if (!existing) break;
+        attempt++;
+        username = `${baseUsername}${attempt}`;
+      }
+
+      // Create the profile
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert({
+          id: user.id,
+          username: username,
+          display_name: googleName || emailPrefix,
+          email: user.email,
+          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+          terms_accepted_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error("Failed to create profile:", insertError);
+        setIsCreating(false);
+        return;
+      }
+
+      // Success - go to feed
+      router.push("/");
+    }
+  }, [supabase, router]);
+
+  if (isCreating) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <LogoWithText />
+        <p style={{ marginTop: 24 }}>Creating your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{

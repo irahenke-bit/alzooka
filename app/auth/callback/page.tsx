@@ -21,7 +21,10 @@ export default function AuthCallbackPage() {
         const code = urlParams.get("code");
         const errorParam = urlParams.get("error");
         const errorDesc = urlParams.get("error_description");
-        const isSignup = urlParams.get("signup") === "true";
+        // Check both URL param and localStorage for signup flag
+        const isSignup = urlParams.get("signup") === "true" || localStorage.getItem("alzooka_signup") === "true";
+        // Clear the localStorage flag
+        localStorage.removeItem("alzooka_signup");
         
         if (errorParam) {
           setErrorMsg(errorDesc || errorParam);

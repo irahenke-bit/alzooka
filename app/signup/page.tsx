@@ -105,19 +105,17 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    // Get the current origin for redirect
-    const origin = window.location.origin;
+    // Mark this as a signup flow so the callback knows to create a profile
+    localStorage.setItem("alzooka_signup", "true");
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${origin}/auth/callback?signup=true`,
-      },
     });
 
     if (error) {
       setError(error.message);
       setLoading(false);
+      localStorage.removeItem("alzooka_signup");
     }
   }
 
