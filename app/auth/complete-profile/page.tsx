@@ -187,8 +187,8 @@ function CompleteProfileContent() {
         return;
       }
 
-      // Success! Go to feed
-      router.push("/");
+      // Success! Go to set password page so they can create a password for easy future logins
+      router.push("/auth/set-password");
     } catch (err) {
       console.error("Error creating profile:", err);
       setError("Something went wrong. Please try again.");
