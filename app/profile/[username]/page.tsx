@@ -286,7 +286,13 @@ export default function ProfilePage() {
   const [showSpotifySearch, setShowSpotifySearch] = useState(false);
   const [showWallYouTubeSearch, setShowWallYouTubeSearch] = useState(false);
   const [showWallSpotifySearch, setShowWallSpotifySearch] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [wallSelectedImages, setWallSelectedImages] = useState<File[]>([]);
+  const [wallImagePreviews, setWallImagePreviews] = useState<string[]>([]);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const wallImageInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
 
@@ -984,10 +990,105 @@ export default function ProfilePage() {
     setBannerImageToCrop(null);
   }
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>, isWall: boolean = false) {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+    const previews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select image files only");
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max 10MB per image.`);
+        continue;
+      }
+      validFiles.push(file);
+      previews.push(URL.createObjectURL(file));
+    }
+
+    if (isWall) {
+      const newImages = [...wallSelectedImages, ...validFiles].slice(0, 10);
+      const newPreviews = [...wallImagePreviews, ...previews].slice(0, 10);
+      setWallSelectedImages(newImages);
+      setWallImagePreviews(newPreviews);
+    } else {
+      const newImages = [...selectedImages, ...validFiles].slice(0, 10);
+      const newPreviews = [...imagePreviews, ...previews].slice(0, 10);
+      setSelectedImages(newImages);
+      setImagePreviews(newPreviews);
+    }
+
+    e.target.value = "";
+  }
+
+  function removeImage(index: number, isWall: boolean = false) {
+    if (isWall) {
+      URL.revokeObjectURL(wallImagePreviews[index]);
+      setWallSelectedImages(wallSelectedImages.filter((_, i) => i !== index));
+      setWallImagePreviews(wallImagePreviews.filter((_, i) => i !== index));
+    } else {
+      URL.revokeObjectURL(imagePreviews[index]);
+      setSelectedImages(selectedImages.filter((_, i) => i !== index));
+      setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+    }
+  }
+
+  function handleDrop(e: React.DragEvent, isWall: boolean = false) {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    const validFiles: File[] = [];
+    const previews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) continue;
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max 10MB per image.`);
+        continue;
+      }
+      validFiles.push(file);
+      previews.push(URL.createObjectURL(file));
+    }
+
+    if (isWall) {
+      const newImages = [...wallSelectedImages, ...validFiles].slice(0, 10);
+      const newPreviews = [...wallImagePreviews, ...previews].slice(0, 10);
+      setWallSelectedImages(newImages);
+      setWallImagePreviews(newPreviews);
+    } else {
+      const newImages = [...selectedImages, ...validFiles].slice(0, 10);
+      const newPreviews = [...imagePreviews, ...previews].slice(0, 10);
+      setSelectedImages(newImages);
+      setImagePreviews(newPreviews);
+    }
+  }
+
   async function handlePost() {
-    if ((!newPostContent.trim() && !youtubePreview && !spotifyPreview) || !currentUser || !profile) return;
+    if ((!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) || !currentUser || !profile) return;
 
     setPosting(true);
+
+    // Upload image if selected (using first image for now - database has single image_url)
+    let imageUrl: string | null = null;
+    if (selectedImages.length > 0) {
+      const file = selectedImages[0];
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(filePath, file, { cacheControl: "3600", upsert: false });
+      
+      if (uploadError) {
+        alert("Failed to upload image. Please try again.");
+        setPosting(false);
+        return;
+      }
+      
+      const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
+      imageUrl = publicUrl;
+    }
 
     // Use preview URL if available, otherwise detect from content
     const videoUrl = youtubePreview?.url || spotifyPreview?.url || findYouTubeUrl(newPostContent);
@@ -1000,6 +1101,7 @@ export default function ProfilePage() {
       .insert({
         user_id: currentUser.id,
         content: newPostContent.trim(),
+        image_url: imageUrl,
         video_url: videoUrl,
         video_title: videoTitle,
       })
@@ -1021,7 +1123,7 @@ export default function ProfilePage() {
           id: newPost.id,
           user_id: currentUser.id,
           content: newPost.content,
-          image_url: null,
+          image_url: imageUrl,
           video_url: videoUrl,
           wall_user_id: null,
           wall_user: null,
@@ -1045,6 +1147,10 @@ export default function ProfilePage() {
       setNewPostContent("");
       setYoutubePreview(null);
       setSpotifyPreview(null);
+      // Clear images
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      setSelectedImages([]);
+      setImagePreviews([]);
       setActiveTab("posts"); // Switch to posts tab to show new post
     }
 
@@ -1657,11 +1763,71 @@ export default function ProfilePage() {
                 }
               }
             }}
-            placeholder="What's on your mind? Paste a YouTube or Spotify link to share"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, false)}
+            placeholder="What's on your mind? Paste a YouTube or Spotify link to share, or drag & drop images"
             rows={3}
             maxLength={500}
             style={{ marginBottom: 12, resize: "vertical" }}
           />
+
+          {/* Image Previews */}
+          {imagePreviews.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+              {imagePreviews.map((preview, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <img
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
+                    style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index, false)}
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: "#e57373",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {imagePreviews.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 8,
+                    border: "2px dashed rgba(240, 235, 224, 0.3)",
+                    background: "transparent",
+                    color: "var(--alzooka-cream)",
+                    cursor: "pointer",
+                    fontSize: 24,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  +
+                </button>
+              )}
+            </div>
+          )}
           
           {/* YouTube Preview */}
           {loadingPreview && (
@@ -1799,10 +1965,32 @@ export default function ProfilePage() {
                 <span style={{ color: "#1DB954" }}>●</span> Spotify
               </button>
               <button
-                onClick={handlePost}
-                disabled={posting || (!newPostContent.trim() && !youtubePreview && !spotifyPreview)}
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
                 style={{
-                  opacity: (!newPostContent.trim() && !youtubePreview && !spotifyPreview) ? 0.5 : 1,
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                📷 Photo
+              </button>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleImageSelect(e, false)}
+                style={{ display: "none" }}
+              />
+              <button
+                onClick={handlePost}
+                disabled={posting || (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0)}
+                style={{
+                  opacity: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? 0.5 : 1,
                 }}
               >
                 {posting ? "Posting..." : "Post"}
