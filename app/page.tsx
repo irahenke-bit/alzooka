@@ -574,6 +574,9 @@ function FeedContent() {
             ...postsData,
             comments: commentsWithReplies
           } as unknown as Post);
+          
+          // Clear URL params so refresh doesn't re-trigger
+          router.replace("/", { scroll: false });
         }
       } else if (highlightPostId) {
         setTimeout(() => {
@@ -581,6 +584,8 @@ function FeedContent() {
           if (element) {
             element.scrollIntoView({ behavior: "smooth", block: "center" });
           }
+          // Clear URL params so refresh doesn't re-trigger
+          router.replace("/", { scroll: false });
         }, 100);
       }
     }
@@ -674,12 +679,15 @@ function FeedContent() {
               commentElement.scrollIntoView({ behavior: "smooth", block: "center" });
             }
           }, 150);
+          
+          // Clear URL params after opening modal so refresh doesn't re-trigger
+          router.replace("/", { scroll: false });
         }
       }
     }
     
     openModalForComment();
-  }, [highlightCommentId, highlightPostId, notificationTimestamp, loading]);
+  }, [highlightCommentId, highlightPostId, notificationTimestamp, loading, router]);
 
   async function loadPosts(
     friends: string[] = userFriends,
