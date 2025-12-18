@@ -1316,7 +1316,7 @@ export default function ProfilePage() {
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
-          minHeight: 200,
+          minHeight: 240,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",

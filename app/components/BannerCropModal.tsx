@@ -4,8 +4,9 @@ import { useState, useRef } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
-// Banner aspect ratio (width:height) - matches the profile banner display area
-const BANNER_ASPECT = 4 / 1;
+// Banner aspect ratio (width:height) - 3:1 is more balanced than 4:1
+// Shows more of the image while still being a proper banner shape
+const BANNER_ASPECT = 3 / 1;
 
 type Props = {
   imageSrc: string;
