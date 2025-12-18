@@ -578,6 +578,11 @@ export default function ProfilePage() {
       
       setFriendsCount(friendsCountData || 0);
 
+      // Load user's votes so upvote/downvote arrows are colored correctly
+      if (user) {
+        await loadUserVotes(user.id);
+      }
+
       // Determine friendship status (between viewer and profile)
       if (user) {
         const { data: friendRow } = await supabase
