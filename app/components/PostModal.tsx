@@ -1883,28 +1883,32 @@ export function PostModal({
         </div>
       </div>
       
-      {/* Banner Crop Modal */}
+      {/* Banner Crop Modal - stop propagation to prevent closing */}
       {showBannerCrop && imageToCrop && (
-        <BannerCropModal
-          imageSrc={imageToCrop}
-          onCancel={() => {
-            setShowBannerCrop(false);
-            setImageToCrop(null);
-          }}
-          onSave={handleBannerCropSave}
-        />
+        <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()}>
+          <BannerCropModal
+            imageSrc={imageToCrop}
+            onCancel={() => {
+              setShowBannerCrop(false);
+              setImageToCrop(null);
+            }}
+            onSave={handleBannerCropSave}
+          />
+        </div>
       )}
       
-      {/* Avatar Crop Modal */}
+      {/* Avatar Crop Modal - stop propagation to prevent closing */}
       {showAvatarCrop && imageToCrop && (
-        <AvatarCropModal
-          imageSrc={imageToCrop}
-          onCancel={() => {
-            setShowAvatarCrop(false);
-            setImageToCrop(null);
-          }}
-          onSave={handleAvatarCropSave}
-        />
+        <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()}>
+          <AvatarCropModal
+            imageSrc={imageToCrop}
+            onCancel={() => {
+              setShowAvatarCrop(false);
+              setImageToCrop(null);
+            }}
+            onSave={handleAvatarCropSave}
+          />
+        </div>
       )}
     </div>
   );
