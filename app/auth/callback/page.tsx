@@ -100,7 +100,6 @@ export default function AuthCallbackPage() {
               id: user.id,
               username: username,
               display_name: googleName || emailPrefix,
-              email: user.email,
               avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
               terms_accepted_at: new Date().toISOString(),
             });
