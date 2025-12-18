@@ -111,11 +111,11 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
   }).filter(Boolean);
 }
 
-// Helper function to render text with quotes styled as quote blocks
-// Only quotes wrapped in special markers 「...」 (from quote button) get styled
+// Helper function to render text with quotes styled as italics
+// Only quotes wrapped in curly quotes "..." (from quote button) get styled
 function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.ReactNode[] {
-  // Split by special quote markers (Japanese brackets) - only these get styled
-  const quoteRegex = /「([^」]+)」/g;
+  // Split by curly quote markers - only these get styled
+  const quoteRegex = /"([^"]+)"/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -134,25 +134,16 @@ function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.R
       }
     }
     
-    // Add the quoted text as a styled block
+    // Add the quoted text as italicized with quotation marks
     const quotedText = match[1];
     parts.push(
       <span
         key={keyIndex++}
         style={{
-          display: "inline-block",
-          padding: "8px 12px",
-          margin: "4px 0",
-          background: "rgba(201, 162, 39, 0.1)",
-          borderLeft: "3px solid var(--alzooka-gold)",
-          borderRadius: "0 4px 4px 0",
           fontStyle: "italic",
-          color: "var(--alzooka-cream)",
-          opacity: 0.9,
-          width: "100%",
         }}
       >
-        {quotedText}
+        "{quotedText}"
       </span>
     );
     
@@ -1676,14 +1667,14 @@ export function PostModal({
                         
                         if (start !== end) {
                           const selectedText = text.substring(start, end);
-                          const newText = text.substring(0, start) + `「${selectedText}」` + text.substring(end);
+                          const newText = text.substring(0, start) + `"${selectedText}"` + text.substring(end);
                           setCommentText(newText);
                           setTimeout(() => {
                             input.focus();
                             input.setSelectionRange(end + 2, end + 2);
                           }, 0);
                         } else {
-                          const newText = text.substring(0, start) + '「」' + text.substring(start);
+                          const newText = text.substring(0, start) + '""' + text.substring(start);
                           setCommentText(newText);
                           setTimeout(() => {
                             input.focus();

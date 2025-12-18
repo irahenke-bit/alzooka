@@ -1836,14 +1836,14 @@ export default function ProfilePage() {
                   const end = textarea.selectionEnd || 0;
                   if (start !== end) {
                     const selectedText = newPostContent.substring(start, end);
-                    const newText = newPostContent.substring(0, start) + `「${selectedText}」` + newPostContent.substring(end);
+                    const newText = newPostContent.substring(0, start) + `"${selectedText}"` + newPostContent.substring(end);
                     setNewPostContent(newText);
                     setTimeout(() => {
                       textarea.focus();
                       textarea.setSelectionRange(end + 2, end + 2);
                     }, 0);
                   } else {
-                    const newText = newPostContent.substring(0, start) + '「」' + newPostContent.substring(start);
+                    const newText = newPostContent.substring(0, start) + '""' + newPostContent.substring(start);
                     setNewPostContent(newText);
                     setTimeout(() => {
                       textarea.focus();
@@ -2600,7 +2600,7 @@ export default function ProfilePage() {
                         </div>
                       ) : (
                         <>
-                          {displayContent && <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>{displayContent}</p>}
+                          {displayContent && <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>{renderTextWithQuotes(displayContent)}</p>}
 
                           {/* Post Images Gallery */}
                           {imageUrls.length > 0 && (
@@ -3419,6 +3419,34 @@ export default function ProfilePage() {
       </div>
     </>
   );
+}
+
+// Helper function to render text with curly quotes styled as italics
+function renderTextWithQuotes(text: string): React.ReactNode[] {
+  const quoteRegex = /"([^"]+)"/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+  
+  while ((match = quoteRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(<span key={keyIndex++}>{text.substring(lastIndex, match.index)}</span>);
+    }
+    const quotedText = match[1];
+    parts.push(
+      <span key={keyIndex++} style={{ fontStyle: "italic" }}>
+        "{quotedText}"
+      </span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < text.length) {
+    parts.push(<span key={keyIndex++}>{text.substring(lastIndex)}</span>);
+  }
+  
+  return parts.length > 0 ? parts : [<span key={0}>{text}</span>];
 }
 
 function formatTime(dateString: string): string {

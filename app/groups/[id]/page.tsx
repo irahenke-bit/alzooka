@@ -145,6 +145,35 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
   );
 }
 
+// Helper function to render text with curly quotes styled as italics, then process links/mentions
+function renderTextWithQuotes(text: string): React.ReactNode[] {
+  const quoteRegex = /"([^"]+)"/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+  
+  while ((match = quoteRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      parts.push(<span key={keyIndex++}>{renderTextWithLinksAndMentions(beforeText)}</span>);
+    }
+    const quotedText = match[1];
+    parts.push(
+      <span key={keyIndex++} style={{ fontStyle: "italic" }}>
+        "{quotedText}"
+      </span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < text.length) {
+    parts.push(<span key={keyIndex++}>{renderTextWithLinksAndMentions(text.substring(lastIndex))}</span>);
+  }
+  
+  return parts.length > 0 ? parts : renderTextWithLinksAndMentions(text);
+}
+
 // Helper function to render text with @mentions and URLs as clickable links
 function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
   // Regex to match URLs (http, https, or www)
@@ -2842,14 +2871,14 @@ export default function GroupPage() {
                   const end = textarea.selectionEnd || 0;
                   if (start !== end) {
                     const selectedText = content.substring(start, end);
-                    const newText = content.substring(0, start) + `「${selectedText}」` + content.substring(end);
+                    const newText = content.substring(0, start) + `"${selectedText}"` + content.substring(end);
                     setContent(newText);
                     setTimeout(() => {
                       textarea.focus();
                       textarea.setSelectionRange(end + 2, end + 2);
                     }, 0);
                   } else {
-                    const newText = content.substring(0, start) + '「」' + content.substring(start);
+                    const newText = content.substring(0, start) + '""' + content.substring(start);
                     setContent(newText);
                     setTimeout(() => {
                       textarea.focus();
@@ -4109,7 +4138,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   .trim();
               }
               
-              return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithLinksAndMentions(displayContent)}</p> : null;
+              return displayContent ? <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithQuotes(displayContent)}</p> : null;
             })()
           )}
           {/* Link Preview for non-YouTube/Spotify URLs */}

@@ -1379,14 +1379,14 @@ function FeedContent() {
                 const end = textarea.selectionEnd || 0;
                 if (start !== end) {
                   const selectedText = content.substring(start, end);
-                  const newText = content.substring(0, start) + `「${selectedText}」` + content.substring(end);
+                  const newText = content.substring(0, start) + `"${selectedText}"` + content.substring(end);
                   setContent(newText);
                   setTimeout(() => {
                     textarea.focus();
                     textarea.setSelectionRange(end + 2, end + 2);
                   }, 0);
                 } else {
-                  const newText = content.substring(0, start) + '「」' + content.substring(start);
+                  const newText = content.substring(0, start) + '""' + content.substring(start);
                   setContent(newText);
                   setTimeout(() => {
                     textarea.focus();
@@ -2233,7 +2233,7 @@ function PostCard({
                 }
                 
                 return displayContent ? (
-                  <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{displayContent}</p>
+                  <p style={{ margin: "0 0 16px 0", lineHeight: 1.6 }}>{renderTextWithQuotes(displayContent)}</p>
                 ) : null;
               })()}
               
@@ -2503,6 +2503,39 @@ function PostCard({
       )}
     </article>
   );
+}
+
+// Helper function to render text with curly quotes styled as italics
+function renderTextWithQuotes(text: string): React.ReactNode[] {
+  const quoteRegex = /"([^"]+)"/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+  
+  while ((match = quoteRegex.exec(text)) !== null) {
+    // Add text before the quote
+    if (match.index > lastIndex) {
+      parts.push(<span key={keyIndex++}>{text.substring(lastIndex, match.index)}</span>);
+    }
+    
+    // Add the quoted text as italicized with quotation marks
+    const quotedText = match[1];
+    parts.push(
+      <span key={keyIndex++} style={{ fontStyle: "italic" }}>
+        "{quotedText}"
+      </span>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text after the last quote
+  if (lastIndex < text.length) {
+    parts.push(<span key={keyIndex++}>{text.substring(lastIndex)}</span>);
+  }
+  
+  return parts.length > 0 ? parts : [<span key={0}>{text}</span>];
 }
 
 function formatTime(dateString: string): string {
