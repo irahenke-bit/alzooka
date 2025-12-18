@@ -249,6 +249,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  image_urls: string[] | null;
   video_url: string | null;
   wall_user_id: string | null;
   wall_user?: {
@@ -1359,22 +1360,57 @@ export function PostModal({
                 </div>
               )}
 
-              {/* Post Image */}
-              {post.image_url && (
-                <div style={{ marginBottom: 16 }}>
-                  <img
-                    src={post.image_url}
-                    alt="Post image"
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: 400,
-                      borderRadius: 8,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => window.open(post.image_url!, "_blank")}
-                  />
-                </div>
-              )}
+              {/* Post Images Gallery */}
+              {(() => {
+                const images = post.image_urls || (post.image_url ? [post.image_url] : []);
+                if (images.length === 0) return null;
+                
+                if (images.length === 1) {
+                  return (
+                    <div style={{ marginBottom: 16 }}>
+                      <img
+                        src={images[0]}
+                        alt="Post image"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: 400,
+                          borderRadius: 8,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => window.open(images[0], "_blank")}
+                      />
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: images.length === 2 ? "1fr 1fr" : "repeat(3, 1fr)",
+                    gap: 4,
+                    marginBottom: 16,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}>
+                    {images.map((url, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ position: "relative", paddingTop: "100%" }}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Image ${idx + 1}`}
+                          style={{ 
+                            position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+                            objectFit: "cover", cursor: "pointer",
+                          }}
+                          onClick={() => window.open(url, "_blank")}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* YouTube Video Player */}
               {post.video_url && (() => {
