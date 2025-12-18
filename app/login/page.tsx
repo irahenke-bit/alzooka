@@ -100,7 +100,7 @@ export default function LoginPage() {
           disabled={loading}
           style={{
             width: "100%",
-            marginBottom: 24,
+            marginBottom: 12,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -119,6 +119,90 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
+        {/* Email Link Button */}
+        <button
+          type="button"
+          onClick={() => { setLoginMode("magic"); setError(""); setSuccess(""); }}
+          disabled={loading}
+          style={{
+            width: "100%",
+            marginBottom: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            backgroundColor: "transparent",
+            color: "var(--alzooka-cream)",
+            border: "2px solid rgba(240, 235, 224, 0.3)",
+          }}
+        >
+          <span style={{ fontSize: 18 }}>✉️</span>
+          Email me a sign-in link
+        </button>
+
+        {/* Magic Link Form (shown when selected) */}
+        {loginMode === "magic" && (
+          <div style={{
+            marginBottom: 24,
+            padding: 16,
+            background: "rgba(240, 235, 224, 0.05)",
+            borderRadius: 8,
+            border: "1px solid rgba(240, 235, 224, 0.1)",
+          }}>
+            <form onSubmit={handleMagicLink}>
+              <p style={{ 
+                fontSize: 14, 
+                marginBottom: 12,
+                lineHeight: 1.5,
+                color: "var(--alzooka-cream)",
+              }}>
+                Enter your email and we&apos;ll send you a link to sign in — no password needed!
+              </p>
+              
+              <div style={{ marginBottom: 12 }}>
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <p style={{ color: "#e57373", marginBottom: 12, fontSize: 14 }}>
+                  {error}
+                </p>
+              )}
+
+              {success && (
+                <p style={{ color: "#81c784", marginBottom: 12, fontSize: 14 }}>
+                  ✓ {success}
+                </p>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setLoginMode("password"); setError(""); setSuccess(""); }}
+                  style={{ 
+                    flex: 1,
+                    background: "transparent",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    color: "var(--alzooka-cream)",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={loading} style={{ flex: 2 }}>
+                  {loading ? "Sending..." : "Send Link"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* Divider */}
         <div style={{ 
           display: "flex", 
@@ -127,122 +211,41 @@ export default function LoginPage() {
           gap: 16 
         }}>
           <div style={{ flex: 1, height: 1, backgroundColor: "var(--border-color)" }} />
-          <span style={{ fontSize: 14, color: "var(--text-muted)" }}>OR</span>
+          <span style={{ fontSize: 14, color: "var(--text-muted)" }}>or sign in with password</span>
           <div style={{ flex: 1, height: 1, backgroundColor: "var(--border-color)" }} />
         </div>
 
-        {/* Login Mode Toggle */}
-        <div style={{ 
-          display: "flex", 
-          marginBottom: 16,
-          borderRadius: 8,
-          overflow: "hidden",
-          border: "1px solid rgba(240, 235, 224, 0.2)",
-        }}>
-          <button
-            type="button"
-            onClick={() => { setLoginMode("password"); setError(""); setSuccess(""); }}
-            style={{
-              flex: 1,
-              padding: "10px 16px",
-              background: loginMode === "password" ? "var(--alzooka-gold)" : "transparent",
-              color: loginMode === "password" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 14,
-            }}
-          >
-            Password
-          </button>
-          <button
-            type="button"
-            onClick={() => { setLoginMode("magic"); setError(""); setSuccess(""); }}
-            style={{
-              flex: 1,
-              padding: "10px 16px",
-              background: loginMode === "magic" ? "var(--alzooka-gold)" : "transparent",
-              color: loginMode === "magic" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 14,
-            }}
-          >
-            Magic Link
-          </button>
-        </div>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        {loginMode === "password" ? (
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: 16 }}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div style={{ marginBottom: 16 }}>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {error && (
-              <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
-                {error}
-              </p>
-            )}
-
-            <button type="submit" disabled={loading} style={{ width: "100%" }}>
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleMagicLink}>
-            <div style={{ marginBottom: 16 }}>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <p style={{ 
-              fontSize: 13, 
-              opacity: 0.7, 
-              marginBottom: 16,
-              lineHeight: 1.5,
-            }}>
-              We&apos;ll send you a link to sign in instantly — no password needed.
+          {error && loginMode === "password" && (
+            <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+              {error}
             </p>
+          )}
 
-            {error && (
-              <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
-                {error}
-              </p>
-            )}
-
-            {success && (
-              <p style={{ color: "#81c784", marginBottom: 16, fontSize: 14 }}>
-                {success}
-              </p>
-            )}
-
-            <button type="submit" disabled={loading} style={{ width: "100%" }}>
-              {loading ? "Sending..." : "Send Magic Link"}
-            </button>
-          </form>
-        )}
+          <button type="submit" disabled={loading} style={{ width: "100%" }}>
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
       </div>
 
       <p style={{ marginTop: 24, fontSize: 14 }}>
