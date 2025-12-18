@@ -800,6 +800,7 @@ export default function GroupPage() {
         id,
         content,
         image_url,
+          image_urls,
         video_url,
         video_title,
         created_at,
