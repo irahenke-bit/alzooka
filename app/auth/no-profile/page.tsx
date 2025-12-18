@@ -10,86 +10,95 @@ import { useRouter } from "next/navigation";
 function NoProfileContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "your Google account";
-  const [isCreating, setIsCreating] = useState(false);
+  const [status, setStatus] = useState<"checking" | "creating" | "error" | "no-auth">("checking");
+  const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
   const supabase = createBrowserClient();
 
   useEffect(() => {
-    // Check if this was a signup flow
-    const isSignup = localStorage.getItem("alzooka_signup") === "true";
+    // Clear any signup flag
     localStorage.removeItem("alzooka_signup");
+    
+    // Always try to create profile for authenticated users without one
+    createProfileIfNeeded();
 
-    if (isSignup) {
-      // Auto-create profile
-      setIsCreating(true);
-      createProfile();
-    }
+    async function createProfileIfNeeded() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setStatus("no-auth");
+          return;
+        }
 
-    async function createProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsCreating(false);
-        return;
-      }
-
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-
-      if (existingProfile) {
-        router.push("/");
-        return;
-      }
-
-      // Generate username from Google name or email
-      const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
-      const emailPrefix = user.email?.split("@")[0] || "user";
-      let baseUsername = googleName
-        ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
-        : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
-
-      // Make username unique
-      let username = baseUsername;
-      let attempt = 0;
-      while (attempt < 100) {
-        const { data: existing } = await supabase
+        // Check if profile already exists
+        const { data: existingProfile } = await supabase
           .from("users")
-          .select("username")
-          .eq("username", username)
+          .select("id")
+          .eq("id", user.id)
           .single();
 
-        if (!existing) break;
-        attempt++;
-        username = `${baseUsername}${attempt}`;
+        if (existingProfile) {
+          // Profile exists, go to feed
+          router.push("/");
+          return;
+        }
+
+        // No profile - create one
+        setStatus("creating");
+
+        // Generate username from Google name or email
+        const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+        const emailPrefix = user.email?.split("@")[0] || "user";
+        let baseUsername = googleName
+          ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
+          : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
+
+        // Make username unique
+        let username = baseUsername;
+        let attempt = 0;
+        while (attempt < 100) {
+          const { data: existing } = await supabase
+            .from("users")
+            .select("username")
+            .eq("username", username)
+            .single();
+
+          if (!existing) break;
+          attempt++;
+          username = `${baseUsername}${attempt}`;
+        }
+
+        // Create the profile
+        const { error: insertError } = await supabase
+          .from("users")
+          .insert({
+            id: user.id,
+            username: username,
+            display_name: googleName || emailPrefix,
+            email: user.email,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+            terms_accepted_at: new Date().toISOString(),
+          });
+
+        if (insertError) {
+          console.error("Failed to create profile:", insertError);
+          setErrorMsg(insertError.message);
+          setStatus("error");
+          return;
+        }
+
+        // Success - go to feed
+        router.push("/");
+      } catch (err) {
+        console.error("Error:", err);
+        setErrorMsg(String(err));
+        setStatus("error");
       }
-
-      // Create the profile
-      const { error: insertError } = await supabase
-        .from("users")
-        .insert({
-          id: user.id,
-          username: username,
-          display_name: googleName || emailPrefix,
-          email: user.email,
-          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-          terms_accepted_at: new Date().toISOString(),
-        });
-
-      if (insertError) {
-        console.error("Failed to create profile:", insertError);
-        setIsCreating(false);
-        return;
-      }
-
-      // Success - go to feed
-      router.push("/");
     }
   }, [supabase, router]);
 
-  if (isCreating) {
+  if (status === "checking" || status === "creating") {
     return (
       <div style={{
         minHeight: "100vh",
@@ -99,11 +108,46 @@ function NoProfileContent() {
         justifyContent: "center",
       }}>
         <LogoWithText />
-        <p style={{ marginTop: 24 }}>Creating your profile...</p>
+        <p style={{ marginTop: 24 }}>
+          {status === "checking" ? "Checking account..." : "Creating your profile..."}
+        </p>
       </div>
     );
   }
 
+  if (status === "error") {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        textAlign: "center",
+      }}>
+        <LogoWithText />
+        <div style={{
+          marginTop: 40,
+          padding: 32,
+          background: "var(--alzooka-teal-dark)",
+          borderRadius: 12,
+          maxWidth: 400,
+        }}>
+          <h2 style={{ marginBottom: 16, color: "#e57373" }}>Profile Creation Failed</h2>
+          <p style={{ marginBottom: 16, color: "var(--alzooka-cream)" }}>{errorMsg}</p>
+          <p style={{ marginBottom: 24, color: "var(--text-muted)" }}>
+            Please try again or contact support.
+          </p>
+          <Link href="/signup" style={{ color: "var(--alzooka-gold)" }}>
+            Back to Sign Up
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // status === "no-auth" - show the original no profile page
   return (
     <div style={{
       minHeight: "100vh",
