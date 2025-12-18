@@ -3183,6 +3183,19 @@ export default function ProfilePage() {
               }
             }
           }}
+          onUserAvatarUpdated={(newUrl) => {
+            setCurrentUserAvatarUrl(newUrl);
+            // Also update profile if viewing own profile
+            if (profile && currentUser && profile.id === currentUser.id) {
+              setProfile({ ...profile, avatar_url: newUrl });
+            }
+          }}
+          onUserBannerUpdated={(newUrl) => {
+            // Update profile if viewing own profile
+            if (profile && currentUser && profile.id === currentUser.id) {
+              setProfile({ ...profile, banner_url: newUrl });
+            }
+          }}
         />
       )}
 

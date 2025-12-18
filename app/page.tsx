@@ -1768,6 +1768,7 @@ function FeedContent() {
               await loadVoteTotals(refreshedPosts);
             });
           }}
+          onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
         />
       )}
       </div>

@@ -312,6 +312,8 @@ type Props = {
   isUserGroupAdmin?: boolean;
   isUserBanned?: boolean;
   onBanUser?: (userId: string) => void;
+  onUserAvatarUpdated?: (newAvatarUrl: string) => void;
+  onUserBannerUpdated?: (newBannerUrl: string) => void;
 };
 
 // Vote Buttons Component
@@ -414,6 +416,8 @@ export function PostModal({
   isUserGroupAdmin,
   isUserBanned,
   onBanUser,
+  onUserAvatarUpdated,
+  onUserBannerUpdated,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -600,6 +604,10 @@ export function PostModal({
         throw updateError;
       }
 
+      // Notify parent to update UI
+      if (onUserBannerUpdated) {
+        onUserBannerUpdated(publicUrl);
+      }
       alert("Banner updated successfully!");
     } catch (err) {
       console.error("Error saving banner:", err);
@@ -639,6 +647,10 @@ export function PostModal({
         throw updateError;
       }
 
+      // Notify parent to update UI
+      if (onUserAvatarUpdated) {
+        onUserAvatarUpdated(publicUrl);
+      }
       alert("Profile picture updated successfully!");
     } catch (err) {
       console.error("Error saving avatar:", err);

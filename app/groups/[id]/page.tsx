@@ -3432,6 +3432,7 @@ export default function GroupPage() {
           isUserGroupAdmin={userRole === "admin"}
           isUserBanned={isUserBanned}
           onBanUser={userRole === "admin" ? handleBanUser : undefined}
+          onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
         />
       )}
       </div>
