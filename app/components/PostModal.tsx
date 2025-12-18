@@ -14,6 +14,8 @@ import {
 } from "@/lib/notifications";
 import { LinkPreview } from "./LinkPreview";
 import { EmojiButton } from "./EmojiButton";
+import { BannerCropModal } from "./BannerCropModal";
+import { AvatarCropModal } from "./AvatarCropModal";
 
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -429,6 +431,12 @@ export function PostModal({
   const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Crop modal state for setting post image as profile/banner
+  const [showBannerCrop, setShowBannerCrop] = useState(false);
+  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [savingImage, setSavingImage] = useState(false);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
   
   // Fetch current user's avatar
@@ -561,6 +569,84 @@ export function PostModal({
     setEditingCommentId(null);
     setEditingCommentText("");
     onCommentAdded();
+  }
+
+  // Handle setting post image as banner
+  async function handleBannerCropSave(croppedBlob: Blob) {
+    setSavingImage(true);
+    setShowBannerCrop(false);
+
+    try {
+      const fileName = `${user.id}-banner-${Date.now()}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, croppedBlob, { upsert: true, contentType: "image/jpeg" });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ banner_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      alert("Banner updated successfully!");
+    } catch (err) {
+      console.error("Error saving banner:", err);
+      alert("Failed to save banner. Please try again.");
+    } finally {
+      setSavingImage(false);
+      setImageToCrop(null);
+    }
+  }
+
+  // Handle setting post image as avatar
+  async function handleAvatarCropSave(croppedBlob: Blob) {
+    setSavingImage(true);
+    setShowAvatarCrop(false);
+
+    try {
+      const fileName = `avatars/${user.id}-${Date.now()}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, croppedBlob, { upsert: true, contentType: "image/jpeg" });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      alert("Profile picture updated successfully!");
+    } catch (err) {
+      console.error("Error saving avatar:", err);
+      alert("Failed to save profile picture. Please try again.");
+    } finally {
+      setSavingImage(false);
+      setImageToCrop(null);
+    }
   }
 
   async function handleComment(e: React.FormEvent) {
@@ -1363,20 +1449,80 @@ export function PostModal({
                 const images = post.image_urls || (post.image_url ? [post.image_url] : []);
                 if (images.length === 0) return null;
                 
+                const isOwnPost = post.user_id === user.id;
+                
                 if (images.length === 1) {
                   return (
-                    <div style={{ marginBottom: 16 }}>
+                    <div style={{ 
+                      marginBottom: 16,
+                      display: "flex",
+                      gap: 16,
+                      alignItems: "flex-start",
+                    }}>
                       <img
                         src={images[0]}
                         alt="Post image"
                         style={{
-                          maxWidth: "100%",
+                          maxWidth: isOwnPost ? "calc(100% - 160px)" : "100%",
                           maxHeight: 400,
                           borderRadius: 8,
                           cursor: "pointer",
                         }}
                         onClick={() => window.open(images[0], "_blank")}
                       />
+                      
+                      {/* Buttons to set as banner/profile picture - only for own posts */}
+                      {isOwnPost && (
+                        <div style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                          minWidth: 140,
+                        }}>
+                          <button
+                            onClick={() => {
+                              setImageToCrop(images[0]);
+                              setShowBannerCrop(true);
+                            }}
+                            disabled={savingImage}
+                            style={{
+                              background: "var(--alzooka-gold)",
+                              border: "none",
+                              color: "var(--alzooka-teal-dark)",
+                              padding: "10px 12px",
+                              borderRadius: 6,
+                              cursor: savingImage ? "not-allowed" : "pointer",
+                              fontWeight: 600,
+                              fontSize: 13,
+                              opacity: savingImage ? 0.5 : 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            🖼️ Make Banner
+                          </button>
+                          <button
+                            onClick={() => {
+                              setImageToCrop(images[0]);
+                              setShowAvatarCrop(true);
+                            }}
+                            disabled={savingImage}
+                            style={{
+                              background: "var(--alzooka-gold)",
+                              border: "none",
+                              color: "var(--alzooka-teal-dark)",
+                              padding: "10px 12px",
+                              borderRadius: 6,
+                              cursor: savingImage ? "not-allowed" : "pointer",
+                              fontWeight: 600,
+                              fontSize: 13,
+                              opacity: savingImage ? 0.5 : 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            👤 Make Profile Pic
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -1736,6 +1882,30 @@ export function PostModal({
           )}
         </div>
       </div>
+      
+      {/* Banner Crop Modal */}
+      {showBannerCrop && imageToCrop && (
+        <BannerCropModal
+          imageSrc={imageToCrop}
+          onCancel={() => {
+            setShowBannerCrop(false);
+            setImageToCrop(null);
+          }}
+          onSave={handleBannerCropSave}
+        />
+      )}
+      
+      {/* Avatar Crop Modal */}
+      {showAvatarCrop && imageToCrop && (
+        <AvatarCropModal
+          imageSrc={imageToCrop}
+          onCancel={() => {
+            setShowAvatarCrop(false);
+            setImageToCrop(null);
+          }}
+          onSave={handleAvatarCropSave}
+        />
+      )}
     </div>
   );
 
