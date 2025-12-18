@@ -601,6 +601,9 @@ export function PostModal({
       onVote("comment", data.id, 1);
 
       // Send notifications
+      // Track who gets a reply notification so we don't also send them a mention notification
+      let replyNotifiedUserId: string | null = null;
+      
       if (replyingTo) {
         // Recursively find the parent comment
         const findComment = (comments: Comment[]): Comment | null => {
@@ -615,8 +618,10 @@ export function PostModal({
         };
         
         const parentComment = findComment(post.comments || []);
+        // Track who got a reply notification (to skip duplicate mention notification)
         if (parentComment && parentComment.user_id !== user.id) {
           notifyNewReply(supabase, parentComment.user_id, commenterUsername, post.id, data.id, trimmedComment);
+          replyNotifiedUserId = parentComment.user_id;
         }
       } else {
         if (post.user_id !== user.id) {
@@ -624,13 +629,14 @@ export function PostModal({
         }
       }
 
-      // Check for @mentions
+      // Check for @mentions - but skip users who already got a reply notification
       const mentions = parseMentions(trimmedComment);
       if (mentions.length > 0) {
         const userIdMap = await getUserIdsByUsernames(supabase, mentions);
         for (const username of mentions) {
           const mentionedUserId = userIdMap[username.toLowerCase()];
-          if (mentionedUserId && mentionedUserId !== user.id) {
+          // Skip if: it's yourself, OR they already got a reply notification for this comment
+          if (mentionedUserId && mentionedUserId !== user.id && mentionedUserId !== replyNotifiedUserId) {
             notifyMention(supabase, mentionedUserId, commenterUsername, post.id, data.id, trimmedComment);
           }
         }
