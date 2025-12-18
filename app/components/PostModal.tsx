@@ -609,6 +609,7 @@ export function PostModal({
         onUserBannerUpdated(publicUrl);
       }
       alert("Banner updated successfully!");
+      onClose(); // Close the entire modal
     } catch (err) {
       console.error("Error saving banner:", err);
       alert("Failed to save banner. Please try again.");
@@ -652,6 +653,7 @@ export function PostModal({
         onUserAvatarUpdated(publicUrl);
       }
       alert("Profile picture updated successfully!");
+      onClose(); // Close the entire modal
     } catch (err) {
       console.error("Error saving avatar:", err);
       alert("Failed to save profile picture. Please try again.");
