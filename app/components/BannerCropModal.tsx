@@ -4,9 +4,9 @@ import { useState, useRef } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
-// Banner aspect ratio (width:height) - 3:1 is more balanced than 4:1
-// Shows more of the image while still being a proper banner shape
-const BANNER_ASPECT = 3 / 1;
+// Banner aspect ratio (width:height) - 2:1 allows using ~50% of a square image
+// Much more generous while still looking like a banner
+const BANNER_ASPECT = 2 / 1;
 
 type Props = {
   imageSrc: string;
