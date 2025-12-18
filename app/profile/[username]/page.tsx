@@ -290,6 +290,8 @@ export default function ProfilePage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [wallSelectedImages, setWallSelectedImages] = useState<File[]>([]);
   const [wallImagePreviews, setWallImagePreviews] = useState<string[]>([]);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isWallDraggingOver, setIsWallDraggingOver] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const wallImageInputRef = useRef<HTMLInputElement>(null);
@@ -1037,6 +1039,12 @@ export default function ProfilePage() {
 
   function handleDrop(e: React.DragEvent, isWall: boolean = false) {
     e.preventDefault();
+    if (isWall) {
+      setIsWallDraggingOver(false);
+    } else {
+      setIsDraggingOver(false);
+    }
+    
     const files = Array.from(e.dataTransfer.files);
     const validFiles: File[] = [];
     const previews: string[] = [];
@@ -1737,39 +1745,76 @@ export default function ProfilePage() {
       {/* New Post Form (only on own profile) */}
       {isOwnProfile && (
         <div className="card" style={{ marginBottom: 24 }}>
-          <textarea
-            value={newPostContent}
-            onChange={async (e) => {
-              const newContent = e.target.value;
-              setNewPostContent(newContent);
-              
-              // Detect YouTube URL
-              if (!youtubePreview && !loadingPreview) {
-                const youtubeUrl = findYouTubeUrl(newContent);
-                if (youtubeUrl) {
-                  const videoId = extractYouTubeVideoId(youtubeUrl);
-                  if (videoId) {
-                    setLoadingPreview(true);
-                    try {
-                      const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
-                      const data = await response.json();
-                      const title = data.title || "YouTube Video";
-                      setYoutubePreview({ videoId, url: youtubeUrl, title });
-                    } catch {
-                      setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <textarea
+              value={newPostContent}
+              onChange={async (e) => {
+                const newContent = e.target.value;
+                setNewPostContent(newContent);
+                
+                // Detect YouTube URL
+                if (!youtubePreview && !loadingPreview) {
+                  const youtubeUrl = findYouTubeUrl(newContent);
+                  if (youtubeUrl) {
+                    const videoId = extractYouTubeVideoId(youtubeUrl);
+                    if (videoId) {
+                      setLoadingPreview(true);
+                      try {
+                        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+                        const data = await response.json();
+                        const title = data.title || "YouTube Video";
+                        setYoutubePreview({ videoId, url: youtubeUrl, title });
+                      } catch {
+                        setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+                      }
+                      setLoadingPreview(false);
                     }
-                    setLoadingPreview(false);
                   }
                 }
-              }
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, false)}
-            placeholder="What's on your mind? Paste a YouTube or Spotify link to share, or drag & drop images"
-            rows={3}
-            maxLength={500}
-            style={{ marginBottom: 12, resize: "vertical" }}
-          />
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              onDragEnter={() => setIsDraggingOver(true)}
+              onDragLeave={(e) => {
+                // Only trigger if leaving the textarea itself
+                if (e.currentTarget === e.target) setIsDraggingOver(false);
+              }}
+              onDrop={(e) => handleDrop(e, false)}
+              placeholder="What's on your mind? Paste a YouTube or Spotify link to share"
+              rows={3}
+              maxLength={500}
+              style={{ 
+                resize: "vertical",
+                borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
+                borderWidth: isDraggingOver ? 2 : undefined,
+              }}
+            />
+            {isDraggingOver && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(201, 162, 92, 0.15)",
+                  border: "2px dashed var(--alzooka-gold)",
+                  borderRadius: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <span style={{ 
+                  background: "var(--alzooka-gold)", 
+                  color: "var(--alzooka-teal-dark)",
+                  padding: "8px 16px",
+                  borderRadius: 20,
+                  fontWeight: 600,
+                  fontSize: 14,
+                }}>
+                  📷 Drop images here
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Image Previews */}
           {imagePreviews.length > 0 && (
