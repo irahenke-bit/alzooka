@@ -57,6 +57,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  image_urls: string[] | null;
   video_url: string | null;
   video_title?: string | null;
   user_id: string;
@@ -1077,12 +1078,11 @@ export default function ProfilePage() {
 
     setPosting(true);
 
-    // Upload image if selected (using first image for now - database has single image_url)
-    let imageUrl: string | null = null;
-    if (selectedImages.length > 0) {
-      const file = selectedImages[0];
+    // Upload ALL images
+    const uploadedUrls: string[] = [];
+    for (const file of selectedImages) {
       const fileExt = file.name.split(".").pop();
-      const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      const filePath = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from("post-images")
@@ -1095,7 +1095,7 @@ export default function ProfilePage() {
       }
       
       const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
-      imageUrl = publicUrl;
+      uploadedUrls.push(publicUrl);
     }
 
     // Use preview URL if available, otherwise detect from content
@@ -1109,7 +1109,8 @@ export default function ProfilePage() {
       .insert({
         user_id: currentUser.id,
         content: newPostContent.trim(),
-        image_url: imageUrl,
+        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
+        image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
         video_url: videoUrl,
         video_title: videoTitle,
       })
@@ -1131,7 +1132,8 @@ export default function ProfilePage() {
           id: newPost.id,
           user_id: currentUser.id,
           content: newPost.content,
-          image_url: imageUrl,
+          image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
+          image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
           video_url: videoUrl,
           wall_user_id: null,
           wall_user: null,
@@ -2283,6 +2285,7 @@ export default function ProfilePage() {
               let displayContent = post.content;
               const videoUrl = post.video_url;
               const imageUrl = post.image_url;
+              const imageUrls = post.image_urls || (imageUrl ? [imageUrl] : []);
               
               // Strip YouTube/Spotify URLs if video exists
               if (videoUrl && displayContent) {
@@ -2475,8 +2478,46 @@ export default function ProfilePage() {
                         <>
                           {displayContent && <p style={{ margin: "0 0 12px 0", lineHeight: 1.6 }}>{displayContent}</p>}
 
-                          {imageUrl && (
-                            <img src={imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12 }} />
+                          {/* Post Images Gallery */}
+                          {imageUrls.length > 0 && (
+                            imageUrls.length === 1 ? (
+                              <img src={imageUrls[0]} alt="" style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, marginBottom: 12, cursor: "pointer" }} onClick={() => setModalPost(post)} />
+                            ) : (
+                              <div style={{ 
+                                display: "grid", 
+                                gridTemplateColumns: imageUrls.length === 2 ? "1fr 1fr" : "repeat(3, 1fr)",
+                                gap: 4,
+                                marginBottom: 12,
+                                borderRadius: 8,
+                                overflow: "hidden",
+                              }}>
+                                {imageUrls.slice(0, 6).map((url, idx) => (
+                                  <div key={idx} style={{ position: "relative", paddingTop: "100%" }}>
+                                    <img 
+                                      src={url} 
+                                      alt={`Image ${idx + 1}`}
+                                      style={{ 
+                                        position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+                                        objectFit: "cover", cursor: "pointer",
+                                      }}
+                                      onClick={() => setModalPost(post)}
+                                    />
+                                    {idx === 5 && imageUrls.length > 6 && (
+                                      <div 
+                                        style={{
+                                          position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)",
+                                          display: "flex", alignItems: "center", justifyContent: "center",
+                                          color: "white", fontSize: 24, fontWeight: 600, cursor: "pointer",
+                                        }}
+                                        onClick={() => setModalPost(post)}
+                                      >
+                                        +{imageUrls.length - 6}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )
                           )}
 
                       {/* Edited indicator and history */}

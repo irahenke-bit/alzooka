@@ -77,6 +77,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  image_urls: string[] | null;
   video_url: string | null;
   video_title?: string | null;
   created_at: string;
@@ -1103,13 +1104,11 @@ export default function GroupPage() {
 
     setPosting(true);
 
-    let imageUrl: string | null = null;
-
-    // Upload first image (database currently supports single image)
-    if (selectedImages.length > 0) {
-      const file = selectedImages[0];
+    // Upload ALL images
+    const uploadedUrls: string[] = [];
+    for (const file of selectedImages) {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `posts/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -1123,7 +1122,7 @@ export default function GroupPage() {
       }
 
       const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(filePath);
-      imageUrl = publicUrl;
+      uploadedUrls.push(publicUrl);
     }
 
     // Use the video/album title (usually contains Artist - Album)
@@ -1134,7 +1133,8 @@ export default function GroupPage() {
       .from("posts")
       .insert({
         content: content.trim(),
-        image_url: imageUrl,
+        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
+        image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
         video_url: youtubePreview?.url || spotifyPreview?.url || null,
         video_title: videoTitle,
         user_id: user.id,
@@ -4002,16 +4002,76 @@ const GroupPostCard = memo(function GroupPostCard({
             );
             return previewUrl ? <LinkPreview url={previewUrl} /> : null;
           })()}
-          {post.image_url && (
-            <div style={{ marginBottom: 16 }}>
-              <img
-                src={post.image_url}
-                alt="Post image"
-                style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, cursor: "pointer" }}
-                onClick={() => window.open(post.image_url!, "_blank")}
-              />
-            </div>
-          )}
+          {/* Post Images Gallery */}
+          {(() => {
+            const images = post.image_urls || (post.image_url ? [post.image_url] : []);
+            if (images.length === 0) return null;
+            
+            if (images.length === 1) {
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <img 
+                    src={images[0]} 
+                    alt="Post image"
+                    style={{ maxWidth: "100%", maxHeight: 500, borderRadius: 8, cursor: "pointer" }}
+                    onClick={() => onOpenModal && onOpenModal()}
+                  />
+                </div>
+              );
+            }
+            
+            return (
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: images.length === 2 ? "1fr 1fr" : "repeat(3, 1fr)",
+                gap: 4,
+                marginBottom: 16,
+                borderRadius: 8,
+                overflow: "hidden",
+              }}>
+                {images.slice(0, 6).map((url, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{ position: "relative", paddingTop: "100%" }}
+                  >
+                    <img 
+                      src={url} 
+                      alt={`Image ${idx + 1}`}
+                      style={{ 
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => onOpenModal && onOpenModal()}
+                    />
+                    {idx === 5 && images.length > 6 && (
+                      <div 
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "rgba(0,0,0,0.6)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "white",
+                          fontSize: 24,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => onOpenModal && onOpenModal()}
+                      >
+                        +{images.length - 6}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           {post.video_url && (() => {
             // Check if it's a YouTube URL
             const videoId = extractYouTubeVideoId(post.video_url);

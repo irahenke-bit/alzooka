@@ -58,6 +58,7 @@ type Post = {
   id: string;
   content: string;
   image_url: string | null;
+  image_urls: string[] | null;
   video_url: string | null;
   wall_user_id: string | null;
   wall_user?: {
@@ -1182,13 +1183,11 @@ function FeedContent() {
 
     setPosting(true);
 
-    let imageUrl: string | null = null;
-
-    // Upload first image if selected (database currently supports single image)
-    if (selectedImages.length > 0) {
-      const file = selectedImages[0];
+    // Upload ALL images
+    const uploadedUrls: string[] = [];
+    for (const file of selectedImages) {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `posts/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -1205,22 +1204,22 @@ function FeedContent() {
         return;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("post-images")
         .getPublicUrl(filePath);
 
-      imageUrl = publicUrl;
+      uploadedUrls.push(publicUrl);
     }
 
     const { data, error } = await supabase
       .from("posts")
       .insert({
         content: content.trim(),
-        image_url: imageUrl,
+        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, // Keep first for backwards compat
+        image_urls: uploadedUrls.length > 0 ? uploadedUrls : null, // All images
         video_url: youtubePreview?.url || spotifyPreview?.url || null,
         user_id: user.id,
-        wall_user_id: highlightPostId ? null : null, // feed posts only here
+        wall_user_id: null,
       })
       .select()
       .single();
@@ -2162,22 +2161,85 @@ function PostCard({
             </>
           )}
           
-          {/* Post Image */}
-          {(post.shared_from_post?.image_url || post.image_url) && (
-            <div style={{ marginBottom: 16 }}>
-              <img 
-                src={post.shared_from_post?.image_url || post.image_url || ""} 
-                alt="Post image"
-                style={{ 
-                  maxWidth: "100%", 
-                  maxHeight: 500,
-                  borderRadius: 8,
-                  cursor: "pointer",
-                }}
-                onClick={onOpenModal}
-              />
-            </div>
-          )}
+          {/* Post Images Gallery */}
+          {(() => {
+            const images = post.image_urls || (post.image_url ? [post.image_url] : []);
+            if (images.length === 0) return null;
+            
+            if (images.length === 1) {
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <img 
+                    src={images[0]} 
+                    alt="Post image"
+                    style={{ 
+                      maxWidth: "100%", 
+                      maxHeight: 500,
+                      borderRadius: 8,
+                      cursor: "pointer",
+                    }}
+                    onClick={onOpenModal}
+                  />
+                </div>
+              );
+            }
+            
+            // Multiple images - grid layout
+            return (
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: images.length === 2 ? "1fr 1fr" : "repeat(3, 1fr)",
+                gap: 4,
+                marginBottom: 16,
+                borderRadius: 8,
+                overflow: "hidden",
+              }}>
+                {images.slice(0, 6).map((url, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      position: "relative",
+                      paddingTop: images.length === 2 ? "100%" : "100%",
+                    }}
+                  >
+                    <img 
+                      src={url} 
+                      alt={`Image ${idx + 1}`}
+                      style={{ 
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        cursor: "pointer",
+                      }}
+                      onClick={onOpenModal}
+                    />
+                    {idx === 5 && images.length > 6 && (
+                      <div 
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "rgba(0,0,0,0.6)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "white",
+                          fontSize: 24,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                        onClick={onOpenModal}
+                      >
+                        +{images.length - 6}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* YouTube or Spotify Player */}
           {(post.shared_from_post?.video_url || post.video_url) && (() => {
