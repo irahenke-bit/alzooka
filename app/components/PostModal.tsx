@@ -1662,6 +1662,7 @@ export function PostModal({
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
+                        opacity: 0.85,
                       }}
                     >
                       "
