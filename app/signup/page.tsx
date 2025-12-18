@@ -207,7 +207,7 @@ export default function SignupPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              style={{ paddingLeft: 32 }}
+              style={{ paddingLeft: 28 }}
             />
           </div>
 
