@@ -1287,51 +1287,106 @@ function FeedContent() {
 
       {/* New Post Form */}
       <form onSubmit={handlePost} style={{ marginBottom: 32 }}>
-        <div style={{ position: "relative", marginBottom: 12 }}>
-          <textarea
-            ref={textareaRef}
-            placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
-            value={content}
-            onChange={(e) => handleContentChange(e.target.value)}
-            onDragOver={(e) => e.preventDefault()}
-            onDragEnter={() => setIsDraggingOver(true)}
-            onDragLeave={(e) => {
-              if (e.currentTarget === e.target) setIsDraggingOver(false);
-            }}
-            onDrop={handleDrop}
-            rows={3}
-            style={{ 
-              resize: "vertical",
-              borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
-              borderWidth: isDraggingOver ? 2 : undefined,
-            }}
-          />
-          {isDraggingOver && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "rgba(201, 162, 92, 0.15)",
-                border: "2px dashed var(--alzooka-gold)",
-                borderRadius: 4,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                pointerEvents: "none",
+        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+          {/* Left side - Avatar and Emoji */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            {userAvatarUrl ? (
+              <img
+                src={userAvatarUrl}
+                alt=""
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: "var(--alzooka-gold)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--alzooka-teal-dark)",
+                  fontWeight: 700,
+                  fontSize: 16,
+                }}
+              >
+                {userUsername?.charAt(0).toUpperCase() || "?"}
+              </div>
+            )}
+            <EmojiButton
+              direction="down"
+              buttonSize={32}
+              onEmojiSelect={(emoji) => {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                  const start = textarea.selectionStart || 0;
+                  const end = textarea.selectionEnd || 0;
+                  const newContent = content.slice(0, start) + emoji + content.slice(end);
+                  setContent(newContent);
+                  setTimeout(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                  }, 0);
+                } else {
+                  setContent(content + emoji);
+                }
               }}
-            >
-              <span style={{ 
-                background: "var(--alzooka-gold)", 
-                color: "var(--alzooka-teal-dark)",
-                padding: "8px 16px",
-                borderRadius: 20,
-                fontWeight: 600,
-                fontSize: 14,
-              }}>
-                📷 Drop images here
-              </span>
-            </div>
-          )}
+            />
+          </div>
+          
+          {/* Right side - Textarea */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <textarea
+              ref={textareaRef}
+              placeholder="What's on your mind? Paste a YouTube or Spotify link to share..."
+              value={content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              onDragOver={(e) => e.preventDefault()}
+              onDragEnter={() => setIsDraggingOver(true)}
+              onDragLeave={(e) => {
+                if (e.currentTarget === e.target) setIsDraggingOver(false);
+              }}
+              onDrop={handleDrop}
+              rows={3}
+              style={{ 
+                resize: "vertical",
+                borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
+                borderWidth: isDraggingOver ? 2 : undefined,
+              }}
+            />
+            {isDraggingOver && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(201, 162, 92, 0.15)",
+                  border: "2px dashed var(--alzooka-gold)",
+                  borderRadius: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <span style={{ 
+                  background: "var(--alzooka-gold)", 
+                  color: "var(--alzooka-teal-dark)",
+                  padding: "8px 16px",
+                  borderRadius: 20,
+                  fontWeight: 600,
+                  fontSize: 14,
+                }}>
+                  📷 Drop images here
+                </span>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Image Previews */}
@@ -1528,24 +1583,6 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <EmojiButton
-            onEmojiSelect={(emoji) => {
-              const textarea = textareaRef.current;
-              if (textarea) {
-                const start = textarea.selectionStart || 0;
-                const end = textarea.selectionEnd || 0;
-                const newContent = content.slice(0, start) + emoji + content.slice(end);
-                setContent(newContent);
-                // Restore cursor position after emoji
-                setTimeout(() => {
-                  textarea.focus();
-                  textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                }, 0);
-              } else {
-                setContent(content + emoji);
-              }
-            }}
-          />
           <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
             {posting ? "Posting..." : "Post"}
           </button>

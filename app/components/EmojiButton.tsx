@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import EmojiPicker, { Theme, EmojiClickData } from "emoji-picker-react";
+import EmojiPicker, { Theme, EmojiClickData, SkinTones } from "emoji-picker-react";
 
 interface EmojiButtonProps {
   onEmojiSelect: (emoji: string) => void;
   buttonSize?: number;
+  direction?: "up" | "down";
 }
 
-export function EmojiButton({ onEmojiSelect, buttonSize = 32 }: EmojiButtonProps) {
+export function EmojiButton({ onEmojiSelect, buttonSize = 32, direction = "up" }: EmojiButtonProps) {
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +35,8 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32 }: EmojiButtonProps
 
   function handleEmojiClick(emojiData: EmojiClickData) {
     onEmojiSelect(emojiData.emoji);
-    setShowPicker(false);
+    // Don't close - allow rapid multi-emoji selection
+    // User clicks outside to close
   }
 
   return (
@@ -70,8 +72,10 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32 }: EmojiButtonProps
           ref={pickerRef}
           style={{
             position: "absolute",
-            bottom: buttonSize + 8,
-            right: 0,
+            ...(direction === "down" 
+              ? { top: buttonSize + 8, left: 0 }
+              : { bottom: buttonSize + 8, right: 0 }
+            ),
             zIndex: 1000,
           }}
         >
@@ -82,6 +86,8 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32 }: EmojiButtonProps
             height={400}
             searchPlaceholder="Search emojis..."
             previewConfig={{ showPreview: false }}
+            skinTonesDisabled={false}
+            defaultSkinTone={SkinTones.NEUTRAL}
           />
         </div>
       )}

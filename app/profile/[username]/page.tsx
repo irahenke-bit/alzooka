@@ -1752,76 +1752,131 @@ export default function ProfilePage() {
       {/* New Post Form (only on own profile) */}
       {isOwnProfile && (
         <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ position: "relative", marginBottom: 12 }}>
-            <textarea
-              ref={postTextareaRef}
-              value={newPostContent}
-              onChange={async (e) => {
-                const newContent = e.target.value;
-                setNewPostContent(newContent);
-                
-                // Detect YouTube URL
-                if (!youtubePreview && !loadingPreview) {
-                  const youtubeUrl = findYouTubeUrl(newContent);
-                  if (youtubeUrl) {
-                    const videoId = extractYouTubeVideoId(youtubeUrl);
-                    if (videoId) {
-                      setLoadingPreview(true);
-                      try {
-                        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
-                        const data = await response.json();
-                        const title = data.title || "YouTube Video";
-                        setYoutubePreview({ videoId, url: youtubeUrl, title });
-                      } catch {
-                        setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+          <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+            {/* Left side - Avatar and Emoji */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              {currentUserAvatarUrl ? (
+                <img
+                  src={currentUserAvatarUrl}
+                  alt=""
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background: "var(--alzooka-gold)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--alzooka-teal-dark)",
+                    fontWeight: 700,
+                    fontSize: 16,
+                  }}
+                >
+                  {currentUserUsername?.charAt(0).toUpperCase() || "?"}
+                </div>
+              )}
+              <EmojiButton
+                direction="down"
+                buttonSize={32}
+                onEmojiSelect={(emoji) => {
+                  const textarea = postTextareaRef.current;
+                  if (textarea) {
+                    const start = textarea.selectionStart || 0;
+                    const end = textarea.selectionEnd || 0;
+                    const newContent = newPostContent.slice(0, start) + emoji + newPostContent.slice(end);
+                    setNewPostContent(newContent);
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                    }, 0);
+                  } else {
+                    setNewPostContent(newPostContent + emoji);
+                  }
+                }}
+              />
+            </div>
+            
+            {/* Right side - Textarea */}
+            <div style={{ flex: 1, position: "relative" }}>
+              <textarea
+                ref={postTextareaRef}
+                value={newPostContent}
+                onChange={async (e) => {
+                  const newContent = e.target.value;
+                  setNewPostContent(newContent);
+                  
+                  // Detect YouTube URL
+                  if (!youtubePreview && !loadingPreview) {
+                    const youtubeUrl = findYouTubeUrl(newContent);
+                    if (youtubeUrl) {
+                      const videoId = extractYouTubeVideoId(youtubeUrl);
+                      if (videoId) {
+                        setLoadingPreview(true);
+                        try {
+                          const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
+                          const data = await response.json();
+                          const title = data.title || "YouTube Video";
+                          setYoutubePreview({ videoId, url: youtubeUrl, title });
+                        } catch {
+                          setYoutubePreview({ videoId, url: youtubeUrl, title: "YouTube Video" });
+                        }
+                        setLoadingPreview(false);
                       }
-                      setLoadingPreview(false);
                     }
                   }
-                }
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDragEnter={() => setIsDraggingOver(true)}
-              onDragLeave={(e) => {
-                // Only trigger if leaving the textarea itself
-                if (e.currentTarget === e.target) setIsDraggingOver(false);
-              }}
-              onDrop={(e) => handleDrop(e, false)}
-              placeholder="What's on your mind? Paste a YouTube or Spotify link to share"
-              rows={3}
-              maxLength={500}
-              style={{ 
-                resize: "vertical",
-                borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
-                borderWidth: isDraggingOver ? 2 : undefined,
-              }}
-            />
-            {isDraggingOver && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(201, 162, 92, 0.15)",
-                  border: "2px dashed var(--alzooka-gold)",
-                  borderRadius: 4,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  pointerEvents: "none",
                 }}
-              >
-                <span style={{ 
-                  background: "var(--alzooka-gold)", 
-                  color: "var(--alzooka-teal-dark)",
-                  padding: "8px 16px",
-                  borderRadius: 20,
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}>
-                  📷 Drop images here
-                </span>
-              </div>
-            )}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => setIsDraggingOver(true)}
+                onDragLeave={(e) => {
+                  // Only trigger if leaving the textarea itself
+                  if (e.currentTarget === e.target) setIsDraggingOver(false);
+                }}
+                onDrop={(e) => handleDrop(e, false)}
+                placeholder="What's on your mind? Paste a YouTube or Spotify link to share"
+                rows={3}
+                maxLength={500}
+                style={{ 
+                  resize: "vertical",
+                  borderColor: isDraggingOver ? "var(--alzooka-gold)" : undefined,
+                  borderWidth: isDraggingOver ? 2 : undefined,
+                }}
+              />
+              {isDraggingOver && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(201, 162, 92, 0.15)",
+                    border: "2px dashed var(--alzooka-gold)",
+                    borderRadius: 4,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <span style={{ 
+                    background: "var(--alzooka-gold)", 
+                    color: "var(--alzooka-teal-dark)",
+                    padding: "8px 16px",
+                    borderRadius: 20,
+                    fontWeight: 600,
+                    fontSize: 14,
+                  }}>
+                    📷 Drop images here
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Image Previews */}
@@ -2038,23 +2093,6 @@ export default function ProfilePage() {
                 multiple
                 onChange={(e) => handleImageSelect(e, false)}
                 style={{ display: "none" }}
-              />
-              <EmojiButton
-                onEmojiSelect={(emoji) => {
-                  const textarea = postTextareaRef.current;
-                  if (textarea) {
-                    const start = textarea.selectionStart || 0;
-                    const end = textarea.selectionEnd || 0;
-                    const newContent = newPostContent.slice(0, start) + emoji + newPostContent.slice(end);
-                    setNewPostContent(newContent);
-                    setTimeout(() => {
-                      textarea.focus();
-                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                    }, 0);
-                  } else {
-                    setNewPostContent(newPostContent + emoji);
-                  }
-                }}
               />
               <button
                 onClick={handlePost}
