@@ -1311,8 +1311,8 @@ export default function ProfilePage() {
           marginBottom: 32, 
           borderRadius: 12, 
           overflow: "visible",
-          background: profile.banner_url 
-            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
+          background: profile.banner_url
+            ? `linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(26,58,74,0.85) 70%), url(${profile.banner_url}) center/contain no-repeat, linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)`
             : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
