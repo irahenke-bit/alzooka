@@ -68,11 +68,11 @@ export default function SignupPage() {
       return;
     }
 
-    // Sign up with Supabase Auth (profile created automatically via trigger)
+    // Sign up with Supabase Auth
     const trimmedUsername = username.trim().toLowerCase();
     const trimmedDisplayName = displayName.trim() || trimmedUsername;
     const termsAcceptedAt = new Date().toISOString();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -88,6 +88,23 @@ export default function SignupPage() {
       setError(signUpError.message);
       setLoading(false);
       return;
+    }
+
+    // Create profile in users table explicitly
+    if (signUpData.user) {
+      const { error: profileError } = await supabase
+        .from("users")
+        .insert({
+          id: signUpData.user.id,
+          username: trimmedUsername,
+          display_name: trimmedDisplayName,
+          terms_accepted_at: termsAcceptedAt,
+        });
+
+      if (profileError) {
+        // Profile might already exist from a trigger, that's okay
+        console.log("Profile creation note:", profileError.message);
+      }
     }
 
     // Success - redirect to feed
