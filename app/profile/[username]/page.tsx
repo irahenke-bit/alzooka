@@ -1772,38 +1772,104 @@ export default function ProfilePage() {
             }}
             onDrop={(e) => handleDrop(e, false)}
           >
-            {/* Avatar */}
-            {currentUserAvatarUrl ? (
-              <img
-                src={currentUserAvatarUrl}
-                alt=""
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
+            {/* Left column - Avatar, Emoji, Quote */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              {currentUserAvatarUrl ? (
+                <img
+                  src={currentUserAvatarUrl}
+                  alt=""
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background: "var(--alzooka-gold)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--alzooka-teal-dark)",
+                    fontWeight: 700,
+                    fontSize: 16,
+                  }}
+                >
+                  {currentUserUsername?.charAt(0).toUpperCase() || "?"}
+                </div>
+              )}
+              
+              {/* Emoji Button */}
+              <EmojiButton
+                direction="down"
+                buttonSize={28}
+                onEmojiSelect={(emoji) => {
+                  const textarea = postTextareaRef.current;
+                  if (textarea) {
+                    const start = textarea.selectionStart || 0;
+                    const end = textarea.selectionEnd || 0;
+                    const newContent = newPostContent.slice(0, start) + emoji + newPostContent.slice(end);
+                    setNewPostContent(newContent);
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                    }, 0);
+                  } else {
+                    setNewPostContent(newPostContent + emoji);
+                  }
                 }}
               />
-            ) : (
-              <div
+              
+              {/* Quote Button */}
+              <button
+                type="button"
+                title="Insert quote"
+                onClick={() => {
+                  const textarea = postTextareaRef.current;
+                  if (!textarea) return;
+                  const start = textarea.selectionStart || 0;
+                  const end = textarea.selectionEnd || 0;
+                  if (start !== end) {
+                    const selectedText = newPostContent.substring(start, end);
+                    const newText = newPostContent.substring(0, start) + `「${selectedText}」` + newPostContent.substring(end);
+                    setNewPostContent(newText);
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(end + 2, end + 2);
+                    }, 0);
+                  } else {
+                    const newText = newPostContent.substring(0, start) + '「」' + newPostContent.substring(start);
+                    setNewPostContent(newText);
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + 1, start + 1);
+                    }, 0);
+                  }
+                }}
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
                   background: "var(--alzooka-gold)",
+                  border: "none",
+                  color: "var(--alzooka-teal-dark)",
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--alzooka-teal-dark)",
-                  fontWeight: 700,
-                  fontSize: 16,
-                  flexShrink: 0,
+                  opacity: 0.75,
                 }}
               >
-                {currentUserUsername?.charAt(0).toUpperCase() || "?"}
-              </div>
-            )}
+                "
+              </button>
+            </div>
             
             {/* Textarea */}
             <textarea
@@ -1846,27 +1912,6 @@ export default function ProfilePage() {
                 lineHeight: 1.5,
                 outline: "none",
                 minHeight: 60,
-              }}
-            />
-            
-            {/* Emoji Button */}
-            <EmojiButton
-              direction="down"
-              buttonSize={32}
-              onEmojiSelect={(emoji) => {
-                const textarea = postTextareaRef.current;
-                if (textarea) {
-                  const start = textarea.selectionStart || 0;
-                  const end = textarea.selectionEnd || 0;
-                  const newContent = newPostContent.slice(0, start) + emoji + newPostContent.slice(end);
-                  setNewPostContent(newContent);
-                  setTimeout(() => {
-                    textarea.focus();
-                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                  }, 0);
-                } else {
-                  setNewPostContent(newPostContent + emoji);
-                }
               }}
             />
             
