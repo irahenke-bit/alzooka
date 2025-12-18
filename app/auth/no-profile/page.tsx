@@ -44,51 +44,8 @@ function NoProfileContent() {
           return;
         }
 
-        // No profile - create one
-        setStatus("creating");
-
-        // Generate username from Google name or email
-        const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
-        const emailPrefix = user.email?.split("@")[0] || "user";
-        let baseUsername = googleName
-          ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
-          : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
-
-        // Make username unique
-        let username = baseUsername;
-        let attempt = 0;
-        while (attempt < 100) {
-          const { data: existing } = await supabase
-            .from("users")
-            .select("username")
-            .eq("username", username)
-            .single();
-
-          if (!existing) break;
-          attempt++;
-          username = `${baseUsername}${attempt}`;
-        }
-
-        // Create the profile
-        const { error: insertError } = await supabase
-          .from("users")
-          .insert({
-            id: user.id,
-            username: username,
-            display_name: googleName || emailPrefix,
-            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-            terms_accepted_at: new Date().toISOString(),
-          });
-
-        if (insertError) {
-          console.error("Failed to create profile:", insertError);
-          setErrorMsg(insertError.message);
-          setStatus("error");
-          return;
-        }
-
-        // Success - go to feed
-        router.push("/");
+        // No profile - redirect to complete profile page to let user choose username
+        router.push("/auth/complete-profile");
       } catch (err) {
         console.error("Error:", err);
         setErrorMsg(String(err));

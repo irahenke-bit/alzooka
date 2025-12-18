@@ -75,7 +75,7 @@ export default function AuthCallbackPage() {
           localStorage.removeItem("alzooka_pending_signup");
           
           if (pendingSignupRaw) {
-            // Email/password signup that was verified
+            // Email/password signup that was verified - they already chose username/displayname
             try {
               const pendingSignup = JSON.parse(pendingSignupRaw);
               const { error: insertError } = await supabase
@@ -98,50 +98,12 @@ export default function AuthCallbackPage() {
             }
           }
           
-          if (isSignup) {
-            // This is a Google signup - create profile automatically
-            // Generate username from email or Google name
-            const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
-            const emailPrefix = user.email?.split("@")[0] || "user";
-            let baseUsername = googleName 
-              ? googleName.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20)
-              : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 20);
-            
-            // Make username unique by checking and adding numbers if needed
-            let username = baseUsername;
-            let attempt = 0;
-            while (attempt < 100) {
-              const { data: existing } = await supabase
-                .from("users")
-                .select("username")
-                .eq("username", username)
-                .single();
-              
-              if (!existing) break;
-              attempt++;
-              username = `${baseUsername}${attempt}`;
-            }
-            
-            // Create the profile
-            const { error: insertError } = await supabase
-              .from("users")
-              .insert({
-                id: user.id,
-                username: username,
-                display_name: googleName || emailPrefix,
-                avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-                terms_accepted_at: new Date().toISOString(),
-              });
+          // New user (Google OAuth, Magic Link, etc.) - let them choose username/display name
+          router.push("/auth/complete-profile");
+          return;
           
-            if (insertError) {
-              setErrorMsg(`Failed to create profile: ${insertError.message}`);
-              setStatus("error");
-              return;
-            }
-          
-            // Success - go to feed
-            router.push("/");
-          } else {
+          // Old auto-create code removed - users now choose their own username
+          if (false) {
             // Not a signup, show no-profile message
             setEmail(user.email || "your account");
             setStatus("no-profile");
