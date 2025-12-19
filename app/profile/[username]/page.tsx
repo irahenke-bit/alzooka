@@ -20,6 +20,7 @@ import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { EmojiButton } from "@/app/components/EmojiButton";
 import { PasswordModal } from "@/app/components/PasswordModal";
 import { ContentFilterModal } from "@/app/components/ContentFilterModal";
+import { LinkPreview } from "@/app/components/LinkPreview";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -2494,6 +2495,15 @@ export default function ProfilePage() {
                   .trim();
               }
               
+              // Extract first URL for link preview (before stripping)
+              const firstUrlMatch = post.content?.match(/https?:\/\/[^\s]+/i);
+              const firstUrl = firstUrlMatch ? firstUrlMatch[0] : null;
+              
+              // Check if URL is YouTube or Spotify (don't show LinkPreview for these)
+              const isYoutubeUrl = firstUrl && (firstUrl.includes('youtube.com') || firstUrl.includes('youtu.be'));
+              const isSpotifyUrl = firstUrl && firstUrl.includes('spotify.com');
+              const showLinkPreview = firstUrl && !isYoutubeUrl && !isSpotifyUrl && !imageUrl;
+              
               // Strip ALL URLs when no image/video (link preview will show instead)
               if (!imageUrl && !videoUrl && displayContent) {
                 displayContent = displayContent
@@ -2717,6 +2727,13 @@ export default function ProfilePage() {
                                 ))}
                               </div>
                             )
+                          )}
+
+                          {/* Link Preview for non-YouTube/Spotify URLs */}
+                          {showLinkPreview && firstUrl && (
+                            <div style={{ marginBottom: 12 }}>
+                              <LinkPreview url={firstUrl} />
+                            </div>
                           )}
 
                       {/* Edited indicator and history */}
