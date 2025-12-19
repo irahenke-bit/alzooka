@@ -65,6 +65,7 @@ async function generateUsername(displayName: string, supabase: ReturnType<typeof
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
@@ -415,15 +416,34 @@ export default function SignupPage() {
             />
           </div>
           
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 16, position: "relative" }}>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password (8+ chars, 1 uppercase, 1 special)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
+              style={{ paddingRight: 60 }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: "none",
+                color: "var(--alzooka-gold)",
+                fontSize: 13,
+                cursor: "pointer",
+                padding: "4px 8px",
+              }}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
           </div>
 
           <div style={{ marginBottom: 20 }}>
