@@ -269,6 +269,13 @@ function getSpotifyType(url: string): string | null {
   return match ? match[1] : null;
 }
 
+// Helper function to check if post content matches any filtered words (case-insensitive, partial match)
+function postMatchesFilter(post: Post, filteredWords: string[]): boolean {
+  if (filteredWords.length === 0) return false;
+  const contentLower = (post.content || "").toLowerCase();
+  return filteredWords.some(word => contentLower.includes(word.toLowerCase()));
+}
+
 export default function GroupPage() {
   const params = useParams();
   const groupId = params.id as string;
@@ -284,6 +291,7 @@ export default function GroupPage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [userUsername, setUserUsername] = useState("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -356,7 +364,7 @@ export default function GroupPage() {
 
       // PARALLEL FETCH: Get user data, group info, ban check, and membership all at once
       const [userDataResult, groupDataResult, banCheckResult, membershipResult] = await Promise.all([
-        supabase.from("users").select("username, avatar_url").eq("id", user.id).single(),
+        supabase.from("users").select("username, avatar_url, filtered_words").eq("id", user.id).single(),
         supabase.from("groups").select("*").eq("id", groupId).single(),
         supabase.from("group_bans").select("id").eq("group_id", groupId).eq("user_id", user.id).single(),
         supabase.from("group_members").select("role").eq("group_id", groupId).eq("user_id", user.id).single(),
@@ -370,6 +378,7 @@ export default function GroupPage() {
       if (userData) {
         setUserUsername(userData.username);
         setUserAvatarUrl(userData.avatar_url);
+        setFilteredWords(userData.filtered_words || []);
       }
 
       if (!groupData) {
@@ -3337,6 +3346,7 @@ export default function GroupPage() {
           onLoadMore={loadMorePosts}
           currentlyPlayingVideo={currentlyPlayingVideo}
           onPlayVideo={setCurrentlyPlayingVideo}
+          filteredWords={filteredWords}
         />
       )}
 
@@ -3611,6 +3621,7 @@ function PaginatedPostsList({
   onLoadMore,
   currentlyPlayingVideo,
   onPlayVideo,
+  filteredWords = [],
 }: {
   posts: Post[];
   user: User;
@@ -3629,6 +3640,7 @@ function PaginatedPostsList({
   onLoadMore: () => void;
   currentlyPlayingVideo: string | null;
   onPlayVideo: (videoId: string) => void;
+  filteredWords?: string[];
 }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -3669,9 +3681,14 @@ function PaginatedPostsList({
     onOpenModal(post);
   }, [onOpenModal]);
 
+  // Filter posts: exclude posts matching filtered words, but always show own posts
+  const visiblePosts = posts.filter(post => 
+    post.user_id === user?.id || !postMatchesFilter(post, filteredWords)
+  );
+
   return (
     <div>
-      {posts.map((post) => (
+      {visiblePosts.map((post) => (
         <MemoizedPostWrapper
           key={post.id}
           post={post}

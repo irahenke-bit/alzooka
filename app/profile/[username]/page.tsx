@@ -19,6 +19,7 @@ import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { EmojiButton } from "@/app/components/EmojiButton";
 import { PasswordModal } from "@/app/components/PasswordModal";
+import { ContentFilterModal } from "@/app/components/ContentFilterModal";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -281,6 +282,8 @@ export default function ProfilePage() {
   const [postingWall, setPostingWall] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showContentFilterModal, setShowContentFilterModal] = useState(false);
+  const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
   const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
@@ -319,11 +322,15 @@ export default function ProfilePage() {
       })();
       
       const currentUserPromise = user ? (async () => {
-        const { data } = await supabase.from("users").select("username, avatar_url").eq("id", user.id).single();
+        const { data } = await supabase.from("users").select("username, avatar_url, filtered_words").eq("id", user.id).single();
         return data;
       })() : Promise.resolve(null);
-      
+
       const [profileData, currentUserData] = await Promise.all([profilePromise, currentUserPromise]);
+      
+      if (currentUserData?.filtered_words) {
+        setFilteredWords(currentUserData.filtered_words);
+      }
       
       if (currentUserData) {
         setCurrentUserUsername(currentUserData.username);
@@ -1542,7 +1549,27 @@ export default function ProfilePage() {
                   >
                     {profile.has_password ? "🔐 Change Password" : "🔐 Set Password"}
                   </button>
-                  
+
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setShowContentFilterModal(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    🚫 Content Filter
+                  </button>
+
                   <button
                     onClick={handleDeactivateAccount}
                     style={{
@@ -3042,6 +3069,18 @@ export default function ProfilePage() {
             setProfile(prev => prev ? { ...prev, has_password: true } : prev);
             alert("Password updated successfully!");
           }}
+        />
+      )}
+
+      {/* Content Filter Modal */}
+      {showContentFilterModal && currentUser && (
+        <ContentFilterModal
+          isOpen={showContentFilterModal}
+          onClose={() => setShowContentFilterModal(false)}
+          userId={currentUser.id}
+          supabase={supabase}
+          filteredWords={filteredWords}
+          onWordsUpdated={setFilteredWords}
         />
       )}
 

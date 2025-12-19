@@ -149,12 +149,20 @@ function getSpotifyType(url: string): string | null {
   return match ? match[1] : null;
 }
 
+// Helper function to check if post content matches any filtered words (case-insensitive, partial match)
+function postMatchesFilter(post: Post, filteredWords: string[]): boolean {
+  if (filteredWords.length === 0) return false;
+  const contentLower = (post.content || "").toLowerCase();
+  return filteredWords.some(word => contentLower.includes(word.toLowerCase()));
+}
+
 function FeedContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [allowWallPosts, setAllowWallPosts] = useState<boolean>(true);
   const [wallFriendsOnly, setWallFriendsOnly] = useState<boolean>(true);
+  const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [userFriends, setUserFriends] = useState<string[]>([]);
   const [groupPreferences, setGroupPreferences] = useState<GroupPreference[]>([]);
@@ -231,7 +239,7 @@ function FeedContent() {
       
       // PARALLEL FETCH: Get user data, friendships, and group prefs all at once
       const [userDataResult, friendshipsResult, prefsResult] = await Promise.all([
-        supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only").eq("id", user.id).single(),
+        supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only, filtered_words").eq("id", user.id).single(),
         supabase.from("friendships").select("user_id, friend_id").or(`user_id.eq.${user.id},friend_id.eq.${user.id}`).eq("status", "accepted"),
         supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("include_in_feed", true),
       ]);
@@ -250,6 +258,7 @@ function FeedContent() {
       setUserAvatarUrl(userData.avatar_url);
       setAllowWallPosts(userData.allow_wall_posts ?? true);
       setWallFriendsOnly(userData.wall_friends_only ?? true);
+      setFilteredWords(userData.filtered_words || []);
       
       const friendIds = (friendships || []).map(f => 
         f.user_id === user.id ? f.friend_id : f.user_id
@@ -1683,30 +1692,37 @@ function FeedContent() {
 
       {/* Posts Feed */}
       <div>
-        {posts.length === 0 ? (
-          <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-            No posts yet. Be the first to share something.
-          </p>
-        ) : (
-          posts.map((post) => (
-            <PostCard 
-              key={post.id} 
-              post={post} 
-              user={user!} 
-              supabase={supabase}
-              votes={votes}
-              voteTotals={voteTotals}
-              onVote={handleVote}
-              isHighlighted={post.id === highlightPostId}
-              onOpenModal={() => setModalPost(post)}
-              onCommentAdded={async () => {
-                const refreshedPosts = await loadPosts();
-                await loadUserVotes(user!.id);
-                await loadVoteTotals(refreshedPosts);
-              }}
-            />
-          ))
-        )}
+        {(() => {
+          // Filter posts: exclude posts matching filtered words, but always show own posts
+          const visiblePosts = posts.filter(post => 
+            post.user_id === user?.id || !postMatchesFilter(post, filteredWords)
+          );
+          
+          return visiblePosts.length === 0 ? (
+            <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
+              No posts yet. Be the first to share something.
+            </p>
+          ) : (
+            visiblePosts.map((post) => (
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                user={user!} 
+                supabase={supabase}
+                votes={votes}
+                voteTotals={voteTotals}
+                onVote={handleVote}
+                isHighlighted={post.id === highlightPostId}
+                onOpenModal={() => setModalPost(post)}
+                onCommentAdded={async () => {
+                  const refreshedPosts = await loadPosts();
+                  await loadUserVotes(user!.id);
+                  await loadVoteTotals(refreshedPosts);
+                }}
+              />
+            ))
+          );
+        })()}
       </div>
 
       {/* Post Modal */}
