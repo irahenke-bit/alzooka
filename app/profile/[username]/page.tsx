@@ -1559,6 +1559,16 @@ export default function ProfilePage() {
                     💤 {profile.is_active ?? true ? "Deactivate Account" : "Reactivate Account"}
                   </button>
                   
+                  {/* Email display */}
+                  <div style={{
+                    padding: "12px 16px",
+                    fontSize: 13,
+                    color: "rgba(240, 235, 224, 0.6)",
+                    borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                  }}>
+                    📧 {currentUser?.email}
+                  </div>
+                  
                   {/* Separator line */}
                   <div style={{
                     height: 1,
