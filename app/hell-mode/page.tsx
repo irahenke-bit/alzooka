@@ -126,12 +126,12 @@ export default function HellModePage() {
       // Get friends
       const { data: friendships } = await supabase
         .from("friendships")
-        .select("user_id, friend_id")
-        .or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`)
+        .select("requester_id, addressee_id")
+        .or(`requester_id.eq.${currentUser.id},addressee_id.eq.${currentUser.id}`)
         .eq("status", "accepted");
 
       const friendIds = (friendships || []).map(f =>
-        f.user_id === currentUser.id ? f.friend_id : f.user_id
+        f.requester_id === currentUser.id ? f.addressee_id : f.requester_id
       );
 
       const allowedUserIds = [currentUser.id, ...friendIds];

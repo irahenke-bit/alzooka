@@ -242,7 +242,7 @@ function FeedContent() {
       // PARALLEL FETCH: Get user data, friendships, and group prefs all at once
       const [userDataResult, friendshipsResult, prefsResult] = await Promise.all([
         supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only, filtered_words").eq("id", user.id).single(),
-        supabase.from("friendships").select("user_id, friend_id").or(`user_id.eq.${user.id},friend_id.eq.${user.id}`).eq("status", "accepted"),
+        supabase.from("friendships").select("requester_id, addressee_id").or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`).eq("status", "accepted"),
         supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("include_in_feed", true),
       ]);
       
@@ -262,8 +262,8 @@ function FeedContent() {
       setWallFriendsOnly(userData.wall_friends_only ?? true);
       setFilteredWords(userData.filtered_words || []);
       
-      const friendIds = (friendships || []).map(f => 
-        f.user_id === user.id ? f.friend_id : f.user_id
+      const friendIds = (friendships || []).map(f =>
+        f.requester_id === user.id ? f.addressee_id : f.requester_id
       );
       setUserFriends(friendIds);
       
