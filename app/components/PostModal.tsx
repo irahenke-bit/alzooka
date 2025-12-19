@@ -425,7 +425,7 @@ export function PostModal({
     return groupMembers.some(m => m.user_id === userId && m.role === "admin");
   };
   const [commentText, setCommentText] = useState("");
-  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; username: string; displayName: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showEditHistory, setShowEditHistory] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -778,8 +778,8 @@ export function PostModal({
     setSubmitting(false);
   }
 
-  function handleReply(commentId: string, username: string) {
-    setReplyingTo({ id: commentId, username });
+  function handleReply(commentId: string, username: string, displayName: string) {
+    setReplyingTo({ id: commentId, username, displayName });
     // Auto-insert @username for all replies (Facebook-style)
     setCommentText(`@${username} `);
     commentInputRef.current?.focus();
@@ -963,7 +963,7 @@ export function PostModal({
               </Link>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown")}
+                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown", comment.users?.display_name || comment.users?.username || "unknown")}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -1666,7 +1666,7 @@ export function PostModal({
                     color: "var(--alzooka-gold)",
                   }}
                 >
-                  <span>Replying to {replyingTo.username}</span>
+                  <span>Replying to {replyingTo.displayName}</span>
                   <button
                     onClick={cancelReply}
                     style={{
@@ -1778,7 +1778,7 @@ export function PostModal({
                   
                   <textarea
                     ref={commentInputRef}
-                    placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Write a comment..."}
+                    placeholder={replyingTo ? `Reply to ${replyingTo.displayName}...` : "Write a comment..."}
                     value={commentText}
                     onChange={(e) => {
                       handleCommentTextChange(e.target.value);
