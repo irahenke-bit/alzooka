@@ -164,6 +164,11 @@ function CompleteProfileContent() {
       // Generate fresh username at submit time to avoid race conditions
       const finalUsername = await generateUsername(displayName.trim(), supabase);
 
+      // Check if user signed up with password (stored in user_metadata during signup)
+      const signupMethod = user.user_metadata?.signup_method;
+      const hasPassword = signupMethod === "password";
+      const termsAcceptedAt = user.user_metadata?.terms_accepted_at || new Date().toISOString();
+
       const { error: insertError } = await supabase
         .from("users")
         .insert({
@@ -172,7 +177,8 @@ function CompleteProfileContent() {
           display_name: displayName.trim(),
           avatar_url: null,
           bio: null,
-          has_password: false,
+          has_password: hasPassword,
+          terms_accepted_at: termsAcceptedAt,
         });
 
       if (insertError) {
@@ -188,8 +194,13 @@ function CompleteProfileContent() {
         return;
       }
 
-      // Success! Go to set password page so they can create a password for easy future logins
-      router.push("/auth/set-password");
+      // Success! If user doesn't have a password yet (magic link/Google), offer to set one
+      // If they already have a password, go straight to home
+      if (hasPassword) {
+        router.push("/");
+      } else {
+        router.push("/auth/set-password");
+      }
     } catch (err) {
       console.error("Error creating profile:", err);
       setError("Something went wrong. Please try again.");

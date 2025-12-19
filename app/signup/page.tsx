@@ -6,67 +6,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogoWithText } from "@/app/components/Logo";
 
-// Generate username from display name with numbering rules
-async function generateUsername(displayName: string, supabase: ReturnType<typeof createBrowserClient>): Promise<string> {
-  const baseUsername = displayName
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .substring(0, 20);
-  
-  if (!baseUsername || baseUsername.length < 2) {
-    return `user${Date.now().toString().slice(-6)}`;
-  }
-
-  const { data: exactMatch } = await supabase
-    .from("users")
-    .select("username")
-    .eq("username", baseUsername)
-    .single();
-
-  if (!exactMatch) {
-    return baseUsername;
-  }
-
-  const { data: existingUsers } = await supabase
-    .from("users")
-    .select("username")
-    .ilike("username", `${baseUsername}%`);
-
-  let highestNumber = 0;
-  const regex = new RegExp(`^${baseUsername}(\\d+)$`, "i");
-  
-  if (existingUsers) {
-    for (const user of existingUsers) {
-      const match = user.username.match(regex);
-      if (match) {
-        const num = parseInt(match[1], 10);
-        if (num > highestNumber) {
-          highestNumber = num;
-        }
-      }
-    }
-  }
-
-  let nextNumber: number;
-  if (highestNumber === 0) {
-    nextNumber = 1;
-  } else {
-    nextNumber = highestNumber + 5;
-    const remainder = nextNumber % 5;
-    if (remainder !== 1 && remainder !== 0) {
-      nextNumber = nextNumber + (5 - remainder) + 1;
-    }
-  }
-
-  const suffix = nextNumber.toString().padStart(2, "0");
-  return `${baseUsername}${suffix}`;
-}
-
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [displayName, setDisplayName] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -82,12 +25,6 @@ export default function SignupPage() {
 
     if (!termsAccepted) {
       setError("You must agree to the Terms and Conditions to create an account");
-      setLoading(false);
-      return;
-    }
-
-    if (!displayName.trim()) {
-      setError("Please enter your display name");
       setLoading(false);
       return;
     }
@@ -111,21 +48,18 @@ export default function SignupPage() {
       return;
     }
 
-    // Generate username from display name
-    const generatedUsername = await generateUsername(displayName.trim(), supabase);
-    const trimmedDisplayName = displayName.trim();
     const termsAcceptedAt = new Date().toISOString();
 
-    // Sign up with Supabase Auth
+    // Sign up with Supabase Auth - store metadata for later profile creation
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
         data: {
-          username: generatedUsername,
-          display_name: trimmedDisplayName,
           terms_accepted_at: termsAcceptedAt,
-        }
+          signup_method: "password",
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       }
     });
 
@@ -137,38 +71,13 @@ export default function SignupPage() {
 
     // Check if email confirmation is required
     if (signUpData.user && !signUpData.session) {
-      localStorage.setItem("alzooka_pending_signup", JSON.stringify({
-        userId: signUpData.user.id,
-        username: generatedUsername,
-        displayName: trimmedDisplayName,
-        termsAcceptedAt: termsAcceptedAt,
-      }));
-      
       setLoading(false);
-      alert("Please check your email to verify your account before signing in.");
-      router.push("/login");
+      setSuccess("Check your email! Click the link to verify your account and complete your profile.");
       return;
     }
 
-    // No email confirmation required - create profile and redirect
-    if (signUpData.user) {
-      const { error: profileError } = await supabase
-        .from("users")
-        .insert({
-          id: signUpData.user.id,
-          username: generatedUsername,
-          display_name: trimmedDisplayName,
-          terms_accepted_at: termsAcceptedAt,
-          has_password: true,
-        });
-
-      if (profileError) {
-        console.log("Profile creation note:", profileError.message);
-      }
-    }
-
-    router.push("/");
-    router.refresh();
+    // No email confirmation required - go to complete profile
+    router.push("/auth/complete-profile");
   }
 
   async function handleMagicLink(e: React.FormEvent) {
@@ -395,19 +304,6 @@ export default function SignupPage() {
         <form onSubmit={handleSignup}>
           <div style={{ marginBottom: 16 }}>
             <input
-              type="text"
-              placeholder="Display Name (e.g. John Smith)"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-            />
-            <p style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>
-              Your username will be created automatically from your display name
-            </p>
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <input
               type="email"
               placeholder="Email"
               value={email}
@@ -486,7 +382,13 @@ export default function SignupPage() {
             </p>
           )}
 
-          <button type="submit" disabled={loading} style={{ width: "100%" }}>
+          {success && !showMagicLink && (
+            <p style={{ color: "#81c784", marginBottom: 16, fontSize: 14 }}>
+              ✓ {success}
+            </p>
+          )}
+
+          <button type="submit" disabled={loading || !!success} style={{ width: "100%" }}>
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
