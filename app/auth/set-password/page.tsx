@@ -232,14 +232,31 @@ function SetPasswordContent() {
             onClick={handleSkip}
             style={{ 
               width: "100%",
-              background: "transparent",
-              border: "1px solid rgba(240, 235, 224, 0.3)",
+              background: "linear-gradient(135deg, #1a5a5a 0%, #0d3d3d 100%)",
+              border: "2px solid var(--alzooka-gold)",
               color: "var(--alzooka-cream)",
-              opacity: 0.7,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
             }}
           >
-            Skip for now (use email link to sign in)
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Continue without password
           </button>
+          <p style={{ 
+            fontSize: 13, 
+            opacity: 0.6, 
+            marginTop: 10,
+            textAlign: "center",
+            lineHeight: 1.5,
+          }}>
+            You can always sign in with an email link.<br />
+            You can also create a password later in your settings.
+          </p>
         </form>
 
         <p style={{ 

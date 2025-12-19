@@ -329,6 +329,9 @@ function FeedContent() {
               
               // Skip group posts - only show feed posts
               if (payload.new.group_id) return;
+              
+              // Only show posts from friends
+              if (!friendIds.includes(payload.new.user_id)) return;
 
               // Fetch the full post with user data
               const { data: newPost } = await supabase
@@ -693,61 +696,74 @@ function FeedContent() {
     friends: string[] = userFriends,
     prefs: GroupPreference[] = groupPreferences
   ): Promise<Post[]> {
-    // 1. Load regular feed posts (non-group posts)
-    const { data: feedPosts } = await supabase
-      .from("posts")
-      .select(`
-        id,
-        content,
-        image_url,
-        image_urls,
-        video_url,
-        wall_user_id,
-        created_at,
-        edited_at,
-        edit_history,
-        user_id,
-        group_id,
-        shared_from_post_id,
-        users!posts_user_id_fkey (
-          username,
-          display_name,
-          avatar_url
-        ),
-        wall_user:users!posts_wall_user_id_fkey (
-          username,
-          display_name,
-          avatar_url
-        ),
-        groups:groups!posts_group_id_fkey (
-          id,
-          name
-        ),
-        comments (
+    // 1. Load regular feed posts (non-group posts) - ONLY from friends or self
+    // Build list of user IDs whose posts we want to see
+    const allowedUserIds = user ? [user.id, ...friends] : friends;
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let feedPosts: any[] | null = [];
+    
+    // Only fetch if there are user IDs to filter by
+    if (allowedUserIds.length > 0) {
+      const { data } = await supabase
+        .from("posts")
+        .select(`
           id,
           content,
+          image_url,
+          image_urls,
+          video_url,
+          wall_user_id,
           created_at,
+          edited_at,
+          edit_history,
           user_id,
-          parent_comment_id,
-          users!comments_user_id_fkey (
+          group_id,
+          shared_from_post_id,
+          users!posts_user_id_fkey (
             username,
             display_name,
             avatar_url
+          ),
+          wall_user:users!posts_wall_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          groups:groups!posts_group_id_fkey (
+            id,
+            name
+          ),
+          comments (
+            id,
+            content,
+            created_at,
+            user_id,
+            parent_comment_id,
+            users!comments_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            )
           )
-        )
-      `)
-      .is("group_id", null)
-      .order("created_at", { ascending: false });
+        `)
+        .is("group_id", null)
+        .in("user_id", allowedUserIds)
+        .order("created_at", { ascending: false });
+      
+      feedPosts = data;
+    }
 
     // 2. Load group posts based on user preferences
-    let groupPosts: typeof feedPosts = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let groupPosts: any[] = [];
     
     if (prefs.length > 0) {
       const groupIds = prefs.map(p => p.group_id);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const { data: rawGroupPosts } = await supabase
+      const { data: rawGroupPostsData } = await supabase
         .from("posts")
         .select(`
           id,
@@ -794,10 +810,11 @@ function FeedContent() {
         .order("created_at", { ascending: false });
       
       // Apply filters per group
-      const filteredGroupPosts: typeof rawGroupPosts = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filteredGroupPosts: any[] = [];
       const groupPostCounts: Record<string, number> = {};
       
-      for (const post of rawGroupPosts || []) {
+      for (const post of rawGroupPostsData || []) {
         const pref = prefs.find(p => p.group_id === post.group_id);
         if (!pref) continue;
         
