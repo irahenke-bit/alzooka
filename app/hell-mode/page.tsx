@@ -39,6 +39,7 @@ type Post = {
   image_url: string | null;
   image_urls?: string[] | null;
   video_url: string | null;
+  wall_user_id: string | null;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -84,6 +85,7 @@ export default function HellModePage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
@@ -105,12 +107,13 @@ export default function HellModePage() {
       // Fetch user data with filtered words
       const { data: userData } = await supabase
         .from("users")
-        .select("username, filtered_words")
+        .select("username, avatar_url, filtered_words")
         .eq("id", currentUser.id)
         .single();
 
       if (userData) {
         setUserUsername(userData.username);
+        setUserAvatarUrl(userData.avatar_url);
         setFilteredWords(userData.filtered_words || []);
       }
 
@@ -181,6 +184,7 @@ export default function HellModePage() {
           image_url: post.image_url,
           image_urls: post.image_urls,
           video_url: post.video_url,
+          wall_user_id: (post as any).wall_user_id || null,
           created_at: post.created_at,
           edited_at: post.edited_at || null,
           edit_history: (post.edit_history as EditHistoryEntry[] | null) || [],
@@ -294,7 +298,7 @@ export default function HellModePage() {
       <Header
         user={user}
         userUsername={userUsername}
-        supabase={supabase}
+        userAvatarUrl={userAvatarUrl}
       />
 
       <div className="container" style={{ maxWidth: 700, margin: "0 auto", padding: "20px 16px" }}>
