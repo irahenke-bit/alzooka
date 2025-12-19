@@ -7,8 +7,7 @@ import { LogoWithText } from "@/app/components/Logo";
 import Link from "next/link";
 
 export default function CallbackPage() {
-  const [status, setStatus] = useState<"loading" | "no-profile" | "error">("loading");
-  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"loading" | "error">("loading");
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -54,9 +53,8 @@ export default function CallbackPage() {
           // Has profile, go home
           router.push("/");
         } else {
-          // No profile
-          setEmail(user.email || "your account");
-          setStatus("no-profile");
+          // No profile - go to complete profile page
+          router.push("/auth/complete-profile");
         }
       } catch (err) {
         console.error("Auth error:", err);
@@ -82,34 +80,7 @@ export default function CallbackPage() {
     );
   }
 
-  if (status === "error") {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-      }}>
-        <LogoWithText />
-        <div style={{
-          marginTop: 40,
-          padding: 24,
-          background: "var(--alzooka-teal-dark)",
-          borderRadius: 12,
-          textAlign: "center",
-        }}>
-          <p style={{ marginBottom: 16, color: "#e57373" }}>Authentication failed. Please try again.</p>
-          <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
-            Back to Sign In
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // no-profile
+  // Error state
   return (
     <div style={{
       minHeight: "100vh",
@@ -118,49 +89,19 @@ export default function CallbackPage() {
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      textAlign: "center",
     }}>
-      <div style={{ marginBottom: 40 }}>
-        <LogoWithText />
-      </div>
-
+      <LogoWithText />
       <div style={{
-        maxWidth: 400,
-        padding: 32,
+        marginTop: 40,
+        padding: 24,
         background: "var(--alzooka-teal-dark)",
         borderRadius: 12,
-        border: "1px solid var(--alzooka-gold)",
+        textAlign: "center",
       }}>
-        <h2 style={{ marginBottom: 16, fontSize: 22, color: "var(--alzooka-gold)" }}>
-          Account Not Found
-        </h2>
-        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--alzooka-cream)" }}>
-          We could not find a profile associated with <strong>{email}</strong>.
-        </p>
-        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--text-muted)" }}>
-          Please sign up to join Alzooka.
-        </p>
-        <Link
-          href="/signup"
-          style={{
-            display: "inline-block",
-            padding: "12px 32px",
-            background: "var(--alzooka-gold)",
-            color: "var(--alzooka-teal-dark)",
-            borderRadius: 6,
-            textDecoration: "none",
-            fontWeight: 600,
-            fontSize: 16,
-          }}
-        >
-          Sign Up
+        <p style={{ marginBottom: 16, color: "#e57373" }}>Authentication failed. Please try again.</p>
+        <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
+          Back to Sign In
         </Link>
-        <p style={{ marginTop: 20, fontSize: 14, color: "var(--text-muted)" }}>
-          Wrong account?{" "}
-          <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
-            Try again
-          </Link>
-        </p>
       </div>
     </div>
   );
