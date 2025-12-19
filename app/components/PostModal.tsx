@@ -55,7 +55,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
 }
 
 // Helper function to render text with @mentions and URLs as clickable links
-function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
+function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string, string>): React.ReactNode[] {
   // Regex to match URLs (http, https, or www)
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
   // Regex to match @mentions
@@ -95,16 +95,22 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
     // Check if it's a @mention
     if (mentionRegex.test(part)) {
       mentionRegex.lastIndex = 0;
+      const username = part.substring(1); // Remove @ prefix
+      const displayName = mentionCache?.get(username);
+      const displayText = displayName ? `${displayName} (${part})` : part;
       return (
-        <span
+        <a
           key={i}
+          href={`/profile/${username}`}
           style={{
             color: 'var(--alzooka-gold)',
             fontWeight: 600,
+            textDecoration: 'none',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {part}
-        </span>
+          {displayText}
+        </a>
       );
     }
     
@@ -115,14 +121,14 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
 
 // Helper function to render text with quotes styled as italics
 // Only quotes wrapped in curly quotes "..." (from quote button) get styled
-function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.ReactNode[] {
+function renderTextWithQuotes(text: string, stripUrls: boolean = false, mentionCache?: Map<string, string>): React.ReactNode[] {
   // Split by curly quote markers - only these get styled
   const quoteRegex = /"([^"]+)"/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
   let keyIndex = 0;
-  
+
   while ((match = quoteRegex.exec(text)) !== null) {
     // Add text before the quote
     if (match.index > lastIndex) {
@@ -130,12 +136,12 @@ function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.R
       if (beforeText.trim()) {
         parts.push(
           <span key={keyIndex++}>
-            {stripUrls ? renderTextWithMentionsOnly(beforeText) : renderTextWithLinksAndMentions(beforeText)}
+            {stripUrls ? renderTextWithMentionsOnly(beforeText, mentionCache) : renderTextWithLinksAndMentions(beforeText, mentionCache)}
           </span>
         );
       }
     }
-    
+
     // Add the quoted text as italicized with quotation marks
     const quotedText = match[1];
     parts.push(
@@ -148,67 +154,73 @@ function renderTextWithQuotes(text: string, stripUrls: boolean = false): React.R
         "{quotedText}"
       </span>
     );
-    
+
     lastIndex = match.index + match[0].length;
   }
-  
+
   // Add remaining text after the last quote
   if (lastIndex < text.length) {
     const afterText = text.substring(lastIndex);
     if (afterText.trim()) {
       parts.push(
         <span key={keyIndex++}>
-          {stripUrls ? renderTextWithMentionsOnly(afterText) : renderTextWithLinksAndMentions(afterText)}
+          {stripUrls ? renderTextWithMentionsOnly(afterText, mentionCache) : renderTextWithLinksAndMentions(afterText, mentionCache)}
         </span>
       );
     }
   }
-  
+
   // If no special quotes found, just render normally
   if (parts.length === 0) {
-    return stripUrls ? renderTextWithMentionsOnly(text) : renderTextWithLinksAndMentions(text);
+    return stripUrls ? renderTextWithMentionsOnly(text, mentionCache) : renderTextWithLinksAndMentions(text, mentionCache);
   }
-  
+
   return parts;
 }
 
 // Helper function to render text with @mentions only - URLs are stripped (used when preview is shown)
-function renderTextWithMentionsOnly(text: string): React.ReactNode[] {
+function renderTextWithMentionsOnly(text: string, mentionCache?: Map<string, string>): React.ReactNode[] {
   // Regex to match URLs (http, https, or www) - these will be stripped
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
   // Regex to match @mentions
   const mentionRegex = /(@\w+)/g;
-  
+
   // Combined regex to split by both URLs and mentions
   const combinedRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|@\w+)/gi;
-  
+
   const parts = text.split(combinedRegex);
-  
+
   return parts.map((part, i) => {
     if (!part) return null;
-    
+
     // Check if it's a URL - skip it (don't render)
     if (urlRegex.test(part)) {
       urlRegex.lastIndex = 0;
       return null;
     }
-    
+
     // Check if it's a @mention
     if (mentionRegex.test(part)) {
       mentionRegex.lastIndex = 0;
+      const username = part.substring(1); // Remove @ prefix
+      const displayName = mentionCache?.get(username);
+      const displayText = displayName ? `${displayName} (${part})` : part;
       return (
-        <span
+        <a
           key={i}
+          href={`/profile/${username}`}
           style={{
             color: 'var(--alzooka-gold)',
             fontWeight: 600,
+            textDecoration: 'none',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {part}
-        </span>
+          {displayText}
+        </a>
       );
     }
-    
+
     // Regular text
     return <span key={i}>{part}</span>;
   }).filter(Boolean);
@@ -434,6 +446,7 @@ export function PostModal({
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
   const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
+  const [mentionCache, setMentionCache] = useState<Map<string, string>>(new Map());
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   
   // Crop modal state for setting post image as profile/banner
@@ -457,7 +470,56 @@ export function PostModal({
     }
     fetchUserAvatar();
   }, [user.id, supabase]);
-  
+
+  // Build mention cache from comments - extract @mentions and fetch display names
+  useEffect(() => {
+    async function buildMentionCache() {
+      // Extract all @mentions from post content and comments
+      const mentionRegex = /@(\w+)/g;
+      const usernames = new Set<string>();
+      
+      // Check post content
+      let match;
+      while ((match = mentionRegex.exec(post.content)) !== null) {
+        usernames.add(match[1]);
+      }
+      
+      // Check all comments recursively
+      function extractFromComments(comments: Comment[] | undefined) {
+        if (!comments) return;
+        for (const comment of comments) {
+          mentionRegex.lastIndex = 0;
+          while ((match = mentionRegex.exec(comment.content)) !== null) {
+            usernames.add(match[1]);
+          }
+          if (comment.replies) {
+            extractFromComments(comment.replies);
+          }
+        }
+      }
+      extractFromComments(post.comments);
+      
+      if (usernames.size === 0) return;
+      
+      // Fetch display names for all mentioned usernames
+      const { data } = await supabase
+        .from("users")
+        .select("username, display_name")
+        .in("username", Array.from(usernames));
+      
+      if (data) {
+        const cache = new Map<string, string>();
+        for (const user of data) {
+          if (user.display_name) {
+            cache.set(user.username, user.display_name);
+          }
+        }
+        setMentionCache(cache);
+      }
+    }
+    buildMentionCache();
+  }, [post.content, post.comments, supabase]);
+
   // Clear highlight on any interaction
   const clearHighlight = () => setActiveHighlight(null);
 
@@ -1114,7 +1176,7 @@ export function PostModal({
                   const hasAnyPreview = hasYouTube || hasSpotify || hasOtherUrl;
                   
                   // Render text with quotes styled, strip URLs if there's a preview
-                  const textContent = renderTextWithQuotes(comment.content, hasAnyPreview);
+                  const textContent = renderTextWithQuotes(comment.content, hasAnyPreview, mentionCache);
                   
                   // Check if there's any actual text left after stripping URLs
                   const textOnly = comment.content.replace(/https?:\/\/[^\s]+/gi, '').trim();
