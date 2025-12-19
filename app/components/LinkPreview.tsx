@@ -24,15 +24,66 @@ export function LinkPreview({ url }: Props) {
     }
   })();
 
+  // Extract title from URL for sites that block scrapers (like Wikipedia)
+  const fallbackTitle = (() => {
+    try {
+      const urlObj = new URL(url);
+      // Wikipedia: extract page title from path
+      if (urlObj.hostname.includes("wikipedia.org")) {
+        const pathParts = urlObj.pathname.split("/");
+        const wikiIndex = pathParts.indexOf("wiki");
+        if (wikiIndex !== -1 && pathParts[wikiIndex + 1]) {
+          return decodeURIComponent(pathParts[wikiIndex + 1].replace(/_/g, " "));
+        }
+      }
+      return undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+
   const [data, setData] = useState<LinkPreviewData>({
     url: url,
     domain: domain,
+    title: fallbackTitle,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchPreview() {
       try {
+        // For Wikipedia, use their API instead of microlink
+        if (domain.includes("wikipedia.org")) {
+          try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split("/");
+            const wikiIndex = pathParts.indexOf("wiki");
+            if (wikiIndex !== -1 && pathParts[wikiIndex + 1]) {
+              const pageTitle = pathParts[wikiIndex + 1];
+              const lang = urlObj.hostname.split(".")[0]; // e.g., "en" from "en.wikipedia.org"
+              
+              const wikiResponse = await fetch(
+                `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${pageTitle}`
+              );
+              const wikiData = await wikiResponse.json();
+              
+              if (wikiData.title && wikiData.extract) {
+                setData({
+                  title: wikiData.title,
+                  description: wikiData.extract,
+                  image: wikiData.thumbnail?.source || wikiData.originalimage?.source,
+                  url: url,
+                  domain: domain,
+                });
+                setLoading(false);
+                return;
+              }
+            }
+          } catch {
+            // Fall through to microlink
+          }
+        }
+
         // Use microlink.io free API for link previews with timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -53,7 +104,7 @@ export function LinkPreview({ url }: Props) {
           );
 
           setData({
-            title: isBadTitle ? undefined : result.data.title,
+            title: isBadTitle ? fallbackTitle : result.data.title,
             description: isBadTitle ? undefined : result.data.description,
             image: result.data.image?.url,
             url: url,
@@ -68,7 +119,7 @@ export function LinkPreview({ url }: Props) {
     }
 
     fetchPreview();
-  }, [url, domain]);
+  }, [url, domain, fallbackTitle]);
 
   return (
     <a
