@@ -176,6 +176,8 @@ function FeedContent() {
   const [loadingYoutubePreview, setLoadingYoutubePreview] = useState(false);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string} | null>(null);
   const [loadingSpotifyPreview, setLoadingSpotifyPreview] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<{url: string; title?: string; description?: string; image?: string; domain: string} | null>(null);
+  const [loadingLinkPreview, setLoadingLinkPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = useState(true);
@@ -1140,11 +1142,15 @@ function FeedContent() {
     setSpotifyPreview(null);
   }
 
+  function removeLinkPreview() {
+    setLinkPreview(null);
+  }
+
   async function handleContentChange(newContent: string) {
     setContent(newContent);
     
     // Check for YouTube URL if we don't already have a preview
-    if (!youtubePreview && !spotifyPreview && !loadingYoutubePreview && !loadingSpotifyPreview) {
+    if (!youtubePreview && !spotifyPreview && !linkPreview && !loadingYoutubePreview && !loadingSpotifyPreview && !loadingLinkPreview) {
       const youtubeUrl = findYouTubeUrl(newContent);
       if (youtubeUrl) {
         const videoId = extractYouTubeVideoId(youtubeUrl);
@@ -1214,6 +1220,62 @@ function FeedContent() {
             });
           }
           setLoadingSpotifyPreview(false);
+          return;
+        }
+      }
+
+      // Check for any other URL for link preview
+      if (!linkPreview && !loadingLinkPreview) {
+        const urlMatch = newContent.match(/https?:\/\/[^\s]+/i);
+        if (urlMatch) {
+          const url = urlMatch[0];
+          // Don't create link preview for YouTube or Spotify URLs
+          if (!url.includes("youtube.com") && !url.includes("youtu.be") && !url.includes("spotify.com")) {
+            setLoadingLinkPreview(true);
+            try {
+              const domain = new URL(url).hostname.replace("www.", "");
+              
+              // Fetch link metadata using microlink.io
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 5000);
+              
+              const response = await fetch(
+                `https://api.microlink.io?url=${encodeURIComponent(url)}`,
+                { signal: controller.signal }
+              );
+              clearTimeout(timeoutId);
+              
+              const result = await response.json();
+              
+              if (result.status === "success" && result.data) {
+                // Check if title looks like a captcha/bot check page
+                const badTitles = ["just a moment", "verifying", "checking your browser", "access denied"];
+                const isBadTitle = badTitles.some(bad => 
+                  result.data.title?.toLowerCase().includes(bad)
+                );
+                
+                setLinkPreview({
+                  url,
+                  title: isBadTitle ? undefined : result.data.title,
+                  description: isBadTitle ? undefined : result.data.description,
+                  image: result.data.image?.url,
+                  domain,
+                });
+              } else {
+                // Still show preview with just domain
+                setLinkPreview({ url, domain });
+              }
+            } catch {
+              // Show basic preview on error
+              try {
+                const domain = new URL(url).hostname.replace("www.", "");
+                setLinkPreview({ url, domain });
+              } catch {
+                // Invalid URL, skip
+              }
+            }
+            setLoadingLinkPreview(false);
+          }
         }
       }
     }
@@ -1221,8 +1283,8 @@ function FeedContent() {
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault();
-    // Allow posting if there's content, image, YouTube video, or Spotify
-    if ((!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) || !user) return;
+    // Allow posting if there's content, image, YouTube video, Spotify, or link preview
+    if ((!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) || !user) return;
 
     setPosting(true);
 
@@ -1282,6 +1344,7 @@ function FeedContent() {
       setImagePreviews([]);
       setYoutubePreview(null);
       setSpotifyPreview(null);
+      setLinkPreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -1656,6 +1719,70 @@ function FeedContent() {
           </div>
         )}
 
+        {/* Link Preview */}
+        {linkPreview && (
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <div style={{
+              background: "var(--alzooka-teal-dark)",
+              borderRadius: 8,
+              overflow: "hidden",
+              border: "1px solid rgba(240, 235, 224, 0.2)"
+            }}>
+              {linkPreview.image && (
+                <img
+                  src={linkPreview.image}
+                  alt=""
+                  style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
+                />
+              )}
+              <div style={{ padding: "12px 16px" }}>
+                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                  🔗 {linkPreview.domain}
+                </p>
+                {linkPreview.title && (
+                  <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
+                    {linkPreview.title}
+                  </p>
+                )}
+                {linkPreview.description && (
+                  <p style={{ margin: "4px 0 0 0", fontSize: 13, opacity: 0.7, lineHeight: 1.4 }}>
+                    {linkPreview.description.substring(0, 150)}{linkPreview.description.length > 150 ? "..." : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={removeLinkPreview}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "rgba(0, 0, 0, 0.7)",
+                border: "none",
+                borderRadius: "50%",
+                width: 28,
+                height: 28,
+                color: "white",
+                cursor: "pointer",
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* Loading indicator for link preview */}
+        {loadingLinkPreview && (
+          <div style={{ marginBottom: 12, padding: 12, background: "rgba(0,0,0,0.2)", borderRadius: 8 }}>
+            <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>Loading link preview...</p>
+          </div>
+        )}
+
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -1684,7 +1811,7 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
+          <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview)}>
             {posting ? "Posting..." : "Post"}
           </button>
         </div>
