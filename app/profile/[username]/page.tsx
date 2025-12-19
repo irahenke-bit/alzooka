@@ -18,6 +18,7 @@ import { ShareModal } from "@/app/components/ShareModal";
 import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { EmojiButton } from "@/app/components/EmojiButton";
+import { PasswordModal } from "@/app/components/PasswordModal";
 import { notifyWallPost } from "@/lib/notifications";
 
 type UserProfile = {
@@ -29,6 +30,7 @@ type UserProfile = {
   banner_url: string | null;
   allow_wall_posts: boolean;
   wall_friends_only: boolean;
+  has_password?: boolean;
   is_active?: boolean;
   deactivated_at?: string | null;
   scheduled_deletion_at?: string | null;
@@ -278,6 +280,7 @@ export default function ProfilePage() {
   const [wallPostContent, setWallPostContent] = useState("");
   const [postingWall, setPostingWall] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
   const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
@@ -311,7 +314,7 @@ export default function ProfilePage() {
       const trimmedUsername = username.trim().toLowerCase();
       
       const profilePromise = (async () => {
-        const { data } = await supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, is_active, deactivated_at, scheduled_deletion_at").ilike("username", trimmedUsername).single();
+        const { data } = await supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, has_password, is_active, deactivated_at, scheduled_deletion_at").ilike("username", trimmedUsername).single();
         return data;
       })();
       
@@ -1517,6 +1520,26 @@ export default function ProfilePage() {
                       {wallFriendsOnly ? "🌐 Allow All to Post" : "👥 Friends Only"}
                     </button>
                   )}
+                  
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setShowPasswordModal(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    {profile.has_password ? "🔐 Change Password" : "🔐 Set Password"}
+                  </button>
                   
                   <button
                     onClick={handleDeactivateAccount}
@@ -2985,6 +3008,20 @@ export default function ProfilePage() {
           imageSrc={bannerImageToCrop}
           onCancel={handleBannerCropCancel}
           onSave={handleBannerCropSave}
+        />
+      )}
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <PasswordModal
+          hasPassword={profile.has_password ?? false}
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => {
+            setShowPasswordModal(false);
+            // Update local state to reflect password is now set
+            setProfile(prev => prev ? { ...prev, has_password: true } : prev);
+            alert("Password updated successfully!");
+          }}
         />
       )}
 

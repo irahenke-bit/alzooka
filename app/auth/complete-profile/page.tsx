@@ -172,6 +172,7 @@ function CompleteProfileContent() {
           display_name: displayName.trim(),
           avatar_url: null,
           bio: null,
+          has_password: false,
         });
 
       if (insertError) {

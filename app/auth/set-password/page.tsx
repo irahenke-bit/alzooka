@@ -86,6 +86,15 @@ function SetPasswordContent() {
         return;
       }
 
+      // Update has_password flag in users table
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("users")
+          .update({ has_password: true })
+          .eq("id", user.id);
+      }
+
       // Success! Go to feed
       router.push("/");
     } catch (err) {

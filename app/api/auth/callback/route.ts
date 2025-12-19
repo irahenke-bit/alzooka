@@ -83,6 +83,7 @@ export async function GET(request: Request) {
           display_name: googleName || emailPrefix,
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           terms_accepted_at: new Date().toISOString(),
+          has_password: false,
         });
       
       if (insertError) {

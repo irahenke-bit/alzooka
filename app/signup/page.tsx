@@ -158,6 +158,7 @@ export default function SignupPage() {
           username: generatedUsername,
           display_name: trimmedDisplayName,
           terms_accepted_at: termsAcceptedAt,
+          has_password: true,
         });
 
       if (profileError) {

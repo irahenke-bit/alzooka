@@ -85,6 +85,7 @@ export default function AuthCallbackPage() {
                   username: pendingSignup.username,
                   display_name: pendingSignup.displayName,
                   terms_accepted_at: pendingSignup.termsAcceptedAt,
+                  has_password: true,
                 });
               
               if (insertError) {
