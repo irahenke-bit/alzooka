@@ -258,8 +258,8 @@ function FeedContent() {
       
       setGroupPreferences((prefs || []) as GroupPreference[]);
       
-      // Load posts first
-      const loadedPosts = await loadPosts(friendIds, (prefs || []) as GroupPreference[]);
+      // Load posts first - pass user.id since state isn't set yet
+      const loadedPosts = await loadPosts(friendIds, (prefs || []) as GroupPreference[], user.id);
       
       // Load votes in parallel
       await Promise.all([
@@ -279,7 +279,7 @@ function FeedContent() {
             .eq("user_id", user.id)
             .eq("include_in_feed", true);
           
-          const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[]);
+          const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[], user.id);
           if (refreshedPosts && refreshedPosts.length > 0) {
             await loadUserVotes(user.id);
             await loadVoteTotals(refreshedPosts);
@@ -300,7 +300,7 @@ function FeedContent() {
               .eq("user_id", user.id)
               .eq("include_in_feed", true);
             
-            const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[]);
+            const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[], user.id);
             if (refreshedPosts && refreshedPosts.length > 0) {
               await loadUserVotes(user.id);
               await loadVoteTotals(refreshedPosts);
@@ -694,11 +694,14 @@ function FeedContent() {
 
   async function loadPosts(
     friends: string[] = userFriends,
-    prefs: GroupPreference[] = groupPreferences
+    prefs: GroupPreference[] = groupPreferences,
+    currentUserId?: string
   ): Promise<Post[]> {
     // 1. Load regular feed posts (non-group posts) - ONLY from friends or self
     // Build list of user IDs whose posts we want to see
-    const allowedUserIds = user ? [user.id, ...friends] : friends;
+    // Use passed userId, fall back to state, then to empty
+    const userId = currentUserId || user?.id;
+    const allowedUserIds = userId ? [userId, ...friends] : friends;
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let feedPosts: any[] | null = [];
