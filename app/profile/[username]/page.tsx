@@ -457,6 +457,7 @@ export default function ProfilePage() {
             user_id: post.user_id,
             content: post.content,
             image_url: post.image_url || null,
+            image_urls: post.image_urls || null,
             video_url: post.video_url || null,
             video_title: (post as any).video_title || null,
             wall_user_id: post.wall_user_id || null,
