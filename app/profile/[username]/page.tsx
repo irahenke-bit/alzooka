@@ -1717,9 +1717,17 @@ export default function ProfilePage() {
             ) : (
               /* View Mode */
               <div>
-                <h1 style={{ fontSize: 24, margin: 0, marginBottom: 6, fontWeight: 400 }}>
+                <h1 style={{ fontSize: 24, margin: 0, marginBottom: 4, fontWeight: 400 }}>
                   {profile.display_name || profile.username}
                 </h1>
+                <p style={{ 
+                  margin: "0 0 12px 0", 
+                  fontSize: 14, 
+                  color: "var(--alzooka-gold)",
+                  opacity: 0.8,
+                }}>
+                  @{profile.username}
+                </p>
                 
                 {/* Friend Button (only show on other people's profiles) */}
                 {currentUser && !isOwnProfile && (
