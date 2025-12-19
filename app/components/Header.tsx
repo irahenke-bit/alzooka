@@ -14,6 +14,7 @@ type HeaderProps = {
   userAvatarUrl: string | null;
   searchComponent?: React.ReactNode; // Optional custom search (e.g., GroupPostSearch)
   currentPage?: "feed" | "profile" | "group" | "other"; // For context-aware dropdown
+  isOwnProfile?: boolean; // True when viewing your own profile
 };
 
 // Instant tooltip component
@@ -49,7 +50,7 @@ function InstantTooltip({ children, text }: { children: React.ReactNode; text: s
   );
 }
 
-export default function Header({ user, userUsername, userAvatarUrl, searchComponent, currentPage = "other" }: HeaderProps) {
+export default function Header({ user, userUsername, userAvatarUrl, searchComponent, currentPage = "other", isOwnProfile = false }: HeaderProps) {
   const router = useRouter();
   const supabase = createBrowserClient();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -245,6 +246,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                   zIndex: 1000,
                 }}
               >
+              {currentPage !== "feed" && (
                 <Link
                   href="/"
                   prefetch={true}
@@ -266,27 +268,30 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 >
                   🏠 My Feed
                 </Link>
-              <Link
-                href={`/profile/${userUsername}`}
-                prefetch={true}
-                onClick={() => setShowUserMenu(false)}
-                style={{
-                  display: "block",
-                  padding: "10px 16px",
-                  color: "var(--alzooka-cream)",
-                  textDecoration: "none",
-                  fontSize: 14,
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                👤 My Profile
-              </Link>
+              )}
+              {!(currentPage === "profile" && isOwnProfile) && (
+                <Link
+                  href={`/profile/${userUsername}`}
+                  prefetch={true}
+                  onClick={() => setShowUserMenu(false)}
+                  style={{
+                    display: "block",
+                    padding: "10px 16px",
+                    color: "var(--alzooka-cream)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  👤 My Profile
+                </Link>
+              )}
                 <div
                   style={{
                     height: 1,

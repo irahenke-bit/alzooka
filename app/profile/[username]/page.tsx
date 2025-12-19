@@ -1310,6 +1310,7 @@ export default function ProfilePage() {
         userUsername={currentUserUsername}
         currentPage="profile"
         userAvatarUrl={currentUserAvatarUrl}
+        isOwnProfile={isOwnProfile ?? false}
       />
 
       <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
