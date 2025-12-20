@@ -724,8 +724,10 @@ export default function GroupPage() {
           }
         }, 300);
         
-        // Clear the query param after handling
-        router.replace(`/groups/${groupId}`, { scroll: false });
+        // Clear the query param after modal has time to initialize with highlight
+        setTimeout(() => {
+          router.replace(`/groups/${groupId}`, { scroll: false });
+        }, 500);
       }
     }
     handleHighlight();

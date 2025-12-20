@@ -818,8 +818,10 @@ export default function ProfilePage() {
           }
         }, 100);
         
-        // Clear URL params so refresh doesn't re-trigger
-        router.replace(`/profile/${username}`, { scroll: false });
+        // Clear URL params after modal has time to initialize with highlight
+        setTimeout(() => {
+          router.replace(`/profile/${username}`, { scroll: false });
+        }, 500);
       }
     }
     handleHighlight();
