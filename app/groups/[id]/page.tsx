@@ -640,7 +640,7 @@ export default function GroupPage() {
   const highlightHandled = useRef(false);
   useEffect(() => {
     async function handleHighlight() {
-      if (highlightPostId && !loading && !highlightHandled.current) {
+      if (highlightPostId && !loading && user && !highlightHandled.current) {
         highlightHandled.current = true;
         
         // Fetch the full post with comments (without user join for comments)
@@ -708,30 +708,25 @@ export default function GroupPage() {
           };
           
           setModalPost(postWithComments);
-        }
-        
-        // Small delay to ensure DOM is rendered, then scroll
-        setTimeout(() => {
-          const postElement = document.getElementById(`post-${highlightPostId}`);
-          if (postElement) {
-            postElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            // Add highlight effect
-            postElement.style.transition = "box-shadow 0.3s ease";
-            postElement.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
-            setTimeout(() => {
-              postElement.style.boxShadow = "";
-            }, 2000);
-          }
-        }, 300);
-        
-        // Clear the query param after modal has time to initialize with highlight
-        setTimeout(() => {
+          
+          // Clear the query param after modal has time to initialize with highlight
+          setTimeout(() => {
+            router.replace(`/groups/${groupId}`, { scroll: false });
+          }, 500);
+        } else {
+          // If post fetch failed, still scroll to it if visible in feed
+          setTimeout(() => {
+            const postElement = document.getElementById(`post-${highlightPostId}`);
+            if (postElement) {
+              postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 300);
           router.replace(`/groups/${groupId}`, { scroll: false });
-        }, 500);
+        }
       }
     }
     handleHighlight();
-  }, [highlightPostId, loading, groupId, router, supabase]);
+  }, [highlightPostId, loading, user, groupId, router, supabase]);
 
   async function loadMembers() {
     const { data } = await supabase
