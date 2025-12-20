@@ -250,6 +250,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const supabase = createBrowserClient();
   const showFriendsParam = searchParams.get("showFriends");
+  const highlightPostId = searchParams.get("post");
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
@@ -732,6 +733,29 @@ export default function ProfilePage() {
     window.addEventListener("keydown", handleGlobalEscape);
     return () => window.removeEventListener("keydown", handleGlobalEscape);
   }, []);
+
+  // Handle highlighting and scrolling to a specific post from URL params
+  useEffect(() => {
+    if (highlightPostId && !loading && posts.length > 0) {
+      // Find the post to highlight
+      const targetPost = posts.find(p => p.id === highlightPostId);
+      if (targetPost) {
+        // Open the modal for this post
+        setModalPost(targetPost);
+        
+        // Also scroll to the post in the background
+        setTimeout(() => {
+          const element = document.getElementById(`post-${highlightPostId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
+        
+        // Clear URL params so refresh doesn't re-trigger
+        router.replace(`/profile/${username}`, { scroll: false });
+      }
+    }
+  }, [highlightPostId, loading, posts, router, username]);
 
   async function loadFriends() {
     if (!profile) return;
@@ -2708,7 +2732,15 @@ export default function ProfilePage() {
               })() : null;
 
               return (
-                <article key={post.id} className="card" style={{ marginBottom: 12 }}>
+                <article 
+                  key={post.id} 
+                  id={`post-${post.id}`}
+                  className="card" 
+                  style={{ 
+                    marginBottom: 12,
+                    transition: "box-shadow 0.3s ease",
+                  }}
+                >
                   <div style={{ display: "flex", gap: 12 }}>
                     {/* Vote Buttons */}
                     <VoteButtons
