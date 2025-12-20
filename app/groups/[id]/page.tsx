@@ -636,8 +636,10 @@ export default function GroupPage() {
   }, []);
 
   // Scroll to highlighted post and open modal
+  const highlightHandled = useRef(false);
   useEffect(() => {
-    if (highlightPostId && posts.length > 0 && !loading) {
+    if (highlightPostId && posts.length > 0 && !loading && !highlightHandled.current) {
+      highlightHandled.current = true;
       // Find the post to highlight
       const targetPost = posts.find(p => p.id === highlightPostId);
       if (targetPost) {
@@ -661,7 +663,7 @@ export default function GroupPage() {
       // Clear the query param after handling
       router.replace(`/groups/${groupId}`, { scroll: false });
     }
-  }, [highlightPostId, posts.length, loading, groupId, router]);
+  }, [highlightPostId, posts, loading, groupId, router]);
 
   async function loadMembers() {
     const { data } = await supabase
