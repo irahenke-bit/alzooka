@@ -186,10 +186,14 @@ export default function HellModePage() {
         if (allCommentUserIds.size > 0) {
           const { data: commentUsers } = await supabase
             .from("users")
-            .select("id, username, display_name, avatar_url")
+            .select("id, username, display_name, avatar_url, is_active")
             .in("id", Array.from(allCommentUserIds));
           if (commentUsers) {
-            commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+            commentUsers.forEach(u => {
+              if (u.is_active !== false) {
+                commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+              }
+            });
           }
         }
         

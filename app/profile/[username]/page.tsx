@@ -786,10 +786,14 @@ export default function ProfilePage() {
             if (commentUserIds.size > 0) {
               const { data: commentUsers } = await supabase
                 .from("users")
-                .select("id, username, display_name, avatar_url")
+                .select("id, username, display_name, avatar_url, is_active")
                 .in("id", Array.from(commentUserIds));
               if (commentUsers) {
-                commentUsers.forEach(u => commentUserMap.set(u.id, u));
+                commentUsers.forEach(u => {
+                  if (u.is_active !== false) {
+                    commentUserMap.set(u.id, { id: u.id, username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+                  }
+                });
               }
             }
             
@@ -3255,10 +3259,14 @@ export default function ProfilePage() {
                                   if (commentUserIds.size > 0) {
                                     const { data: commentUsers } = await supabase
                                       .from("users")
-                                      .select("id, username, display_name, avatar_url")
+                                      .select("id, username, display_name, avatar_url, is_active")
                                       .in("id", Array.from(commentUserIds));
                                     if (commentUsers) {
-                                      commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+                                      commentUsers.forEach(u => {
+                                        if (u.is_active !== false) {
+                                          commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+                                        }
+                                      });
                                     }
                                   }
                                   
@@ -3616,10 +3624,14 @@ export default function ProfilePage() {
               if (commentUserIds.size > 0) {
                 const { data: commentUsers } = await supabase
                   .from("users")
-                  .select("id, username, display_name, avatar_url")
+                  .select("id, username, display_name, avatar_url, is_active")
                   .in("id", Array.from(commentUserIds));
                 if (commentUsers) {
-                  commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+                  commentUsers.forEach(u => {
+                    if (u.is_active !== false) {
+                      commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+                    }
+                  });
                 }
               }
               
