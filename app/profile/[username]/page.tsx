@@ -1992,8 +1992,8 @@ export default function ProfilePage() {
                     }}
                     title="View activity"
                   >
-                    <span style={{ fontSize: 16 }}>📋</span>
-                    <span style={{ fontWeight: 600 }}>Activity</span>
+                    <span style={{ fontSize: 14 }}>📋</span>
+                    <span className="text-muted" style={{ fontSize: 13 }}>Activity</span>
                   </Link>
                 </div>
               </div>
