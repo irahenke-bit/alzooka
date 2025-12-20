@@ -562,12 +562,13 @@ export function PostModal({
 
   // Focus comment input when modal opens (skip if highlighting a comment)
   useEffect(() => {
-    if (!highlightCommentId) {
+    if (!activeHighlight) {
       setTimeout(() => {
         commentInputRef.current?.focus();
       }, 100);
     }
-  }, [highlightCommentId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Scroll to highlighted comment if present
   useEffect(() => {
