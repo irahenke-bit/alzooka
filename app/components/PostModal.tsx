@@ -582,8 +582,11 @@ export function PostModal({
   }, [activeHighlight]);
   
   // Reset highlight when highlightCommentId changes (new notification click)
+  // Only update if there's a new highlight, don't clear when it becomes null
   useEffect(() => {
-    setActiveHighlight(highlightCommentId || null);
+    if (highlightCommentId) {
+      setActiveHighlight(highlightCommentId);
+    }
   }, [highlightCommentId]);
 
   // Auto-scroll to comments section when modal opens (unless highlighting a specific comment)
