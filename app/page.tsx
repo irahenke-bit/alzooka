@@ -912,7 +912,20 @@ function FeedContent() {
 
     // 3. Merge feed posts and group posts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allRawPosts = [...(feedPosts || []), ...(groupPosts || [])] as any[];
+    let allRawPosts = [...(feedPosts || []), ...(groupPosts || [])] as any[];
+    
+    // 3.25 Filter out posts from deactivated users
+    const postUserIds = [...new Set(allRawPosts.map((p: { user_id: string }) => p.user_id))];
+    if (postUserIds.length > 0) {
+      const { data: activeUsers } = await supabase
+        .from("users")
+        .select("id")
+        .in("id", postUserIds)
+        .neq("is_active", false);
+      
+      const activeUserIds = new Set((activeUsers || []).map(u => u.id));
+      allRawPosts = allRawPosts.filter((p: { user_id: string }) => activeUserIds.has(p.user_id));
+    }
     
     // 3.5 Fetch user data for all comment authors
     const allCommentUserIds = new Set<string>();
