@@ -735,8 +735,10 @@ export default function ProfilePage() {
   }, []);
 
   // Handle highlighting and scrolling to a specific post from URL params
+  const highlightHandled = useRef(false);
   useEffect(() => {
-    if (highlightPostId && !loading && posts.length > 0) {
+    if (highlightPostId && !loading && posts.length > 0 && !highlightHandled.current) {
+      highlightHandled.current = true;
       // Find the post to highlight
       const targetPost = posts.find(p => p.id === highlightPostId);
       if (targetPost) {
