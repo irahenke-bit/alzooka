@@ -737,6 +737,16 @@ export default function ProfilePage() {
 
   // Handle highlighting and scrolling to a specific post from URL params
   const highlightHandled = useRef(false);
+  const lastHighlightPostId = useRef<string | null>(null);
+  
+  // Reset the handled flag when highlightPostId changes
+  useEffect(() => {
+    if (highlightPostId !== lastHighlightPostId.current) {
+      highlightHandled.current = false;
+      lastHighlightPostId.current = highlightPostId;
+    }
+  }, [highlightPostId]);
+  
   useEffect(() => {
     async function handleHighlight() {
       if (highlightPostId && !loading && currentUser && !highlightHandled.current) {

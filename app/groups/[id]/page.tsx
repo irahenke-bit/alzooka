@@ -638,6 +638,16 @@ export default function GroupPage() {
 
   // Scroll to highlighted post and open modal
   const highlightHandled = useRef(false);
+  const lastHighlightPostId = useRef<string | null>(null);
+  
+  // Reset the handled flag when highlightPostId changes
+  useEffect(() => {
+    if (highlightPostId !== lastHighlightPostId.current) {
+      highlightHandled.current = false;
+      lastHighlightPostId.current = highlightPostId;
+    }
+  }, [highlightPostId]);
+  
   useEffect(() => {
     async function handleHighlight() {
       if (highlightPostId && !loading && user && !highlightHandled.current) {
