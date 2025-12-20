@@ -414,8 +414,14 @@ export default function ProfilePage() {
         const totalVotes = upvotes.length + downvotes.length;
         const downvoteRatio = totalVotes > 0 ? downvotes.length / totalVotes : 0;
         
-        // Qualifies if: 20+ unique upvoters AND downvote ratio <= 15%
-        const qualifies = uniqueUpvoterIds.size >= 20 && downvoteRatio <= 0.15;
+        // Check account age (must be at least 30 days old)
+        const accountCreated = new Date(profileData.created_at);
+        const now = new Date();
+        const daysSinceCreation = Math.floor((now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24));
+        const isOldEnough = daysSinceCreation >= 30;
+        
+        // Qualifies if: 30+ days old AND 20+ unique upvoters AND downvote ratio <= 15%
+        const qualifies = isOldEnough && uniqueUpvoterIds.size >= 20 && downvoteRatio <= 0.15;
 
         setKarmaStats({
           uniqueUpvoters: uniqueUpvoterIds.size,
@@ -1679,18 +1685,14 @@ export default function ProfilePage() {
                     >
                       {profile.comment_history_private ? "🔒 Comment History Hidden ✓" : "👁️ Comment History Visible ✓"}
                     </button>
-                    {!karmaStats?.qualifiesForPrivacy && karmaStats && (
-                      <p style={{ 
-                        margin: "8px 0 0 0", 
-                        fontSize: 11, 
+                    {!karmaStats?.qualifiesForPrivacy && (
+                      <p style={{
+                        margin: "8px 0 0 0",
+                        fontSize: 11,
                         opacity: 0.6,
                         lineHeight: 1.4,
                       }}>
-                        Unlock this by earning upvotes from 20+ people while keeping your downvotes (negative karma) under 15%.
-                        <br />
-                        <span style={{ opacity: 0.8 }}>
-                          Current: {karmaStats.uniqueUpvoters} unique upvoters, {Math.round(karmaStats.downvoteRatio * 100)}% downvotes
-                        </span>
+                        30 days of positive contributions to Alzooka will earn you the right to hide your history.
                       </p>
                     )}
                   </div>
