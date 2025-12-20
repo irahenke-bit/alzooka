@@ -119,6 +119,11 @@ type Comment = {
   post_id: string;
   posts: {
     content: string;
+    group_id: string | null;
+    wall_user_id: string | null;
+    wall_user: {
+      username: string;
+    } | null;
   };
   voteScore: number;
 };
@@ -600,7 +605,12 @@ export default function ProfilePage() {
           created_at,
           post_id,
           posts (
-            content
+            content,
+            group_id,
+            wall_user_id,
+            wall_user:users!posts_wall_user_id_fkey (
+              username
+            )
           )
         `)
         .eq("user_id", profileData.id)
@@ -3343,10 +3353,27 @@ export default function ProfilePage() {
                 : `@${profile.username} hasn&apos;t commented on anything yet.`}
             </p>
           ) : (
-            comments.map((comment) => (
+            comments.map((comment) => {
+              // Determine the correct link based on where the post is
+              const groupId = comment.posts?.group_id;
+              const wallUsername = comment.posts?.wall_user?.username;
+              
+              let href: string;
+              if (groupId) {
+                // Post is in a group
+                href = `/groups/${groupId}?post=${comment.post_id}&comment=${comment.id}`;
+              } else if (wallUsername) {
+                // Post is on someone's wall
+                href = `/profile/${wallUsername}?post=${comment.post_id}&comment=${comment.id}`;
+              } else {
+                // Post is on main feed
+                href = `/?post=${comment.post_id}&comment=${comment.id}`;
+              }
+              
+              return (
               <Link 
                 key={comment.id} 
-                href={`/?post=${comment.post_id}`}
+                href={href}
                 style={{ textDecoration: "none", color: "inherit", display: "block" }}
               >
                 <article className="card" style={{ cursor: "pointer", transition: "opacity 0.2s" }}>
@@ -3392,7 +3419,8 @@ export default function ProfilePage() {
                   </div>
                 </article>
               </Link>
-            ))
+              );
+            })
           )
         )}
       </div>
