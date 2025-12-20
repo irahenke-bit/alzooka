@@ -68,11 +68,12 @@ export function UserSearch() {
 
       setLoading(true);
       
-      // Search users
+      // Search users (exclude deactivated accounts)
       const { data: users } = await supabase
         .from("users")
         .select("id, username, display_name, avatar_url")
         .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .neq("is_active", false)
         .limit(5);
 
       if (users) {

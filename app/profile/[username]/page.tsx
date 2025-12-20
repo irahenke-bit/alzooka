@@ -355,6 +355,12 @@ export default function ProfilePage() {
         return;
       }
 
+      // Treat deactivated accounts as "not found" (unless viewing own profile)
+      if (profileData.is_active === false && (!user || user.id !== profileData.id)) {
+        setLoading(false);
+        return;
+      }
+
       setProfile(profileData as UserProfile);
       setEditDisplayName(profileData.display_name || "");
       setEditBio(profileData.bio || "");
