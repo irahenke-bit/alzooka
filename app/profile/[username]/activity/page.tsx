@@ -6,12 +6,14 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
-type Comment = {
+type ActivityItem = {
   id: string;
+  type: "post" | "comment";
   content: string;
   created_at: string;
-  post_id: string;
-  post_content?: string;
+  post_id?: string; // For comments, the parent post
+  parent_post_content?: string; // For comments, a snippet of the parent post
+  wall_user?: { username: string; display_name: string | null } | null; // For wall posts
 };
 
 function formatTime(dateString: string): string {
@@ -29,7 +31,7 @@ function formatTime(dateString: string): string {
   return date.toLocaleDateString();
 }
 
-export default function CommentsPage() {
+export default function ActivityPage() {
   const params = useParams();
   const username = params.username as string;
   const router = useRouter();
@@ -43,7 +45,7 @@ export default function CommentsPage() {
     display_name: string | null;
     comment_history_private: boolean;
   } | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -94,7 +96,23 @@ export default function CommentsPage() {
         return;
       }
 
-      // Get comments by this user
+      // Get all posts by this user (including wall posts on other people's profiles)
+      const { data: postsData } = await supabase
+        .from("posts")
+        .select(`
+          id,
+          content,
+          created_at,
+          wall_user_id,
+          wall_user:users!posts_wall_user_id_fkey (
+            username,
+            display_name
+          )
+        `)
+        .eq("user_id", profileData.id)
+        .order("created_at", { ascending: false });
+
+      // Get all comments by this user
       const { data: commentsData } = await supabase
         .from("comments")
         .select(`
@@ -109,16 +127,40 @@ export default function CommentsPage() {
         .eq("user_id", profileData.id)
         .order("created_at", { ascending: false });
 
-      if (commentsData) {
-        setComments(commentsData.map(c => ({
-          id: c.id,
-          content: c.content,
-          created_at: c.created_at,
-          post_id: c.post_id,
-          post_content: (c.posts as any)?.content || "",
-        })));
+      // Build activity items
+      const items: ActivityItem[] = [];
+
+      // Add posts
+      if (postsData) {
+        postsData.forEach(post => {
+          items.push({
+            id: post.id,
+            type: "post",
+            content: post.content,
+            created_at: post.created_at,
+            wall_user: post.wall_user_id ? (post.wall_user as any) : null,
+          });
+        });
       }
 
+      // Add comments
+      if (commentsData) {
+        commentsData.forEach(comment => {
+          items.push({
+            id: comment.id,
+            type: "comment",
+            content: comment.content,
+            created_at: comment.created_at,
+            post_id: comment.post_id,
+            parent_post_content: (comment.posts as any)?.content || "",
+          });
+        });
+      }
+
+      // Sort by created_at descending (most recent first)
+      items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setActivityItems(items);
       setLoading(false);
     }
 
@@ -151,14 +193,14 @@ export default function CommentsPage() {
             ← Back to Profile
           </Link>
           <h1 style={{ margin: "8px 0 0 0", fontSize: 24, display: "flex", alignItems: "center", gap: 10 }}>
-            <span>💬</span>
-            {isOwner ? "Your Comments" : `@${username}'s Comments`}
+            <span>📋</span>
+            {isOwner ? "Your Activity" : `@${username}'s Activity`}
           </h1>
           {isOwner && (
             <p className="text-muted" style={{ margin: "8px 0 0 0", fontSize: 14 }}>
               {profileUser?.comment_history_private 
-                ? "🔒 Your comment history is hidden from others."
-                : "👁️ Your comment history is visible to others."}
+                ? "🔒 Your activity is hidden from others."
+                : "👁️ Your activity is visible to others."}
             </p>
           )}
         </div>
@@ -168,31 +210,48 @@ export default function CommentsPage() {
           <div className="card" style={{ textAlign: "center", padding: 40 }}>
             <p style={{ fontSize: 48, margin: "0 0 16px 0" }}>🔒</p>
             <p className="text-muted" style={{ margin: 0 }}>
-              @{username}&apos;s comment history is private.
+              @{username}&apos;s activity is private.
             </p>
           </div>
-        ) : comments.length === 0 ? (
+        ) : activityItems.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: 40 }}>
             <p className="text-muted">
-              {isOwner ? "You haven't commented on anything yet." : `@${username} hasn't commented on anything yet.`}
+              {isOwner ? "No activity yet." : `@${username} has no activity yet.`}
             </p>
           </div>
         ) : (
-          comments.map((comment) => (
+          activityItems.map((item) => (
             <Link
-              key={comment.id}
-              href={`/?post=${comment.post_id}&comment=${comment.id}`}
+              key={`${item.type}-${item.id}`}
+              href={item.type === "post" ? `/?post=${item.id}` : `/?post=${item.post_id}&comment=${item.id}`}
               style={{ textDecoration: "none", color: "inherit", display: "block" }}
             >
               <article className="card" style={{ marginBottom: 12, padding: 16 }}>
-                <div style={{ marginBottom: 8 }}>
-                  <span className="text-muted" style={{ fontSize: 13 }}>{formatTime(comment.created_at)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ 
+                    background: item.type === "post" ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.2)",
+                    color: item.type === "post" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                  }}>
+                    {item.type}
+                  </span>
+                  {item.type === "post" && item.wall_user && (
+                    <span className="text-muted" style={{ fontSize: 12 }}>
+                      on @{item.wall_user.username}&apos;s wall
+                    </span>
+                  )}
+                  <span className="text-muted" style={{ fontSize: 13, marginLeft: "auto" }}>{formatTime(item.created_at)}</span>
                 </div>
-                <p style={{ margin: "0 0 12px 0", lineHeight: 1.5 }}>
-                  {comment.content}
+                <p style={{ margin: 0, lineHeight: 1.5 }}>
+                  {item.content.length > 200 ? item.content.substring(0, 200) + "..." : item.content}
                 </p>
-                {comment.post_content && (
+                {item.type === "comment" && item.parent_post_content && (
                   <div style={{ 
+                    marginTop: 12,
                     padding: "8px 12px", 
                     background: "rgba(0, 0, 0, 0.2)", 
                     borderRadius: 6,
@@ -202,9 +261,9 @@ export default function CommentsPage() {
                       Replying to:
                     </p>
                     <p style={{ margin: "4px 0 0 0", fontSize: 13, opacity: 0.8 }}>
-                      {comment.post_content.length > 100 
-                        ? comment.post_content.substring(0, 100) + "..." 
-                        : comment.post_content}
+                      {item.parent_post_content.length > 100 
+                        ? item.parent_post_content.substring(0, 100) + "..." 
+                        : item.parent_post_content}
                     </p>
                   </div>
                 )}

@@ -1981,7 +1981,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <Link
-                    href={`/profile/${profile.username}/comments`}
+                    href={`/profile/${profile.username}/activity`}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1990,11 +1990,10 @@ export default function ProfilePage() {
                       color: "inherit",
                       cursor: "pointer",
                     }}
-                    title="View comment history"
+                    title="View activity"
                   >
-                    <span style={{ fontSize: 16 }}>💬</span>
-                    <span style={{ fontWeight: 600 }}>{comments.length}</span>
-                    <span className="text-muted" style={{ fontSize: 13 }}>{comments.length === 1 ? "comment" : "comments"}</span>
+                    <span style={{ fontSize: 16 }}>📋</span>
+                    <span style={{ fontWeight: 600 }}>Activity</span>
                   </Link>
                 </div>
               </div>
