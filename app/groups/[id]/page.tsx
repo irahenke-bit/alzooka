@@ -722,7 +722,7 @@ export default function GroupPage() {
 
             const postWithComments = {
               ...fullPost,
-              user: (fullPost as any).users,
+              users: Array.isArray((fullPost as any).users) ? (fullPost as any).users[0] : (fullPost as any).users,
               comments: rootComments,
               edit_history: fullPost.edit_history || []
             };

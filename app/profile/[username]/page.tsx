@@ -770,25 +770,29 @@ export default function ProfilePage() {
         
         // If there's a comment to highlight, open the modal
         if (highlightCommentId) {
-          // Fetch the full post with comments
+          // Fetch the full post
           const { data: fullPost } = await supabase
             .from("posts")
             .select(`
               id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
               user_id, group_id, wall_user_id, edit_history,
-              users!posts_user_id_fkey (id, username, display_name, avatar_url),
-              comments (
-                id, content, created_at, edited_at, user_id, parent_comment_id
-              )
+              users!posts_user_id_fkey (id, username, display_name, avatar_url)
             `)
             .eq("id", highlightPostId)
             .single();
 
           if (fullPost) {
+            // Fetch ALL comments directly from comments table
+            const { data: commentsData } = await supabase
+              .from("comments")
+              .select("id, content, created_at, edited_at, user_id, parent_comment_id")
+              .eq("post_id", highlightPostId)
+              .order("created_at", { ascending: true });
+            
             // Fetch user data for comment authors separately
             const commentUserIds = new Set<string>();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((fullPost as any).comments || []).forEach((c: any) => {
+            (commentsData || []).forEach((c: any) => {
               if (c.user_id) commentUserIds.add(c.user_id);
             });
             
@@ -809,7 +813,7 @@ export default function ProfilePage() {
             
             // Build comment tree with replies
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const allComments = ((fullPost as any).comments || []).map((c: any) => ({
+            const allComments = (commentsData || []).map((c: any) => ({
               ...c,
               users: commentUserMap.get(c.user_id) || null,
               replies: []
@@ -833,7 +837,7 @@ export default function ProfilePage() {
 
             const postWithComments = {
               ...fullPost,
-              user: (fullPost as any).users,
+              users: Array.isArray((fullPost as any).users) ? (fullPost as any).users[0] : (fullPost as any).users,
               comments: rootComments,
               edit_history: fullPost.edit_history || []
             };
