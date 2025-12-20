@@ -282,6 +282,7 @@ export default function GroupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
+  const highlightCommentId = searchParams.get("comment");
   const supabase = createBrowserClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -3377,6 +3378,7 @@ export default function GroupPage() {
           votes={votes}
           voteTotals={voteTotals}
           onVote={handleVote}
+          highlightCommentId={highlightCommentId}
           onClose={() => setModalPost(null)}
           onCommentAdded={(newComment, deletedCommentId) => {
             if (newComment && modalPost) {

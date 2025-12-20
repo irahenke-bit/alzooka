@@ -251,6 +251,7 @@ export default function ProfilePage() {
   const supabase = createBrowserClient();
   const showFriendsParam = searchParams.get("showFriends");
   const highlightPostId = searchParams.get("post");
+  const highlightCommentId = searchParams.get("comment");
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
@@ -3450,6 +3451,7 @@ export default function ProfilePage() {
           votes={votes}
           voteTotals={voteTotals}
           onVote={handleVote}
+          highlightCommentId={highlightCommentId}
           onClose={() => setModalPost(null)}
           onCommentAdded={async () => {
             // Fetch fresh post data for the modal

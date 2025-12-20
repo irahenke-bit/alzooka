@@ -299,12 +299,18 @@ export default function ActivityPage() {
             let href: string;
             if (item.group_id) {
               // Group post or comment on group post
-              href = `/groups/${item.group_id}?post=${item.type === "post" ? item.id : item.post_id}`;
+              if (item.type === "post") {
+                href = `/groups/${item.group_id}?post=${item.id}`;
+              } else {
+                href = `/groups/${item.group_id}?post=${item.post_id}&comment=${item.id}`;
+              }
             } else {
               // Profile post or comment on profile post
-              href = item.type === "post" 
-                ? `/profile/${item.target_profile_username}?post=${item.id}` 
-                : `/profile/${item.target_profile_username}?post=${item.post_id}`;
+              if (item.type === "post") {
+                href = `/profile/${item.target_profile_username}?post=${item.id}`;
+              } else {
+                href = `/profile/${item.target_profile_username}?post=${item.post_id}&comment=${item.id}`;
+              }
             }
             
             return (
