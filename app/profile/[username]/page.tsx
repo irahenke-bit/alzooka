@@ -752,90 +752,99 @@ export default function ProfilePage() {
       if (highlightPostId && !loading && currentUser && !highlightHandled.current) {
         highlightHandled.current = true;
         
-        // Fetch the full post with comments (without user join for comments)
-        const { data: fullPost } = await supabase
-          .from("posts")
-          .select(`
-            id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
-            user_id, group_id, wall_user_id, edit_history,
-            users!posts_user_id_fkey (id, username, display_name, avatar_url),
-            comments (
-              id, content, created_at, edited_at, user_id, parent_comment_id
-            )
-          `)
-          .eq("id", highlightPostId)
-          .single();
+        // If there's a comment to highlight, open the modal
+        if (highlightCommentId) {
+          // Fetch the full post with comments
+          const { data: fullPost } = await supabase
+            .from("posts")
+            .select(`
+              id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
+              user_id, group_id, wall_user_id, edit_history,
+              users!posts_user_id_fkey (id, username, display_name, avatar_url),
+              comments (
+                id, content, created_at, edited_at, user_id, parent_comment_id
+              )
+            `)
+            .eq("id", highlightPostId)
+            .single();
 
-        if (fullPost) {
-          // Fetch user data for comment authors separately
-          const commentUserIds = new Set<string>();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((fullPost as any).comments || []).forEach((c: any) => {
-            if (c.user_id) commentUserIds.add(c.user_id);
-          });
-          
-          const commentUserMap = new Map<string, { id: string; username: string; display_name: string | null; avatar_url: string | null }>();
-          if (commentUserIds.size > 0) {
-            const { data: commentUsers } = await supabase
-              .from("users")
-              .select("id, username, display_name, avatar_url")
-              .in("id", Array.from(commentUserIds));
-            if (commentUsers) {
-              commentUsers.forEach(u => commentUserMap.set(u.id, u));
+          if (fullPost) {
+            // Fetch user data for comment authors separately
+            const commentUserIds = new Set<string>();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ((fullPost as any).comments || []).forEach((c: any) => {
+              if (c.user_id) commentUserIds.add(c.user_id);
+            });
+            
+            const commentUserMap = new Map<string, { id: string; username: string; display_name: string | null; avatar_url: string | null }>();
+            if (commentUserIds.size > 0) {
+              const { data: commentUsers } = await supabase
+                .from("users")
+                .select("id, username, display_name, avatar_url")
+                .in("id", Array.from(commentUserIds));
+              if (commentUsers) {
+                commentUsers.forEach(u => commentUserMap.set(u.id, u));
+              }
             }
+            
+            // Build comment tree with replies
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const allComments = ((fullPost as any).comments || []).map((c: any) => ({
+              ...c,
+              users: commentUserMap.get(c.user_id) || null,
+              replies: []
+            }));
+            
+            // Organize comments into tree structure
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const commentMap = new Map<string, any>(allComments.map((c: any) => [c.id, c]));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const rootComments: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            allComments.forEach((c: any) => {
+              if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+                const parent = commentMap.get(c.parent_comment_id)!;
+                parent.replies = parent.replies || [];
+                parent.replies.push(c);
+              } else if (!c.parent_comment_id) {
+                rootComments.push(c);
+              }
+            });
+
+            const postWithComments = {
+              ...fullPost,
+              user: (fullPost as any).users,
+              comments: rootComments,
+              edit_history: fullPost.edit_history || []
+            };
+            
+            setModalPost(postWithComments);
           }
           
-          // Build comment tree with replies
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const allComments = ((fullPost as any).comments || []).map((c: any) => ({
-            ...c,
-            users: commentUserMap.get(c.user_id) || null, // null for deleted users
-            replies: []
-          }));
-          
-          // Organize comments into tree structure
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const commentMap = new Map<string, any>(allComments.map((c: any) => [c.id, c]));
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const rootComments: any[] = [];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          allComments.forEach((c: any) => {
-            if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
-              const parent = commentMap.get(c.parent_comment_id)!;
-              parent.replies = parent.replies || [];
-              parent.replies.push(c);
-            } else if (!c.parent_comment_id) {
-              rootComments.push(c);
+          // Clear URL params after modal has time to initialize
+          setTimeout(() => {
+            router.replace(`/profile/${username}`, { scroll: false });
+          }, 500);
+        } else {
+          // Just highlighting a post (no comment) - scroll and highlight in feed
+          setTimeout(() => {
+            const element = document.getElementById(`post-${highlightPostId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              element.style.transition = "box-shadow 0.3s ease";
+              element.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
+              setTimeout(() => {
+                element.style.boxShadow = "";
+              }, 2000);
             }
-          });
-
-          const postWithComments = {
-            ...fullPost,
-            user: (fullPost as any).users,
-            comments: rootComments,
-            edit_history: fullPost.edit_history || []
-          };
+          }, 300);
           
-          setModalPost(postWithComments);
-        }
-        
-        // Also scroll to the post in the background
-        setTimeout(() => {
-          const element = document.getElementById(`post-${highlightPostId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        }, 100);
-        
-        // Clear URL params after modal has time to initialize with highlight
-        setTimeout(() => {
           router.replace(`/profile/${username}`, { scroll: false });
-        }, 500);
+        }
       }
     }
     handleHighlight();
-  }, [highlightPostId, loading, currentUser, router, username, supabase]);
+  }, [highlightPostId, highlightCommentId, loading, currentUser, router, username, supabase]);
 
   async function loadFriends() {
     if (!profile) return;
