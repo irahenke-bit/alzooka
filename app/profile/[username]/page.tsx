@@ -36,7 +36,16 @@ type UserProfile = {
   is_active?: boolean;
   deactivated_at?: string | null;
   scheduled_deletion_at?: string | null;
+  comment_history_private?: boolean;
   created_at: string;
+};
+
+type KarmaStats = {
+  uniqueUpvoters: number;
+  totalUpvotes: number;
+  totalDownvotes: number;
+  downvoteRatio: number;
+  qualifiesForPrivacy: boolean;
 };
 
 type EditHistoryEntry = {
@@ -246,6 +255,7 @@ export default function ProfilePage() {
   const [currentUserUsername, setCurrentUserUsername] = useState<string>("");
   const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [karmaStats, setKarmaStats] = useState<KarmaStats | null>(null);
   const [isFriend, setIsFriend] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -318,7 +328,7 @@ export default function ProfilePage() {
       const trimmedUsername = username.trim().toLowerCase();
       
       const profilePromise = (async () => {
-        const { data } = await supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, has_password, is_active, deactivated_at, scheduled_deletion_at").ilike("username", trimmedUsername).single();
+        const { data } = await supabase.from("users").select("id, username, display_name, bio, avatar_url, banner_url, created_at, allow_wall_posts, wall_friends_only, has_password, is_active, deactivated_at, scheduled_deletion_at, comment_history_private").ilike("username", trimmedUsername).single();
         return data;
       })();
       
@@ -348,6 +358,73 @@ export default function ProfilePage() {
       setEditBio(profileData.bio || "");
       setAllowWallPosts(profileData.allow_wall_posts ?? true);
       setWallFriendsOnly(profileData.wall_friends_only ?? true);
+
+      // Calculate karma stats for privacy eligibility (only for own profile)
+      if (user && user.id === profileData.id) {
+        // Get all posts and comments by this user
+        const { data: userPosts } = await supabase
+          .from("posts")
+          .select("id, group_id, groups:groups!posts_group_id_fkey(privacy)")
+          .eq("user_id", profileData.id);
+        
+        const { data: userComments } = await supabase
+          .from("comments")
+          .select("id, post_id, posts:posts!comments_post_id_fkey(group_id, groups:groups!posts_group_id_fkey(privacy))")
+          .eq("user_id", profileData.id);
+
+        // Get post IDs that are in public groups or no group (main feed)
+        const publicPostIds = (userPosts || [])
+          .filter(p => !p.group_id || (p.groups as any)?.privacy === "public")
+          .map(p => p.id);
+
+        // Get comment IDs that are on posts in public groups or no group
+        const publicCommentIds = (userComments || [])
+          .filter(c => {
+            const post = c.posts as any;
+            return !post?.group_id || post?.groups?.privacy === "public";
+          })
+          .map(c => c.id);
+
+        // Get votes on public posts
+        const { data: postVotes } = publicPostIds.length > 0 
+          ? await supabase
+              .from("votes")
+              .select("user_id, value")
+              .eq("target_type", "post")
+              .in("target_id", publicPostIds)
+          : { data: [] };
+
+        // Get votes on public comments
+        const { data: commentVotes } = publicCommentIds.length > 0
+          ? await supabase
+              .from("votes")
+              .select("user_id, value")
+              .eq("target_type", "comment")
+              .in("target_id", publicCommentIds)
+          : { data: [] };
+
+        // Combine all votes
+        const allVotes = [...(postVotes || []), ...(commentVotes || [])];
+        
+        // Calculate stats
+        const upvotes = allVotes.filter(v => v.value > 0);
+        const downvotes = allVotes.filter(v => v.value < 0);
+        const uniqueUpvoterIds = new Set(upvotes.map(v => v.user_id));
+        
+        const totalVotes = upvotes.length + downvotes.length;
+        const downvoteRatio = totalVotes > 0 ? downvotes.length / totalVotes : 0;
+        
+        // Qualifies if: 20+ unique upvoters AND downvote ratio <= 15%
+        const qualifies = uniqueUpvoterIds.size >= 20 && downvoteRatio <= 0.15;
+
+        setKarmaStats({
+          uniqueUpvoters: uniqueUpvoterIds.size,
+          totalUpvotes: upvotes.length,
+          totalDownvotes: downvotes.length,
+          downvoteRatio,
+          qualifiesForPrivacy: qualifies,
+        });
+      }
 
       // Get posts by this user with comment counts (only feed posts, not group posts)
       const { data: postsData } = await supabase
@@ -1568,6 +1645,55 @@ export default function ProfilePage() {
                   >
                     🚫 Content Filter
                   </button>
+
+                  {/* Comment History Privacy Toggle */}
+                  <div
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    <button
+                      onClick={async () => {
+                        if (karmaStats?.qualifiesForPrivacy) {
+                          const newValue = !profile.comment_history_private;
+                          await supabase
+                            .from("users")
+                            .update({ comment_history_private: newValue })
+                            .eq("id", currentUser?.id);
+                          setProfile(prev => prev ? { ...prev, comment_history_private: newValue } : prev);
+                        }
+                      }}
+                      disabled={!karmaStats?.qualifiesForPrivacy}
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        color: karmaStats?.qualifiesForPrivacy ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.4)",
+                        padding: 0,
+                        textAlign: "left",
+                        cursor: karmaStats?.qualifiesForPrivacy ? "pointer" : "not-allowed",
+                        fontSize: 14,
+                      }}
+                    >
+                      {profile.comment_history_private ? "🔒 Comment History Hidden ✓" : "👁️ Comment History Visible ✓"}
+                    </button>
+                    {!karmaStats?.qualifiesForPrivacy && karmaStats && (
+                      <p style={{ 
+                        margin: "8px 0 0 0", 
+                        fontSize: 11, 
+                        opacity: 0.6,
+                        lineHeight: 1.4,
+                      }}>
+                        Unlock this by earning upvotes from 20+ people while keeping your downvotes (negative karma) under 15%.
+                        <br />
+                        <span style={{ opacity: 0.8 }}>
+                          Current: {karmaStats.uniqueUpvoters} unique upvoters, {Math.round(karmaStats.downvoteRatio * 100)}% downvotes
+                        </span>
+                      </p>
+                    )}
+                  </div>
 
                   <button
                     onClick={handleDeactivateAccount}
@@ -2992,10 +3118,15 @@ export default function ProfilePage() {
           )
         ) : (
           /* Comments Tab */
-          comments.length === 0 ? (
+          !isOwnProfile && profile.comment_history_private ? (
+            /* Comment history is private */
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-              {isOwnProfile 
-                ? "You haven&apos;t commented on anything yet." 
+              🔒 @{profile.username}&apos;s comment history is private.
+            </p>
+          ) : comments.length === 0 ? (
+            <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
+              {isOwnProfile
+                ? "You haven&apos;t commented on anything yet."
                 : `@${profile.username} hasn&apos;t commented on anything yet.`}
             </p>
           ) : (
