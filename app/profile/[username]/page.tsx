@@ -738,13 +738,55 @@ export default function ProfilePage() {
   // Handle highlighting and scrolling to a specific post from URL params
   const highlightHandled = useRef(false);
   useEffect(() => {
-    if (highlightPostId && !loading && posts.length > 0 && !highlightHandled.current) {
-      highlightHandled.current = true;
-      // Find the post to highlight
-      const targetPost = posts.find(p => p.id === highlightPostId);
-      if (targetPost) {
-        // Open the modal for this post
-        setModalPost(targetPost);
+    async function handleHighlight() {
+      if (highlightPostId && !loading && posts.length > 0 && !highlightHandled.current) {
+        highlightHandled.current = true;
+        
+        // Fetch the full post with comments
+        const { data: fullPost } = await supabase
+          .from("posts")
+          .select(`
+            id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
+            user_id, group_id, wall_user_id, edit_history,
+            users!posts_user_id_fkey (id, username, display_name, avatar_url),
+            comments (
+              id, content, created_at, edited_at, user_id, parent_comment_id,
+              users (id, username, display_name, avatar_url)
+            )
+          `)
+          .eq("id", highlightPostId)
+          .single();
+
+        if (fullPost) {
+          // Build comment tree with replies
+          const allComments = (fullPost.comments || []).map((c: any) => ({
+            ...c,
+            user: c.users,
+            replies: []
+          }));
+          
+          // Organize comments into tree structure
+          const commentMap = new Map(allComments.map((c: any) => [c.id, c]));
+          const rootComments: any[] = [];
+          allComments.forEach((c: any) => {
+            if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+              const parent = commentMap.get(c.parent_comment_id);
+              parent.replies = parent.replies || [];
+              parent.replies.push(c);
+            } else if (!c.parent_comment_id) {
+              rootComments.push(c);
+            }
+          });
+
+          const postWithComments = {
+            ...fullPost,
+            user: (fullPost as any).users,
+            comments: rootComments,
+            edit_history: fullPost.edit_history || []
+          };
+          
+          setModalPost(postWithComments);
+        }
         
         // Also scroll to the post in the background
         setTimeout(() => {
@@ -758,7 +800,8 @@ export default function ProfilePage() {
         router.replace(`/profile/${username}`, { scroll: false });
       }
     }
-  }, [highlightPostId, loading, posts, router, username]);
+    handleHighlight();
+  }, [highlightPostId, loading, posts, router, username, supabase]);
 
   async function loadFriends() {
     if (!profile) return;
