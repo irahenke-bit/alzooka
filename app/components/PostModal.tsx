@@ -971,65 +971,92 @@ export function PostModal({
                 alignItems: "center",
               }}
             >
-              <Link
-                href={`/profile/${comment.users?.username || "unknown"}`}
-                style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
-                onClick={onClose}
-              >
-                {comment.users?.avatar_url ? (
-                  <img
-                    src={comment.users.avatar_url}
-                    alt=""
-                    style={{
-                      width: isReply ? 26 : 28,
-                      height: isReply ? 26 : 28,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
+              {comment.users ? (
+                <Link
+                  href={`/profile/${comment.users.username}`}
+                  style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
+                  onClick={onClose}
+                >
+                  {comment.users.avatar_url ? (
+                    <img
+                      src={comment.users.avatar_url}
+                      alt=""
+                      style={{
+                        width: isReply ? 26 : 28,
+                        height: isReply ? 26 : 28,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: isReply ? 26 : 28,
+                        height: isReply ? 26 : 28,
+                        borderRadius: "50%",
+                        background: "var(--alzooka-gold)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--alzooka-teal-dark)",
+                        fontWeight: 700,
+                        fontSize: isReply ? 11 : 12,
+                      }}
+                    >
+                      {(comment.users.display_name || comment.users.username || "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                      {comment.users.display_name || comment.users.username}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div
                     style={{
                       width: isReply ? 26 : 28,
                       height: isReply ? 26 : 28,
                       borderRadius: "50%",
-                      background: "var(--alzooka-gold)",
+                      background: "rgba(120, 120, 120, 0.5)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "var(--alzooka-teal-dark)",
+                      color: "rgba(255, 255, 255, 0.5)",
                       fontWeight: 700,
                       fontSize: isReply ? 11 : 12,
                     }}
                   >
-                    {(comment.users?.display_name || comment.users?.username || "?").charAt(0).toUpperCase()}
+                    ?
                   </div>
-                )}
-                <div>
-                  <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-                    {comment.users?.display_name || comment.users?.username || "Unknown"}
-                  </span>
-                  {isGroupAdmin(comment.user_id) && (
-                    <span style={{ 
-                      marginLeft: 8, 
-                      fontSize: 10, 
-                      color: "var(--alzooka-gold)",
-                      background: "rgba(201, 165, 92, 0.15)",
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      fontWeight: 600,
-                    }}>
-                      Admin
+                  <div>
+                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "rgba(240, 235, 224, 0.5)", fontStyle: "italic" }}>
+                      [Deleted User]
                     </span>
-                  )}
-                  <span className="text-muted" style={{ marginLeft: 8, fontSize: isReply ? 11 : 12 }}>
-                    {formatTime(comment.created_at)}
-                  </span>
+                  </div>
                 </div>
-              </Link>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {isGroupAdmin(comment.user_id) && (
+                  <span style={{ 
+                    fontSize: 10, 
+                    color: "var(--alzooka-gold)",
+                    background: "rgba(201, 165, 92, 0.15)",
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    fontWeight: 600,
+                  }}>
+                    Admin
+                  </span>
+                )}
+                <span className="text-muted" style={{ fontSize: isReply ? 11 : 12 }}>
+                  {formatTime(comment.created_at)}
+                </span>
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => handleReply(comment.id, comment.users?.username || "unknown", comment.users?.display_name || comment.users?.username || "unknown")}
+                  onClick={() => handleReply(comment.id, comment.users?.username || "deleted", comment.users?.display_name || comment.users?.username || "[Deleted User]")}
                   style={{
                     background: "transparent",
                     border: "none",

@@ -372,20 +372,37 @@ function FeedContent() {
                     content,
                     created_at,
                     user_id,
-                    parent_comment_id,
-                    users!comments_user_id_fkey (
-                      username,
-                      display_name,
-                      avatar_url
-                    )
+                    parent_comment_id
                   )
                 `)
                 .eq("id", payload.new.id)
                 .single();
 
               if (newPost) {
+                // Fetch user data for comment authors separately
+                const commentUserIds = new Set<string>();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((newPost as any).comments || []).forEach((c: any) => {
+                  if (c.user_id) commentUserIds.add(c.user_id);
+                });
+                
+                const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+                if (commentUserIds.size > 0) {
+                  const { data: commentUsers } = await supabase
+                    .from("users")
+                    .select("id, username, display_name, avatar_url")
+                    .in("id", Array.from(commentUserIds));
+                  if (commentUsers) {
+                    commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+                  }
+                }
+                
                 // Process comments recursively (handles replies to replies)
-                const allComments = (newPost.comments || []) as unknown as Comment[];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const allComments = ((newPost as any).comments || []).map((c: any) => ({
+                  ...c,
+                  users: commentUserMap.get(c.user_id) || null // null for deleted users
+                })) as unknown as Comment[];
                 const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
                 const processedPost = {
@@ -431,7 +448,7 @@ function FeedContent() {
               if (payload.new.user_id === user.id) return;
 
               // Fetch the full comment with user data
-              const { data: newComment } = await supabase
+              const { data: commentData } = await supabase
                 .from("comments")
                 .select(`
                   id,
@@ -439,17 +456,23 @@ function FeedContent() {
                   created_at,
                   user_id,
                   post_id,
-                  parent_comment_id,
-                  users!comments_user_id_fkey (
-                    username,
-                    display_name,
-                    avatar_url
-                  )
+                  parent_comment_id
                 `)
                 .eq("id", payload.new.id)
                 .single();
 
-              if (newComment) {
+              if (commentData) {
+                // Fetch user data separately to handle deleted users
+                let commentUser = null;
+                if (commentData.user_id) {
+                  const { data: userData } = await supabase
+                    .from("users")
+                    .select("username, display_name, avatar_url")
+                    .eq("id", commentData.user_id)
+                    .single();
+                  commentUser = userData;
+                }
+                const newComment = { ...commentData, users: commentUser };
                 const postId = newComment.post_id;
                 const commentId = newComment.id;
                 
@@ -568,20 +591,37 @@ function FeedContent() {
               content,
               created_at,
               user_id,
-              parent_comment_id,
-              users!comments_user_id_fkey (
-                username,
-                display_name,
-                avatar_url
-              )
+              parent_comment_id
             )
           `)
           .eq("id", highlightPostId)
           .single();
           
         if (postsData) {
+          // Fetch user data for comment authors separately
+          const commentUserIds = new Set<string>();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((postsData as any).comments || []).forEach((c: any) => {
+            if (c.user_id) commentUserIds.add(c.user_id);
+          });
+          
+          const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+          if (commentUserIds.size > 0) {
+            const { data: commentUsers } = await supabase
+              .from("users")
+              .select("id, username, display_name, avatar_url")
+              .in("id", Array.from(commentUserIds));
+            if (commentUsers) {
+              commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+            }
+          }
+          
           // Process comments recursively (handles replies to replies)
-          const allComments = (postsData.comments || []) as unknown as Comment[];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const allComments = ((postsData as any).comments || []).map((c: any) => ({
+            ...c,
+            users: commentUserMap.get(c.user_id) || null // null for deleted users
+          })) as unknown as Comment[];
           const commentsWithReplies = buildCommentTreeRecursive(allComments);
           
           setModalPost({
@@ -666,19 +706,36 @@ function FeedContent() {
               content,
               created_at,
               user_id,
-              parent_comment_id,
-              users!comments_user_id_fkey (
-                username,
-                display_name,
-                avatar_url
-              )
+              parent_comment_id
             )
           `)
           .eq("id", highlightPostId)
           .single();
 
         if (postsData) {
-          const allComments = (postsData.comments || []) as unknown as Comment[];
+          // Fetch user data for comment authors separately
+          const commentUserIds = new Set<string>();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((postsData as any).comments || []).forEach((c: any) => {
+            if (c.user_id) commentUserIds.add(c.user_id);
+          });
+          
+          const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+          if (commentUserIds.size > 0) {
+            const { data: commentUsers } = await supabase
+              .from("users")
+              .select("id, username, display_name, avatar_url")
+              .in("id", Array.from(commentUserIds));
+            if (commentUsers) {
+              commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+            }
+          }
+          
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const allComments = ((postsData as any).comments || []).map((c: any) => ({
+            ...c,
+            users: commentUserMap.get(c.user_id) || null // null for deleted users
+          })) as unknown as Comment[];
           const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
           setModalPost({
@@ -753,12 +810,7 @@ function FeedContent() {
             content,
             created_at,
             user_id,
-            parent_comment_id,
-            users!comments_user_id_fkey (
-              username,
-              display_name,
-              avatar_url
-            )
+            parent_comment_id
           )
         `)
         .is("group_id", null)
@@ -811,12 +863,7 @@ function FeedContent() {
             content,
             created_at,
             user_id,
-            parent_comment_id,
-            users!comments_user_id_fkey (
-              username,
-              display_name,
-              avatar_url
-            )
+            parent_comment_id
           )
         `)
         .in("group_id", groupIds)
@@ -866,6 +913,37 @@ function FeedContent() {
     // 3. Merge feed posts and group posts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allRawPosts = [...(feedPosts || []), ...(groupPosts || [])] as any[];
+    
+    // 3.5 Fetch user data for all comment authors
+    const allCommentUserIds = new Set<string>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allRawPosts.forEach((post: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (post.comments || []).forEach((c: any) => {
+        if (c.user_id) allCommentUserIds.add(c.user_id);
+      });
+    });
+    
+    const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+    if (allCommentUserIds.size > 0) {
+      const { data: commentUsers } = await supabase
+        .from("users")
+        .select("id, username, display_name, avatar_url")
+        .in("id", Array.from(allCommentUserIds));
+      if (commentUsers) {
+        commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+      }
+    }
+    
+    // Add users to comments (null for deleted users)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allRawPosts.forEach((post: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      post.comments = (post.comments || []).map((c: any) => ({
+        ...c,
+        users: commentUserMap.get(c.user_id) || null
+      }));
+    });
 
     // Fetch original posts for shared posts
     const sharedPostIds = allRawPosts

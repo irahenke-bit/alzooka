@@ -164,12 +164,7 @@ export default function HellModePage() {
             content,
             created_at,
             user_id,
-            parent_comment_id,
-            users:users!comments_user_id_fkey (
-              username,
-              display_name,
-              avatar_url
-            )
+            parent_comment_id
           )
         `)
         .in("user_id", allowedUserIds)
@@ -177,6 +172,27 @@ export default function HellModePage() {
         .limit(100);
 
       if (postsData) {
+        // Fetch user data for comment authors
+        const allCommentUserIds = new Set<string>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        postsData.forEach((post: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (post.comments || []).forEach((c: any) => {
+            if (c.user_id) allCommentUserIds.add(c.user_id);
+          });
+        });
+        
+        const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+        if (allCommentUserIds.size > 0) {
+          const { data: commentUsers } = await supabase
+            .from("users")
+            .select("id, username, display_name, avatar_url")
+            .in("id", Array.from(allCommentUserIds));
+          if (commentUsers) {
+            commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+          }
+        }
+        
         // Transform posts
         const posts = postsData.map(post => ({
           id: post.id,
@@ -192,7 +208,11 @@ export default function HellModePage() {
           users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
           group_id: post.group_id,
           groups: Array.isArray(post.groups) ? post.groups[0] : post.groups,
-          comments: ((post.comments as unknown) as Comment[]) || [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          comments: ((post.comments || []).map((c: any) => ({
+            ...c,
+            users: commentUserMap.get(c.user_id) || null
+          })) as unknown as Comment[]),
         }));
 
         setAllPosts(posts);

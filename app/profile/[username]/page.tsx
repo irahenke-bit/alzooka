@@ -742,7 +742,7 @@ export default function ProfilePage() {
       if (highlightPostId && !loading && posts.length > 0 && !highlightHandled.current) {
         highlightHandled.current = true;
         
-        // Fetch the full post with comments
+        // Fetch the full post with comments (without user join for comments)
         const { data: fullPost } = await supabase
           .from("posts")
           .select(`
@@ -750,27 +750,49 @@ export default function ProfilePage() {
             user_id, group_id, wall_user_id, edit_history,
             users!posts_user_id_fkey (id, username, display_name, avatar_url),
             comments (
-              id, content, created_at, edited_at, user_id, parent_comment_id,
-              users (id, username, display_name, avatar_url)
+              id, content, created_at, edited_at, user_id, parent_comment_id
             )
           `)
           .eq("id", highlightPostId)
           .single();
 
         if (fullPost) {
+          // Fetch user data for comment authors separately
+          const commentUserIds = new Set<string>();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((fullPost as any).comments || []).forEach((c: any) => {
+            if (c.user_id) commentUserIds.add(c.user_id);
+          });
+          
+          const commentUserMap = new Map<string, { id: string; username: string; display_name: string | null; avatar_url: string | null }>();
+          if (commentUserIds.size > 0) {
+            const { data: commentUsers } = await supabase
+              .from("users")
+              .select("id, username, display_name, avatar_url")
+              .in("id", Array.from(commentUserIds));
+            if (commentUsers) {
+              commentUsers.forEach(u => commentUserMap.set(u.id, u));
+            }
+          }
+          
           // Build comment tree with replies
-          const allComments = (fullPost.comments || []).map((c: any) => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const allComments = ((fullPost as any).comments || []).map((c: any) => ({
             ...c,
-            user: c.users,
+            users: commentUserMap.get(c.user_id) || null, // null for deleted users
             replies: []
           }));
           
           // Organize comments into tree structure
-          const commentMap = new Map(allComments.map((c: any) => [c.id, c]));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const commentMap = new Map<string, any>(allComments.map((c: any) => [c.id, c]));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const rootComments: any[] = [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           allComments.forEach((c: any) => {
             if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
-              const parent = commentMap.get(c.parent_comment_id);
+              const parent = commentMap.get(c.parent_comment_id)!;
               parent.replies = parent.replies || [];
               parent.replies.push(c);
             } else if (!c.parent_comment_id) {
@@ -3181,20 +3203,36 @@ export default function ProfilePage() {
                                       content,
                                       created_at,
                                       user_id,
-                                      parent_comment_id,
-                                      users!comments_user_id_fkey (
-                                        username,
-                                        display_name,
-                                        avatar_url
-                                      )
+                                      parent_comment_id
                                     )
                                   `)
                                   .eq("id", post.id)
                                   .single();
 
                                 if (fullPost) {
+                                  // Fetch user data for comment authors separately
+                                  const commentUserIds = new Set<string>();
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  const allComments = ((fullPost as any).comments || []) as PostComment[];
+                                  ((fullPost as any).comments || []).forEach((c: any) => {
+                                    if (c.user_id) commentUserIds.add(c.user_id);
+                                  });
+                                  
+                                  const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+                                  if (commentUserIds.size > 0) {
+                                    const { data: commentUsers } = await supabase
+                                      .from("users")
+                                      .select("id, username, display_name, avatar_url")
+                                      .in("id", Array.from(commentUserIds));
+                                    if (commentUsers) {
+                                      commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+                                    }
+                                  }
+                                  
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  const allComments = ((fullPost as any).comments || []).map((c: any) => ({
+                                    ...c,
+                                    users: commentUserMap.get(c.user_id) || null // null for deleted users
+                                  })) as PostComment[];
                                   const parentComments = allComments
                                     .filter(c => !c.parent_comment_id)
                                     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -3526,20 +3564,36 @@ export default function ProfilePage() {
                   content,
                   created_at,
                   user_id,
-                  parent_comment_id,
-                  users!comments_user_id_fkey (
-                    username,
-                    display_name,
-                    avatar_url
-                  )
+                  parent_comment_id
                 )
               `)
               .eq("id", modalPost.id)
               .single();
 
             if (freshPost) {
+              // Fetch user data for comment authors separately
+              const commentUserIds = new Set<string>();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const allComments = ((freshPost as any).comments || []) as PostComment[];
+              ((freshPost as any).comments || []).forEach((c: any) => {
+                if (c.user_id) commentUserIds.add(c.user_id);
+              });
+              
+              const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
+              if (commentUserIds.size > 0) {
+                const { data: commentUsers } = await supabase
+                  .from("users")
+                  .select("id, username, display_name, avatar_url")
+                  .in("id", Array.from(commentUserIds));
+                if (commentUsers) {
+                  commentUsers.forEach(u => commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url }));
+                }
+              }
+              
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const allComments = ((freshPost as any).comments || []).map((c: any) => ({
+                ...c,
+                users: commentUserMap.get(c.user_id) || null // null for deleted users
+              })) as PostComment[];
               const parentComments = allComments
                 .filter(c => !c.parent_comment_id)
                 .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
