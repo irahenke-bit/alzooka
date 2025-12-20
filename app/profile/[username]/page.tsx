@@ -3231,10 +3231,17 @@ export default function ProfilePage() {
                                   .single();
 
                                 if (fullPost) {
+                                  // Fetch ALL comments directly from the comments table (bypass nested select)
+                                  const { data: commentsData } = await supabase
+                                    .from("comments")
+                                    .select("id, content, created_at, user_id, parent_comment_id")
+                                    .eq("post_id", post.id)
+                                    .order("created_at", { ascending: true });
+                                  
                                   // Fetch user data for comment authors separately
                                   const commentUserIds = new Set<string>();
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  ((fullPost as any).comments || []).forEach((c: any) => {
+                                  (commentsData || []).forEach((c: any) => {
                                     if (c.user_id) commentUserIds.add(c.user_id);
                                   });
                                   
@@ -3250,7 +3257,7 @@ export default function ProfilePage() {
                                   }
                                   
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  const allComments = ((fullPost as any).comments || []).map((c: any) => ({
+                                  const allComments = (commentsData || []).map((c: any) => ({
                                     ...c,
                                     users: commentUserMap.get(c.user_id) || null // null for deleted users
                                   })) as PostComment[];
@@ -3579,26 +3586,26 @@ export default function ProfilePage() {
                   username,
                   display_name,
                   avatar_url
-                ),
-                comments (
-                  id,
-                  content,
-                  created_at,
-                  user_id,
-                  parent_comment_id
                 )
               `)
               .eq("id", modalPost.id)
               .single();
 
             if (freshPost) {
+              // Fetch ALL comments directly from comments table
+              const { data: commentsData } = await supabase
+                .from("comments")
+                .select("id, content, created_at, user_id, parent_comment_id")
+                .eq("post_id", modalPost.id)
+                .order("created_at", { ascending: true });
+              
               // Fetch user data for comment authors separately
               const commentUserIds = new Set<string>();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ((freshPost as any).comments || []).forEach((c: any) => {
+              (commentsData || []).forEach((c: any) => {
                 if (c.user_id) commentUserIds.add(c.user_id);
               });
-              
+
               const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
               if (commentUserIds.size > 0) {
                 const { data: commentUsers } = await supabase
@@ -3611,7 +3618,7 @@ export default function ProfilePage() {
               }
               
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const allComments = ((freshPost as any).comments || []).map((c: any) => ({
+              const allComments = (commentsData || []).map((c: any) => ({
                 ...c,
                 users: commentUserMap.get(c.user_id) || null // null for deleted users
               })) as PostComment[];

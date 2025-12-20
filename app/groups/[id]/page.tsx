@@ -655,25 +655,29 @@ export default function GroupPage() {
         
         // If there's a comment to highlight, open the modal
         if (highlightCommentId) {
-          // Fetch the full post with comments
+          // Fetch the full post
           const { data: fullPost } = await supabase
             .from("posts")
             .select(`
               id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
               user_id, group_id, wall_user_id, edit_history,
-              users!posts_user_id_fkey (id, username, display_name, avatar_url),
-              comments (
-                id, content, created_at, edited_at, user_id, parent_comment_id
-              )
+              users!posts_user_id_fkey (id, username, display_name, avatar_url)
             `)
             .eq("id", highlightPostId)
             .single();
 
           if (fullPost) {
+            // Fetch ALL comments directly from comments table
+            const { data: commentsData } = await supabase
+              .from("comments")
+              .select("id, content, created_at, edited_at, user_id, parent_comment_id")
+              .eq("post_id", highlightPostId)
+              .order("created_at", { ascending: true });
+            
             // Fetch user data for comment authors separately
             const commentUserIds = new Set<string>();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((fullPost as any).comments || []).forEach((c: any) => {
+            (commentsData || []).forEach((c: any) => {
               if (c.user_id) commentUserIds.add(c.user_id);
             });
             
@@ -690,7 +694,7 @@ export default function GroupPage() {
             
             // Build comment tree with replies
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const allComments = ((fullPost as any).comments || []).map((c: any) => ({
+            const allComments = (commentsData || []).map((c: any) => ({
               ...c,
               users: commentUserMap.get(c.user_id) || null,
               replies: []
@@ -947,13 +951,6 @@ export default function GroupPage() {
           username,
           display_name,
           avatar_url
-        ),
-        comments (
-          id,
-          content,
-          created_at,
-          user_id,
-          parent_comment_id
         )
       `)
       .eq("group_id", groupId)
@@ -963,14 +960,27 @@ export default function GroupPage() {
     console.log(`[loadPosts] Got ${data?.length || 0} posts`, error ? `Error: ${error.message}` : '');
 
     if (data) {
+      // Fetch ALL comments for these posts directly from comments table
+      const postIds = data.map((p: { id: string }) => p.id);
+      const { data: allCommentsData } = await supabase
+        .from("comments")
+        .select("id, content, created_at, user_id, parent_comment_id, post_id")
+        .in("post_id", postIds)
+        .order("created_at", { ascending: true });
+      
+      // Group comments by post_id
+      const commentsByPost = new Map<string, any[]>();
+      (allCommentsData || []).forEach((c: any) => {
+        if (!commentsByPost.has(c.post_id)) {
+          commentsByPost.set(c.post_id, []);
+        }
+        commentsByPost.get(c.post_id)!.push(c);
+      });
+      
       // Collect all comment user_ids to fetch user data separately
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allCommentUserIds = new Set<string>();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data.forEach((post: any) => {
-        (post.comments || []).forEach((c: { user_id: string }) => {
-          if (c.user_id) allCommentUserIds.add(c.user_id);
-        });
+      (allCommentsData || []).forEach((c: { user_id: string }) => {
+        if (c.user_id) allCommentUserIds.add(c.user_id);
       });
       
       // Fetch user data for all comment authors
@@ -988,7 +998,8 @@ export default function GroupPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const postsWithNestedComments = data.map((post: any) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const allComments = (post.comments || []).map((c: any) => ({
+        const postComments = commentsByPost.get(post.id) || [];
+        const allComments = postComments.map((c: any) => ({
           ...c,
           users: commentUserMap.get(c.user_id) || null // null for deleted users
         })) as Comment[];
