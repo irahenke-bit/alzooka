@@ -1491,7 +1491,6 @@ export default function ProfilePage() {
                   
                   <button
                     onClick={() => {
-                      setShowEditMenu(false);
                       handleToggleWallPosts(!allowWallPosts);
                     }}
                     style={{
@@ -1506,13 +1505,12 @@ export default function ProfilePage() {
                       borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                     }}
                   >
-                    {allowWallPosts ? "🚫 Disable Wall Posts" : "📝 Allow Wall Posts"}
+                    {allowWallPosts ? "📝 Wall Posts Enabled ✓" : "🚫 Wall Posts Disabled ✓"}
                   </button>
                   
                   {allowWallPosts && (
                     <button
                       onClick={() => {
-                        setShowEditMenu(false);
                         handleToggleWallFriendsOnly(!wallFriendsOnly);
                       }}
                       style={{
@@ -1527,7 +1525,7 @@ export default function ProfilePage() {
                         borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                       }}
                     >
-                      {wallFriendsOnly ? "🌐 Allow All to Post" : "👥 Friends Only"}
+                      {wallFriendsOnly ? "👥 Only Friends Can Post ✓" : "🌐 Anyone Can Post ✓"}
                     </button>
                   )}
                   
