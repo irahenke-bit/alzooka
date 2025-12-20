@@ -167,43 +167,10 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           overflow: "hidden",
         }}
       >
-        {/* Group scope prefix */}
-        {isGroupScoped && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 0 8px 12px",
-              color: "rgba(240, 235, 224, 0.5)",
-              fontSize: 14,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <span>Search {truncate(groupName, 15)}</span>
-            <button
-              onClick={handleClearScope}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "rgba(240, 235, 224, 0.5)",
-                cursor: "pointer",
-                padding: "2px 6px",
-                fontSize: 14,
-                lineHeight: 1,
-                borderRadius: 3,
-              }}
-              title="Search all groups"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
         <input
           ref={inputRef}
           type="text"
-          placeholder={isGroupScoped ? "" : "Search all groups..."}
+          placeholder={isGroupScoped ? "Search this group..." : "Search all of Alzooka..."}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -211,9 +178,9 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           }}
           onFocus={() => setIsOpen(true)}
           style={{
-            padding: isGroupScoped ? "8px 12px 8px 4px" : "8px 12px",
+            padding: "8px 12px",
             fontSize: 14,
-            width: isGroupScoped ? 80 : 180,
+            width: 180,
             background: "transparent",
             border: "none",
             color: "var(--alzooka-cream)",
@@ -221,11 +188,14 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
           }}
         />
 
-        {/* Restore scope button when not scoped */}
-        {!isGroupScoped && (
+        {/* Scope indicator tag */}
+        {isGroupScoped ? (
           <button
-            onClick={handleRestoreScope}
+            onClick={handleClearScope}
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
               background: "rgba(212, 168, 75, 0.2)",
               border: "none",
               color: "var(--alzooka-gold)",
@@ -235,9 +205,30 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               marginRight: 8,
               borderRadius: 3,
             }}
-            title={`Search only ${groupName}`}
+            title="Click to search all of Alzooka"
           >
-            This group
+            <span>This group</span>
+            <span style={{ fontSize: 13, lineHeight: 1 }}>×</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleRestoreScope}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              background: "rgba(240, 235, 224, 0.1)",
+              border: "none",
+              color: "rgba(240, 235, 224, 0.6)",
+              cursor: "pointer",
+              padding: "4px 8px",
+              fontSize: 11,
+              marginRight: 8,
+              borderRadius: 3,
+            }}
+            title={`Click to search only ${groupName}`}
+          >
+            <span>All</span>
           </button>
         )}
       </div>
