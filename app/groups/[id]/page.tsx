@@ -714,19 +714,28 @@ export default function GroupPage() {
             router.replace(`/groups/${groupId}`, { scroll: false });
           }, 500);
         } else {
-          // If post fetch failed, still scroll to it if visible in feed
-          setTimeout(() => {
-            const postElement = document.getElementById(`post-${highlightPostId}`);
-            if (postElement) {
-              postElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-          }, 300);
-          router.replace(`/groups/${groupId}`, { scroll: false });
+          // If direct fetch failed, try to find the post in the loaded posts array
+          const existingPost = posts.find(p => p.id === highlightPostId);
+          if (existingPost) {
+            setModalPost(existingPost);
+            setTimeout(() => {
+              router.replace(`/groups/${groupId}`, { scroll: false });
+            }, 500);
+          } else {
+            // Last resort: scroll to post in feed if visible
+            setTimeout(() => {
+              const postElement = document.getElementById(`post-${highlightPostId}`);
+              if (postElement) {
+                postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            }, 300);
+            router.replace(`/groups/${groupId}`, { scroll: false });
+          }
         }
       }
     }
     handleHighlight();
-  }, [highlightPostId, loading, user, groupId, router, supabase]);
+  }, [highlightPostId, loading, user, posts, groupId, router, supabase]);
 
   async function loadMembers() {
     const { data } = await supabase
