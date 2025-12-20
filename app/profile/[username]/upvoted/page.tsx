@@ -91,27 +91,45 @@ export default function UpvotedPage() {
 
       setIsOwner(true);
 
-      // Get all posts by this user (with wall user info for linking)
+      // Get all posts by this user
       const { data: posts } = await supabase
         .from("posts")
-        .select(`
-          id, content, created_at, wall_user_id,
-          wall_user:users!posts_wall_user_id_fkey (username)
-        `)
+        .select("id, content, created_at, wall_user_id")
         .eq("user_id", profileData.id);
 
-      // Get all comments by this user (with parent post info for linking)
+      // Get all comments by this user
       const { data: comments } = await supabase
         .from("comments")
-        .select(`
-          id, content, created_at, post_id,
-          posts (
-            wall_user_id,
-            post_owner:users!posts_user_id_fkey (username),
-            wall_owner:users!posts_wall_user_id_fkey (username)
-          )
-        `)
+        .select("id, content, created_at, post_id")
         .eq("user_id", profileData.id);
+
+      // Fetch wall user info
+      const wallUserIds = [...new Set((posts || []).filter(p => p.wall_user_id).map(p => p.wall_user_id))];
+      const { data: wallUsers } = wallUserIds.length > 0
+        ? await supabase.from("users").select("id, username").in("id", wallUserIds)
+        : { data: [] };
+      const wallUserMap = new Map((wallUsers || []).map(u => [u.id, u]));
+
+      // Fetch parent posts for comments
+      const postIdsForComments = [...new Set((comments || []).map(c => c.post_id))];
+      const { data: parentPosts } = postIdsForComments.length > 0
+        ? await supabase.from("posts").select("id, user_id, wall_user_id").in("id", postIdsForComments)
+        : { data: [] };
+      const parentPostMap = new Map((parentPosts || []).map(p => [p.id, p]));
+
+      // Fetch post owners
+      const postOwnerIds = [...new Set((parentPosts || []).filter(p => p.user_id).map(p => p.user_id))];
+      const parentWallIds = [...new Set((parentPosts || []).filter(p => p.wall_user_id).map(p => p.wall_user_id))];
+      
+      const { data: postOwners } = postOwnerIds.length > 0
+        ? await supabase.from("users").select("id, username").in("id", postOwnerIds)
+        : { data: [] };
+      const postOwnerMap = new Map((postOwners || []).map(u => [u.id, u]));
+
+      const { data: parentWallUsers } = parentWallIds.length > 0
+        ? await supabase.from("users").select("id, username").in("id", parentWallIds)
+        : { data: [] };
+      const parentWallMap = new Map((parentWallUsers || []).map(u => [u.id, u]));
 
       const postIds = (posts || []).map(p => p.id);
       const commentIds = (comments || []).map(c => c.id);
@@ -148,16 +166,15 @@ export default function UpvotedPage() {
       (posts || []).forEach((post: any) => {
         if (postVoteCounts[post.id]) {
           // If wall post, link to wall owner's profile; otherwise link to owner's profile
-          const targetUsername = post.wall_user_id 
-            ? post.wall_user?.username 
-            : username;
+          const wallUser = post.wall_user_id ? wallUserMap.get(post.wall_user_id) : null;
+          const targetUsername = wallUser?.username || username;
           votedItems.push({
             id: post.id,
             type: "post",
             content: post.content,
             created_at: post.created_at,
             vote_value: postVoteCounts[post.id],
-            target_profile_username: targetUsername || username,
+            target_profile_username: targetUsername,
           });
         }
       });
@@ -170,11 +187,15 @@ export default function UpvotedPage() {
 
       (comments || []).forEach((comment: any) => {
         if (commentVoteCounts[comment.id]) {
-          const postData = comment.posts;
-          // Determine which profile the post is on
-          const targetUsername = postData?.wall_user_id
-            ? postData?.wall_owner?.username
-            : postData?.post_owner?.username;
+          const parentPost = parentPostMap.get(comment.post_id);
+          let targetUsername: string;
+          if (parentPost?.wall_user_id) {
+            const wallOwner = parentWallMap.get(parentPost.wall_user_id);
+            targetUsername = wallOwner?.username || username;
+          } else {
+            const postOwner = postOwnerMap.get(parentPost?.user_id);
+            targetUsername = postOwner?.username || username;
+          }
           votedItems.push({
             id: comment.id,
             type: "comment",
@@ -182,7 +203,7 @@ export default function UpvotedPage() {
             created_at: comment.created_at,
             vote_value: commentVoteCounts[comment.id],
             post_id: comment.post_id,
-            target_profile_username: targetUsername || username,
+            target_profile_username: targetUsername,
           });
         }
       });
