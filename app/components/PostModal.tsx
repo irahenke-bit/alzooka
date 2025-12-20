@@ -1197,10 +1197,12 @@ export function PostModal({
                 {(() => {
                   const videoId = extractYouTubeVideoId(comment.content);
                   if (videoId) {
+                    // Clean the video ID to remove any trailing special characters
+                    const cleanVideoId = videoId.replace(/[^a-zA-Z0-9_-]/g, '');
                     const playlistId = extractYouTubePlaylistId(comment.content);
                     const embedUrl = playlistId 
-                      ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}&rel=0`
-                      : `https://www.youtube.com/embed/${videoId}?rel=0`;
+                      ? `https://www.youtube-nocookie.com/embed/${cleanVideoId}?list=${playlistId}&rel=0&modestbranding=1`
+                      : `https://www.youtube-nocookie.com/embed/${cleanVideoId}?rel=0&modestbranding=1`;
                     return (
                       <div style={{ marginTop: 8, borderRadius: 8, overflow: "hidden" }}>
                         <div style={{ 
@@ -1636,6 +1638,8 @@ export function PostModal({
               {post.video_url && (() => {
                 const videoId = extractYouTubeVideoId(post.video_url);
                 if (!videoId) return null;
+                // Clean the video ID to remove any trailing special characters
+                const cleanVideoId = videoId.replace(/[^a-zA-Z0-9_-]/g, '');
                 return (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ 
@@ -1647,7 +1651,7 @@ export function PostModal({
                       background: "#000",
                     }}>
                       <iframe
-                        src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                        src={`https://www.youtube-nocookie.com/embed/${cleanVideoId}?rel=0&modestbranding=1`}
                         title="YouTube video"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
