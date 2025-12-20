@@ -13,6 +13,7 @@ type VotedItem = {
   created_at: string;
   vote_value: number;
   post_id?: string; // For comments, the parent post
+  target_profile_username: string; // For linking to the correct profile
 };
 
 function formatTime(dateString: string): string {
@@ -90,16 +91,26 @@ export default function DownvotedPage() {
 
       setIsOwner(true);
 
-      // Get all posts by this user
+      // Get all posts by this user (with wall user info for linking)
       const { data: posts } = await supabase
         .from("posts")
-        .select("id, content, created_at")
+        .select(`
+          id, content, created_at, wall_user_id,
+          wall_user:users!posts_wall_user_id_fkey (username)
+        `)
         .eq("user_id", profileData.id);
 
-      // Get all comments by this user
+      // Get all comments by this user (with parent post info for linking)
       const { data: comments } = await supabase
         .from("comments")
-        .select("id, content, created_at, post_id")
+        .select(`
+          id, content, created_at, post_id,
+          posts (
+            wall_user_id,
+            post_owner:users!posts_user_id_fkey (username),
+            wall_owner:users!posts_wall_user_id_fkey (username)
+          )
+        `)
         .eq("user_id", profileData.id);
 
       const postIds = (posts || []).map(p => p.id);
@@ -134,14 +145,19 @@ export default function DownvotedPage() {
         postVoteCounts[v.target_id] = (postVoteCounts[v.target_id] || 0) + Math.abs(v.value);
       });
 
-      (posts || []).forEach(post => {
+      (posts || []).forEach((post: any) => {
         if (postVoteCounts[post.id]) {
+          // If wall post, link to wall owner's profile; otherwise link to owner's profile
+          const targetUsername = post.wall_user_id 
+            ? post.wall_user?.username 
+            : username;
           votedItems.push({
             id: post.id,
             type: "post",
             content: post.content,
             created_at: post.created_at,
             vote_value: postVoteCounts[post.id],
+            target_profile_username: targetUsername || username,
           });
         }
       });
@@ -152,8 +168,13 @@ export default function DownvotedPage() {
         commentVoteCounts[v.target_id] = (commentVoteCounts[v.target_id] || 0) + Math.abs(v.value);
       });
 
-      (comments || []).forEach(comment => {
+      (comments || []).forEach((comment: any) => {
         if (commentVoteCounts[comment.id]) {
+          const postData = comment.posts;
+          // Determine which profile the post is on
+          const targetUsername = postData?.wall_user_id
+            ? postData?.wall_owner?.username
+            : postData?.post_owner?.username;
           votedItems.push({
             id: comment.id,
             type: "comment",
@@ -161,6 +182,7 @@ export default function DownvotedPage() {
             created_at: comment.created_at,
             vote_value: commentVoteCounts[comment.id],
             post_id: comment.post_id,
+            target_profile_username: targetUsername || username,
           });
         }
       });
@@ -222,7 +244,9 @@ export default function DownvotedPage() {
           items.map((item) => (
             <Link
               key={`${item.type}-${item.id}`}
-              href={item.type === "post" ? `/?post=${item.id}` : `/?post=${item.post_id}&comment=${item.id}`}
+              href={item.type === "post" 
+                ? `/profile/${item.target_profile_username}?post=${item.id}` 
+                : `/profile/${item.target_profile_username}?post=${item.post_id}`}
               style={{ textDecoration: "none", color: "inherit", display: "block" }}
             >
               <article className="card" style={{ marginBottom: 12, padding: 16 }}>

@@ -14,6 +14,8 @@ type ActivityItem = {
   post_id?: string; // For comments, the parent post
   parent_post_content?: string; // For comments, a snippet of the parent post
   wall_user?: { username: string; display_name: string | null } | null; // For wall posts
+  // For linking to the correct profile
+  target_profile_username: string;
 };
 
 function formatTime(dateString: string): string {
@@ -121,7 +123,15 @@ export default function ActivityPage() {
           created_at,
           post_id,
           posts (
-            content
+            content,
+            user_id,
+            wall_user_id,
+            post_owner:users!posts_user_id_fkey (
+              username
+            ),
+            wall_owner:users!posts_wall_user_id_fkey (
+              username
+            )
           )
         `)
         .eq("user_id", profileData.id)
@@ -133,12 +143,17 @@ export default function ActivityPage() {
       // Add posts
       if (postsData) {
         postsData.forEach(post => {
+          // If it's a wall post, link to the wall owner's profile; otherwise link to this user's profile
+          const targetUsername = post.wall_user_id 
+            ? (post.wall_user as any)?.username 
+            : username;
           items.push({
             id: post.id,
             type: "post",
             content: post.content,
             created_at: post.created_at,
             wall_user: post.wall_user_id ? (post.wall_user as any) : null,
+            target_profile_username: targetUsername || username,
           });
         });
       }
@@ -146,13 +161,21 @@ export default function ActivityPage() {
       // Add comments
       if (commentsData) {
         commentsData.forEach(comment => {
+          const postData = comment.posts as any;
+          // Determine which profile the post is on:
+          // If the post has a wall_user_id, it's on the wall owner's profile
+          // Otherwise, it's on the post author's profile
+          const targetUsername = postData?.wall_user_id
+            ? postData?.wall_owner?.username
+            : postData?.post_owner?.username;
           items.push({
             id: comment.id,
             type: "comment",
             content: comment.content,
             created_at: comment.created_at,
             post_id: comment.post_id,
-            parent_post_content: (comment.posts as any)?.content || "",
+            parent_post_content: postData?.content || "",
+            target_profile_username: targetUsername || username,
           });
         });
       }
@@ -223,7 +246,9 @@ export default function ActivityPage() {
           activityItems.map((item) => (
             <Link
               key={`${item.type}-${item.id}`}
-              href={item.type === "post" ? `/?post=${item.id}` : `/?post=${item.post_id}&comment=${item.id}`}
+              href={item.type === "post" 
+                ? `/profile/${item.target_profile_username}?post=${item.id}` 
+                : `/profile/${item.target_profile_username}?post=${item.post_id}`}
               style={{ textDecoration: "none", color: "inherit", display: "block" }}
             >
               <article className="card" style={{ marginBottom: 12, padding: 16 }}>
