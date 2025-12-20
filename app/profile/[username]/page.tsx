@@ -739,7 +739,7 @@ export default function ProfilePage() {
   const highlightHandled = useRef(false);
   useEffect(() => {
     async function handleHighlight() {
-      if (highlightPostId && !loading && posts.length > 0 && !highlightHandled.current) {
+      if (highlightPostId && !loading && !highlightHandled.current) {
         highlightHandled.current = true;
         
         // Fetch the full post with comments (without user join for comments)
@@ -823,7 +823,7 @@ export default function ProfilePage() {
       }
     }
     handleHighlight();
-  }, [highlightPostId, loading, posts, router, username, supabase]);
+  }, [highlightPostId, loading, router, username, supabase]);
 
   async function loadFriends() {
     if (!profile) return;

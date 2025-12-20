@@ -640,7 +640,7 @@ export default function GroupPage() {
   const highlightHandled = useRef(false);
   useEffect(() => {
     async function handleHighlight() {
-      if (highlightPostId && posts.length > 0 && !loading && !highlightHandled.current) {
+      if (highlightPostId && !loading && !highlightHandled.current) {
         highlightHandled.current = true;
         
         // Fetch the full post with comments (without user join for comments)
@@ -729,7 +729,7 @@ export default function GroupPage() {
       }
     }
     handleHighlight();
-  }, [highlightPostId, posts, loading, groupId, router, supabase]);
+  }, [highlightPostId, loading, groupId, router, supabase]);
 
   async function loadMembers() {
     const { data } = await supabase
