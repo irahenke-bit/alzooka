@@ -103,49 +103,59 @@ export default function ActivityPage() {
       // Get all posts by this user (including wall posts and group posts)
       const { data: postsData } = await supabase
         .from("posts")
-        .select(`
-          id,
-          content,
-          created_at,
-          wall_user_id,
-          group_id,
-          wall_user:users!posts_wall_user_id_fkey (
-            username,
-            display_name
-          ),
-          groups (
-            name
-          )
-        `)
+        .select("id, content, created_at, wall_user_id, group_id")
         .eq("user_id", profileData.id)
         .order("created_at", { ascending: false });
 
       // Get all comments by this user
       const { data: commentsData } = await supabase
         .from("comments")
-        .select(`
-          id,
-          content,
-          created_at,
-          post_id,
-          posts (
-            content,
-            user_id,
-            wall_user_id,
-            group_id,
-            post_owner:users!posts_user_id_fkey (
-              username
-            ),
-            wall_owner:users!posts_wall_user_id_fkey (
-              username
-            ),
-            groups (
-              name
-            )
-          )
-        `)
+        .select("id, content, created_at, post_id")
         .eq("user_id", profileData.id)
         .order("created_at", { ascending: false });
+
+      // Fetch additional data for wall users, groups, and parent posts
+      const wallUserIds = [...new Set((postsData || []).filter(p => p.wall_user_id).map(p => p.wall_user_id))];
+      const groupIds = [...new Set((postsData || []).filter(p => p.group_id).map(p => p.group_id))];
+      const postIds = [...new Set((commentsData || []).map(c => c.post_id))];
+
+      // Fetch wall user info
+      const { data: wallUsers } = wallUserIds.length > 0
+        ? await supabase.from("users").select("id, username, display_name").in("id", wallUserIds)
+        : { data: [] };
+      const wallUserMap = new Map((wallUsers || []).map(u => [u.id, u]));
+
+      // Fetch group info
+      const { data: groupsData } = groupIds.length > 0
+        ? await supabase.from("groups").select("id, name").in("id", groupIds)
+        : { data: [] };
+      const groupMap = new Map((groupsData || []).map(g => [g.id, g]));
+
+      // Fetch parent posts for comments
+      const { data: parentPosts } = postIds.length > 0
+        ? await supabase.from("posts").select("id, content, user_id, wall_user_id, group_id").in("id", postIds)
+        : { data: [] };
+      const parentPostMap = new Map((parentPosts || []).map(p => [p.id, p]));
+
+      // Fetch post owners and additional group info for parent posts
+      const parentPostUserIds = [...new Set((parentPosts || []).filter(p => p.user_id).map(p => p.user_id))];
+      const parentPostWallIds = [...new Set((parentPosts || []).filter(p => p.wall_user_id).map(p => p.wall_user_id))];
+      const parentGroupIds = [...new Set((parentPosts || []).filter(p => p.group_id).map(p => p.group_id))];
+
+      const { data: postOwners } = parentPostUserIds.length > 0
+        ? await supabase.from("users").select("id, username").in("id", parentPostUserIds)
+        : { data: [] };
+      const postOwnerMap = new Map((postOwners || []).map(u => [u.id, u]));
+
+      const { data: parentWallUsers } = parentPostWallIds.length > 0
+        ? await supabase.from("users").select("id, username").in("id", parentPostWallIds)
+        : { data: [] };
+      const parentWallMap = new Map((parentWallUsers || []).map(u => [u.id, u]));
+
+      const { data: parentGroups } = parentGroupIds.length > 0
+        ? await supabase.from("groups").select("id, name").in("id", parentGroupIds)
+        : { data: [] };
+      parentGroups?.forEach(g => groupMap.set(g.id, g));
 
       // Build activity items
       const items: ActivityItem[] = [];
@@ -155,26 +165,26 @@ export default function ActivityPage() {
         postsData.forEach((post: any) => {
           if (post.group_id) {
             // Group post
+            const group = groupMap.get(post.group_id);
             items.push({
               id: post.id,
               type: "post",
               content: post.content,
               created_at: post.created_at,
               group_id: post.group_id,
-              group_name: post.groups?.name || "a group",
+              group_name: group?.name || "a group",
             });
           } else {
             // Profile/wall post
-            const targetUsername = post.wall_user_id 
-              ? post.wall_user?.username 
-              : username;
+            const wallUser = post.wall_user_id ? wallUserMap.get(post.wall_user_id) : null;
+            const targetUsername = wallUser?.username || username;
             items.push({
               id: post.id,
               type: "post",
               content: post.content,
               created_at: post.created_at,
-              wall_user: post.wall_user_id ? post.wall_user : null,
-              target_profile_username: targetUsername || username,
+              wall_user: wallUser ? { username: wallUser.username, display_name: wallUser.display_name } : null,
+              target_profile_username: targetUsername,
             });
           }
         });
@@ -183,33 +193,39 @@ export default function ActivityPage() {
       // Add comments
       if (commentsData) {
         commentsData.forEach((comment: any) => {
-          const postData = comment.posts;
+          const parentPost = parentPostMap.get(comment.post_id);
           
-          if (postData?.group_id) {
+          if (parentPost?.group_id) {
             // Comment on a group post
+            const group = groupMap.get(parentPost.group_id);
             items.push({
               id: comment.id,
               type: "comment",
               content: comment.content,
               created_at: comment.created_at,
               post_id: comment.post_id,
-              parent_post_content: postData?.content || "",
-              group_id: postData.group_id,
-              group_name: postData.groups?.name || "a group",
+              parent_post_content: parentPost?.content || "",
+              group_id: parentPost.group_id,
+              group_name: group?.name || "a group",
             });
           } else {
             // Comment on a profile post
-            const targetUsername = postData?.wall_user_id
-              ? postData?.wall_owner?.username
-              : postData?.post_owner?.username;
+            let targetUsername: string;
+            if (parentPost?.wall_user_id) {
+              const wallOwner = parentWallMap.get(parentPost.wall_user_id);
+              targetUsername = wallOwner?.username || username;
+            } else {
+              const postOwner = postOwnerMap.get(parentPost?.user_id);
+              targetUsername = postOwner?.username || username;
+            }
             items.push({
               id: comment.id,
               type: "comment",
               content: comment.content,
               created_at: comment.created_at,
               post_id: comment.post_id,
-              parent_post_content: postData?.content || "",
-              target_profile_username: targetUsername || username,
+              parent_post_content: parentPost?.content || "",
+              target_profile_username: targetUsername,
             });
           }
         });
