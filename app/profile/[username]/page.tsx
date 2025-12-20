@@ -1932,16 +1932,70 @@ export default function ProfilePage() {
                     <span style={{ fontWeight: 600 }}>{friendsCount}</span>
                     <span className="text-muted" style={{ fontSize: 13 }}>{friendsCount === 1 ? "friend" : "friends"}</span>
                   </button>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
-                    <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
-                    <span className="text-muted" style={{ fontSize: 13 }}>received</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ color: "#e57373", fontSize: 18 }}>▼</span>
-                    <span style={{ fontWeight: 600 }}>{voteStats.downvotesReceived}</span>
-                    <span className="text-muted" style={{ fontSize: 13 }}>received</span>
-                  </div>
+                  {isOwnProfile ? (
+                    <Link
+                      href={`/profile/${profile.username}/upvoted`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        textDecoration: "none",
+                        color: "inherit",
+                        cursor: "pointer",
+                      }}
+                      title="View all upvoted content. This list is private."
+                    >
+                      <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
+                      <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
+                      <span className="text-muted" style={{ fontSize: 13 }}>received</span>
+                    </Link>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
+                      <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
+                      <span className="text-muted" style={{ fontSize: 13 }}>received</span>
+                    </div>
+                  )}
+                  {isOwnProfile ? (
+                    <Link
+                      href={`/profile/${profile.username}/downvoted`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        textDecoration: "none",
+                        color: "inherit",
+                        cursor: "pointer",
+                      }}
+                      title="View all downvoted content. This list is private."
+                    >
+                      <span style={{ color: "#e57373", fontSize: 18 }}>▼</span>
+                      <span style={{ fontWeight: 600 }}>{voteStats.downvotesReceived}</span>
+                      <span className="text-muted" style={{ fontSize: 13 }}>received</span>
+                    </Link>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: "#e57373", fontSize: 18 }}>▼</span>
+                      <span style={{ fontWeight: 600 }}>{voteStats.downvotesReceived}</span>
+                      <span className="text-muted" style={{ fontSize: 13 }}>received</span>
+                    </div>
+                  )}
+                  <Link
+                    href={`/profile/${profile.username}/comments`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      textDecoration: "none",
+                      color: "inherit",
+                      cursor: "pointer",
+                    }}
+                    title="View comment history"
+                  >
+                    <span style={{ fontSize: 16 }}>💬</span>
+                    <span style={{ fontWeight: 600 }}>{comments.length}</span>
+                    <span className="text-muted" style={{ fontSize: 13 }}>{comments.length === 1 ? "comment" : "comments"}</span>
+                  </Link>
                 </div>
               </div>
             )}
