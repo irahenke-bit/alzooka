@@ -14,8 +14,10 @@ type ActivityItem = {
   post_id?: string; // For comments, the parent post
   parent_post_content?: string; // For comments, a snippet of the parent post
   wall_user?: { username: string; display_name: string | null } | null; // For wall posts
-  // For linking to the correct profile
-  target_profile_username: string;
+  // For linking to the correct location
+  target_profile_username?: string; // For profile posts
+  group_id?: string; // For group posts
+  group_name?: string; // For display
 };
 
 function formatTime(dateString: string): string {
@@ -98,7 +100,7 @@ export default function ActivityPage() {
         return;
       }
 
-      // Get all posts by this user (including wall posts on other people's profiles)
+      // Get all posts by this user (including wall posts and group posts)
       const { data: postsData } = await supabase
         .from("posts")
         .select(`
@@ -106,9 +108,13 @@ export default function ActivityPage() {
           content,
           created_at,
           wall_user_id,
+          group_id,
           wall_user:users!posts_wall_user_id_fkey (
             username,
             display_name
+          ),
+          groups (
+            name
           )
         `)
         .eq("user_id", profileData.id)
@@ -126,11 +132,15 @@ export default function ActivityPage() {
             content,
             user_id,
             wall_user_id,
+            group_id,
             post_owner:users!posts_user_id_fkey (
               username
             ),
             wall_owner:users!posts_wall_user_id_fkey (
               username
+            ),
+            groups (
+              name
             )
           )
         `)
@@ -142,41 +152,66 @@ export default function ActivityPage() {
 
       // Add posts
       if (postsData) {
-        postsData.forEach(post => {
-          // If it's a wall post, link to the wall owner's profile; otherwise link to this user's profile
-          const targetUsername = post.wall_user_id 
-            ? (post.wall_user as any)?.username 
-            : username;
-          items.push({
-            id: post.id,
-            type: "post",
-            content: post.content,
-            created_at: post.created_at,
-            wall_user: post.wall_user_id ? (post.wall_user as any) : null,
-            target_profile_username: targetUsername || username,
-          });
+        postsData.forEach((post: any) => {
+          if (post.group_id) {
+            // Group post
+            items.push({
+              id: post.id,
+              type: "post",
+              content: post.content,
+              created_at: post.created_at,
+              group_id: post.group_id,
+              group_name: post.groups?.name || "a group",
+            });
+          } else {
+            // Profile/wall post
+            const targetUsername = post.wall_user_id 
+              ? post.wall_user?.username 
+              : username;
+            items.push({
+              id: post.id,
+              type: "post",
+              content: post.content,
+              created_at: post.created_at,
+              wall_user: post.wall_user_id ? post.wall_user : null,
+              target_profile_username: targetUsername || username,
+            });
+          }
         });
       }
 
       // Add comments
       if (commentsData) {
-        commentsData.forEach(comment => {
-          const postData = comment.posts as any;
-          // Determine which profile the post is on:
-          // If the post has a wall_user_id, it's on the wall owner's profile
-          // Otherwise, it's on the post author's profile
-          const targetUsername = postData?.wall_user_id
-            ? postData?.wall_owner?.username
-            : postData?.post_owner?.username;
-          items.push({
-            id: comment.id,
-            type: "comment",
-            content: comment.content,
-            created_at: comment.created_at,
-            post_id: comment.post_id,
-            parent_post_content: postData?.content || "",
-            target_profile_username: targetUsername || username,
-          });
+        commentsData.forEach((comment: any) => {
+          const postData = comment.posts;
+          
+          if (postData?.group_id) {
+            // Comment on a group post
+            items.push({
+              id: comment.id,
+              type: "comment",
+              content: comment.content,
+              created_at: comment.created_at,
+              post_id: comment.post_id,
+              parent_post_content: postData?.content || "",
+              group_id: postData.group_id,
+              group_name: postData.groups?.name || "a group",
+            });
+          } else {
+            // Comment on a profile post
+            const targetUsername = postData?.wall_user_id
+              ? postData?.wall_owner?.username
+              : postData?.post_owner?.username;
+            items.push({
+              id: comment.id,
+              type: "comment",
+              content: comment.content,
+              created_at: comment.created_at,
+              post_id: comment.post_id,
+              parent_post_content: postData?.content || "",
+              target_profile_username: targetUsername || username,
+            });
+          }
         });
       }
 
@@ -243,58 +278,75 @@ export default function ActivityPage() {
             </p>
           </div>
         ) : (
-          activityItems.map((item) => (
-            <Link
-              key={`${item.type}-${item.id}`}
-              href={item.type === "post" 
+          activityItems.map((item) => {
+            // Determine the correct link based on whether it's a group or profile post
+            let href: string;
+            if (item.group_id) {
+              // Group post or comment on group post
+              href = `/groups/${item.group_id}?post=${item.type === "post" ? item.id : item.post_id}`;
+            } else {
+              // Profile post or comment on profile post
+              href = item.type === "post" 
                 ? `/profile/${item.target_profile_username}?post=${item.id}` 
-                : `/profile/${item.target_profile_username}?post=${item.post_id}`}
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
-            >
-              <article className="card" style={{ marginBottom: 12, padding: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ 
-                    background: item.type === "post" ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.2)",
-                    color: item.type === "post" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
-                    padding: "2px 8px",
-                    borderRadius: 4,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                  }}>
-                    {item.type}
-                  </span>
-                  {item.type === "post" && item.wall_user && (
-                    <span className="text-muted" style={{ fontSize: 12 }}>
-                      on @{item.wall_user.username}&apos;s wall
+                : `/profile/${item.target_profile_username}?post=${item.post_id}`;
+            }
+            
+            return (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={href}
+                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              >
+                <article className="card" style={{ marginBottom: 12, padding: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ 
+                      background: item.type === "post" ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.2)",
+                      color: item.type === "post" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                    }}>
+                      {item.type}
                     </span>
-                  )}
-                  <span className="text-muted" style={{ fontSize: 13, marginLeft: "auto" }}>{formatTime(item.created_at)}</span>
-                </div>
-                <p style={{ margin: 0, lineHeight: 1.5 }}>
-                  {item.content.length > 200 ? item.content.substring(0, 200) + "..." : item.content}
-                </p>
-                {item.type === "comment" && item.parent_post_content && (
-                  <div style={{ 
-                    marginTop: 12,
-                    padding: "8px 12px", 
-                    background: "rgba(0, 0, 0, 0.2)", 
-                    borderRadius: 6,
-                    borderLeft: "3px solid var(--alzooka-gold)",
-                  }}>
-                    <p className="text-muted" style={{ margin: 0, fontSize: 12 }}>
-                      Replying to:
-                    </p>
-                    <p style={{ margin: "4px 0 0 0", fontSize: 13, opacity: 0.8 }}>
-                      {item.parent_post_content.length > 100 
-                        ? item.parent_post_content.substring(0, 100) + "..." 
-                        : item.parent_post_content}
-                    </p>
+                    {item.group_id && (
+                      <span className="text-muted" style={{ fontSize: 12 }}>
+                        in {item.group_name}
+                      </span>
+                    )}
+                    {!item.group_id && item.type === "post" && item.wall_user && (
+                      <span className="text-muted" style={{ fontSize: 12 }}>
+                        on @{item.wall_user.username}&apos;s wall
+                      </span>
+                    )}
+                    <span className="text-muted" style={{ fontSize: 13, marginLeft: "auto" }}>{formatTime(item.created_at)}</span>
                   </div>
-                )}
-              </article>
-            </Link>
-          ))
+                  <p style={{ margin: 0, lineHeight: 1.5 }}>
+                    {item.content.length > 200 ? item.content.substring(0, 200) + "..." : item.content}
+                  </p>
+                  {item.type === "comment" && item.parent_post_content && (
+                    <div style={{ 
+                      marginTop: 12,
+                      padding: "8px 12px", 
+                      background: "rgba(0, 0, 0, 0.2)", 
+                      borderRadius: 6,
+                      borderLeft: "3px solid var(--alzooka-gold)",
+                    }}>
+                      <p className="text-muted" style={{ margin: 0, fontSize: 12 }}>
+                        Replying to:
+                      </p>
+                      <p style={{ margin: "4px 0 0 0", fontSize: 13, opacity: 0.8 }}>
+                        {item.parent_post_content.length > 100 
+                          ? item.parent_post_content.substring(0, 100) + "..." 
+                          : item.parent_post_content}
+                      </p>
+                    </div>
+                  )}
+                </article>
+              </Link>
+            );
+          })
         )}
       </div>
     </>

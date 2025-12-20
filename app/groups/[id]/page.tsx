@@ -635,24 +635,31 @@ export default function GroupPage() {
     return () => window.removeEventListener("keydown", handleGlobalEscape);
   }, []);
 
-  // Scroll to highlighted post from search
+  // Scroll to highlighted post and open modal
   useEffect(() => {
     if (highlightPostId && posts.length > 0 && !loading) {
-      // Small delay to ensure DOM is rendered
-      setTimeout(() => {
-        const postElement = document.getElementById(`post-${highlightPostId}`);
-        if (postElement) {
-          postElement.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Add highlight effect
-          postElement.style.transition = "box-shadow 0.3s ease";
-          postElement.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
-          setTimeout(() => {
-            postElement.style.boxShadow = "";
-          }, 2000);
-        }
-        // Clear the query param after scrolling
-        router.replace(`/groups/${groupId}`, { scroll: false });
-      }, 300);
+      // Find the post to highlight
+      const targetPost = posts.find(p => p.id === highlightPostId);
+      if (targetPost) {
+        // Open the modal for this post
+        setModalPost(targetPost);
+        
+        // Small delay to ensure DOM is rendered, then scroll
+        setTimeout(() => {
+          const postElement = document.getElementById(`post-${highlightPostId}`);
+          if (postElement) {
+            postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Add highlight effect
+            postElement.style.transition = "box-shadow 0.3s ease";
+            postElement.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
+            setTimeout(() => {
+              postElement.style.boxShadow = "";
+            }, 2000);
+          }
+        }, 300);
+      }
+      // Clear the query param after handling
+      router.replace(`/groups/${groupId}`, { scroll: false });
     }
   }, [highlightPostId, posts.length, loading, groupId, router]);
 
