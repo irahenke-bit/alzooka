@@ -5,6 +5,8 @@ import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
+import { PostModal } from "@/app/components/PostModal";
+import type { User } from "@supabase/supabase-js";
 
 type ActivityItem = {
   id: string;
@@ -41,7 +43,7 @@ export default function ActivityPage() {
   const router = useRouter();
   const supabase = createBrowserClient();
 
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [profileUser, setProfileUser] = useState<{ 
@@ -53,6 +55,11 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [modalPost, setModalPost] = useState<any>(null);
+  const [highlightCommentId, setHighlightCommentId] = useState<string | null>(null);
+  const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
+  const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function init() {
@@ -241,6 +248,112 @@ export default function ActivityPage() {
     init();
   }, [supabase, router, username]);
 
+  async function openPostModal(postId: string, commentId?: string) {
+    // Fetch the post
+    const { data: fullPost } = await supabase
+      .from("posts")
+      .select(`
+        id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
+        user_id, group_id, wall_user_id, edit_history,
+        users!posts_user_id_fkey (id, username, display_name, avatar_url)
+      `)
+      .eq("id", postId)
+      .single();
+
+    if (fullPost) {
+      // Fetch comments
+      const { data: commentsData } = await supabase
+        .from("comments")
+        .select("id, content, created_at, user_id, parent_comment_id")
+        .eq("post_id", fullPost.id)
+        .order("created_at", { ascending: true });
+      
+      // Fetch user data for comment authors
+      const commentUserIds = new Set<string>();
+      (commentsData || []).forEach((c: { user_id: string }) => {
+        if (c.user_id) commentUserIds.add(c.user_id);
+      });
+      
+      const commentUserMap = new Map<string, { id: string; username: string; display_name: string | null; avatar_url: string | null }>();
+      if (commentUserIds.size > 0) {
+        const { data: commentUsers } = await supabase
+          .from("users")
+          .select("id, username, display_name, avatar_url, is_active")
+          .in("id", Array.from(commentUserIds));
+        if (commentUsers) {
+          commentUsers.forEach(u => {
+            if (u.is_active !== false) {
+              commentUserMap.set(u.id, { id: u.id, username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+            }
+          });
+        }
+      }
+      
+      // Build comment tree
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const allComments = (commentsData || []).map((c: any) => ({
+        ...c,
+        users: commentUserMap.get(c.user_id) || null,
+        replies: []
+      }));
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const commentMap = new Map<string, any>(allComments.map((c: any) => [c.id, c]));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rootComments: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      allComments.forEach((c: any) => {
+        if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+          const parent = commentMap.get(c.parent_comment_id)!;
+          parent.replies = parent.replies || [];
+          parent.replies.push(c);
+        } else if (!c.parent_comment_id) {
+          rootComments.push(c);
+        }
+      });
+
+      // Set highlight comment if provided
+      if (commentId) {
+        setHighlightCommentId(commentId);
+      }
+
+      setModalPost({
+        ...fullPost,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        users: Array.isArray((fullPost as any).users) ? (fullPost as any).users[0] : (fullPost as any).users,
+        comments: rootComments,
+        edit_history: fullPost.edit_history || []
+      });
+    }
+  }
+
+  async function handleVote(targetType: "post" | "comment", targetId: string, value: number) {
+    if (!user) return;
+    // Simplified vote handling for the modal
+    const key = `${targetType}-${targetId}`;
+    const existingVote = votes[key];
+    
+    if (existingVote) {
+      if (existingVote.value === value) {
+        await supabase.from("votes").delete().eq("id", existingVote.id);
+        const newVotes = { ...votes };
+        delete newVotes[key];
+        setVotes(newVotes);
+        setVoteTotals(prev => ({ ...prev, [key]: (prev[key] || 0) - existingVote.value }));
+      } else {
+        await supabase.from("votes").update({ value }).eq("id", existingVote.id);
+        setVotes({ ...votes, [key]: { ...existingVote, value } });
+        setVoteTotals(prev => ({ ...prev, [key]: (prev[key] || 0) - existingVote.value + value }));
+      }
+    } else {
+      const { data } = await supabase.from("votes").insert({ user_id: user.id, target_type: targetType, target_id: targetId, value }).select().single();
+      if (data) {
+        setVotes({ ...votes, [key]: data });
+        setVoteTotals(prev => ({ ...prev, [key]: (prev[key] || 0) + value }));
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -295,29 +408,19 @@ export default function ActivityPage() {
           </div>
         ) : (
           activityItems.map((item) => {
-            // Determine the correct link based on whether it's a group or profile post
-            let href: string;
-            if (item.group_id) {
-              // Group post or comment on group post
-              if (item.type === "post") {
-                href = `/groups/${item.group_id}?post=${item.id}`;
-              } else {
-                href = `/groups/${item.group_id}?post=${item.post_id}&comment=${item.id}`;
-              }
-            } else {
-              // Profile post or comment on profile post
-              if (item.type === "post") {
-                href = `/profile/${item.target_profile_username}?post=${item.id}`;
-              } else {
-                href = `/profile/${item.target_profile_username}?post=${item.post_id}&comment=${item.id}`;
-              }
-            }
+            // Determine which post to open
+            const postId = item.type === "post" ? item.id : item.post_id!;
+            const commentId = item.type === "comment" ? item.id : undefined;
             
             return (
-              <Link
+              <div
                 key={`${item.type}-${item.id}`}
-                href={href}
-                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openPostModal(postId, commentId);
+                }}
+                style={{ textDecoration: "none", color: "inherit", display: "block", cursor: "pointer" }}
               >
                 <article className="card" style={{ marginBottom: 12, padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
@@ -366,11 +469,34 @@ export default function ActivityPage() {
                     </div>
                   )}
                 </article>
-              </Link>
+              </div>
             );
           })
         )}
       </div>
+
+      {/* Post Modal */}
+      {modalPost && user && (
+        <PostModal
+          post={modalPost}
+          user={user}
+          supabase={supabase}
+          votes={votes}
+          voteTotals={voteTotals}
+          onVote={handleVote}
+          highlightCommentId={highlightCommentId}
+          onClose={() => {
+            setModalPost(null);
+            setHighlightCommentId(null);
+          }}
+          onCommentAdded={async () => {
+            // Refresh the modal post
+            if (modalPost) {
+              await openPostModal(modalPost.id, undefined);
+            }
+          }}
+        />
+      )}
     </>
   );
 }
