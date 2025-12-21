@@ -13,6 +13,7 @@ import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { EmojiButton } from "@/app/components/EmojiButton";
+import { ReactionPicker, ReactionType } from "@/app/components/ReactionPicker";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -21,6 +22,19 @@ import {
   parseMentions,
   getUserIdsByUsernames 
 } from "@/lib/notifications";
+
+type Reaction = {
+  id: string;
+  user_id: string;
+  post_id: string;
+  reaction_type: ReactionType;
+  created_at: string;
+  users?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+};
 
 export default function FeedPage() {
   return (
@@ -168,6 +182,7 @@ function FeedContent() {
   const [groupPreferences, setGroupPreferences] = useState<GroupPreference[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [content, setContent] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -276,6 +291,7 @@ function FeedContent() {
       await Promise.all([
         loadUserVotes(user.id),
         loadVoteTotals(loadedPosts),
+        loadReactions(loadedPosts),
       ]);
       
       setLoading(false);
@@ -294,6 +310,7 @@ function FeedContent() {
           if (refreshedPosts && refreshedPosts.length > 0) {
             await loadUserVotes(user.id);
             await loadVoteTotals(refreshedPosts);
+            await loadReactions(refreshedPosts);
           }
         } catch (err) {
           console.error("Error in poll interval:", err);
@@ -315,6 +332,7 @@ function FeedContent() {
             if (refreshedPosts && refreshedPosts.length > 0) {
               await loadUserVotes(user.id);
               await loadVoteTotals(refreshedPosts);
+              await loadReactions(refreshedPosts);
             }
           }
         } catch (err) {
@@ -427,8 +445,9 @@ function FeedContent() {
                   return updatedPosts;
                 });
 
-                // Load vote totals for the new post using the fresh list
+                // Load vote totals and reactions for the new post using the fresh list
                 await loadVoteTotals(updatedPosts);
+                await loadReactions(updatedPosts);
               }
             } catch (err) {
               console.error("Error in posts subscription:", err);
@@ -1109,6 +1128,44 @@ function FeedContent() {
     setVoteTotals(totals);
   }
 
+  async function loadReactions(targetPosts?: Post[]) {
+    const sourcePosts = targetPosts ?? posts;
+    const postIds = sourcePosts.map(p => p.id);
+    
+    if (postIds.length === 0) return;
+
+    const { data: reactionsData } = await supabase
+      .from("reactions")
+      .select(`
+        id, user_id, post_id, reaction_type, created_at,
+        users (username, display_name, avatar_url)
+      `)
+      .in("post_id", postIds);
+
+    if (reactionsData) {
+      const reactionsByPost: Record<string, Reaction[]> = {};
+      reactionsData.forEach((r) => {
+        if (!reactionsByPost[r.post_id]) {
+          reactionsByPost[r.post_id] = [];
+        }
+        // Handle users being returned as array by Supabase
+        const normalizedReaction = {
+          ...r,
+          users: Array.isArray(r.users) ? r.users[0] : r.users,
+        } as Reaction;
+        reactionsByPost[r.post_id].push(normalizedReaction);
+      });
+      setReactions(reactionsByPost);
+    }
+  }
+
+  function handleReactionsChange(postId: string, newReactions: Reaction[]) {
+    setReactions(prev => ({
+      ...prev,
+      [postId]: newReactions,
+    }));
+  }
+
   async function handleVote(targetType: "post" | "comment", targetId: string, value: number) {
     if (!user) return;
 
@@ -1459,6 +1516,7 @@ function FeedContent() {
       const refreshedPosts = await loadPosts();
       await loadUserVotes(user.id);
       await loadVoteTotals(refreshedPosts);
+      await loadReactions(refreshedPosts);
     }
 
     setPosting(false);
@@ -1953,7 +2011,10 @@ function FeedContent() {
                   const refreshedPosts = await loadPosts();
                   await loadUserVotes(user!.id);
                   await loadVoteTotals(refreshedPosts);
+                  await loadReactions(refreshedPosts);
                 }}
+                reactions={reactions[post.id] || []}
+                onReactionsChange={(newReactions) => handleReactionsChange(post.id, newReactions)}
               />
             ))
           );
@@ -2037,6 +2098,7 @@ function FeedContent() {
             loadPosts().then(async (refreshedPosts) => {
               await loadUserVotes(user.id);
               await loadVoteTotals(refreshedPosts);
+              await loadReactions(refreshedPosts);
             });
           }}
           onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
@@ -2215,18 +2277,20 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
 }
 
 // Post Card Component
-function PostCard({ 
-  post, 
-  user, 
-  supabase, 
+function PostCard({
+  post,
+  user,
+  supabase,
   votes,
   voteTotals,
   onVote,
   isHighlighted,
   onOpenModal,
-  onCommentAdded 
-}: { 
-  post: Post; 
+  onCommentAdded,
+  reactions,
+  onReactionsChange
+}: {
+  post: Post;
   user: User;
   supabase: ReturnType<typeof createBrowserClient>;
   votes: Record<string, Vote>;
@@ -2235,6 +2299,8 @@ function PostCard({
   isHighlighted?: boolean;
   onOpenModal: () => void;
   onCommentAdded: () => void;
+  reactions: Reaction[];
+  onReactionsChange: (reactions: Reaction[]) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -2728,6 +2794,15 @@ function PostCard({
             );
             return previewUrl ? <LinkPreview url={previewUrl} /> : null;
           })()}
+
+          {/* Reaction Picker */}
+          <ReactionPicker
+            postId={post.id}
+            userId={user.id}
+            supabase={supabase}
+            reactions={reactions}
+            onReactionsChange={onReactionsChange}
+          />
 
           {/* Comment Button - Opens Modal */}
           <button
