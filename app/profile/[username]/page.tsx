@@ -792,7 +792,7 @@ export default function ProfilePage() {
             // Use fullPost.id (from database) instead of URL param to ensure correct UUID
             const { data: commentsData } = await supabase
               .from("comments")
-              .select("id, content, created_at, edited_at, user_id, parent_comment_id")
+              .select("id, content, created_at, user_id, parent_comment_id")
               .eq("post_id", fullPost.id)
               .order("created_at", { ascending: true });
             
