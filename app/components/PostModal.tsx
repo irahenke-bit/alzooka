@@ -741,7 +741,14 @@ export function PostModal({
 
     setSubmitting(true);
     const trimmedComment = commentText.trim();
-    const commenterUsername = user.user_metadata?.username || "unknown";
+    
+    // Fetch the commenter's username from the users table
+    const { data: commenterData } = await supabase
+      .from("users")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+    const commenterUsername = commenterData?.username || "unknown";
 
     const { data, error } = await supabase
       .from("comments")
