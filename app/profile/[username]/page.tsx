@@ -3369,7 +3369,9 @@ export default function ProfilePage() {
               return (
               <div 
                 key={comment.id} 
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   // Fetch the post and open modal directly here
                   const { data: fullPost } = await supabase
                     .from("posts")
