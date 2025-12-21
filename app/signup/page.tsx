@@ -263,9 +263,22 @@ export default function SignupPage() {
               )}
 
               {success && (
-                <p style={{ color: "#81c784", marginBottom: 12, fontSize: 14 }}>
-                  ✓ {success}
-                </p>
+                <>
+                  <p style={{ color: "#81c784", marginBottom: 8, fontSize: 14 }}>
+                    ✓ {success}
+                  </p>
+                  <div style={{
+                    background: "rgba(201, 162, 92, 0.15)",
+                    border: "1px solid rgba(201, 162, 92, 0.4)",
+                    borderRadius: 8,
+                    padding: 12,
+                    marginBottom: 12,
+                  }}>
+                    <p style={{ fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                      📬 <strong>Check your spam folder!</strong> We&apos;re a new community and some email providers are still learning to trust us. If you don&apos;t see our email in your inbox, please check your spam/junk folder.
+                    </p>
+                  </div>
+                </>
               )}
 
               <div style={{ display: "flex", gap: 8 }}>
@@ -383,9 +396,22 @@ export default function SignupPage() {
           )}
 
           {success && !showMagicLink && (
-            <p style={{ color: "#81c784", marginBottom: 16, fontSize: 14 }}>
-              ✓ {success}
-            </p>
+            <>
+              <p style={{ color: "#81c784", marginBottom: 8, fontSize: 14 }}>
+                ✓ {success}
+              </p>
+              <div style={{
+                background: "rgba(201, 162, 92, 0.15)",
+                border: "1px solid rgba(201, 162, 92, 0.4)",
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 16,
+              }}>
+                <p style={{ fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                  📬 <strong>Check your spam folder!</strong> We&apos;re a new community and some email providers are still learning to trust us. If you don&apos;t see our email in your inbox, please check your spam/junk folder.
+                </p>
+              </div>
+            </>
           )}
 
           <button type="submit" disabled={loading || !!success} style={{ width: "100%" }}>
