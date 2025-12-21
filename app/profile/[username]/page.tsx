@@ -287,6 +287,7 @@ export default function ProfilePage() {
   const [newPostContent, setNewPostContent] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [modalPost, setModalPost] = useState<any>(null);
+  const [activityHighlightCommentId, setActivityHighlightCommentId] = useState<string | null>(null);
   const [sharePost, setSharePost] = useState<any>(null);
   const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
@@ -3365,27 +3366,85 @@ export default function ProfilePage() {
             </p>
           ) : (
             comments.map((comment) => {
-              // Determine the correct link based on where the post is
-              const groupId = comment.posts?.group_id;
-              const wallUsername = comment.posts?.wall_user?.username;
-              
-              let href: string;
-              if (groupId) {
-                // Post is in a group
-                href = `/groups/${groupId}?post=${comment.post_id}&comment=${comment.id}`;
-              } else if (wallUsername) {
-                // Post is on someone's wall
-                href = `/profile/${wallUsername}?post=${comment.post_id}&comment=${comment.id}`;
-              } else {
-                // Post is on main feed
-                href = `/?post=${comment.post_id}&comment=${comment.id}`;
-              }
-              
               return (
-              <Link 
+              <div 
                 key={comment.id} 
-                href={href}
-                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                onClick={async () => {
+                  // Fetch the post and open modal directly here
+                  const { data: fullPost } = await supabase
+                    .from("posts")
+                    .select(`
+                      id, content, image_url, image_urls, video_url, video_title, created_at, edited_at,
+                      user_id, group_id, wall_user_id, edit_history,
+                      users!posts_user_id_fkey (id, username, display_name, avatar_url)
+                    `)
+                    .eq("id", comment.post_id)
+                    .single();
+
+                  if (fullPost) {
+                    // Fetch comments
+                    const { data: commentsData } = await supabase
+                      .from("comments")
+                      .select("id, content, created_at, user_id, parent_comment_id")
+                      .eq("post_id", fullPost.id)
+                      .order("created_at", { ascending: true });
+                    
+                    // Fetch user data for comment authors
+                    const commentUserIds = new Set<string>();
+                    (commentsData || []).forEach((c: { user_id: string }) => {
+                      if (c.user_id) commentUserIds.add(c.user_id);
+                    });
+                    
+                    const commentUserMap = new Map<string, { id: string; username: string; display_name: string | null; avatar_url: string | null }>();
+                    if (commentUserIds.size > 0) {
+                      const { data: commentUsers } = await supabase
+                        .from("users")
+                        .select("id, username, display_name, avatar_url, is_active")
+                        .in("id", Array.from(commentUserIds));
+                      if (commentUsers) {
+                        commentUsers.forEach(u => {
+                          if (u.is_active !== false) {
+                            commentUserMap.set(u.id, { id: u.id, username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+                          }
+                        });
+                      }
+                    }
+                    
+                    // Build comment tree
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const allComments = (commentsData || []).map((c: any) => ({
+                      ...c,
+                      users: commentUserMap.get(c.user_id) || null,
+                      replies: []
+                    }));
+                    
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const commentMap = new Map<string, any>(allComments.map((c: any) => [c.id, c]));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const rootComments: any[] = [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    allComments.forEach((c: any) => {
+                      if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+                        const parent = commentMap.get(c.parent_comment_id)!;
+                        parent.replies = parent.replies || [];
+                        parent.replies.push(c);
+                      } else if (!c.parent_comment_id) {
+                        rootComments.push(c);
+                      }
+                    });
+
+                    // Set the comment to highlight
+                    setActivityHighlightCommentId(comment.id);
+
+                    setModalPost({
+                      ...fullPost,
+                      users: Array.isArray((fullPost as any).users) ? (fullPost as any).users[0] : (fullPost as any).users,
+                      comments: rootComments,
+                      edit_history: fullPost.edit_history || []
+                    });
+                  }
+                }}
+                style={{ textDecoration: "none", color: "inherit", display: "block", cursor: "pointer" }}
               >
                 <article className="card" style={{ cursor: "pointer", transition: "opacity 0.2s" }}>
                   {/* Original post context */}
@@ -3429,7 +3488,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </article>
-              </Link>
+              </div>
               );
             })
           )
@@ -3613,8 +3672,11 @@ export default function ProfilePage() {
           votes={votes}
           voteTotals={voteTotals}
           onVote={handleVote}
-          highlightCommentId={highlightCommentId}
-          onClose={() => setModalPost(null)}
+          highlightCommentId={activityHighlightCommentId || highlightCommentId}
+          onClose={() => {
+            setModalPost(null);
+            setActivityHighlightCommentId(null);
+          }}
           onCommentAdded={async () => {
             // Fetch fresh post data for the modal
             const { data: freshPost } = await supabase
