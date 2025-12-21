@@ -632,10 +632,16 @@ export default function ProfilePage() {
         });
 
         // Transform comments with vote scores
-        const commentsWithVotes = commentsData.map(comment => ({
-          ...comment,
-          voteScore: votesByComment[comment.id] || 0,
-        }));
+        // Handle case where Supabase returns posts as array
+        const commentsWithVotes = commentsData.map(comment => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const posts = Array.isArray((comment as any).posts) ? (comment as any).posts[0] : (comment as any).posts;
+          return {
+            ...comment,
+            posts,
+            voteScore: votesByComment[comment.id] || 0,
+          };
+        });
 
         setComments(commentsWithVotes as unknown as Comment[]);
       }

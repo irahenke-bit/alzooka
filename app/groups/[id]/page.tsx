@@ -650,7 +650,10 @@ export default function GroupPage() {
   
   useEffect(() => {
     async function handleHighlight() {
-      if (highlightPostId && !loading && user && !highlightHandled.current) {
+      // Wait for search params to be available (Next.js hydration)
+      if (!highlightPostId) return;
+      
+      if (!loading && user && !highlightHandled.current) {
         highlightHandled.current = true;
         
         // If there's a comment to highlight, open the modal
