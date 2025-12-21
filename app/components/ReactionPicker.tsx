@@ -7,7 +7,8 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export const REACTION_TYPES = {
   smile: "😊",
   sad: "😢",
-  facepalm: "🤦",
+  eyeroll: "🙄",
+  grimace: "😬",
   surprised: "😮",
   laugh: "😂",
   heart: "❤️",
@@ -52,7 +53,8 @@ export function ReactionPicker({ postId, userId, supabase, reactions, onReaction
   const reactionCounts: Record<ReactionType, number> = {
     smile: 0,
     sad: 0,
-    facepalm: 0,
+    eyeroll: 0,
+    grimace: 0,
     surprised: 0,
     laugh: 0,
     heart: 0,
@@ -152,7 +154,6 @@ export function ReactionPicker({ postId, userId, supabase, reactions, onReaction
           onMouseEnter={(e) => userId && (e.currentTarget.style.opacity = "1")}
           onMouseLeave={(e) => userId && (e.currentTarget.style.opacity = "0.7")}
         >
-          <span style={{ fontSize: 16 }}>😊</span>
           React
         </button>
 
