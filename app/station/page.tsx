@@ -655,7 +655,8 @@ export default function StationPage() {
 
   // Spotify playback functions
   async function handleConnectSpotify() {
-    window.location.href = "/api/spotify/auth";
+    if (!user) return;
+    window.location.href = `/api/spotify/auth?userId=${user.id}`;
   }
 
   async function handleDisconnectSpotify() {

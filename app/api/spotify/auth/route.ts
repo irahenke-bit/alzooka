@@ -11,7 +11,14 @@ const SCOPES = [
 
 export async function GET(request: NextRequest) {
   // Get the origin from the request to build proper redirect URLs
-  const origin = request.headers.get("origin") || request.nextUrl.origin;
+  const origin = request.nextUrl.origin;
+  
+  // Get user ID from the query param (passed from client)
+  const userId = request.nextUrl.searchParams.get("userId");
+  
+  if (!userId) {
+    return NextResponse.json({ error: "User ID required" }, { status: 400 });
+  }
   
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${origin}/api/spotify/callback`;
@@ -20,8 +27,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Spotify client ID not configured" }, { status: 500 });
   }
 
-  // Generate a random state for CSRF protection
-  const state = Math.random().toString(36).substring(2, 15);
+  // Generate a random state for CSRF protection, include userId
+  const state = `${userId}_${Math.random().toString(36).substring(2, 15)}`;
   
   // Store state in cookie for verification
   const response = NextResponse.redirect(

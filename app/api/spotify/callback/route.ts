@@ -25,6 +25,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/station?error=state_mismatch", siteUrl));
   }
 
+  // Extract userId from state (format: "userId_randomString")
+  const userId = state.split("_")[0];
+  if (!userId) {
+    return NextResponse.redirect(new URL("/station?error=no_user", siteUrl));
+  }
+
   if (!code) {
     return NextResponse.redirect(new URL("/station?error=no_code", siteUrl));
   }
@@ -71,13 +77,7 @@ export async function GET(request: NextRequest) {
     // Calculate expiration time
     const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-    // Save tokens to user's profile
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.redirect(new URL("/login", siteUrl));
-    }
-
+    // Save tokens to user's profile using userId from state
     await supabase
       .from("users")
       .update({
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         spotify_token_expires_at: expiresAt,
         spotify_user_id: profile?.id || null,
       })
-      .eq("id", session.user.id);
+      .eq("id", userId);
 
     // Clear the state cookie and redirect to station
     const response = NextResponse.redirect(new URL("/station?spotify=connected", siteUrl));
