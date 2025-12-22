@@ -2766,10 +2766,7 @@ export default function ProfilePage() {
                       onChange={(e) => setWallShowInFeed(e.target.checked)}
                       style={{ width: 14, height: 14, accentColor: "var(--alzooka-gold)" }}
                     />
-                    <span>Show in feed</span>
-                    <span style={{ fontSize: 11, opacity: 0.5 }}>
-                      {wallShowInFeed ? "(visible to others)" : "(wall only)"}
-                    </span>
+                    <span>Show in Alzooka feed</span>
                   </label>
                 </div>
               )}
