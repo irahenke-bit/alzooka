@@ -327,6 +327,8 @@ type Props = {
   onBanUser?: (userId: string) => void;
   onUserAvatarUpdated?: (newAvatarUrl: string) => void;
   onUserBannerUpdated?: (newBannerUrl: string) => void;
+  postReactions?: Reaction[];
+  onPostReactionsChange?: (reactions: Reaction[]) => void;
 };
 
 // Vote Buttons Component
@@ -431,6 +433,8 @@ export function PostModal({
   onBanUser,
   onUserAvatarUpdated,
   onUserBannerUpdated,
+  postReactions = [],
+  onPostReactionsChange,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -1795,6 +1799,21 @@ export function PostModal({
                   </div>
                 ) : null;
               })()}
+              
+              {/* Post Reactions */}
+              {onPostReactionsChange && (
+                <div style={{ marginTop: 12 }}>
+                  <ReactionPicker
+                    targetType="post"
+                    targetId={post.id}
+                    userId={user.id}
+                    ownerId={post.user_id}
+                    supabase={supabase}
+                    reactions={postReactions}
+                    onReactionsChange={onPostReactionsChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

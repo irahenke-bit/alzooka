@@ -2090,6 +2090,8 @@ function FeedContent() {
             });
           }}
           onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
+          postReactions={reactions[modalPost.id] || []}
+          onPostReactionsChange={(newReactions) => handleReactionsChange(modalPost.id, newReactions)}
         />
       )}
       </div>
