@@ -126,6 +126,8 @@ export default function StationPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string } | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [trackPosition, setTrackPosition] = useState(0);
+  const [trackDuration, setTrackDuration] = useState(0);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -227,6 +229,8 @@ export default function StationPage() {
       player.addListener("player_state_changed", (e) => {
         const state = e as {
           paused: boolean;
+          position: number;
+          duration: number;
           track_window: {
             current_track: {
               name: string;
@@ -237,6 +241,8 @@ export default function StationPage() {
         } | null;
         if (!state) return;
         setIsPlaying(!state.paused);
+        setTrackPosition(state.position);
+        setTrackDuration(state.duration);
         if (state.track_window?.current_track) {
           setCurrentTrack({
             name: state.track_window.current_track.name,
@@ -825,6 +831,33 @@ export default function StationPage() {
     await spotifyPlayer.previousTrack();
   }
 
+  async function handleSeek(position: number) {
+    if (!spotifyPlayer) return;
+    await spotifyPlayer.seek(position);
+    setTrackPosition(position);
+  }
+
+  function formatTime(ms: number): string {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  // Update position timer
+  useEffect(() => {
+    if (!isPlaying) return;
+    
+    const interval = setInterval(() => {
+      setTrackPosition(prev => {
+        if (prev + 1000 > trackDuration) return prev;
+        return prev + 1000;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [isPlaying, trackDuration]);
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -957,69 +990,106 @@ export default function StationPage() {
           }}>
             {/* Now Playing */}
             {currentTrack && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 16,
-                padding: 12,
-                background: "rgba(30, 215, 96, 0.1)",
-                borderRadius: 8,
-              }}>
-                {currentTrack.image && (
-                  <img
-                    src={currentTrack.image}
-                    alt=""
-                    style={{ width: 48, height: 48, borderRadius: 6 }}
-                  />
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{currentTrack.name}</p>
-                  <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>{currentTrack.artist}</p>
+              <>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 8,
+                  padding: 12,
+                  background: "rgba(30, 215, 96, 0.1)",
+                  borderRadius: 8,
+                }}>
+                  {currentTrack.image && (
+                    <img
+                      src={currentTrack.image}
+                      alt=""
+                      style={{ width: 48, height: 48, borderRadius: 6 }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{currentTrack.name}</p>
+                    <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>{currentTrack.artist}</p>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={handlePreviousTrack}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#fff",
+                        fontSize: 18,
+                        cursor: "pointer",
+                        padding: 8,
+                      }}
+                    >
+                      ⏮
+                    </button>
+                    <button
+                      onClick={handleTogglePlayback}
+                      style={{
+                        background: "#1DB954",
+                        border: "none",
+                        color: "#fff",
+                        fontSize: 16,
+                        cursor: "pointer",
+                        padding: "8px 12px",
+                        borderRadius: 20,
+                      }}
+                    >
+                      {isPlaying ? "⏸" : "▶"}
+                    </button>
+                    <button
+                      onClick={handleNextTrack}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#fff",
+                        fontSize: 18,
+                        cursor: "pointer",
+                        padding: 8,
+                      }}
+                    >
+                      ⏭
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={handlePreviousTrack}
+                {/* Progress Bar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                <span style={{ fontSize: 11, opacity: 0.7, minWidth: 35 }}>
+                  {formatTime(trackPosition)}
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 6,
+                    background: "rgba(255,255,255,0.2)",
+                    borderRadius: 3,
+                    cursor: "pointer",
+                    position: "relative",
+                  }}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const percent = (e.clientX - rect.left) / rect.width;
+                    const newPosition = Math.floor(percent * trackDuration);
+                    handleSeek(newPosition);
+                  }}
+                >
+                  <div
                     style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: 18,
-                      cursor: "pointer",
-                      padding: 8,
-                    }}
-                  >
-                    ⏮
-                  </button>
-                  <button
-                    onClick={handleTogglePlayback}
-                    style={{
+                      width: `${trackDuration > 0 ? (trackPosition / trackDuration) * 100 : 0}%`,
+                      height: "100%",
                       background: "#1DB954",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: 16,
-                      cursor: "pointer",
-                      padding: "8px 12px",
-                      borderRadius: 20,
+                      borderRadius: 3,
+                      transition: "width 0.1s linear",
                     }}
-                  >
-                    {isPlaying ? "⏸" : "▶"}
-                  </button>
-                  <button
-                    onClick={handleNextTrack}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: 18,
-                      cursor: "pointer",
-                      padding: 8,
-                    }}
-                  >
-                    ⏭
-                  </button>
+                  />
                 </div>
+                <span style={{ fontSize: 11, opacity: 0.7, minWidth: 35, textAlign: "right" }}>
+                  {formatTime(trackDuration)}
+                </span>
               </div>
+              </>
             )}
             
             {/* Main Controls */}
