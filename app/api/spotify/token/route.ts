@@ -1,23 +1,29 @@
-import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase";
 
 // Get current Spotify token (refreshing if needed)
-export async function GET() {
-  const supabase = createServerClient();
+export async function GET(request: NextRequest) {
+  const userId = request.nextUrl.searchParams.get("userId");
   
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  if (!userId) {
+    return NextResponse.json({ error: "No user ID provided" }, { status: 400 });
+  }
+
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch {
+    return NextResponse.json({ error: "Admin client not configured" }, { status: 500 });
   }
 
   // Get user's Spotify tokens
-  const { data: user } = await supabase
+  const { data: user, error: fetchError } = await supabase
     .from("users")
     .select("spotify_access_token, spotify_refresh_token, spotify_token_expires_at")
-    .eq("id", session.user.id)
+    .eq("id", userId)
     .single();
 
-  if (!user?.spotify_refresh_token) {
+  if (fetchError || !user?.spotify_refresh_token) {
     return NextResponse.json({ error: "Spotify not connected" }, { status: 401 });
   }
 
@@ -56,7 +62,7 @@ export async function GET() {
             spotify_refresh_token: null,
             spotify_token_expires_at: null,
           })
-          .eq("id", session.user.id);
+          .eq("id", userId);
         
         return NextResponse.json({ error: "Token refresh failed - please reconnect Spotify" }, { status: 401 });
       }
@@ -73,7 +79,7 @@ export async function GET() {
           // Spotify may or may not return a new refresh token
           ...(tokens.refresh_token && { spotify_refresh_token: tokens.refresh_token }),
         })
-        .eq("id", session.user.id);
+        .eq("id", userId);
 
       return NextResponse.json({ access_token: tokens.access_token });
     } catch (err) {
@@ -87,12 +93,18 @@ export async function GET() {
 }
 
 // Disconnect Spotify
-export async function DELETE() {
-  const supabase = createServerClient();
+export async function DELETE(request: NextRequest) {
+  const userId = request.nextUrl.searchParams.get("userId");
   
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  if (!userId) {
+    return NextResponse.json({ error: "No user ID provided" }, { status: 400 });
+  }
+
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch {
+    return NextResponse.json({ error: "Admin client not configured" }, { status: 500 });
   }
 
   await supabase
@@ -103,8 +115,7 @@ export async function DELETE() {
       spotify_token_expires_at: null,
       spotify_user_id: null,
     })
-    .eq("id", session.user.id);
+    .eq("id", userId);
 
   return NextResponse.json({ success: true });
 }
-

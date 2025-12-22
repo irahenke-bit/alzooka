@@ -149,9 +149,11 @@ export default function StationPage() {
 
   // Check Spotify connection and load SDK
   useEffect(() => {
+    if (!user) return;
+    
     async function checkSpotifyConnection() {
       try {
-        const response = await fetch("/api/spotify/token");
+        const response = await fetch(`/api/spotify/token?userId=${user!.id}`);
         if (response.ok) {
           const data = await response.json();
           setSpotifyToken(data.access_token);
@@ -165,7 +167,7 @@ export default function StationPage() {
     }
     
     checkSpotifyConnection();
-  }, []);
+  }, [user]);
 
   // Initialize Spotify Web Playback SDK
   useEffect(() => {
@@ -185,10 +187,14 @@ export default function StationPage() {
         name: "Alzooka FM",
         getOAuthToken: (cb) => {
           // Refresh token if needed
-          fetch("/api/spotify/token")
-            .then(res => res.json())
-            .then(data => cb(data.access_token))
-            .catch(() => cb(spotifyToken));
+          if (user) {
+            fetch(`/api/spotify/token?userId=${user.id}`)
+              .then(res => res.json())
+              .then(data => cb(data.access_token))
+              .catch(() => cb(spotifyToken || ""));
+          } else {
+            cb(spotifyToken || "");
+          }
         },
         volume: 0.5,
       });
