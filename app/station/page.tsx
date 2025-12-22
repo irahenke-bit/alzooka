@@ -137,8 +137,12 @@ export default function StationPage() {
       const params = new URLSearchParams(window.location.search);
       const error = params.get("error");
       const details = params.get("details");
+      const uri = params.get("uri");
       if (error) {
-        setAuthError(details ? `${error}: ${details}` : error);
+        let msg = error;
+        if (details) msg += `: ${details}`;
+        if (uri) msg += ` (URI: ${uri})`;
+        setAuthError(msg);
       }
     }
   }, []);

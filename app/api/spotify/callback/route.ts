@@ -63,7 +63,10 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
       console.error("Spotify token error:", errorData);
-      return NextResponse.redirect(new URL("/station?error=token_exchange_failed", siteUrl));
+      console.error("Redirect URI used:", redirectUri);
+      return NextResponse.redirect(
+        new URL(`/station?error=token_exchange_failed&details=${encodeURIComponent(errorData)}&uri=${encodeURIComponent(redirectUri)}`, siteUrl)
+      );
     }
 
     const tokens = await tokenResponse.json();
