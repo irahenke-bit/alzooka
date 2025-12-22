@@ -86,6 +86,7 @@ type Post = {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  show_in_feed?: boolean;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -298,11 +299,14 @@ export default function ProfilePage() {
   const [allowWallPosts, setAllowWallPosts] = useState(true);
   const [wallFriendsOnly, setWallFriendsOnly] = useState(true);
   const [wallPostContent, setWallPostContent] = useState("");
+  const [wallShowInFeed, setWallShowInFeed] = useState(true);
   const [postingWall, setPostingWall] = useState(false);
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showContentFilterModal, setShowContentFilterModal] = useState(false);
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
+  const [feedShowAllProfiles, setFeedShowAllProfiles] = useState<boolean>(true);
+  const [feedShowAllGroups, setFeedShowAllGroups] = useState<boolean>(true);
   const [youtubePreview, setYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
   const [spotifyPreview, setSpotifyPreview] = useState<{url: string; title: string; thumbnail: string; type: string; searchQuery?: string} | null>(null);
   const [wallYoutubePreview, setWallYoutubePreview] = useState<{videoId: string; url: string; title: string; searchQuery?: string} | null>(null);
@@ -341,7 +345,7 @@ export default function ProfilePage() {
       })();
       
       const currentUserPromise = user ? (async () => {
-        const { data } = await supabase.from("users").select("username, avatar_url, filtered_words").eq("id", user.id).single();
+        const { data } = await supabase.from("users").select("username, avatar_url, filtered_words, feed_show_all_profiles, feed_show_all_groups").eq("id", user.id).single();
         return data;
       })() : Promise.resolve(null);
 
@@ -349,6 +353,10 @@ export default function ProfilePage() {
       
       if (currentUserData?.filtered_words) {
         setFilteredWords(currentUserData.filtered_words);
+      }
+      if (currentUserData) {
+        setFeedShowAllProfiles(currentUserData.feed_show_all_profiles ?? true);
+        setFeedShowAllGroups(currentUserData.feed_show_all_groups ?? true);
       }
       
       if (currentUserData) {
@@ -458,6 +466,7 @@ export default function ProfilePage() {
           video_url,
           video_title,
           wall_user_id,
+          show_in_feed,
           created_at,
           edited_at,
           edit_history,
@@ -567,6 +576,7 @@ export default function ProfilePage() {
             video_title: (post as any).video_title || null,
             wall_user_id: post.wall_user_id || null,
             wall_user: Array.isArray(post.wall_user) ? post.wall_user[0] : post.wall_user || null,
+            show_in_feed: post.show_in_feed ?? true,
             users: Array.isArray(post.users) ? post.users[0] : post.users || { username: 'unknown', display_name: null, avatar_url: null },
             created_at: post.created_at,
             edited_at: post.edited_at || null,
@@ -1062,8 +1072,9 @@ export default function ProfilePage() {
         content: wallPostContent.trim(),
         video_url: videoUrl,
         video_title: videoTitle,
+        show_in_feed: wallShowInFeed,
       })
-      .select("id, content, image_url, video_url, wall_user_id, created_at")
+      .select("id, content, image_url, video_url, wall_user_id, show_in_feed, created_at")
       .single();
 
     if (!error && newPost) {
@@ -1089,6 +1100,7 @@ export default function ProfilePage() {
           image_urls,
           video_url,
           wall_user_id,
+          show_in_feed,
           created_at,
           edited_at,
           edit_history,
@@ -1163,6 +1175,7 @@ export default function ProfilePage() {
         setVoteTotals(prev => ({ ...prev, ...newVoteTotals }));
       }
       setWallPostContent("");
+      setWallShowInFeed(true);
       setWallYoutubePreview(null);
       setWallSpotifyPreview(null);
     } else if (error) {
@@ -1776,6 +1789,90 @@ export default function ProfilePage() {
                   >
                     {profile.has_password ? "🔐 Change Password" : "🔐 Set Password"}
                   </button>
+
+                  {/* Feed Control Section */}
+                  <div
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    }}
+                  >
+                    <p style={{ 
+                      margin: "0 0 12px 0", 
+                      fontSize: 14, 
+                      fontWeight: 600,
+                      color: "var(--alzooka-gold)",
+                    }}>
+                      📡 Feed Control
+                    </p>
+                    
+                    {/* Profiles toggle */}
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: 10,
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={feedShowAllProfiles}
+                          onChange={async (e) => {
+                            const newValue = e.target.checked;
+                            setFeedShowAllProfiles(newValue);
+                            await supabase
+                              .from("users")
+                              .update({ feed_show_all_profiles: newValue })
+                              .eq("id", currentUser?.id);
+                          }}
+                          style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                        />
+                        <span>Show posts from all profiles</span>
+                      </label>
+                      <p style={{ 
+                        margin: "4px 0 0 26px", 
+                        fontSize: 11, 
+                        opacity: 0.6,
+                      }}>
+                        {feedShowAllProfiles ? "Seeing everyone's posts" : "Only seeing friends' posts"}
+                      </p>
+                    </div>
+                    
+                    {/* Groups toggle */}
+                    <div>
+                      <label style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: 10,
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={feedShowAllGroups}
+                          onChange={async (e) => {
+                            const newValue = e.target.checked;
+                            setFeedShowAllGroups(newValue);
+                            await supabase
+                              .from("users")
+                              .update({ feed_show_all_groups: newValue })
+                              .eq("id", currentUser?.id);
+                          }}
+                          style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                        />
+                        <span>Show posts from all groups</span>
+                      </label>
+                      <p style={{ 
+                        margin: "4px 0 0 26px", 
+                        fontSize: 11, 
+                        opacity: 0.6,
+                      }}>
+                        {feedShowAllGroups ? "Seeing all group posts" : "Only seeing followed groups"}
+                      </p>
+                    </div>
+                  </div>
 
                   <button
                     onClick={() => {
@@ -2714,6 +2811,30 @@ export default function ProfilePage() {
                 </div>
               )}
               
+              {/* Show in feed toggle - only show when posting on someone else's wall */}
+              {currentUser?.id !== profile.id && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 8,
+                    cursor: "pointer",
+                    fontSize: 13,
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={wallShowInFeed}
+                      onChange={(e) => setWallShowInFeed(e.target.checked)}
+                      style={{ width: 14, height: 14, accentColor: "var(--alzooka-gold)" }}
+                    />
+                    <span>Show in feed</span>
+                    <span style={{ fontSize: 11, opacity: 0.5 }}>
+                      {wallShowInFeed ? "(visible to others)" : "(wall only)"}
+                    </span>
+                  </label>
+                </div>
+              )}
+              
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                 <span style={{ fontSize: 12, opacity: 0.5 }}>
                   {wallPostContent.length}/500
@@ -2934,6 +3055,24 @@ export default function ProfilePage() {
                             {post.wall_user.display_name || post.wall_user.username}
                           </Link>
                           &apos;s wall
+                        </div>
+                      )}
+                      
+                      {/* Show visibility indicator to wall owner */}
+                      {post.wall_user_id === currentUser?.id && post.user_id !== currentUser?.id && (
+                        <div style={{ 
+                          marginBottom: 8, 
+                          fontSize: 11, 
+                          opacity: 0.6,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}>
+                          {post.show_in_feed !== false ? (
+                            <>📡 Visible in feeds</>
+                          ) : (
+                            <>🔒 Wall only</>
+                          )}
                         </div>
                       )}
 

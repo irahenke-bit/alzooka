@@ -69,6 +69,7 @@ type Post = {
     display_name: string | null;
     avatar_url: string | null;
   } | null;
+  show_in_feed?: boolean;
   created_at: string;
   edited_at: string | null;
   edit_history: EditHistoryEntry[];
@@ -165,6 +166,8 @@ function FeedContent() {
   const [allowWallPosts, setAllowWallPosts] = useState<boolean>(true);
   const [wallFriendsOnly, setWallFriendsOnly] = useState<boolean>(true);
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
+  const [feedShowAllProfiles, setFeedShowAllProfiles] = useState<boolean>(true);
+  const [feedShowAllGroups, setFeedShowAllGroups] = useState<boolean>(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [userFriends, setUserFriends] = useState<string[]>([]);
   const [groupPreferences, setGroupPreferences] = useState<GroupPreference[]>([]);
@@ -244,7 +247,7 @@ function FeedContent() {
       
       // PARALLEL FETCH: Get user data, friendships, and group prefs all at once
       const [userDataResult, friendshipsResult, prefsResult] = await Promise.all([
-        supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only, filtered_words").eq("id", user.id).single(),
+        supabase.from("users").select("username, avatar_url, allow_wall_posts, wall_friends_only, filtered_words, feed_show_all_profiles, feed_show_all_groups").eq("id", user.id).single(),
         supabase.from("friendships").select("requester_id, addressee_id").or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`).eq("status", "accepted"),
         supabase.from("user_group_preferences").select("*").eq("user_id", user.id).eq("include_in_feed", true),
       ]);
@@ -264,6 +267,8 @@ function FeedContent() {
       setAllowWallPosts(userData.allow_wall_posts ?? true);
       setWallFriendsOnly(userData.wall_friends_only ?? true);
       setFilteredWords(userData.filtered_words || []);
+      setFeedShowAllProfiles(userData.feed_show_all_profiles ?? true);
+      setFeedShowAllGroups(userData.feed_show_all_groups ?? true);
       
       const friendIds = (friendships || []).map(f =>
         f.requester_id === user.id ? f.addressee_id : f.requester_id
@@ -272,8 +277,14 @@ function FeedContent() {
       
       setGroupPreferences((prefs || []) as GroupPreference[]);
       
-      // Load posts first - pass user.id since state isn't set yet
-      const loadedPosts = await loadPosts(friendIds, (prefs || []) as GroupPreference[], user.id);
+      // Load posts first - pass user.id and feed prefs since state isn't set yet
+      const loadedPosts = await loadPosts(
+        friendIds, 
+        (prefs || []) as GroupPreference[], 
+        user.id,
+        userData.feed_show_all_profiles ?? true,
+        userData.feed_show_all_groups ?? true
+      );
       
       // Load votes in parallel
       await Promise.all([
@@ -783,68 +794,146 @@ function FeedContent() {
   async function loadPosts(
     friends: string[] = userFriends,
     prefs: GroupPreference[] = groupPreferences,
-    currentUserId?: string
+    currentUserId?: string,
+    showAllProfiles: boolean = feedShowAllProfiles,
+    showAllGroups: boolean = feedShowAllGroups
   ): Promise<Post[]> {
-    // 1. Load regular feed posts (non-group posts) - ONLY from friends or self
-    // Build list of user IDs whose posts we want to see
-    // Use passed userId, fall back to state, then to empty
+    // 1. Load regular feed posts (non-group posts)
+    // If showAllProfiles is true, load from everyone; otherwise, only from friends + self
     const userId = currentUserId || user?.id;
-    const allowedUserIds = userId ? [userId, ...friends] : friends;
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let feedPosts: any[] | null = [];
     
-    // Only fetch if there are user IDs to filter by
-    if (allowedUserIds.length > 0) {
-      const { data } = await supabase
-        .from("posts")
-        .select(`
+    const feedQuery = supabase
+      .from("posts")
+      .select(`
+        id,
+        content,
+        image_url,
+        image_urls,
+        video_url,
+        wall_user_id,
+        show_in_feed,
+        created_at,
+        edited_at,
+        edit_history,
+        user_id,
+        group_id,
+        shared_from_post_id,
+        users!posts_user_id_fkey (
+          username,
+          display_name,
+          avatar_url
+        ),
+        wall_user:users!posts_wall_user_id_fkey (
+          username,
+          display_name,
+          avatar_url
+        ),
+        groups:groups!posts_group_id_fkey (
+          id,
+          name
+        ),
+        comments (
           id,
           content,
-          image_url,
-          image_urls,
-          video_url,
-          wall_user_id,
           created_at,
-          edited_at,
-          edit_history,
           user_id,
-          group_id,
-          shared_from_post_id,
-          users!posts_user_id_fkey (
-            username,
-            display_name,
-            avatar_url
-          ),
-          wall_user:users!posts_wall_user_id_fkey (
-            username,
-            display_name,
-            avatar_url
-          ),
-          groups:groups!posts_group_id_fkey (
-            id,
-            name
-          ),
-          comments (
-            id,
-            content,
-            created_at,
-            user_id,
-            parent_comment_id
-          )
-        `)
-        .is("group_id", null)
-        .in("user_id", allowedUserIds)
-        .order("created_at", { ascending: false });
-      
+          parent_comment_id
+        )
+      `)
+      .is("group_id", null)
+      .order("created_at", { ascending: false });
+    
+    if (showAllProfiles) {
+      // World view: show all posts (but filter wall posts by show_in_feed later)
+      const { data } = await feedQuery;
       feedPosts = data;
+    } else {
+      // Friends only view: filter by allowed user IDs
+      const allowedUserIds = userId ? [userId, ...friends] : friends;
+      if (allowedUserIds.length > 0) {
+        const { data } = await feedQuery.in("user_id", allowedUserIds);
+        feedPosts = data;
+      }
+    }
+    
+    // Filter out wall posts that have show_in_feed = false (unless it's on our wall or we made it)
+    if (feedPosts) {
+      feedPosts = feedPosts.filter(post => {
+        // If it's not a wall post, always show
+        if (!post.wall_user_id) return true;
+        // If show_in_feed is true (or null/undefined for backwards compat), show it
+        if (post.show_in_feed !== false) return true;
+        // If it's on our wall, show it
+        if (post.wall_user_id === userId) return true;
+        // If we made the post, show it
+        if (post.user_id === userId) return true;
+        // Otherwise, hide it
+        return false;
+      });
     }
 
-    // 2. Load group posts based on user preferences
+    // 2. Load group posts based on user preferences or all groups if showAllGroups
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let groupPosts: any[] = [];
     
-    if (prefs.length > 0) {
+    if (showAllGroups) {
+      // Load posts from all groups the user is a member of
+      const { data: userMemberships } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", userId);
+      
+      const memberGroupIds = (userMemberships || []).map(m => m.group_id);
+      
+      if (memberGroupIds.length > 0) {
+        const { data: allGroupPostsData } = await supabase
+          .from("posts")
+          .select(`
+            id,
+            content,
+            image_url,
+            image_urls,
+            video_url,
+            wall_user_id,
+            created_at,
+            edited_at,
+            edit_history,
+            user_id,
+            group_id,
+            shared_from_post_id,
+            users!posts_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            wall_user:users!posts_wall_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            groups:groups!posts_group_id_fkey (
+              id,
+              name
+            ),
+            comments (
+              id,
+              content,
+              created_at,
+              user_id,
+              parent_comment_id
+            )
+          `)
+          .in("group_id", memberGroupIds)
+          .order("created_at", { ascending: false })
+          .limit(100);
+        
+        groupPosts = allGroupPostsData || [];
+      }
+    } else if (prefs.length > 0) {
+      // Original behavior: load from followed groups with filters
       const groupIds = prefs.map(p => p.group_id);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
