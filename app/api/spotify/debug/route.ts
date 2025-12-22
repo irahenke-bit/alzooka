@@ -1,24 +1,37 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createServerClient, createServerClientWithCookies } from "@/lib/supabase";
+import { cookies } from "next/headers";
 
 // Debug endpoint to check Spotify token status
 export async function GET() {
-  const supabase = createServerClient();
+  // Get all cookies for debugging
+  const cookieStore = await cookies();
+  const allCookies = cookieStore.getAll();
+  const cookieNames = allCookies.map(c => c.name);
+  
+  // Try the new cookie-aware client
+  const { supabase, cookies: authCookies } = await createServerClientWithCookies();
   
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
-  if (sessionError) {
-    return NextResponse.json({ 
-      error: "Session error", 
-      details: sessionError.message 
-    }, { status: 401 });
-  }
+  // Also try a direct lookup by a known user ID to test DB access
+  const testSupabase = createServerClient();
+  const { data: anyUser } = await testSupabase
+    .from("users")
+    .select("id, spotify_access_token, spotify_refresh_token")
+    .not("spotify_refresh_token", "is", null)
+    .limit(1);
   
   if (!session) {
     return NextResponse.json({ 
       error: "Not authenticated",
-      hasSession: false
-    }, { status: 401 });
+      hasSession: false,
+      cookieNames,
+      authCookies,
+      sessionError: sessionError?.message || null,
+      // Check if any user has Spotify connected
+      anyUserWithSpotify: anyUser && anyUser.length > 0,
+    });
   }
 
   // Get user's Spotify tokens
@@ -43,7 +56,6 @@ export async function GET() {
     hasRefreshToken: !!user?.spotify_refresh_token,
     tokenExpiresAt: user?.spotify_token_expires_at || null,
     spotifyUserId: user?.spotify_user_id || null,
-    // Show first/last chars of tokens for debugging
     accessTokenPreview: user?.spotify_access_token 
       ? `${user.spotify_access_token.slice(0, 10)}...${user.spotify_access_token.slice(-5)}`
       : null,
