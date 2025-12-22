@@ -161,7 +161,9 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 e.currentTarget.style.background = "transparent";
               }}
             >
-              <span style={{ fontSize: 20 }}>📻</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
+                <path d="M20 6H8.3l8.26-3.34L15.88 1 3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-8 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+              </svg>
             </Link>
           </InstantTooltip>
         )}
