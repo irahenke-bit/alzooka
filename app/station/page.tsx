@@ -821,47 +821,6 @@ export default function StationPage() {
             <p style={{ margin: 0, fontSize: 13, opacity: 0.5 }}>
               No groups yet. Create groups to organize your albums by genre, mood, or era.
             </p>
-          ) : albums.length > 0 && Object.keys(albumGroups).length === 0 ? (
-            <div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                {groups.map(group => (
-                  <div key={group.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <span
-                      style={{
-                        padding: "6px 14px",
-                        fontSize: 13,
-                        background: "transparent",
-                        color: "var(--alzooka-cream)",
-                        border: `2px solid ${group.color}`,
-                        borderRadius: 20,
-                        opacity: 0.5,
-                      }}
-                    >
-                      {group.name} (0)
-                    </span>
-                    <button
-                      onClick={() => handleDeleteGroup(group.id)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "#e57373",
-                        fontSize: 14,
-                        cursor: "pointer",
-                        padding: 2,
-                        opacity: 0.5,
-                        lineHeight: 1,
-                      }}
-                      title="Delete group"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: "var(--alzooka-gold)" }}>
-                👆 Click the <strong>"🏷️ Tag"</strong> button on each album below to add it to a group
-              </p>
-            </div>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {groups.map(group => {
@@ -992,6 +951,13 @@ export default function StationPage() {
           {activeGroups.size > 0 && !bulkAddGroup && (
             <p style={{ margin: "12px 0 0", fontSize: 12, opacity: 0.6 }}>
               🎵 Playing from: {groups.filter(g => activeGroups.has(g.id)).map(g => g.name).join(" + ")}
+            </p>
+          )}
+          
+          {/* Hint when no albums are tagged */}
+          {groups.length > 0 && albums.length > 0 && Object.keys(albumGroups).length === 0 && !bulkAddGroup && (
+            <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--alzooka-gold)" }}>
+              💡 Click <strong>"Edit"</strong> next to a group, then click albums to add them
             </p>
           )}
         </div>
