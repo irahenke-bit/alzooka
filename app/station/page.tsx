@@ -1001,8 +1001,8 @@ export default function StationPage() {
                 </p>
               ) : (
                 <>
-                  <button
-                    onClick={handleConnectSpotify}
+                  <a
+                    href={user ? `/api/spotify/auth?userId=${user.id}` : "#"}
                     style={{
                       padding: "12px 24px",
                       fontSize: 14,
@@ -1015,10 +1015,11 @@ export default function StationPage() {
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
+                      textDecoration: "none",
                     }}
                   >
                     🎵 Connect Spotify
-                  </button>
+                  </a>
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.5 }}>
                     Premium required for playback
                   </p>
