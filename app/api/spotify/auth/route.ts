@@ -10,18 +10,20 @@ const SCOPES = [
 ].join(" ");
 
 export async function GET(request: NextRequest) {
-  // Get the origin from the request to build proper redirect URLs
-  const origin = request.nextUrl.origin;
+  // Get the full origin including www from the host header
+  const host = request.headers.get("host") || "alzooka.com";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const origin = `${protocol}://${host}`;
   
   // Get user ID from the query param (passed from client)
   const userId = request.nextUrl.searchParams.get("userId");
   
   if (!userId) {
-    return NextResponse.json({ error: "User ID required" }, { status: 400 });
+    return NextResponse.redirect(new URL("/station?error=no_user_id", origin));
   }
   
   const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${origin}/api/spotify/callback`;
+  const redirectUri = `${origin}/api/spotify/callback`;
 
   if (!clientId) {
     return NextResponse.json({ error: "Spotify client ID not configured" }, { status: 500 });

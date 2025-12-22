@@ -11,8 +11,10 @@ export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const storedState = cookieStore.get("spotify_auth_state")?.value;
   
-  // Get origin from request
-  const siteUrl = request.nextUrl.origin;
+  // Get the full origin including www from the host header
+  const host = request.headers.get("host") || "alzooka.com";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const siteUrl = `${protocol}://${host}`;
   const supabase = createServerClient();
 
   // Handle errors or user denial
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-  const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${siteUrl}/api/spotify/callback`;
+  const redirectUri = `${siteUrl}/api/spotify/callback`;
 
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(new URL("/station?error=config_missing", siteUrl));
