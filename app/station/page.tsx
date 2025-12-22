@@ -1000,27 +1000,34 @@ export default function StationPage() {
                   ⏳ Initializing Spotify player...
                 </p>
               ) : (
-                <>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   {user ? (
-                    <a
-                      href={`/api/spotify/auth?userId=${user.id}`}
-                      style={{
-                        padding: "12px 24px",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        background: "#1DB954",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 24,
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 8,
-                        textDecoration: "none",
-                      }}
-                    >
-                      🎵 Connect Spotify
-                    </a>
+                    <>
+                      <a
+                        href={`/api/spotify/auth?userId=${user.id}`}
+                        target="_self"
+                        rel="noopener"
+                        style={{
+                          padding: "12px 24px",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          background: "#1DB954",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 24,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          textDecoration: "none",
+                        }}
+                      >
+                        🎵 Connect Spotify
+                      </a>
+                      <p style={{ margin: 0, fontSize: 10, opacity: 0.4 }}>
+                        User: {user.id.substring(0, 8)}...
+                      </p>
+                    </>
                   ) : (
                     <span style={{ color: "#e57373", fontSize: 14 }}>
                       Loading user... (refresh if stuck)
@@ -1029,7 +1036,7 @@ export default function StationPage() {
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.5 }}>
                     Premium required for playback
                   </p>
-                </>
+                </div>
               )}
             </div>
           </div>
