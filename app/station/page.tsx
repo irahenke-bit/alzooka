@@ -37,6 +37,28 @@ type StationAlbum = {
   created_at: string;
 };
 
+type StationGroup = {
+  id: string;
+  station_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+};
+
+// Preset colors for groups
+const GROUP_COLORS = [
+  "#1DB954", // Spotify green
+  "#E91E63", // Pink
+  "#9C27B0", // Purple
+  "#3F51B5", // Indigo
+  "#2196F3", // Blue
+  "#00BCD4", // Cyan
+  "#FF9800", // Orange
+  "#F44336", // Red
+  "#795548", // Brown
+  "#607D8B", // Blue Grey
+];
+
 export default function StationPage() {
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string | null>(null);
@@ -53,6 +75,14 @@ export default function StationPage() {
   const [activeSearch, setActiveSearch] = useState("");
   const [selectAll, setSelectAll] = useState(true);
   const [manualSelections, setManualSelections] = useState<Set<string>>(new Set());
+  
+  // Groups state
+  const [groups, setGroups] = useState<StationGroup[]>([]);
+  const [activeGroups, setActiveGroups] = useState<Set<string>>(new Set());
+  const [albumGroups, setAlbumGroups] = useState<Record<string, string[]>>({}); // albumId -> groupIds
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [editingAlbumGroups, setEditingAlbumGroups] = useState<string | null>(null);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -109,6 +139,35 @@ export default function StationPage() {
           
           // Check if all are selected
           setSelectAll(albumsData.length > 0 && albumsData.every(a => a.is_selected));
+          
+          // Load album-group relationships
+          const albumIds = albumsData.map(a => a.id);
+          if (albumIds.length > 0) {
+            const { data: albumGroupsData } = await supabase
+              .from("station_album_groups")
+              .select("album_id, group_id")
+              .in("album_id", albumIds);
+            
+            if (albumGroupsData) {
+              const mapping: Record<string, string[]> = {};
+              for (const ag of albumGroupsData) {
+                if (!mapping[ag.album_id]) mapping[ag.album_id] = [];
+                mapping[ag.album_id].push(ag.group_id);
+              }
+              setAlbumGroups(mapping);
+            }
+          }
+        }
+        
+        // Load groups
+        const { data: groupsData } = await supabase
+          .from("station_groups")
+          .select("*")
+          .eq("station_id", stationData.id)
+          .order("created_at", { ascending: true });
+        
+        if (groupsData) {
+          setGroups(groupsData);
         }
       } else {
         setShowSetup(true);
@@ -268,6 +327,139 @@ export default function StationPage() {
   function clearSearch() {
     setSearchInput("");
     setActiveSearch("");
+  }
+
+  // Group management functions
+  async function handleCreateGroup() {
+    if (!station || !newGroupName.trim()) return;
+    
+    const color = GROUP_COLORS[groups.length % GROUP_COLORS.length];
+    
+    const { data, error } = await supabase
+      .from("station_groups")
+      .insert({
+        station_id: station.id,
+        name: newGroupName.trim(),
+        color,
+      })
+      .select()
+      .single();
+    
+    if (!error && data) {
+      setGroups(prev => [...prev, data]);
+      setNewGroupName("");
+      setShowCreateGroup(false);
+    }
+  }
+
+  async function handleDeleteGroup(groupId: string) {
+    await supabase
+      .from("station_groups")
+      .delete()
+      .eq("id", groupId);
+    
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    setActiveGroups(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(groupId);
+      return newSet;
+    });
+    
+    // Remove this group from albumGroups mapping
+    setAlbumGroups(prev => {
+      const updated: Record<string, string[]> = {};
+      for (const [albumId, groupIds] of Object.entries(prev)) {
+        updated[albumId] = groupIds.filter(gid => gid !== groupId);
+      }
+      return updated;
+    });
+  }
+
+  async function handleToggleGroup(groupId: string) {
+    const isActive = activeGroups.has(groupId);
+    
+    // Update active groups
+    setActiveGroups(prev => {
+      const newSet = new Set(prev);
+      if (isActive) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+    
+    // Calculate which albums should be selected based on all active groups
+    const newActiveGroups = new Set(activeGroups);
+    if (isActive) {
+      newActiveGroups.delete(groupId);
+    } else {
+      newActiveGroups.add(groupId);
+    }
+    
+    // If no groups are active, keep current selection
+    if (newActiveGroups.size === 0) {
+      return;
+    }
+    
+    // Select albums that belong to ANY active group
+    const albumsToSelect = new Set<string>();
+    for (const [albumId, groupIds] of Object.entries(albumGroups)) {
+      if (groupIds.some(gid => newActiveGroups.has(gid))) {
+        albumsToSelect.add(albumId);
+      }
+    }
+    
+    // Update album selections in database and state
+    for (const album of albums) {
+      const shouldBeSelected = albumsToSelect.has(album.id);
+      if (album.is_selected !== shouldBeSelected) {
+        await supabase
+          .from("station_albums")
+          .update({ is_selected: shouldBeSelected })
+          .eq("id", album.id);
+      }
+    }
+    
+    setAlbums(prev => prev.map(a => ({
+      ...a,
+      is_selected: albumsToSelect.has(a.id)
+    })));
+    
+    setSelectAll(false);
+  }
+
+  async function handleToggleAlbumGroup(albumId: string, groupId: string) {
+    const currentGroups = albumGroups[albumId] || [];
+    const isInGroup = currentGroups.includes(groupId);
+    
+    if (isInGroup) {
+      // Remove from group
+      await supabase
+        .from("station_album_groups")
+        .delete()
+        .eq("album_id", albumId)
+        .eq("group_id", groupId);
+      
+      setAlbumGroups(prev => ({
+        ...prev,
+        [albumId]: (prev[albumId] || []).filter(gid => gid !== groupId)
+      }));
+    } else {
+      // Add to group
+      await supabase
+        .from("station_album_groups")
+        .insert({ album_id: albumId, group_id: groupId });
+      
+      setAlbumGroups(prev => ({
+        ...prev,
+        [albumId]: [...(prev[albumId] || []), groupId]
+      }));
+    }
+  }
+
+  function clearActiveGroups() {
+    setActiveGroups(new Set());
   }
 
   const selectedCount = albums.filter(a => a.is_selected).length;
@@ -516,6 +708,148 @@ export default function StationPage() {
           </button>
         </div>
         
+        {/* Groups Section */}
+        <div style={{
+          background: "rgba(240, 235, 224, 0.03)",
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 16,
+          border: "1px solid rgba(240, 235, 224, 0.1)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <h3 style={{ margin: 0, fontSize: 14, opacity: 0.7 }}>Groups</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              {activeGroups.size > 0 && (
+                <button
+                  onClick={clearActiveGroups}
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    background: "transparent",
+                    color: "var(--alzooka-cream)",
+                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                  }}
+                >
+                  Clear Selection
+                </button>
+              )}
+              <button
+                onClick={() => setShowCreateGroup(!showCreateGroup)}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  background: showCreateGroup ? "rgba(240, 235, 224, 0.1)" : "transparent",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.2)",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                + New Group
+              </button>
+            </div>
+          </div>
+          
+          {/* Create Group Form */}
+          {showCreateGroup && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Group name (e.g., Jazz, 70s Rock)"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
+                autoFocus
+                style={{
+                  flex: 1,
+                  padding: "8px 12px",
+                  fontSize: 14,
+                  borderRadius: 6,
+                  border: "1px solid rgba(240, 235, 224, 0.2)",
+                  background: "rgba(0, 0, 0, 0.2)",
+                  color: "var(--alzooka-cream)",
+                }}
+              />
+              <button
+                onClick={handleCreateGroup}
+                disabled={!newGroupName.trim()}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: newGroupName.trim() ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                  color: newGroupName.trim() ? "var(--alzooka-teal-dark)" : "rgba(240, 235, 224, 0.4)",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: newGroupName.trim() ? "pointer" : "not-allowed",
+                }}
+              >
+                Create
+              </button>
+            </div>
+          )}
+          
+          {/* Group Toggles */}
+          {groups.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 13, opacity: 0.5 }}>
+              No groups yet. Create groups to organize your albums by genre, mood, or era.
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {groups.map(group => {
+                const isActive = activeGroups.has(group.id);
+                const albumCount = Object.values(albumGroups).filter(gids => gids.includes(group.id)).length;
+                
+                return (
+                  <div key={group.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button
+                      onClick={() => handleToggleGroup(group.id)}
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: 13,
+                        fontWeight: isActive ? 600 : 400,
+                        background: isActive ? group.color : "transparent",
+                        color: isActive ? "#fff" : "var(--alzooka-cream)",
+                        border: `2px solid ${group.color}`,
+                        borderRadius: 20,
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {group.name} ({albumCount})
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGroup(group.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 14,
+                        cursor: "pointer",
+                        padding: 2,
+                        opacity: 0.5,
+                        lineHeight: 1,
+                      }}
+                      title="Delete group"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {activeGroups.size > 0 && (
+            <p style={{ margin: "12px 0 0", fontSize: 12, opacity: 0.6 }}>
+              🎵 Playing from: {groups.filter(g => activeGroups.has(g.id)).map(g => g.name).join(" + ")}
+            </p>
+          )}
+        </div>
+        
         {/* Active Search Banner */}
         {activeSearch && (
           <div style={{
@@ -669,9 +1003,118 @@ export default function StationPage() {
                       {album.spotify_artist}
                     </p>
                   )}
-                  <p style={{ margin: 0, fontSize: 11, opacity: 0.5, marginTop: 2 }}>
-                    {album.spotify_type}
-                  </p>
+                  
+                  {/* Album Groups */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+                    {(albumGroups[album.id] || []).map(groupId => {
+                      const group = groups.find(g => g.id === groupId);
+                      if (!group) return null;
+                      return (
+                        <span
+                          key={groupId}
+                          style={{
+                            padding: "2px 8px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: group.color,
+                            color: "#fff",
+                            borderRadius: 10,
+                          }}
+                        >
+                          {group.name}
+                        </span>
+                      );
+                    })}
+                    
+                    {/* Add to group button */}
+                    {groups.length > 0 && (
+                      <div style={{ position: "relative" }}>
+                        <button
+                          onClick={() => setEditingAlbumGroups(editingAlbumGroups === album.id ? null : album.id)}
+                          style={{
+                            padding: "2px 6px",
+                            fontSize: 10,
+                            background: "transparent",
+                            color: "var(--alzooka-cream)",
+                            border: "1px dashed rgba(240, 235, 224, 0.3)",
+                            borderRadius: 10,
+                            cursor: "pointer",
+                            opacity: 0.6,
+                          }}
+                        >
+                          + group
+                        </button>
+                        
+                        {/* Group picker dropdown */}
+                        {editingAlbumGroups === album.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: 0,
+                              marginTop: 4,
+                              background: "var(--alzooka-teal-dark)",
+                              border: "1px solid rgba(240, 235, 224, 0.2)",
+                              borderRadius: 8,
+                              padding: 8,
+                              zIndex: 100,
+                              minWidth: 150,
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <p style={{ margin: "0 0 8px", fontSize: 11, opacity: 0.6 }}>Assign to groups:</p>
+                            {groups.map(group => {
+                              const isInGroup = (albumGroups[album.id] || []).includes(group.id);
+                              return (
+                                <label
+                                  key={group.id}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: "6px 4px",
+                                    cursor: "pointer",
+                                    fontSize: 13,
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isInGroup}
+                                    onChange={() => handleToggleAlbumGroup(album.id, group.id)}
+                                    style={{ accentColor: group.color }}
+                                  />
+                                  <span style={{ 
+                                    width: 10, 
+                                    height: 10, 
+                                    borderRadius: "50%", 
+                                    background: group.color 
+                                  }} />
+                                  {group.name}
+                                </label>
+                              );
+                            })}
+                            <button
+                              onClick={() => setEditingAlbumGroups(null)}
+                              style={{
+                                marginTop: 8,
+                                width: "100%",
+                                padding: "6px",
+                                fontSize: 12,
+                                background: "rgba(240, 235, 224, 0.1)",
+                                color: "var(--alzooka-cream)",
+                                border: "none",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Done
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Spotify Link */}
