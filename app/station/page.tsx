@@ -706,7 +706,7 @@ export default function StationPage() {
   async function handleShufflePlay() {
     console.log("Shuffle play clicked", { spotifyDeviceId, spotifyToken: spotifyToken ? "present" : "missing" });
     
-    if (!spotifyDeviceId || !spotifyToken) {
+    if (!spotifyDeviceId || !spotifyToken || !spotifyPlayer) {
       alert("Please connect Spotify first");
       return;
     }
@@ -724,6 +724,10 @@ export default function StationPage() {
     console.log("Album URIs:", albumUris);
     
     try {
+      // Activate the player element (required for browser autoplay policy)
+      console.log("Activating player element");
+      await spotifyPlayer.activateElement();
+      
       // First, transfer playback to our device
       console.log("Transferring playback to device:", spotifyDeviceId);
       const transferRes = await fetch("https://api.spotify.com/v1/me/player", {
@@ -776,6 +780,10 @@ export default function StationPage() {
         return;
       }
 
+      // Make sure playback starts
+      console.log("Resuming playback");
+      await spotifyPlayer.resume();
+      
       setIsPlaying(true);
     } catch (err) {
       console.error("Playback error:", err);
