@@ -13,7 +13,7 @@ import { PostModal } from "@/app/components/PostModal";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { EmojiButton } from "@/app/components/EmojiButton";
-import { ReactionPicker, ReactionType } from "@/app/components/ReactionPicker";
+import { ReactionPicker, ReactionType, Reaction } from "@/app/components/ReactionPicker";
 import { 
   notifyNewComment, 
   notifyNewReply, 
@@ -23,18 +23,6 @@ import {
   getUserIdsByUsernames 
 } from "@/lib/notifications";
 
-type Reaction = {
-  id: string;
-  user_id: string;
-  post_id: string;
-  reaction_type: ReactionType;
-  created_at: string;
-  users?: {
-    username: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
-};
 
 export default function FeedPage() {
   return (
