@@ -20,6 +20,7 @@ import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { EmojiButton } from "@/app/components/EmojiButton";
 import { PasswordModal } from "@/app/components/PasswordModal";
 import { ContentFilterModal } from "@/app/components/ContentFilterModal";
+import { FeedControlModal } from "@/app/components/FeedControlModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { notifyWallPost } from "@/lib/notifications";
 
@@ -304,6 +305,7 @@ export default function ProfilePage() {
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showContentFilterModal, setShowContentFilterModal] = useState(false);
+  const [showFeedControlModal, setShowFeedControlModal] = useState(false);
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [feedShowAllProfiles, setFeedShowAllProfiles] = useState<boolean>(true);
   const [feedShowAllGroups, setFeedShowAllGroups] = useState<boolean>(true);
@@ -1790,89 +1792,26 @@ export default function ProfilePage() {
                     {profile.has_password ? "🔐 Change Password" : "🔐 Set Password"}
                   </button>
 
-                  {/* Feed Control Section */}
-                  <div
+                  {/* Feed Control Button */}
+                  <button
+                    onClick={() => {
+                      setShowEditMenu(false);
+                      setShowFeedControlModal(true);
+                    }}
                     style={{
                       width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--alzooka-cream)",
                       padding: "12px 16px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontSize: 14,
                       borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                     }}
                   >
-                    <p style={{ 
-                      margin: "0 0 12px 0", 
-                      fontSize: 14, 
-                      fontWeight: 600,
-                      color: "var(--alzooka-gold)",
-                    }}>
-                      📡 Feed Control
-                    </p>
-                    
-                    {/* Profiles toggle */}
-                    <div style={{ marginBottom: 10 }}>
-                      <label style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: 10,
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}>
-                        <input
-                          type="checkbox"
-                          checked={feedShowAllProfiles}
-                          onChange={async (e) => {
-                            const newValue = e.target.checked;
-                            setFeedShowAllProfiles(newValue);
-                            await supabase
-                              .from("users")
-                              .update({ feed_show_all_profiles: newValue })
-                              .eq("id", currentUser?.id);
-                          }}
-                          style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
-                        />
-                        <span>Show posts from all profiles</span>
-                      </label>
-                      <p style={{ 
-                        margin: "4px 0 0 26px", 
-                        fontSize: 11, 
-                        opacity: 0.6,
-                      }}>
-                        {feedShowAllProfiles ? "Seeing everyone's posts" : "Only seeing friends' posts"}
-                      </p>
-                    </div>
-                    
-                    {/* Groups toggle */}
-                    <div>
-                      <label style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: 10,
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}>
-                        <input
-                          type="checkbox"
-                          checked={feedShowAllGroups}
-                          onChange={async (e) => {
-                            const newValue = e.target.checked;
-                            setFeedShowAllGroups(newValue);
-                            await supabase
-                              .from("users")
-                              .update({ feed_show_all_groups: newValue })
-                              .eq("id", currentUser?.id);
-                          }}
-                          style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
-                        />
-                        <span>Show posts from all groups</span>
-                      </label>
-                      <p style={{ 
-                        margin: "4px 0 0 26px", 
-                        fontSize: 11, 
-                        opacity: 0.6,
-                      }}>
-                        {feedShowAllGroups ? "Seeing all group posts" : "Only seeing followed groups"}
-                      </p>
-                    </div>
-                  </div>
+                    📡 Feed Control
+                  </button>
 
                   <button
                     onClick={() => {
@@ -3679,6 +3618,22 @@ export default function ProfilePage() {
           supabase={supabase}
           filteredWords={filteredWords}
           onWordsUpdated={setFilteredWords}
+        />
+      )}
+
+      {/* Feed Control Modal */}
+      {showFeedControlModal && currentUser && (
+        <FeedControlModal
+          isOpen={showFeedControlModal}
+          onClose={() => setShowFeedControlModal(false)}
+          userId={currentUser.id}
+          supabase={supabase}
+          feedShowAllProfiles={feedShowAllProfiles}
+          feedShowAllGroups={feedShowAllGroups}
+          onSettingsUpdated={(showAllProfiles, showAllGroups) => {
+            setFeedShowAllProfiles(showAllProfiles);
+            setFeedShowAllGroups(showAllGroups);
+          }}
         />
       )}
 
