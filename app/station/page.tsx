@@ -402,17 +402,15 @@ export default function StationPage() {
         spotify_artist: result.artist || null,
         spotify_image_url: result.image || null,
         spotify_url: spotifyUrl,
-        is_selected: true,
+        is_selected: false, // Default to unchecked - user manually selects for shuffle
       })
       .select()
       .single();
     
     if (!error && data) {
       setAlbums(prev => [data, ...prev]);
-      setManualSelections(prev => new Set([...prev, data.id]));
     }
-    
-    setShowSpotifySearch(false);
+    // Keep search modal open for adding more albums
   }
 
   async function handleToggleAlbum(albumId: string) {
