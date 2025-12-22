@@ -129,6 +129,18 @@ export default function StationPage() {
   
   const router = useRouter();
   const supabase = createBrowserClient();
+  
+  // Check for error params in URL
+  const [authError, setAuthError] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get("error");
+      if (error) {
+        setAuthError(error);
+      }
+    }
+  }, []);
 
   // Check Spotify connection and load SDK
   useEffect(() => {
@@ -1022,6 +1034,15 @@ export default function StationPage() {
                       >
                         🎵 Connect Spotify
                       </a>
+                      {/* Debug: show the URL */}
+                      <p style={{ fontSize: 10, opacity: 0.5, wordBreak: "break-all", maxWidth: 300 }}>
+                        Debug URL: /api/spotify/auth?userId={user.id}
+                      </p>
+                      {authError && (
+                        <p style={{ fontSize: 12, color: "#e57373" }}>
+                          ⚠️ Auth error: {authError}
+                        </p>
+                      )}
                     </>
                   ) : (
                     <span style={{ color: "#e57373", fontSize: 14 }}>
