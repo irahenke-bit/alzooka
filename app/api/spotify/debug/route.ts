@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createServerClient, createServerClientWithCookies } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 
 // Debug endpoint to check Spotify token status
 export async function GET() {
@@ -9,56 +10,69 @@ export async function GET() {
   const allCookies = cookieStore.getAll();
   const cookieNames = allCookies.map(c => c.name);
   
-  // Try the new cookie-aware client
-  const { supabase, cookies: authCookies } = await createServerClientWithCookies();
+  // Get auth cookies specifically
+  const authCookies: Record<string, string> = {};
+  for (const cookie of allCookies) {
+    if (cookie.name.includes('auth') || cookie.name.includes('supabase') || cookie.name.includes('sb-')) {
+      authCookies[cookie.name] = cookie.value.slice(0, 50) + '...';
+    }
+  }
   
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // Find the session token cookie and try to parse it
+  const sessionCookie = allCookies.find(c => 
+    c.name.includes('auth-token') || 
+    (c.name.includes('sb-') && c.name.includes('-auth-token'))
+  );
   
-  // Also try a direct lookup by a known user ID to test DB access
+  let sessionFromCookie = null;
+  if (sessionCookie) {
+    try {
+      const tokenData = JSON.parse(sessionCookie.value);
+      if (tokenData.access_token) {
+        const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const key = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const supabase = createClient(url, key, { auth: { persistSession: false } });
+        await supabase.auth.setSession({
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token || '',
+        });
+        const { data: { session } } = await supabase.auth.getSession();
+        sessionFromCookie = session;
+      }
+    } catch {
+      // Cookie might not be JSON
+    }
+  }
+  
+  // Also try a direct lookup to see if Spotify tokens were saved
   const testSupabase = createServerClient();
   const { data: anyUser } = await testSupabase
     .from("users")
-    .select("id, spotify_access_token, spotify_refresh_token")
+    .select("id, spotify_refresh_token")
     .not("spotify_refresh_token", "is", null)
     .limit(1);
   
-  if (!session) {
-    return NextResponse.json({ 
-      error: "Not authenticated",
-      hasSession: false,
-      cookieNames,
-      authCookies,
-      sessionError: sessionError?.message || null,
-      // Check if any user has Spotify connected
-      anyUserWithSpotify: anyUser && anyUser.length > 0,
-    });
-  }
-
-  // Get user's Spotify tokens
-  const { data: user, error: userError } = await supabase
+  // Also check the specific user we know about
+  const knownUserId = "5aa34cc1-ed8e-4b31-9b88-12ffe6de250a";
+  const { data: knownUser, error: knownUserError } = await testSupabase
     .from("users")
     .select("id, spotify_access_token, spotify_refresh_token, spotify_token_expires_at, spotify_user_id")
-    .eq("id", session.user.id)
+    .eq("id", knownUserId)
     .single();
 
-  if (userError) {
-    return NextResponse.json({ 
-      error: "User fetch error",
-      details: userError.message,
-      code: userError.code,
-      userId: session.user.id
-    }, { status: 500 });
-  }
-
   return NextResponse.json({
-    userId: session.user.id,
-    hasAccessToken: !!user?.spotify_access_token,
-    hasRefreshToken: !!user?.spotify_refresh_token,
-    tokenExpiresAt: user?.spotify_token_expires_at || null,
-    spotifyUserId: user?.spotify_user_id || null,
-    accessTokenPreview: user?.spotify_access_token 
-      ? `${user.spotify_access_token.slice(0, 10)}...${user.spotify_access_token.slice(-5)}`
-      : null,
+    cookieNames,
+    authCookies,
+    sessionCookieFound: !!sessionCookie,
+    sessionFromCookie: sessionFromCookie ? { userId: sessionFromCookie.user?.id } : null,
+    anyUserWithSpotify: anyUser && anyUser.length > 0 ? anyUser[0].id : null,
+    knownUser: {
+      id: knownUser?.id,
+      hasAccessToken: !!knownUser?.spotify_access_token,
+      hasRefreshToken: !!knownUser?.spotify_refresh_token,
+      spotifyUserId: knownUser?.spotify_user_id,
+      error: knownUserError?.message,
+    }
   });
 }
 
