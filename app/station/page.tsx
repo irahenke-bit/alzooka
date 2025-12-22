@@ -797,6 +797,47 @@ export default function StationPage() {
             <p style={{ margin: 0, fontSize: 13, opacity: 0.5 }}>
               No groups yet. Create groups to organize your albums by genre, mood, or era.
             </p>
+          ) : albums.length > 0 && Object.keys(albumGroups).length === 0 ? (
+            <div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                {groups.map(group => (
+                  <div key={group.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: 13,
+                        background: "transparent",
+                        color: "var(--alzooka-cream)",
+                        border: `2px solid ${group.color}`,
+                        borderRadius: 20,
+                        opacity: 0.5,
+                      }}
+                    >
+                      {group.name} (0)
+                    </span>
+                    <button
+                      onClick={() => handleDeleteGroup(group.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 14,
+                        cursor: "pointer",
+                        padding: 2,
+                        opacity: 0.5,
+                        lineHeight: 1,
+                      }}
+                      title="Delete group"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: "var(--alzooka-gold)" }}>
+                👆 Click the <strong>"🏷️ Tag"</strong> button on each album below to add it to a group
+              </p>
+            </div>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {groups.map(group => {
@@ -1032,17 +1073,17 @@ export default function StationPage() {
                         <button
                           onClick={() => setEditingAlbumGroups(editingAlbumGroups === album.id ? null : album.id)}
                           style={{
-                            padding: "2px 6px",
-                            fontSize: 10,
-                            background: "transparent",
-                            color: "var(--alzooka-cream)",
-                            border: "1px dashed rgba(240, 235, 224, 0.3)",
-                            borderRadius: 10,
+                            padding: "4px 10px",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            background: editingAlbumGroups === album.id ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                            color: editingAlbumGroups === album.id ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                            border: "1px solid rgba(240, 235, 224, 0.3)",
+                            borderRadius: 6,
                             cursor: "pointer",
-                            opacity: 0.6,
                           }}
                         >
-                          + group
+                          🏷️ Tag
                         </button>
                         
                         {/* Group picker dropdown */}
@@ -1050,20 +1091,22 @@ export default function StationPage() {
                           <div
                             style={{
                               position: "absolute",
-                              top: "100%",
+                              bottom: "100%",
                               left: 0,
-                              marginTop: 4,
-                              background: "var(--alzooka-teal-dark)",
-                              border: "1px solid rgba(240, 235, 224, 0.2)",
-                              borderRadius: 8,
-                              padding: 8,
-                              zIndex: 100,
-                              minWidth: 150,
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                              marginBottom: 8,
+                              background: "#1a2e2e",
+                              border: "2px solid var(--alzooka-gold)",
+                              borderRadius: 10,
+                              padding: 12,
+                              zIndex: 1000,
+                              minWidth: 180,
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <p style={{ margin: "0 0 8px", fontSize: 11, opacity: 0.6 }}>Assign to groups:</p>
+                            <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600 }}>
+                              Add to Groups:
+                            </p>
                             {groups.map(group => {
                               const isInGroup = (albumGroups[album.id] || []).includes(group.id);
                               return (
@@ -1072,39 +1115,50 @@ export default function StationPage() {
                                   style={{
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 8,
-                                    padding: "6px 4px",
+                                    gap: 10,
+                                    padding: "8px 6px",
                                     cursor: "pointer",
-                                    fontSize: 13,
+                                    fontSize: 14,
+                                    borderRadius: 6,
+                                    background: isInGroup ? `${group.color}22` : "transparent",
+                                    marginBottom: 4,
                                   }}
                                 >
                                   <input
                                     type="checkbox"
                                     checked={isInGroup}
                                     onChange={() => handleToggleAlbumGroup(album.id, group.id)}
-                                    style={{ accentColor: group.color }}
+                                    style={{ 
+                                      width: 18, 
+                                      height: 18, 
+                                      accentColor: group.color 
+                                    }}
                                   />
                                   <span style={{ 
-                                    width: 10, 
-                                    height: 10, 
+                                    width: 12, 
+                                    height: 12, 
                                     borderRadius: "50%", 
-                                    background: group.color 
+                                    background: group.color,
+                                    flexShrink: 0,
                                   }} />
-                                  {group.name}
+                                  <span style={{ fontWeight: isInGroup ? 600 : 400 }}>
+                                    {group.name}
+                                  </span>
                                 </label>
                               );
                             })}
                             <button
                               onClick={() => setEditingAlbumGroups(null)}
                               style={{
-                                marginTop: 8,
+                                marginTop: 10,
                                 width: "100%",
-                                padding: "6px",
-                                fontSize: 12,
-                                background: "rgba(240, 235, 224, 0.1)",
-                                color: "var(--alzooka-cream)",
+                                padding: "8px",
+                                fontSize: 13,
+                                fontWeight: 600,
+                                background: "var(--alzooka-gold)",
+                                color: "var(--alzooka-teal-dark)",
                                 border: "none",
-                                borderRadius: 4,
+                                borderRadius: 6,
                                 cursor: "pointer",
                               }}
                             >
