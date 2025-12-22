@@ -49,7 +49,8 @@ export default function StationPage() {
   const [creating, setCreating] = useState(false);
   const [stationName, setStationName] = useState("");
   const [showSpotifySearch, setShowSpotifySearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [selectAll, setSelectAll] = useState(true);
   const [manualSelections, setManualSelections] = useState<Set<string>>(new Set());
   
@@ -252,13 +253,22 @@ export default function StationPage() {
     });
   }
 
-  // Filter albums by search
-  const filteredAlbums = searchQuery.trim()
+  // Filter albums by active search (only when search is applied)
+  const filteredAlbums = activeSearch.trim()
     ? albums.filter(a => 
-        a.spotify_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (a.spotify_artist?.toLowerCase().includes(searchQuery.toLowerCase()))
+        a.spotify_name.toLowerCase().includes(activeSearch.toLowerCase()) ||
+        (a.spotify_artist?.toLowerCase().includes(activeSearch.toLowerCase()))
       )
     : albums;
+
+  function handleSearch() {
+    setActiveSearch(searchInput);
+  }
+
+  function clearSearch() {
+    setSearchInput("");
+    setActiveSearch("");
+  }
 
   const selectedCount = albums.filter(a => a.is_selected).length;
 
@@ -450,14 +460,15 @@ export default function StationPage() {
           </label>
           
           {/* Search */}
-          <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ flex: 1, minWidth: 200, display: "flex", gap: 8 }}>
             <input
               type="text"
-              placeholder="🔍 Search your albums..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search your albums..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               style={{
-                width: "100%",
+                flex: 1,
                 padding: "8px 12px",
                 fontSize: 14,
                 borderRadius: 8,
@@ -466,6 +477,22 @@ export default function StationPage() {
                 color: "var(--alzooka-cream)",
               }}
             />
+            <button
+              onClick={handleSearch}
+              disabled={!searchInput.trim()}
+              style={{
+                padding: "8px 14px",
+                fontSize: 14,
+                fontWeight: 600,
+                background: searchInput.trim() ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                color: searchInput.trim() ? "var(--alzooka-teal-dark)" : "rgba(240, 235, 224, 0.4)",
+                border: "none",
+                borderRadius: 8,
+                cursor: searchInput.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              🔍
+            </button>
           </div>
           
           {/* Add Album Button */}
@@ -489,6 +516,40 @@ export default function StationPage() {
           </button>
         </div>
         
+        {/* Active Search Banner */}
+        {activeSearch && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            marginBottom: 16,
+            background: "rgba(212, 168, 75, 0.15)",
+            border: "1px solid rgba(212, 168, 75, 0.3)",
+            borderRadius: 8,
+          }}>
+            <span style={{ fontSize: 14 }}>
+              Showing results for: <strong>"{activeSearch}"</strong>
+              {filteredAlbums.length > 0 && ` (${filteredAlbums.length} ${filteredAlbums.length === 1 ? 'album' : 'albums'})`}
+            </span>
+            <button
+              onClick={clearSearch}
+              style={{
+                padding: "6px 12px",
+                fontSize: 13,
+                fontWeight: 600,
+                background: "var(--alzooka-gold)",
+                color: "var(--alzooka-teal-dark)",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Show All
+            </button>
+          </div>
+        )}
+
         {/* Albums List */}
         {filteredAlbums.length === 0 ? (
           <div style={{
@@ -505,7 +566,24 @@ export default function StationPage() {
                 </p>
               </>
             ) : (
-              <p style={{ margin: 0 }}>No albums match your search</p>
+              <>
+                <p style={{ margin: 0, marginBottom: 16 }}>No albums match "{activeSearch}"</p>
+                <button
+                  onClick={clearSearch}
+                  style={{
+                    padding: "10px 20px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    background: "var(--alzooka-gold)",
+                    color: "var(--alzooka-teal-dark)",
+                    border: "none",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                  }}
+                >
+                  ← Show All Albums
+                </button>
+              </>
             )}
           </div>
         ) : (
