@@ -45,6 +45,38 @@ type StationGroup = {
   created_at: string;
 };
 
+// Spotify Player types
+declare global {
+  interface Window {
+    Spotify: {
+      Player: new (options: {
+        name: string;
+        getOAuthToken: (cb: (token: string) => void) => void;
+        volume: number;
+      }) => SpotifyPlayer;
+    };
+    onSpotifyWebPlaybackSDKReady: () => void;
+  }
+}
+
+interface SpotifyPlayer {
+  connect: () => Promise<boolean>;
+  disconnect: () => void;
+  addListener: (event: string, callback: (state: unknown) => void) => void;
+  removeListener: (event: string) => void;
+  getCurrentState: () => Promise<unknown>;
+  setName: (name: string) => void;
+  getVolume: () => Promise<number>;
+  setVolume: (volume: number) => Promise<void>;
+  pause: () => Promise<void>;
+  resume: () => Promise<void>;
+  togglePlay: () => Promise<void>;
+  seek: (position_ms: number) => Promise<void>;
+  previousTrack: () => Promise<void>;
+  nextTrack: () => Promise<void>;
+  activateElement: () => Promise<void>;
+}
+
 // Preset colors for groups
 const GROUP_COLORS = [
   "#1DB954", // Spotify green
@@ -86,8 +118,126 @@ export default function StationPage() {
   const [bulkAddGroup, setBulkAddGroup] = useState<string | null>(null); // Group ID for bulk adding albums
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<string | null>(null);
   
+  // Spotify state
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+  const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
+  const [spotifyPlayer, setSpotifyPlayer] = useState<SpotifyPlayer | null>(null);
+  const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string } | null>(null);
+  const [playerReady, setPlayerReady] = useState(false);
+  
   const router = useRouter();
   const supabase = createBrowserClient();
+
+  // Check Spotify connection and load SDK
+  useEffect(() => {
+    async function checkSpotifyConnection() {
+      try {
+        const response = await fetch("/api/spotify/token");
+        if (response.ok) {
+          const data = await response.json();
+          setSpotifyToken(data.access_token);
+          setSpotifyConnected(true);
+        } else {
+          setSpotifyConnected(false);
+        }
+      } catch {
+        setSpotifyConnected(false);
+      }
+    }
+    
+    checkSpotifyConnection();
+  }, []);
+
+  // Initialize Spotify Web Playback SDK
+  useEffect(() => {
+    if (!spotifyToken) return;
+
+    // Load the Spotify SDK script
+    if (!document.getElementById("spotify-sdk")) {
+      const script = document.createElement("script");
+      script.id = "spotify-sdk";
+      script.src = "https://sdk.scdn.co/spotify-player.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new window.Spotify.Player({
+        name: "Alzooka FM",
+        getOAuthToken: (cb) => {
+          // Refresh token if needed
+          fetch("/api/spotify/token")
+            .then(res => res.json())
+            .then(data => cb(data.access_token))
+            .catch(() => cb(spotifyToken));
+        },
+        volume: 0.5,
+      });
+
+      // Error handling
+      player.addListener("initialization_error", (e) => {
+        const error = e as { message: string };
+        console.error("Spotify init error:", error.message);
+      });
+      player.addListener("authentication_error", (e) => {
+        const error = e as { message: string };
+        console.error("Spotify auth error:", error.message);
+        setSpotifyConnected(false);
+      });
+      player.addListener("account_error", (e) => {
+        const error = e as { message: string };
+        console.error("Spotify account error:", error.message);
+        alert("Spotify Premium is required for playback");
+      });
+
+      // Ready
+      player.addListener("ready", (e) => {
+        const data = e as { device_id: string };
+        console.log("Spotify player ready, device ID:", data.device_id);
+        setSpotifyDeviceId(data.device_id);
+        setPlayerReady(true);
+      });
+
+      // Player state changes
+      player.addListener("player_state_changed", (e) => {
+        const state = e as {
+          paused: boolean;
+          track_window: {
+            current_track: {
+              name: string;
+              artists: { name: string }[];
+              album: { images: { url: string }[] };
+            };
+          };
+        } | null;
+        if (!state) return;
+        setIsPlaying(!state.paused);
+        if (state.track_window?.current_track) {
+          setCurrentTrack({
+            name: state.track_window.current_track.name,
+            artist: state.track_window.current_track.artists.map(a => a.name).join(", "),
+            image: state.track_window.current_track.album.images[0]?.url || "",
+          });
+        }
+      });
+
+      player.connect();
+      setSpotifyPlayer(player);
+    };
+
+    // If SDK already loaded, initialize
+    if (window.Spotify) {
+      window.onSpotifyWebPlaybackSDKReady();
+    }
+
+    return () => {
+      if (spotifyPlayer) {
+        spotifyPlayer.disconnect();
+      }
+    };
+  }, [spotifyToken]);
 
   useEffect(() => {
     async function init() {
@@ -503,6 +653,99 @@ export default function StationPage() {
 
   const selectedCount = albums.filter(a => a.is_selected).length;
 
+  // Spotify playback functions
+  async function handleConnectSpotify() {
+    window.location.href = "/api/spotify/auth";
+  }
+
+  async function handleDisconnectSpotify() {
+    try {
+      await fetch("/api/spotify/token", { method: "DELETE" });
+      setSpotifyConnected(false);
+      setSpotifyToken(null);
+      setPlayerReady(false);
+      if (spotifyPlayer) {
+        spotifyPlayer.disconnect();
+        setSpotifyPlayer(null);
+      }
+    } catch (err) {
+      console.error("Failed to disconnect Spotify:", err);
+    }
+  }
+
+  async function handleShufflePlay() {
+    if (!spotifyDeviceId || !spotifyToken) {
+      alert("Please connect Spotify first");
+      return;
+    }
+
+    const selectedAlbums = albums.filter(a => a.is_selected);
+    if (selectedAlbums.length === 0) {
+      alert("No albums selected");
+      return;
+    }
+
+    // Get all album URIs
+    const albumUris = selectedAlbums.map(a => a.spotify_uri);
+    
+    try {
+      // First, transfer playback to our device
+      await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [spotifyDeviceId],
+          play: false,
+        }),
+      });
+
+      // Enable shuffle
+      await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true&device_id=${spotifyDeviceId}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${spotifyToken}` },
+      });
+
+      // For albums, we need to get the tracks and play them
+      // Pick a random album to start
+      const randomAlbum = albumUris[Math.floor(Math.random() * albumUris.length)];
+      
+      // Start playback
+      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          context_uri: randomAlbum,
+        }),
+      });
+
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Playback error:", err);
+      alert("Failed to start playback. Make sure you have Spotify Premium.");
+    }
+  }
+
+  async function handleTogglePlayback() {
+    if (!spotifyPlayer) return;
+    await spotifyPlayer.togglePlay();
+  }
+
+  async function handleNextTrack() {
+    if (!spotifyPlayer) return;
+    await spotifyPlayer.nextTrack();
+  }
+
+  async function handlePreviousTrack() {
+    if (!spotifyPlayer) return;
+    await spotifyPlayer.previousTrack();
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -627,37 +870,154 @@ export default function StationPage() {
             </div>
           </div>
           
-          {/* Player Controls Placeholder */}
+          {/* Player Controls */}
           <div style={{
             background: "rgba(0, 0, 0, 0.3)",
             borderRadius: 12,
             padding: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 16,
           }}>
-            <button
-              disabled={selectedCount === 0}
-              style={{
-                padding: "12px 24px",
-                fontSize: 14,
-                fontWeight: 600,
-                background: selectedCount > 0 ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 24,
-                cursor: selectedCount > 0 ? "pointer" : "not-allowed",
+            {/* Now Playing */}
+            {currentTrack && isPlaying && (
+              <div style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-              }}
-            >
-              ▶ Shuffle Play ({selectedCount} albums)
-            </button>
-            <p style={{ margin: 0, fontSize: 12, opacity: 0.5 }}>
-              Connect Spotify to enable playback
-            </p>
+                gap: 12,
+                marginBottom: 16,
+                padding: 12,
+                background: "rgba(30, 215, 96, 0.1)",
+                borderRadius: 8,
+              }}>
+                {currentTrack.image && (
+                  <img
+                    src={currentTrack.image}
+                    alt=""
+                    style={{ width: 48, height: 48, borderRadius: 6 }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{currentTrack.name}</p>
+                  <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>{currentTrack.artist}</p>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={handlePreviousTrack}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: 18,
+                      cursor: "pointer",
+                      padding: 8,
+                    }}
+                  >
+                    ⏮
+                  </button>
+                  <button
+                    onClick={handleTogglePlayback}
+                    style={{
+                      background: "#1DB954",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: 16,
+                      cursor: "pointer",
+                      padding: "8px 12px",
+                      borderRadius: 20,
+                    }}
+                  >
+                    {isPlaying ? "⏸" : "▶"}
+                  </button>
+                  <button
+                    onClick={handleNextTrack}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: 18,
+                      cursor: "pointer",
+                      padding: 8,
+                    }}
+                  >
+                    ⏭
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Main Controls */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              flexWrap: "wrap",
+            }}>
+              {spotifyConnected && playerReady ? (
+                <>
+                  <button
+                    onClick={handleShufflePlay}
+                    disabled={selectedCount === 0}
+                    style={{
+                      padding: "12px 24px",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      background: selectedCount > 0 ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 24,
+                      cursor: selectedCount > 0 ? "pointer" : "not-allowed",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    🔀 Shuffle Play ({selectedCount} albums)
+                  </button>
+                  <button
+                    onClick={handleDisconnectSpotify}
+                    style={{
+                      padding: "8px 16px",
+                      fontSize: 12,
+                      background: "transparent",
+                      color: "var(--alzooka-cream)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      borderRadius: 20,
+                      cursor: "pointer",
+                      opacity: 0.7,
+                    }}
+                  >
+                    Disconnect Spotify
+                  </button>
+                </>
+              ) : spotifyConnected ? (
+                <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
+                  ⏳ Initializing Spotify player...
+                </p>
+              ) : (
+                <>
+                  <button
+                    onClick={handleConnectSpotify}
+                    style={{
+                      padding: "12px 24px",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      background: "#1DB954",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 24,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    🎵 Connect Spotify
+                  </button>
+                  <p style={{ margin: 0, fontSize: 12, opacity: 0.5 }}>
+                    Premium required for playback
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         </div>
         
