@@ -1001,25 +1001,31 @@ export default function StationPage() {
                 </p>
               ) : (
                 <>
-                  <a
-                    href={user ? `/api/spotify/auth?userId=${user.id}` : "#"}
-                    style={{
-                      padding: "12px 24px",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      background: "#1DB954",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 24,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      textDecoration: "none",
-                    }}
-                  >
-                    🎵 Connect Spotify
-                  </a>
+                  {user ? (
+                    <a
+                      href={`/api/spotify/auth?userId=${user.id}`}
+                      style={{
+                        padding: "12px 24px",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        background: "#1DB954",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 24,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        textDecoration: "none",
+                      }}
+                    >
+                      🎵 Connect Spotify
+                    </a>
+                  ) : (
+                    <span style={{ color: "#e57373", fontSize: 14 }}>
+                      Loading user... (refresh if stuck)
+                    </span>
+                  )}
                   <p style={{ margin: 0, fontSize: 12, opacity: 0.5 }}>
                     Premium required for playback
                   </p>
