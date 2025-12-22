@@ -655,8 +655,14 @@ export default function StationPage() {
 
   // Spotify playback functions
   async function handleConnectSpotify() {
-    if (!user) return;
-    window.location.href = `/api/spotify/auth?userId=${user.id}`;
+    if (!user) {
+      alert("Not logged in - please refresh the page");
+      return;
+    }
+    // Redirect to Spotify auth
+    const authUrl = `/api/spotify/auth?userId=${user.id}`;
+    console.log("Redirecting to:", authUrl);
+    window.location.href = authUrl;
   }
 
   async function handleDisconnectSpotify() {
