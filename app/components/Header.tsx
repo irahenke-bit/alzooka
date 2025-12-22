@@ -139,6 +139,33 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           </Link>
         </InstantTooltip>
 
+        {/* My Station (Alzooka FM) */}
+        {user && (
+          <InstantTooltip text="My Station">
+            <Link
+              href="/station"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                transition: "all 0.2s",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <span style={{ fontSize: 20 }}>📻</span>
+            </Link>
+          </InstantTooltip>
+        )}
+
         {/* Friends */}
         {user && userUsername && (
           <InstantTooltip text="Friends">
