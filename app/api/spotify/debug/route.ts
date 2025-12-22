@@ -60,6 +60,25 @@ export async function GET() {
     .eq("id", knownUserId)
     .single();
 
+  // Test if we can update this user's spotify fields
+  const { error: testUpdateError } = await testSupabase
+    .from("users")
+    .update({ spotify_user_id: "test_update_works" })
+    .eq("id", knownUserId);
+
+  // Read back to see if update worked
+  const { data: afterUpdate } = await testSupabase
+    .from("users")
+    .select("spotify_user_id")
+    .eq("id", knownUserId)
+    .single();
+
+  // Clean up the test
+  await testSupabase
+    .from("users")
+    .update({ spotify_user_id: null })
+    .eq("id", knownUserId);
+
   return NextResponse.json({
     cookieNames,
     authCookies,
@@ -72,6 +91,11 @@ export async function GET() {
       hasRefreshToken: !!knownUser?.spotify_refresh_token,
       spotifyUserId: knownUser?.spotify_user_id,
       error: knownUserError?.message,
+    },
+    testUpdate: {
+      error: testUpdateError?.message || null,
+      valueAfterUpdate: afterUpdate?.spotify_user_id,
+      updateWorked: afterUpdate?.spotify_user_id === "test_update_works",
     }
   });
 }
