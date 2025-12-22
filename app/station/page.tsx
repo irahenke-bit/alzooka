@@ -281,6 +281,7 @@ export default function StationPage() {
         .eq("station_id", station?.id);
       
       setAlbums(prev => prev.map(a => ({ ...a, is_selected: true })));
+      setActiveGroups(new Set()); // Clear group selection
     } else {
       // Revert to manual selections
       const albumIds = albums.map(a => a.id);
@@ -298,6 +299,20 @@ export default function StationPage() {
         is_selected: manualSelections.has(a.id)
       })));
     }
+  }
+
+  async function handleUnselectAll() {
+    setSelectAll(false);
+    setActiveGroups(new Set()); // Clear group selection
+    
+    // Unselect all albums
+    await supabase
+      .from("station_albums")
+      .update({ is_selected: false })
+      .eq("station_id", station?.id);
+    
+    setAlbums(prev => prev.map(a => ({ ...a, is_selected: false })));
+    setManualSelections(new Set());
   }
 
   async function handleRemoveAlbum(albumId: string) {
@@ -654,26 +669,41 @@ export default function StationPage() {
           marginBottom: 16,
           flexWrap: "wrap",
         }}>
-          {/* Select All Checkbox */}
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: 8, 
-            cursor: "pointer",
-            fontSize: 14,
-            padding: "8px 12px",
-            background: "rgba(240, 235, 224, 0.05)",
-            borderRadius: 8,
-          }}>
-            <input
-              type="checkbox"
-              checked={selectAll}
-              onChange={(e) => handleSelectAll(e.target.checked)}
-              disabled={albums.length === 0}
-              style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
-            />
-            Select All Albums
-          </label>
+          {/* Select All / Unselect All Buttons */}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => handleSelectAll(true)}
+              disabled={albums.length === 0 || selectAll}
+              style={{
+                padding: "8px 12px",
+                fontSize: 14,
+                background: selectAll ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.05)",
+                color: "var(--alzooka-cream)",
+                border: selectAll ? "1px solid rgba(30, 215, 96, 0.5)" : "1px solid rgba(240, 235, 224, 0.2)",
+                borderRadius: 8,
+                cursor: albums.length === 0 || selectAll ? "not-allowed" : "pointer",
+                opacity: albums.length === 0 ? 0.5 : 1,
+              }}
+            >
+              ✓ Select All
+            </button>
+            <button
+              onClick={() => handleUnselectAll()}
+              disabled={albums.length === 0 || selectedCount === 0}
+              style={{
+                padding: "8px 12px",
+                fontSize: 14,
+                background: selectedCount === 0 ? "rgba(240, 235, 224, 0.1)" : "rgba(240, 235, 224, 0.05)",
+                color: "var(--alzooka-cream)",
+                border: selectedCount === 0 ? "1px solid rgba(240, 235, 224, 0.3)" : "1px solid rgba(240, 235, 224, 0.2)",
+                borderRadius: 8,
+                cursor: albums.length === 0 || selectedCount === 0 ? "not-allowed" : "pointer",
+                opacity: albums.length === 0 ? 0.5 : 1,
+              }}
+            >
+              ✗ Unselect All
+            </button>
+          </div>
           
           {/* Search */}
           <div style={{ flex: 1, minWidth: 200, display: "flex", gap: 8 }}>
