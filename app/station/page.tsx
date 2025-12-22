@@ -1003,11 +1003,8 @@ export default function StationPage() {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   {user ? (
                     <>
-                      <button
-                        onClick={() => {
-                          const url = `/api/spotify/auth?userId=${user.id}`;
-                          window.location.assign(url);
-                        }}
+                      <a
+                        href={`/api/spotify/auth?userId=${user.id}`}
                         style={{
                           padding: "12px 24px",
                           fontSize: 14,
@@ -1020,10 +1017,11 @@ export default function StationPage() {
                           display: "inline-flex",
                           alignItems: "center",
                           gap: 8,
+                          textDecoration: "none",
                         }}
                       >
                         🎵 Connect Spotify
-                      </button>
+                      </a>
                     </>
                   ) : (
                     <span style={{ color: "#e57373", fontSize: 14 }}>
