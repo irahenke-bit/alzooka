@@ -704,12 +704,16 @@ export default function StationPage() {
   }
 
   async function handleShufflePlay() {
+    console.log("Shuffle play clicked", { spotifyDeviceId, spotifyToken: spotifyToken ? "present" : "missing" });
+    
     if (!spotifyDeviceId || !spotifyToken) {
       alert("Please connect Spotify first");
       return;
     }
 
     const selectedAlbums = albums.filter(a => a.is_selected);
+    console.log("Selected albums:", selectedAlbums.length, selectedAlbums.map(a => a.spotify_name));
+    
     if (selectedAlbums.length === 0) {
       alert("No albums selected");
       return;
@@ -717,10 +721,12 @@ export default function StationPage() {
 
     // Get all album URIs
     const albumUris = selectedAlbums.map(a => a.spotify_uri);
+    console.log("Album URIs:", albumUris);
     
     try {
       // First, transfer playback to our device
-      await fetch("https://api.spotify.com/v1/me/player", {
+      console.log("Transferring playback to device:", spotifyDeviceId);
+      const transferRes = await fetch("https://api.spotify.com/v1/me/player", {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${spotifyToken}`,
@@ -731,19 +737,27 @@ export default function StationPage() {
           play: false,
         }),
       });
+      console.log("Transfer response:", transferRes.status);
+      if (!transferRes.ok && transferRes.status !== 204) {
+        const err = await transferRes.text();
+        console.error("Transfer failed:", err);
+      }
 
       // Enable shuffle
-      await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true&device_id=${spotifyDeviceId}`, {
+      console.log("Enabling shuffle");
+      const shuffleRes = await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true&device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${spotifyToken}` },
       });
+      console.log("Shuffle response:", shuffleRes.status);
 
       // For albums, we need to get the tracks and play them
       // Pick a random album to start
       const randomAlbum = albumUris[Math.floor(Math.random() * albumUris.length)];
+      console.log("Playing random album:", randomAlbum);
       
       // Start playback
-      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+      const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${spotifyToken}`,
@@ -753,6 +767,14 @@ export default function StationPage() {
           context_uri: randomAlbum,
         }),
       });
+      console.log("Play response:", playRes.status);
+      
+      if (!playRes.ok) {
+        const errText = await playRes.text();
+        console.error("Play failed:", errText);
+        alert(`Playback failed: ${errText}`);
+        return;
+      }
 
       setIsPlaying(true);
     } catch (err) {
