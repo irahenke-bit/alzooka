@@ -640,6 +640,9 @@ export default function StationPage() {
         <SpotifySearchModal
           onClose={() => setShowSpotifySearch(false)}
           onSelect={(result) => handleAddAlbum(result)}
+          onDirectPost={async (result) => {
+            await handleAddAlbum(result);
+          }}
         />
       )}
     </div>
