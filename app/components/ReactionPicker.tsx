@@ -32,6 +32,7 @@ type Reaction = {
 type Props = {
   postId: string;
   userId: string | null;
+  postOwnerId: string;
   supabase: SupabaseClient;
   reactions: Reaction[];
   onReactionsChange: (reactions: Reaction[]) => void;
@@ -39,11 +40,14 @@ type Props = {
 
 const MAX_REACTIONS_PER_USER = 3;
 
-export function ReactionPicker({ postId, userId, supabase, reactions, onReactionsChange }: Props) {
+export function ReactionPicker({ postId, userId, postOwnerId, supabase, reactions, onReactionsChange }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [showWhoReacted, setShowWhoReacted] = useState<ReactionType | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const whoReactedRef = useRef<HTMLDivElement>(null);
+
+  // Check if user is the post owner (can't react to own posts)
+  const isOwnPost = userId === postOwnerId;
 
   // Get user's current reactions for this post
   const userReactions = reactions.filter(r => r.user_id === userId);
@@ -134,87 +138,89 @@ export function ReactionPicker({ postId, userId, supabase, reactions, onReaction
 
   return (
     <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
-      {/* React Button */}
-      <div ref={pickerRef} style={{ position: "relative" }}>
-        <button
-          onClick={() => userId && setIsOpen(!isOpen)}
-          disabled={!userId}
-          style={{
-            background: "transparent",
-            color: "var(--alzooka-cream)",
-            padding: "4px 0",
-            fontSize: 14,
-            border: "none",
-            opacity: userId ? 0.7 : 0.4,
-            cursor: userId ? "pointer" : "not-allowed",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-          onMouseEnter={(e) => userId && (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={(e) => userId && (e.currentTarget.style.opacity = "0.7")}
-        >
-          React
-        </button>
-
-        {/* Emoji Picker Popup */}
-        {isOpen && (
-          <div
+      {/* React Button - hidden for own posts */}
+      {!isOwnPost && (
+        <div ref={pickerRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => userId && setIsOpen(!isOpen)}
+            disabled={!userId}
             style={{
-              position: "absolute",
-              bottom: "100%",
-              left: 0,
-              marginBottom: 8,
-              background: "var(--alzooka-teal-light)",
-              border: "1px solid rgba(240, 235, 224, 0.2)",
-              borderRadius: 24,
-              padding: "8px 12px",
+              background: "transparent",
+              color: "var(--alzooka-cream)",
+              padding: "4px 0",
+              fontSize: 14,
+              border: "none",
+              opacity: userId ? 0.7 : 0.4,
+              cursor: userId ? "pointer" : "not-allowed",
               display: "flex",
-              gap: 4,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-              zIndex: 100,
+              alignItems: "center",
+              gap: 6,
             }}
+            onMouseEnter={(e) => userId && (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={(e) => userId && (e.currentTarget.style.opacity = "0.7")}
           >
-            {(Object.entries(REACTION_TYPES) as [ReactionType, string][]).map(([type, emoji]) => {
-              const isSelected = userReactionTypes.has(type);
-              const isDisabled = !isSelected && userReactions.length >= MAX_REACTIONS_PER_USER;
-              
-              return (
-                <button
-                  key={type}
-                  onClick={() => !isDisabled && toggleReaction(type)}
-                  disabled={isDisabled}
-                  style={{
-                    background: isSelected ? "rgba(212, 168, 75, 0.3)" : "transparent",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: 40,
-                    height: 40,
-                    fontSize: 24,
-                    cursor: isDisabled ? "not-allowed" : "pointer",
-                    opacity: isDisabled ? 0.4 : 1,
-                    transition: "transform 0.15s, background 0.15s",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isDisabled) {
-                      e.currentTarget.style.transform = "scale(1.2)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)";
-                  }}
-                  title={isDisabled ? "Max 3 reactions per post" : type}
-                >
-                  {emoji}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+            React
+          </button>
+
+          {/* Emoji Picker Popup */}
+          {isOpen && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: 0,
+                marginBottom: 8,
+                background: "var(--alzooka-teal-light)",
+                border: "1px solid rgba(240, 235, 224, 0.2)",
+                borderRadius: 24,
+                padding: "8px 12px",
+                display: "flex",
+                gap: 4,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                zIndex: 100,
+              }}
+            >
+              {(Object.entries(REACTION_TYPES) as [ReactionType, string][]).map(([type, emoji]) => {
+                const isSelected = userReactionTypes.has(type);
+                const isDisabled = !isSelected && userReactions.length >= MAX_REACTIONS_PER_USER;
+                
+                return (
+                  <button
+                    key={type}
+                    onClick={() => !isDisabled && toggleReaction(type)}
+                    disabled={isDisabled}
+                    style={{
+                      background: isSelected ? "rgba(212, 168, 75, 0.3)" : "transparent",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 40,
+                      height: 40,
+                      fontSize: 24,
+                      cursor: isDisabled ? "not-allowed" : "pointer",
+                      opacity: isDisabled ? 0.4 : 1,
+                      transition: "transform 0.15s, background 0.15s",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isDisabled) {
+                        e.currentTarget.style.transform = "scale(1.2)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                    title={isDisabled ? "Max 3 reactions per post" : type}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Reaction Counts Display */}
       {totalReactions > 0 && (
