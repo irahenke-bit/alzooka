@@ -747,20 +747,39 @@ export default function StationPage() {
         console.error("Transfer failed:", err);
       }
 
-      // Enable shuffle
-      console.log("Enabling shuffle");
-      const shuffleRes = await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true&device_id=${spotifyDeviceId}`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${spotifyToken}` },
-      });
-      console.log("Shuffle response:", shuffleRes.status);
-
-      // For albums, we need to get the tracks and play them
-      // Pick a random album to start
-      const randomAlbum = albumUris[Math.floor(Math.random() * albumUris.length)];
-      console.log("Playing random album:", randomAlbum);
+      // Fetch tracks from all selected albums
+      console.log("Fetching tracks from albums...");
+      const allTrackUris: string[] = [];
       
-      // Start playback
+      for (const albumUri of albumUris) {
+        // Extract album ID from URI (spotify:album:XXXXX)
+        const albumId = albumUri.split(":")[2];
+        try {
+          const tracksRes = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
+            headers: { "Authorization": `Bearer ${spotifyToken}` },
+          });
+          if (tracksRes.ok) {
+            const tracksData = await tracksRes.json();
+            const trackUris = tracksData.items.map((t: { uri: string }) => t.uri);
+            allTrackUris.push(...trackUris);
+          }
+        } catch (e) {
+          console.error("Failed to fetch tracks for album:", albumId, e);
+        }
+      }
+      
+      console.log("Total tracks collected:", allTrackUris.length);
+      
+      if (allTrackUris.length === 0) {
+        alert("No tracks found in selected albums");
+        return;
+      }
+      
+      // Shuffle the tracks
+      const shuffledTracks = [...allTrackUris].sort(() => Math.random() - 0.5);
+      console.log("Shuffled tracks, starting playback with", shuffledTracks.length, "tracks");
+      
+      // Start playback with shuffled tracks
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
@@ -768,7 +787,7 @@ export default function StationPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          context_uri: randomAlbum,
+          uris: shuffledTracks.slice(0, 100), // Spotify limits to 100 tracks per request
         }),
       });
       console.log("Play response:", playRes.status);
@@ -937,7 +956,7 @@ export default function StationPage() {
             padding: 16,
           }}>
             {/* Now Playing */}
-            {currentTrack && isPlaying && (
+            {currentTrack && (
               <div style={{
                 display: "flex",
                 alignItems: "center",
