@@ -45,6 +45,22 @@ type StationGroup = {
   created_at: string;
 };
 
+type StationPlaylist = {
+  id: string;
+  station_id: string;
+  name: string;
+  cover_image_url: string | null;
+  created_at: string;
+};
+
+type SpotifyTrack = {
+  uri: string;
+  name: string;
+  artist: string;
+  image: string;
+  duration_ms: number;
+};
+
 // Spotify Player types
 declare global {
   interface Window {
@@ -117,6 +133,17 @@ export default function StationPage() {
   const [editingAlbumGroups, setEditingAlbumGroups] = useState<string | null>(null);
   const [bulkAddGroup, setBulkAddGroup] = useState<string | null>(null); // Group ID for bulk adding albums
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<string | null>(null);
+  
+  // Album expansion and tracks state
+  const [expandedAlbums, setExpandedAlbums] = useState<Set<string>>(new Set());
+  const [albumTracks, setAlbumTracks] = useState<Record<string, SpotifyTrack[]>>({});
+  const [loadingTracks, setLoadingTracks] = useState<Set<string>>(new Set());
+  
+  // Playlist state
+  const [playlists, setPlaylists] = useState<StationPlaylist[]>([]);
+  const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
+  const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
   
   // Spotify state
   const [spotifyConnected, setSpotifyConnected] = useState(false);
@@ -350,6 +377,17 @@ export default function StationPage() {
         if (groupsData) {
           setGroups(groupsData);
         }
+        
+        // Load playlists
+        const { data: playlistsData } = await supabase
+          .from("station_playlists")
+          .select("*")
+          .eq("station_id", stationData.id)
+          .order("created_at", { ascending: false });
+        
+        if (playlistsData) {
+          setPlaylists(playlistsData);
+        }
       } else {
         setShowSetup(true);
       }
@@ -383,6 +421,125 @@ export default function StationPage() {
     setStation(data);
     setShowSetup(false);
     setCreating(false);
+  }
+
+  // Toggle album expansion and load tracks
+  async function handleToggleAlbumExpand(album: StationAlbum) {
+    const albumId = album.id;
+    
+    if (expandedAlbums.has(albumId)) {
+      // Collapse
+      setExpandedAlbums(prev => {
+        const next = new Set(prev);
+        next.delete(albumId);
+        return next;
+      });
+    } else {
+      // Expand and load tracks if not already loaded
+      setExpandedAlbums(prev => new Set([...prev, albumId]));
+      
+      if (!albumTracks[albumId] && spotifyToken) {
+        setLoadingTracks(prev => new Set([...prev, albumId]));
+        
+        try {
+          // Extract album ID from URI (spotify:album:XXXXX)
+          const spotifyAlbumId = album.spotify_uri.split(":")[2];
+          const res = await fetch(`https://api.spotify.com/v1/albums/${spotifyAlbumId}/tracks?limit=50`, {
+            headers: { "Authorization": `Bearer ${spotifyToken}` },
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            const tracks: SpotifyTrack[] = data.items.map((t: {
+              uri: string;
+              name: string;
+              artists: { name: string }[];
+              duration_ms: number;
+            }) => ({
+              uri: t.uri,
+              name: t.name,
+              artist: t.artists.map(a => a.name).join(", "),
+              image: album.spotify_image_url || "",
+              duration_ms: t.duration_ms,
+            }));
+            
+            setAlbumTracks(prev => ({ ...prev, [albumId]: tracks }));
+          }
+        } catch (err) {
+          console.error("Failed to load tracks:", err);
+        }
+        
+        setLoadingTracks(prev => {
+          const next = new Set(prev);
+          next.delete(albumId);
+          return next;
+        });
+      }
+    }
+  }
+
+  // Toggle track selection for playlist
+  function handleToggleTrackSelect(track: SpotifyTrack) {
+    setSelectedTracks(prev => {
+      const exists = prev.some(t => t.uri === track.uri);
+      if (exists) {
+        return prev.filter(t => t.uri !== track.uri);
+      } else {
+        return [...prev, track];
+      }
+    });
+  }
+
+  // Create new playlist from selected tracks
+  async function handleCreatePlaylist() {
+    if (!station || !user || selectedTracks.length === 0 || !newPlaylistName.trim()) return;
+    
+    const coverImage = selectedTracks[0]?.image || null;
+    
+    const { data: playlist, error } = await supabase
+      .from("station_playlists")
+      .insert({
+        station_id: station.id,
+        name: newPlaylistName.trim(),
+        cover_image_url: coverImage,
+      })
+      .select()
+      .single();
+    
+    if (error || !playlist) {
+      console.error("Failed to create playlist:", error);
+      return;
+    }
+    
+    // Add tracks to playlist
+    const trackInserts = selectedTracks.map((track, idx) => ({
+      playlist_id: playlist.id,
+      spotify_uri: track.uri,
+      spotify_name: track.name,
+      spotify_artist: track.artist,
+      spotify_image_url: track.image,
+      track_order: idx,
+    }));
+    
+    await supabase.from("station_playlist_tracks").insert(trackInserts);
+    
+    setPlaylists(prev => [playlist, ...prev]);
+    setSelectedTracks([]);
+    setNewPlaylistName("");
+    setShowCreatePlaylist(false);
+  }
+
+  // Load playlists
+  async function loadPlaylists() {
+    if (!station) return;
+    
+    const { data } = await supabase
+      .from("station_playlists")
+      .select("*")
+      .eq("station_id", station.id)
+      .order("created_at", { ascending: false });
+    
+    if (data) setPlaylists(data);
   }
 
   async function handleAddAlbum(result: SpotifyResult) {
@@ -1594,6 +1751,161 @@ export default function StationPage() {
           </div>
         )}
 
+        {/* Selected Tracks Bar */}
+        {selectedTracks.length > 0 && (
+          <div style={{
+            padding: 16,
+            background: "rgba(30, 215, 96, 0.15)",
+            borderRadius: 12,
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>
+                ✓ {selectedTracks.length} track{selectedTracks.length !== 1 ? "s" : ""} selected
+              </span>
+              <button
+                onClick={() => setSelectedTracks([])}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                Clear
+              </button>
+            </div>
+            
+            {showCreatePlaylist ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="text"
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  placeholder="Playlist name..."
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    background: "rgba(0, 0, 0, 0.3)",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    borderRadius: 6,
+                    color: "var(--alzooka-cream)",
+                    width: 180,
+                  }}
+                  autoFocus
+                />
+                <button
+                  onClick={handleCreatePlaylist}
+                  disabled={!newPlaylistName.trim()}
+                  style={{
+                    padding: "8px 14px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: newPlaylistName.trim() ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: newPlaylistName.trim() ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Create
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCreatePlaylist(false);
+                    setNewPlaylistName("");
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--alzooka-cream)",
+                    fontSize: 18,
+                    cursor: "pointer",
+                    opacity: 0.7,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowCreatePlaylist(true)}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  background: "#1DB954",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                📝 Create Playlist
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Playlists Section */}
+        {playlists.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600 }}>
+              📋 My Playlists
+            </h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              {playlists.map(playlist => (
+                <div
+                  key={playlist.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: 12,
+                    background: "rgba(240, 235, 224, 0.05)",
+                    borderRadius: 10,
+                    border: "1px solid rgba(240, 235, 224, 0.1)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {playlist.cover_image_url ? (
+                    <img
+                      src={playlist.cover_image_url}
+                      alt=""
+                      style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 6,
+                      background: "rgba(30, 215, 96, 0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 18,
+                    }}>
+                      🎵
+                    </div>
+                  )}
+                  <span style={{ fontSize: 14, fontWeight: 500 }}>{playlist.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Albums List */}
         {filteredAlbums.length === 0 ? (
           <div style={{
@@ -1637,8 +1949,8 @@ export default function StationPage() {
               const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
               
               return (
+              <div key={album.id} style={{ marginBottom: 8 }}>
               <div
-                key={album.id}
                 onClick={bulkAddGroup ? () => toggleAlbumInBulkGroup(album.id) : undefined}
                 style={{
                   display: "flex",
@@ -1867,11 +2179,32 @@ export default function StationPage() {
                   </div>
                 </div>
                 
+                {/* Expand/Collapse Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleAlbumExpand(album);
+                  }}
+                  style={{
+                    background: expandedAlbums.has(album.id) ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                    color: expandedAlbums.has(album.id) ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                    border: "none",
+                    fontSize: 12,
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  {expandedAlbums.has(album.id) ? "▲ Hide" : "▼ Tracks"}
+                </button>
+                
                 {/* Spotify Link */}
                 <a
                   href={album.spotify_url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   style={{
                     color: "#1DB954",
                     fontSize: 12,
@@ -1886,7 +2219,10 @@ export default function StationPage() {
                 
                 {/* Remove Button */}
                 <button
-                  onClick={() => handleRemoveAlbum(album.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveAlbum(album.id);
+                  }}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -1900,6 +2236,78 @@ export default function StationPage() {
                 >
                   ×
                 </button>
+              </div>
+              
+              {/* Expanded Tracks */}
+              {expandedAlbums.has(album.id) && (
+                <div style={{
+                  marginTop: 1,
+                  marginLeft: 32,
+                  padding: 12,
+                  background: "rgba(0, 0, 0, 0.2)",
+                  borderRadius: "0 0 12px 12px",
+                  borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+                }}>
+                  {loadingTracks.has(album.id) ? (
+                    <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>Loading tracks...</p>
+                  ) : albumTracks[album.id] ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {albumTracks[album.id].map((track, idx) => {
+                        const isSelected = selectedTracks.some(t => t.uri === track.uri);
+                        return (
+                          <div
+                            key={track.uri}
+                            onClick={() => handleToggleTrackSelect(track)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              padding: "8px 10px",
+                              background: isSelected ? "rgba(30, 215, 96, 0.15)" : "transparent",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                              transition: "background 0.15s",
+                            }}
+                          >
+                            <span style={{ 
+                              width: 20, 
+                              height: 20, 
+                              borderRadius: 4,
+                              border: isSelected ? "none" : "2px solid rgba(240, 235, 224, 0.3)",
+                              background: isSelected ? "#1DB954" : "transparent",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 12,
+                              color: "#fff",
+                              flexShrink: 0,
+                            }}>
+                              {isSelected ? "✓" : ""}
+                            </span>
+                            <span style={{ fontSize: 12, opacity: 0.5, width: 24, textAlign: "right" }}>
+                              {idx + 1}
+                            </span>
+                            <span style={{ 
+                              flex: 1, 
+                              fontSize: 13,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}>
+                              {track.name}
+                            </span>
+                            <span style={{ fontSize: 11, opacity: 0.5 }}>
+                              {Math.floor(track.duration_ms / 60000)}:{String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, "0")}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>Connect Spotify to view tracks</p>
+                  )}
+                </div>
+              )}
               </div>
               );
             })}
