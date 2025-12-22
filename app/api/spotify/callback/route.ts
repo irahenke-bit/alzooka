@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
 
   const cookieStore = await cookies();
   const storedState = cookieStore.get("spotify_auth_state")?.value;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  
+  // Get origin from request
+  const siteUrl = request.nextUrl.origin;
   const supabase = createServerClient();
 
   // Handle errors or user denial

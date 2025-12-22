@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { NextRequest, NextResponse } from "next/server";
 
 // Spotify OAuth scopes needed for playback
 const SCOPES = [
@@ -10,17 +9,12 @@ const SCOPES = [
   "user-modify-playback-state",   // Control playback
 ].join(" ");
 
-export async function GET() {
-  const supabase = createServerClient();
+export async function GET(request: NextRequest) {
+  // Get the origin from the request to build proper redirect URLs
+  const origin = request.headers.get("origin") || request.nextUrl.origin;
   
-  // Check if user is logged in
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"));
-  }
-
   const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${process.env.NEXT_PUBLIC_SITE_URL}/api/spotify/callback`;
+  const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${origin}/api/spotify/callback`;
 
   if (!clientId) {
     return NextResponse.json({ error: "Spotify client ID not configured" }, { status: 500 });
