@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,15 @@ export async function GET(request: NextRequest) {
   const host = request.headers.get("host") || "alzooka.com";
   const protocol = host.includes("localhost") ? "http" : "https";
   const siteUrl = `${protocol}://${host}`;
-  const supabase = createServerClient();
+  
+  // Use admin client to bypass RLS for updating user's Spotify tokens
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (e) {
+    console.error("Admin client error:", e);
+    return NextResponse.redirect(new URL("/station?error=admin_client_failed", siteUrl));
+  }
 
   // Handle errors or user denial
   if (error) {
