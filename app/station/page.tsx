@@ -144,6 +144,8 @@ export default function StationPage() {
   const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
+  const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   
   // Spotify state
   const [spotifyConnected, setSpotifyConnected] = useState(false);
@@ -540,6 +542,93 @@ export default function StationPage() {
       .order("created_at", { ascending: false });
     
     if (data) setPlaylists(data);
+  }
+
+  // Load tracks for a playlist
+  async function handleViewPlaylist(playlistId: string) {
+    if (viewingPlaylist === playlistId) {
+      setViewingPlaylist(null);
+      return;
+    }
+    
+    setViewingPlaylist(playlistId);
+    
+    if (!playlistTracks[playlistId]) {
+      const { data } = await supabase
+        .from("station_playlist_tracks")
+        .select("*")
+        .eq("playlist_id", playlistId)
+        .order("track_order", { ascending: true });
+      
+      if (data) {
+        const tracks: SpotifyTrack[] = data.map(t => ({
+          uri: t.spotify_uri,
+          name: t.spotify_name,
+          artist: t.spotify_artist || "",
+          image: t.spotify_image_url || "",
+          duration_ms: 0,
+        }));
+        setPlaylistTracks(prev => ({ ...prev, [playlistId]: tracks }));
+      }
+    }
+  }
+
+  // Delete a playlist
+  async function handleDeletePlaylist(playlistId: string) {
+    if (!confirm("Delete this playlist?")) return;
+    
+    await supabase.from("station_playlists").delete().eq("id", playlistId);
+    setPlaylists(prev => prev.filter(p => p.id !== playlistId));
+    if (viewingPlaylist === playlistId) setViewingPlaylist(null);
+  }
+
+  // Play a playlist
+  async function handlePlayPlaylist(playlistId: string) {
+    if (!spotifyToken || !spotifyDeviceId || !spotifyPlayer) {
+      alert("Please connect Spotify first");
+      return;
+    }
+    
+    const tracks = playlistTracks[playlistId];
+    if (!tracks || tracks.length === 0) {
+      alert("No tracks in this playlist");
+      return;
+    }
+    
+    try {
+      await spotifyPlayer.activateElement();
+      
+      await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [spotifyDeviceId],
+          play: false,
+        }),
+      });
+      
+      const trackUris = tracks.map(t => t.uri);
+      
+      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: trackUris,
+        }),
+      });
+      
+      await spotifyPlayer.resume();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Playlist playback error:", err);
+      alert("Failed to play playlist");
+    }
   }
 
   async function handleAddAlbum(result: SpotifyResult) {
@@ -1864,42 +1953,151 @@ export default function StationPage() {
             <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600 }}>
               📋 My Playlists
             </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {playlists.map(playlist => (
-                <div
-                  key={playlist.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: 12,
-                    background: "rgba(240, 235, 224, 0.05)",
-                    borderRadius: 10,
-                    border: "1px solid rgba(240, 235, 224, 0.1)",
-                    cursor: "pointer",
-                  }}
-                >
-                  {playlist.cover_image_url ? (
-                    <img
-                      src={playlist.cover_image_url}
-                      alt=""
-                      style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 6,
-                      background: "rgba(30, 215, 96, 0.2)",
+                <div key={playlist.id}>
+                  <div
+                    onClick={() => handleViewPlaylist(playlist.id)}
+                    style={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 18,
+                      gap: 12,
+                      padding: 12,
+                      background: viewingPlaylist === playlist.id 
+                        ? "rgba(30, 215, 96, 0.15)" 
+                        : "rgba(240, 235, 224, 0.05)",
+                      borderRadius: viewingPlaylist === playlist.id ? "10px 10px 0 0" : 10,
+                      border: viewingPlaylist === playlist.id
+                        ? "1px solid rgba(30, 215, 96, 0.3)"
+                        : "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: viewingPlaylist === playlist.id ? "none" : undefined,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {playlist.cover_image_url ? (
+                      <img
+                        src={playlist.cover_image_url}
+                        alt=""
+                        style={{ width: 48, height: 48, borderRadius: 6, objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 6,
+                        background: "rgba(30, 215, 96, 0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 20,
+                      }}>
+                        🎵
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{playlist.name}</p>
+                      <p style={{ margin: 0, fontSize: 12, opacity: 0.6 }}>
+                        {playlistTracks[playlist.id]?.length || "..."} tracks
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayPlaylist(playlist.id);
+                      }}
+                      disabled={!spotifyConnected || !playerReady}
+                      style={{
+                        padding: "8px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 20,
+                        cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      ▶ Play
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePlaylist(playlist.id);
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 18,
+                        cursor: "pointer",
+                        padding: 4,
+                        opacity: 0.6,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  {/* Expanded playlist tracks */}
+                  {viewingPlaylist === playlist.id && (
+                    <div style={{
+                      padding: 12,
+                      background: "rgba(0, 0, 0, 0.2)",
+                      borderRadius: "0 0 10px 10px",
+                      border: "1px solid rgba(30, 215, 96, 0.3)",
+                      borderTop: "none",
                     }}>
-                      🎵
+                      {playlistTracks[playlist.id] ? (
+                        playlistTracks[playlist.id].length > 0 ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            {playlistTracks[playlist.id].map((track, idx) => (
+                              <div
+                                key={track.uri}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 10,
+                                  padding: "6px 8px",
+                                  borderRadius: 4,
+                                }}
+                              >
+                                <span style={{ fontSize: 12, opacity: 0.5, width: 24, textAlign: "right" }}>
+                                  {idx + 1}
+                                </span>
+                                {track.image && (
+                                  <img
+                                    src={track.image}
+                                    alt=""
+                                    style={{ width: 32, height: 32, borderRadius: 4 }}
+                                  />
+                                )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <p style={{ 
+                                    margin: 0, 
+                                    fontSize: 13,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}>
+                                    {track.name}
+                                  </p>
+                                  {track.artist && (
+                                    <p style={{ margin: 0, fontSize: 11, opacity: 0.6 }}>
+                                      {track.artist}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ margin: 0, fontSize: 13, opacity: 0.6 }}>No tracks in this playlist</p>
+                        )
+                      ) : (
+                        <p style={{ margin: 0, fontSize: 13, opacity: 0.6 }}>Loading tracks...</p>
+                      )}
                     </div>
                   )}
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>{playlist.name}</span>
                 </div>
               ))}
             </div>
