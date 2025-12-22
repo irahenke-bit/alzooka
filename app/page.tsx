@@ -2797,9 +2797,10 @@ function PostCard({
 
           {/* Reaction Picker */}
           <ReactionPicker
-            postId={post.id}
+            targetType="post"
+            targetId={post.id}
             userId={user.id}
-            postOwnerId={post.user_id}
+            ownerId={post.user_id}
             supabase={supabase}
             reactions={reactions}
             onReactionsChange={onReactionsChange}

@@ -16,10 +16,11 @@ export const REACTION_TYPES = {
 
 export type ReactionType = keyof typeof REACTION_TYPES;
 
-type Reaction = {
+export type Reaction = {
   id: string;
   user_id: string;
-  post_id: string;
+  post_id?: string | null;
+  comment_id?: string | null;
   reaction_type: ReactionType;
   created_at: string;
   users?: {
@@ -30,24 +31,26 @@ type Reaction = {
 };
 
 type Props = {
-  postId: string;
+  targetType: "post" | "comment";
+  targetId: string;
   userId: string | null;
-  postOwnerId: string;
+  ownerId: string;
   supabase: SupabaseClient;
   reactions: Reaction[];
   onReactionsChange: (reactions: Reaction[]) => void;
+  compact?: boolean; // For smaller display in comments
 };
 
 const MAX_REACTIONS_PER_USER = 3;
 
-export function ReactionPicker({ postId, userId, postOwnerId, supabase, reactions, onReactionsChange }: Props) {
+export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase, reactions, onReactionsChange, compact = false }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [showWhoReacted, setShowWhoReacted] = useState<ReactionType | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const whoReactedRef = useRef<HTMLDivElement>(null);
 
-  // Check if user is the post owner (can't react to own posts)
-  const isOwnPost = userId === postOwnerId;
+  // Check if user is the owner (can't react to own posts/comments)
+  const isOwn = userId === ownerId;
 
   // Get user's current reactions for this post
   const userReactions = reactions.filter(r => r.user_id === userId);
@@ -103,15 +106,17 @@ export function ReactionPicker({ postId, userId, postOwnerId, supabase, reaction
       }
 
       // Add reaction
+      const insertData = {
+        user_id: userId,
+        reaction_type: reactionType,
+        ...(targetType === "post" ? { post_id: targetId } : { comment_id: targetId }),
+      };
+      
       const { data, error } = await supabase
         .from("reactions")
-        .insert({
-          user_id: userId,
-          post_id: postId,
-          reaction_type: reactionType,
-        })
+        .insert(insertData)
         .select(`
-          id, user_id, post_id, reaction_type, created_at,
+          id, user_id, post_id, comment_id, reaction_type, created_at,
           users (username, display_name, avatar_url)
         `)
         .single();
@@ -138,8 +143,8 @@ export function ReactionPicker({ postId, userId, postOwnerId, supabase, reaction
 
   return (
     <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
-      {/* React Button - hidden for own posts */}
-      {!isOwnPost && (
+      {/* React Button - hidden for own posts/comments */}
+      {!isOwn && (
         <div ref={pickerRef} style={{ position: "relative" }}>
           <button
             onClick={() => userId && setIsOpen(!isOpen)}
@@ -211,7 +216,7 @@ export function ReactionPicker({ postId, userId, postOwnerId, supabase, reaction
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "scale(1)";
                     }}
-                    title={isDisabled ? "Max 3 reactions per post" : type}
+                    title={isDisabled ? `Max 3 reactions per ${targetType}` : type}
                   >
                     {emoji}
                   </button>

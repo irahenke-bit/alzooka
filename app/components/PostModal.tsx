@@ -16,6 +16,7 @@ import { LinkPreview } from "./LinkPreview";
 import { EmojiButton } from "./EmojiButton";
 import { BannerCropModal } from "./BannerCropModal";
 import { AvatarCropModal } from "./AvatarCropModal";
+import { ReactionPicker, Reaction } from "./ReactionPicker";
 
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -456,6 +457,9 @@ export function PostModal({
   const [savingImage, setSavingImage] = useState(false);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
   
+  // Comment reactions state - keyed by comment ID
+  const [commentReactions, setCommentReactions] = useState<Record<string, Reaction[]>>({});
+  
   // Fetch current user's avatar
   useEffect(() => {
     async function fetchUserAvatar() {
@@ -519,6 +523,60 @@ export function PostModal({
     }
     buildMentionCache();
   }, [post.content, post.comments, supabase]);
+
+  // Load comment reactions
+  useEffect(() => {
+    async function loadCommentReactions() {
+      // Get all comment IDs (including nested replies)
+      const getAllCommentIds = (comments: Comment[]): string[] => {
+        const ids: string[] = [];
+        comments.forEach(c => {
+          ids.push(c.id);
+          if (c.replies) {
+            ids.push(...getAllCommentIds(c.replies));
+          }
+        });
+        return ids;
+      };
+      
+      const commentIds = getAllCommentIds(post.comments || []);
+      if (commentIds.length === 0) return;
+      
+      const { data } = await supabase
+        .from("reactions")
+        .select(`
+          id, user_id, comment_id, reaction_type, created_at,
+          users (username, display_name, avatar_url)
+        `)
+        .in("comment_id", commentIds);
+      
+      if (data) {
+        // Group reactions by comment_id
+        const reactionsByComment: Record<string, Reaction[]> = {};
+        data.forEach(r => {
+          if (r.comment_id) {
+            if (!reactionsByComment[r.comment_id]) {
+              reactionsByComment[r.comment_id] = [];
+            }
+            reactionsByComment[r.comment_id].push({
+              ...r,
+              users: Array.isArray(r.users) ? r.users[0] : r.users,
+            } as Reaction);
+          }
+        });
+        setCommentReactions(reactionsByComment);
+      }
+    }
+    loadCommentReactions();
+  }, [post.comments, supabase]);
+
+  // Handle comment reaction changes
+  function handleCommentReactionsChange(commentId: string, newReactions: Reaction[]) {
+    setCommentReactions(prev => ({
+      ...prev,
+      [commentId]: newReactions,
+    }));
+  }
 
   // Clear highlight on any interaction
   const clearHighlight = () => setActiveHighlight(null);
@@ -1310,6 +1368,20 @@ export function PostModal({
                   }
                   return null;
                 })()}
+                
+                {/* Comment Reactions */}
+                <div style={{ marginTop: 8 }}>
+                  <ReactionPicker
+                    targetType="comment"
+                    targetId={comment.id}
+                    userId={user.id}
+                    ownerId={comment.user_id}
+                    supabase={supabase}
+                    reactions={commentReactions[comment.id] || []}
+                    onReactionsChange={(newReactions) => handleCommentReactionsChange(comment.id, newReactions)}
+                    compact
+                  />
+                </div>
               </>
             )}
           </div>
