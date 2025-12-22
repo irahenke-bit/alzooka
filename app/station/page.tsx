@@ -136,8 +136,9 @@ export default function StationPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const error = params.get("error");
+      const details = params.get("details");
       if (error) {
-        setAuthError(error);
+        setAuthError(details ? `${error}: ${details}` : error);
       }
     }
   }, []);

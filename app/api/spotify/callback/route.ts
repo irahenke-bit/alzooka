@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
     // Save tokens to user's profile using userId from state
-    await supabase
+    const { error: updateError } = await supabase
       .from("users")
       .update({
         spotify_access_token: access_token,
@@ -89,6 +89,13 @@ export async function GET(request: NextRequest) {
         spotify_user_id: profile?.id || null,
       })
       .eq("id", userId);
+
+    if (updateError) {
+      console.error("Failed to save Spotify tokens:", updateError);
+      return NextResponse.redirect(
+        new URL(`/station?error=save_failed&details=${encodeURIComponent(updateError.message)}`, siteUrl)
+      );
+    }
 
     // Clear the state cookie and redirect to station
     const response = NextResponse.redirect(new URL("/station?spotify=connected", siteUrl));
