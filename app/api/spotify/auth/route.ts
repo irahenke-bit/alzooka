@@ -18,15 +18,29 @@ export async function GET(request: NextRequest) {
   // Get user ID from the query param (passed from client)
   const userId = request.nextUrl.searchParams.get("userId");
   
-  if (!userId) {
-    return NextResponse.redirect(new URL("/station?error=no_user_id", origin));
-  }
+  // Debug mode - show what's happening
+  const debug = request.nextUrl.searchParams.get("debug");
   
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const redirectUri = `${origin}/api/spotify/callback`;
 
+  if (debug === "1") {
+    return NextResponse.json({
+      host,
+      origin,
+      userId: userId ? "present" : "missing",
+      clientId: clientId ? "present" : "MISSING - THIS IS THE PROBLEM",
+      redirectUri,
+      envKeys: Object.keys(process.env).filter(k => k.includes("SPOTIFY")),
+    });
+  }
+  
+  if (!userId) {
+    return NextResponse.redirect(new URL("/station?error=no_user_id", origin));
+  }
+
   if (!clientId) {
-    return NextResponse.json({ error: "Spotify client ID not configured" }, { status: 500 });
+    return NextResponse.redirect(new URL("/station?error=no_client_id", origin));
   }
 
   // Generate a random state for CSRF protection, include userId
