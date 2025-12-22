@@ -83,6 +83,8 @@ export default function StationPage() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [editingAlbumGroups, setEditingAlbumGroups] = useState<string | null>(null);
+  const [bulkAddGroup, setBulkAddGroup] = useState<string | null>(null); // Group ID for bulk adding albums
+  const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<string | null>(null);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -353,6 +355,9 @@ export default function StationPage() {
   }
 
   async function handleDeleteGroup(groupId: string) {
+    // Close confirmation
+    setConfirmDeleteGroup(null);
+    
     await supabase
       .from("station_groups")
       .delete()
@@ -373,6 +378,25 @@ export default function StationPage() {
       }
       return updated;
     });
+    
+    // Exit bulk add mode if we deleted the bulk add group
+    if (bulkAddGroup === groupId) {
+      setBulkAddGroup(null);
+    }
+  }
+
+  function startBulkAdd(groupId: string) {
+    setBulkAddGroup(groupId);
+    setEditingAlbumGroups(null);
+  }
+
+  function exitBulkAdd() {
+    setBulkAddGroup(null);
+  }
+
+  async function toggleAlbumInBulkGroup(albumId: string) {
+    if (!bulkAddGroup) return;
+    await handleToggleAlbumGroup(albumId, bulkAddGroup);
   }
 
   async function handleToggleGroup(groupId: string) {
@@ -842,10 +866,11 @@ export default function StationPage() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {groups.map(group => {
                 const isActive = activeGroups.has(group.id);
+                const isBulkEditing = bulkAddGroup === group.id;
                 const albumCount = Object.values(albumGroups).filter(gids => gids.includes(group.id)).length;
                 
                 return (
-                  <div key={group.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div key={group.id} style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
                     <button
                       onClick={() => handleToggleGroup(group.id)}
                       style={{
@@ -862,8 +887,28 @@ export default function StationPage() {
                     >
                       {group.name} ({albumCount})
                     </button>
+                    
+                    {/* Edit button - enters bulk add mode */}
                     <button
-                      onClick={() => handleDeleteGroup(group.id)}
+                      onClick={() => isBulkEditing ? exitBulkAdd() : startBulkAdd(group.id)}
+                      style={{
+                        padding: "4px 8px",
+                        fontSize: 11,
+                        background: isBulkEditing ? group.color : "transparent",
+                        color: isBulkEditing ? "#fff" : "var(--alzooka-cream)",
+                        border: `1px solid ${isBulkEditing ? group.color : "rgba(240, 235, 224, 0.3)"}`,
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        opacity: isBulkEditing ? 1 : 0.6,
+                      }}
+                      title={isBulkEditing ? "Done editing" : "Add albums to this group"}
+                    >
+                      {isBulkEditing ? "Done" : "Edit"}
+                    </button>
+                    
+                    {/* Delete button with confirmation */}
+                    <button
+                      onClick={() => setConfirmDeleteGroup(group.id)}
                       style={{
                         background: "transparent",
                         border: "none",
@@ -871,25 +916,128 @@ export default function StationPage() {
                         fontSize: 14,
                         cursor: "pointer",
                         padding: 2,
-                        opacity: 0.5,
+                        opacity: 0.4,
                         lineHeight: 1,
                       }}
                       title="Delete group"
                     >
                       ×
                     </button>
+                    
+                    {/* Delete confirmation popup */}
+                    {confirmDeleteGroup === group.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          marginTop: 8,
+                          background: "#1a2e2e",
+                          border: "2px solid #e57373",
+                          borderRadius: 10,
+                          padding: 16,
+                          zIndex: 1000,
+                          minWidth: 200,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <p style={{ margin: "0 0 12px", fontSize: 14 }}>
+                          Delete <strong>{group.name}</strong>?
+                        </p>
+                        <p style={{ margin: "0 0 12px", fontSize: 12, opacity: 0.7 }}>
+                          This will remove the group. Albums won't be deleted.
+                        </p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={() => setConfirmDeleteGroup(null)}
+                            style={{
+                              flex: 1,
+                              padding: "8px",
+                              fontSize: 13,
+                              background: "rgba(240, 235, 224, 0.1)",
+                              color: "var(--alzooka-cream)",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGroup(group.id)}
+                            style={{
+                              flex: 1,
+                              padding: "8px",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              background: "#e57373",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
           
-          {activeGroups.size > 0 && (
+          {activeGroups.size > 0 && !bulkAddGroup && (
             <p style={{ margin: "12px 0 0", fontSize: 12, opacity: 0.6 }}>
               🎵 Playing from: {groups.filter(g => activeGroups.has(g.id)).map(g => g.name).join(" + ")}
             </p>
           )}
         </div>
+        
+        {/* Bulk Add Mode Banner */}
+        {bulkAddGroup && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 18px",
+            marginBottom: 16,
+            background: `${groups.find(g => g.id === bulkAddGroup)?.color}22`,
+            border: `2px solid ${groups.find(g => g.id === bulkAddGroup)?.color}`,
+            borderRadius: 10,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20 }}>✏️</span>
+              <div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+                  Adding albums to: <span style={{ color: groups.find(g => g.id === bulkAddGroup)?.color }}>
+                    {groups.find(g => g.id === bulkAddGroup)?.name}
+                  </span>
+                </p>
+                <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>
+                  Click albums below to add or remove them from this group
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={exitBulkAdd}
+              style={{
+                padding: "8px 16px",
+                fontSize: 14,
+                fontWeight: 600,
+                background: groups.find(g => g.id === bulkAddGroup)?.color,
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            >
+              Done
+            </button>
+          </div>
+        )}
         
         {/* Active Search Banner */}
         {activeSearch && (
@@ -963,35 +1111,62 @@ export default function StationPage() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {filteredAlbums.map(album => (
+            {filteredAlbums.map(album => {
+              const isInBulkGroup = bulkAddGroup && (albumGroups[album.id] || []).includes(bulkAddGroup);
+              const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
+              
+              return (
               <div
                 key={album.id}
+                onClick={bulkAddGroup ? () => toggleAlbumInBulkGroup(album.id) : undefined}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
                   padding: 12,
-                  background: album.is_selected 
-                    ? "rgba(30, 215, 96, 0.1)" 
-                    : "rgba(240, 235, 224, 0.03)",
+                  background: bulkAddGroup
+                    ? (isInBulkGroup ? `${bulkGroupColor}33` : "rgba(240, 235, 224, 0.03)")
+                    : (album.is_selected ? "rgba(30, 215, 96, 0.1)" : "rgba(240, 235, 224, 0.03)"),
                   borderRadius: 12,
-                  border: album.is_selected
-                    ? "1px solid rgba(30, 215, 96, 0.3)"
-                    : "1px solid rgba(240, 235, 224, 0.1)",
+                  border: bulkAddGroup
+                    ? (isInBulkGroup ? `2px solid ${bulkGroupColor}` : "2px dashed rgba(240, 235, 224, 0.2)")
+                    : (album.is_selected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)"),
+                  cursor: bulkAddGroup ? "pointer" : "default",
+                  transition: "all 0.15s",
                 }}
               >
-                {/* Checkbox */}
-                <input
-                  type="checkbox"
-                  checked={album.is_selected}
-                  onChange={() => handleToggleAlbum(album.id)}
-                  style={{ 
-                    width: 20, 
-                    height: 20, 
-                    accentColor: "#1DB954",
-                    cursor: "pointer",
-                  }}
-                />
+                {/* Checkbox or bulk add indicator */}
+                {bulkAddGroup ? (
+                  <div
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 6,
+                      background: isInBulkGroup ? bulkGroupColor : "transparent",
+                      border: `2px solid ${isInBulkGroup ? bulkGroupColor : "rgba(240, 235, 224, 0.3)"}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {isInBulkGroup && "✓"}
+                  </div>
+                ) : (
+                  <input
+                    type="checkbox"
+                    checked={album.is_selected}
+                    onChange={() => handleToggleAlbum(album.id)}
+                    style={{ 
+                      width: 20, 
+                      height: 20, 
+                      accentColor: "#1DB954",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
                 
                 {/* Album Art */}
                 {album.spotify_image_url ? (
@@ -1205,7 +1380,8 @@ export default function StationPage() {
                   ×
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
