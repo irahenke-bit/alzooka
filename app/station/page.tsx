@@ -161,6 +161,7 @@ export default function StationPage() {
   const [trackPosition, setTrackPosition] = useState(0);
   const [trackDuration, setTrackDuration] = useState(0);
   const [currentlyPlayingAlbumId, setCurrentlyPlayingAlbumId] = useState<string | null>(null);
+  const [currentlyPlayingPlaylistId, setCurrentlyPlayingPlaylistId] = useState<string | null>(null);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
   const router = useRouter();
@@ -670,7 +671,18 @@ export default function StationPage() {
       return;
     }
     
+    // Track which playlist is playing (and clear album)
+    setCurrentlyPlayingPlaylistId(playlistId);
+    setCurrentlyPlayingAlbumId(null);
+    
+    // Ignore stale position updates
+    ignorePositionUntilRef.current = Date.now() + 1000;
+    
     try {
+      // Pause first
+      try { await spotifyPlayer.pause(); } catch {}
+      setTrackPosition(0);
+      
       await spotifyPlayer.activateElement();
       
       await fetch("https://api.spotify.com/v1/me/player", {
@@ -685,6 +697,8 @@ export default function StationPage() {
         }),
       });
       
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       const trackUris = tracks.map(t => t.uri);
       
       await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -695,11 +709,11 @@ export default function StationPage() {
         },
         body: JSON.stringify({
           uris: trackUris,
+          position_ms: 0,
         }),
       });
       
-      await spotifyPlayer.resume();
-      setIsPlaying(true);
+      setTrackPosition(0);
     } catch (err) {
       console.error("Playlist playback error:", err);
       alert("Failed to play playlist");
@@ -1186,6 +1200,7 @@ export default function StationPage() {
     setCurrentTrack(null);
     setIsPlaying(false);
     setCurrentlyPlayingAlbumId(null);
+    setCurrentlyPlayingPlaylistId(null);
   }
 
   // Play a single album - either full album or just selected tracks from it
@@ -1229,8 +1244,9 @@ export default function StationPage() {
     
     if (tracksToPlay.length === 0) return;
     
-    // Track which album is playing
+    // Track which album is playing (and clear playlist)
     setCurrentlyPlayingAlbumId(album.id);
+    setCurrentlyPlayingPlaylistId(null);
     
     // Ignore stale position updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
@@ -2445,23 +2461,90 @@ export default function StationPage() {
                             })}
                           </div>
                         </div>
-                        {/* Play Button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePlayPlaylist(playlist.id); }}
-                          disabled={!spotifyConnected || !playerReady}
-                          style={{
-                            padding: "4px 10px",
-                            fontSize: 10,
-                            fontWeight: 600,
-                            background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 12,
-                            cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                          }}
-                        >
-                          ▶
-                        </button>
+                        {/* Playlist Playback Controls */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          {/* Backward */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePreviousTrack(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Previous track"
+                          >
+                            ⏮
+                          </button>
+                          {/* Stop */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#e57373" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(229, 115, 115, 0.4)" : "1px solid transparent",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Stop"
+                          >
+                            ⏹
+                          </button>
+                          {/* Play/Pause Toggle */}
+                          {(() => {
+                            const isThisPlaylistPlaying = isPlaying && currentlyPlayingPlaylistId === playlist.id;
+                            return (
+                              <button
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  if (isThisPlaylistPlaying) {
+                                    handleTogglePlayback();
+                                  } else {
+                                    handlePlayPlaylist(playlist.id);
+                                  }
+                                }}
+                                disabled={!spotifyConnected || !playerReady}
+                                style={{
+                                  padding: "4px 12px",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: 12,
+                                  cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                                }}
+                                title={isThisPlaylistPlaying ? "Pause" : "Play playlist"}
+                              >
+                                {isThisPlaylistPlaying ? "⏸" : "▶"}
+                              </button>
+                            );
+                          })()}
+                          {/* Forward */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Next track"
+                          >
+                            ⏭
+                          </button>
+                        </div>
                         {/* Expand */}
                         <button
                           onClick={() => handleViewPlaylist(playlist.id)}
