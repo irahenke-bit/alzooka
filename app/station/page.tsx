@@ -163,6 +163,8 @@ export default function StationPage() {
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
   const [editingPlaylistGroups, setEditingPlaylistGroups] = useState<string | null>(null);
   const [selectedPlaylists, setSelectedPlaylists] = useState<Set<string>>(new Set());
+  const [tracksToRemove, setTracksToRemove] = useState<{ playlistId: string; trackUris: Set<string> } | null>(null);
+  const [confirmRemoveTracks, setConfirmRemoveTracks] = useState(false);
   
   // Spotify state
   const [spotifyConnected, setSpotifyConnected] = useState(false);
@@ -807,6 +809,58 @@ export default function StationPage() {
     await supabase.from("station_playlists").delete().eq("id", playlistId);
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
     if (viewingPlaylist === playlistId) setViewingPlaylist(null);
+  }
+
+  // Toggle track selection for removal from playlist
+  function handleToggleTrackRemoval(playlistId: string, trackUri: string) {
+    setTracksToRemove(prev => {
+      // If selecting from a different playlist, start fresh
+      if (prev && prev.playlistId !== playlistId) {
+        return { playlistId, trackUris: new Set([trackUri]) };
+      }
+      
+      const currentUris = prev?.trackUris ?? new Set<string>();
+      const next = new Set(currentUris);
+      
+      if (next.has(trackUri)) {
+        next.delete(trackUri);
+      } else {
+        next.add(trackUri);
+      }
+      
+      // If no tracks selected, clear the state
+      if (next.size === 0) {
+        return null;
+      }
+      
+      return { playlistId, trackUris: next };
+    });
+  }
+
+  // Actually remove tracks from playlist
+  async function handleRemoveTracksFromPlaylist() {
+    if (!tracksToRemove || tracksToRemove.trackUris.size === 0) return;
+    
+    const { playlistId, trackUris } = tracksToRemove;
+    
+    // Delete from database
+    for (const uri of trackUris) {
+      await supabase
+        .from("station_playlist_tracks")
+        .delete()
+        .eq("playlist_id", playlistId)
+        .eq("spotify_uri", uri);
+    }
+    
+    // Update local state
+    setPlaylistTracks(prev => ({
+      ...prev,
+      [playlistId]: (prev[playlistId] || []).filter(t => !trackUris.has(t.uri))
+    }));
+    
+    // Clear selection
+    setTracksToRemove(null);
+    setConfirmRemoveTracks(false);
   }
 
   // Toggle playlist selection for shuffle
@@ -2936,6 +2990,55 @@ export default function StationPage() {
           {/* Right Column: Playlists */}
           {playlists.length > 0 && (
             <div style={{ minWidth: 0 }}>
+              {/* Remove from Playlist Bar */}
+              {tracksToRemove && tracksToRemove.trackUris.size > 0 && (
+                <div style={{
+                  background: "rgba(229, 115, 115, 0.15)",
+                  border: "1px solid rgba(229, 115, 115, 0.4)",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  marginBottom: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}>
+                  <span style={{ color: "#e57373", fontSize: 13 }}>
+                    🗑️ {tracksToRemove.trackUris.size} {tracksToRemove.trackUris.size === 1 ? "song" : "songs"} selected
+                  </span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => setTracksToRemove(null)}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid rgba(240, 235, 224, 0.3)",
+                        color: "var(--alzooka-cream)",
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 12,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => setConfirmRemoveTracks(true)}
+                      style={{
+                        background: "#e57373",
+                        border: "none",
+                        color: "#000",
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Remove from Playlist
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600 }}>
                 📋 Playlists ({playlists.length})
               </h3>
@@ -3113,6 +3216,7 @@ export default function StationPage() {
                             const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
                             const isCurrentlyPlaying = isCurrentTrack && isPlaying;
                             const isSelectedStart = selectedStartTrack?.playlistId === playlist.id && selectedStartTrack?.trackUri === track.uri;
+                            const isSelectedForRemoval = tracksToRemove?.playlistId === playlist.id && tracksToRemove.trackUris.has(track.uri);
                             
                             return (
                               <div 
@@ -3130,19 +3234,34 @@ export default function StationPage() {
                                   alignItems: "center", 
                                   gap: 8,
                                   cursor: "pointer",
-                                  background: isCurrentTrack 
-                                    ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
-                                    : isSelectedStart 
-                                      ? "rgba(30, 215, 96, 0.3)" 
-                                      : "transparent",
+                                  background: isSelectedForRemoval
+                                    ? "rgba(229, 115, 115, 0.2)"
+                                    : isCurrentTrack 
+                                      ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
+                                      : isSelectedStart 
+                                        ? "rgba(30, 215, 96, 0.3)" 
+                                        : "transparent",
                                   borderRadius: 4,
-                                  borderLeft: isCurrentTrack 
-                                    ? "3px solid var(--alzooka-gold)" 
-                                    : isSelectedStart 
-                                      ? "3px solid #1DB954" 
-                                      : "3px solid transparent",
+                                  borderLeft: isSelectedForRemoval
+                                    ? "3px solid #e57373"
+                                    : isCurrentTrack 
+                                      ? "3px solid var(--alzooka-gold)" 
+                                      : isSelectedStart 
+                                        ? "3px solid #1DB954" 
+                                        : "3px solid transparent",
                                 }}
                               >
+                                {/* Checkbox for removal */}
+                                <input
+                                  type="checkbox"
+                                  checked={isSelectedForRemoval}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleTrackRemoval(playlist.id, track.uri);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ cursor: "pointer", accentColor: "#e57373" }}
+                                />
                                 <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
                                 <span style={{ 
                                   flex: 1, 
@@ -3282,6 +3401,74 @@ export default function StationPage() {
                 }}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Remove Tracks Dialog */}
+      {confirmRemoveTracks && tracksToRemove && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#1a2e2e",
+            border: "2px solid #e57373",
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            width: "90%",
+            textAlign: "center",
+          }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600 }}>
+              Remove {tracksToRemove.trackUris.size === 1 ? "Song" : "Songs"}?
+            </h3>
+            <p style={{ margin: "0 0 8px", fontSize: 14, opacity: 0.9 }}>
+              Are you sure you want to remove {tracksToRemove.trackUris.size} {tracksToRemove.trackUris.size === 1 ? "song" : "songs"} from this playlist?
+            </p>
+            <p style={{ margin: "0 0 20px", fontSize: 12, opacity: 0.6 }}>
+              {tracksToRemove.trackUris.size === 1 ? "This song" : "These songs"} will still be available in the album section.
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={() => setConfirmRemoveTracks(false)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  background: "rgba(240, 235, 224, 0.1)",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemoveTracksFromPlaylist}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "#e57373",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Remove
               </button>
             </div>
           </div>
