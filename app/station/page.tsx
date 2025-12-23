@@ -602,6 +602,10 @@ export default function StationPage() {
       lastTrackEndTimeRef.current = now;
       
       console.log("Track ended - checking for next track or playlist");
+      console.log("Current playlist ID:", currentlyPlayingPlaylistId);
+      console.log("Queued next track:", queuedNextTrack);
+      console.log("Current queue:", currentPlaylistQueue.length, "tracks");
+      console.log("Playlists loaded:", playlists.map(p => ({ id: p.id, name: p.name })));
       
       // Check if user has queued a next track
       if (queuedNextTrack && spotifyPlayer && spotifyDeviceId && spotifyToken) {
@@ -1121,14 +1125,7 @@ export default function StationPage() {
         return;
       }
       
-      // Wait for track to load, then ensure audio starts via togglePlay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Get current state and toggle if needed to start audio
-      const state = await spotifyPlayer.getCurrentState() as { paused?: boolean } | null;
-      if (state && state.paused) {
-        await spotifyPlayer.togglePlay();
-      }
+      console.log("Playlist playback started with", trackUris.length, "tracks");
       
       setTrackPosition(0);
       setIsPlaying(true);
@@ -1792,14 +1789,7 @@ export default function StationPage() {
       }),
     });
     
-    // Wait for track to load, then ensure audio starts via togglePlay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Get current state and toggle if needed to start audio
-    const state = await spotifyPlayer.getCurrentState() as { paused?: boolean } | null;
-    if (state && state.paused) {
-      await spotifyPlayer.togglePlay();
-    }
+    console.log("Album playback started with", tracksToPlay.length, "tracks");
     
     // Force UI to show 0
     setTrackPosition(0);
