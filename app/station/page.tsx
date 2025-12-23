@@ -1240,8 +1240,12 @@ export default function StationPage() {
         return;
       }
       
-      // Shuffle the tracks
-      const shuffledTracks = [...allTrackUris].sort(() => Math.random() - 0.5);
+      // Shuffle the tracks using Fisher-Yates algorithm for true randomness
+      const shuffledTracks = [...allTrackUris];
+      for (let i = shuffledTracks.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledTracks[i], shuffledTracks[j]] = [shuffledTracks[j], shuffledTracks[i]];
+      }
       console.log("Shuffled tracks, starting playback with", shuffledTracks.length, "tracks");
       
       // Pause any current playback first to clear old position state
