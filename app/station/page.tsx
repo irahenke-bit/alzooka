@@ -164,6 +164,7 @@ export default function StationPage() {
   const [currentlyPlayingPlaylistId, setCurrentlyPlayingPlaylistId] = useState<string | null>(null);
   const [selectedStartTrack, setSelectedStartTrack] = useState<{ albumId?: string; playlistId?: string; trackUri: string } | null>(null);
   const [currentlyPlayingTrackUri, setCurrentlyPlayingTrackUri] = useState<string | null>(null);
+  const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
   const router = useRouter();
@@ -568,6 +569,65 @@ export default function StationPage() {
     setSelectedTracks([]);
     setNewPlaylistName("");
     setShowCreatePlaylist(false);
+  }
+
+  // Add selected tracks to an existing playlist
+  async function handleAddToExistingPlaylist(playlistId: string) {
+    if (selectedTracks.length === 0) return;
+    
+    // Get existing tracks to determine order
+    const existingTracks = playlistTracks[playlistId] || [];
+    const startOrder = existingTracks.length;
+    
+    // Filter out tracks that are already in the playlist
+    const existingUris = new Set(existingTracks.map(t => t.uri));
+    const newTracks = selectedTracks.filter(t => !existingUris.has(t.uri));
+    
+    if (newTracks.length === 0) {
+      alert("All selected tracks are already in this playlist");
+      return;
+    }
+    
+    const trackInserts = newTracks.map((track, idx) => ({
+      playlist_id: playlistId,
+      spotify_uri: track.uri,
+      spotify_name: track.name,
+      spotify_artist: track.artist,
+      spotify_image_url: track.image,
+      track_order: startOrder + idx,
+    }));
+    
+    const { error } = await supabase.from("station_playlist_tracks").insert(trackInserts);
+    
+    if (error) {
+      console.error("Failed to add tracks:", error);
+      alert("Failed to add tracks to playlist");
+      return;
+    }
+    
+    // Refresh playlist tracks if currently viewing
+    if (viewingPlaylist === playlistId) {
+      const { data } = await supabase
+        .from("station_playlist_tracks")
+        .select("*")
+        .eq("playlist_id", playlistId)
+        .order("track_order", { ascending: true });
+      
+      if (data) {
+        setPlaylistTracks(prev => ({
+          ...prev,
+          [playlistId]: data.map(t => ({
+            uri: t.spotify_uri,
+            name: t.spotify_name,
+            artist: t.spotify_artist || "",
+            image: t.spotify_image_url || "",
+            duration_ms: 0,
+          })),
+        }));
+      }
+    }
+    
+    setSelectedTracks([]);
   }
 
   // Load playlists
@@ -2479,6 +2539,107 @@ export default function StationPage() {
                               </div>
                             );
                           })}
+                          
+                          {/* Batch Add to Playlist Bar */}
+                          {selectedTracks.length > 0 && playlists.length > 0 && (
+                            <div style={{
+                              marginTop: 8,
+                              padding: "8px 10px",
+                              background: "rgba(30, 215, 96, 0.15)",
+                              borderRadius: 6,
+                              border: "1px solid rgba(30, 215, 96, 0.3)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 10,
+                            }}>
+                              <span style={{ fontSize: 12, fontWeight: 500 }}>
+                                {selectedTracks.length} track{selectedTracks.length > 1 ? "s" : ""} selected
+                              </span>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <div style={{ position: "relative" }}>
+                                  <button
+                                    onClick={() => setShowAddToPlaylistDropdown(!showAddToPlaylistDropdown)}
+                                    style={{
+                                      padding: "6px 12px",
+                                      fontSize: 11,
+                                      fontWeight: 600,
+                                      background: "#1DB954",
+                                      color: "#000",
+                                      border: "none",
+                                      borderRadius: 4,
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 4,
+                                    }}
+                                  >
+                                    Add to Playlist ▼
+                                  </button>
+                                  {showAddToPlaylistDropdown && (
+                                    <div style={{
+                                      position: "absolute",
+                                      bottom: "100%",
+                                      right: 0,
+                                      marginBottom: 4,
+                                      background: "#1a2e2e",
+                                      border: "1px solid rgba(30, 215, 96, 0.5)",
+                                      borderRadius: 6,
+                                      padding: 6,
+                                      minWidth: 150,
+                                      zIndex: 1000,
+                                      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                                    }}>
+                                      {playlists.map(p => (
+                                        <button
+                                          key={p.id}
+                                          onClick={() => {
+                                            handleAddToExistingPlaylist(p.id);
+                                            setShowAddToPlaylistDropdown(false);
+                                          }}
+                                          style={{
+                                            width: "100%",
+                                            padding: "8px 10px",
+                                            fontSize: 12,
+                                            background: "transparent",
+                                            color: "var(--alzooka-cream)",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                            textAlign: "left",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 8,
+                                          }}
+                                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(30, 215, 96, 0.2)"}
+                                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                                        >
+                                          {p.cover_image_url && (
+                                            <img src={p.cover_image_url} alt="" style={{ width: 20, height: 20, borderRadius: 3 }} />
+                                          )}
+                                          {p.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => setSelectedTracks([])}
+                                  style={{
+                                    padding: "6px 10px",
+                                    fontSize: 11,
+                                    background: "rgba(240, 235, 224, 0.1)",
+                                    color: "var(--alzooka-cream)",
+                                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
