@@ -1169,6 +1169,67 @@ export default function StationPage() {
     await spotifyPlayer.previousTrack();
   }
 
+  // Play a single album - either full album or just selected tracks from it
+  async function handlePlayAlbum(album: StationAlbum) {
+    if (!spotifyPlayer || !spotifyDeviceId) return;
+    
+    // Get tracks for this album
+    let tracks = albumTracks[album.id];
+    if (!tracks) {
+      // Fetch tracks if not already loaded
+      const token = await getSpotifyToken();
+      if (!token) return;
+      
+      const albumId = album.spotify_uri.split(":")[2];
+      const res = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      tracks = data.items.map((t: { uri: string; name: string; artists: { name: string }[]; duration_ms: number }) => ({
+        uri: t.uri,
+        name: t.name,
+        artist: t.artists.map((a: { name: string }) => a.name).join(", "),
+        image: album.spotify_image_url || "",
+        duration_ms: t.duration_ms,
+      }));
+      setAlbumTracks(prev => ({ ...prev, [album.id]: tracks! }));
+    }
+    
+    if (!tracks || tracks.length === 0) return;
+    
+    // Check if any tracks from THIS album are in selectedTracks
+    const albumTrackUris = new Set(tracks.map(t => t.uri));
+    const selectedFromThisAlbum = selectedTracks.filter(t => albumTrackUris.has(t.uri));
+    
+    let tracksToPlay: SpotifyTrack[];
+    if (selectedFromThisAlbum.length > 0) {
+      // Play only selected tracks, but in album order
+      tracksToPlay = tracks.filter(t => selectedTracks.some(st => st.uri === t.uri));
+    } else {
+      // Play full album in order
+      tracksToPlay = tracks;
+    }
+    
+    if (tracksToPlay.length === 0) return;
+    
+    // Reset position and play
+    setTrackPosition(0);
+    
+    const token = await getSpotifyToken();
+    if (!token) return;
+    
+    // Start playback with the track URIs in order
+    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uris: tracksToPlay.map(t => t.uri) }),
+    });
+  }
+
   async function handleSeek(position: number) {
     if (!spotifyPlayer) return;
     await spotifyPlayer.seek(position);
@@ -2124,6 +2185,31 @@ export default function StationPage() {
                             })}
                           </div>
                         </div>
+                        {/* Play Album Button */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePlayAlbum(album); }}
+                          disabled={!spotifyConnected || !playerReady}
+                          style={{
+                            padding: "4px 10px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 12,
+                            cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                          }}
+                          title={(() => {
+                            const albumTracksList = albumTracks[album.id] || [];
+                            const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
+                            const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
+                            return selectedFromThis.length > 0 
+                              ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
+                              : 'Play full album';
+                          })()}
+                        >
+                          ▶
+                        </button>
                         {/* Tracks Button */}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleToggleAlbumExpand(album); }}
