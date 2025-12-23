@@ -1169,6 +1169,14 @@ export default function StationPage() {
     await spotifyPlayer.previousTrack();
   }
 
+  async function handleStopPlayback() {
+    if (!spotifyPlayer) return;
+    await spotifyPlayer.pause();
+    setTrackPosition(0);
+    setCurrentTrack(null);
+    setIsPlaying(false);
+  }
+
   // Play a single album - either full album or just selected tracks from it
   async function handlePlayAlbum(album: StationAlbum) {
     if (!spotifyPlayer || !spotifyDeviceId || !spotifyToken) return;
@@ -2195,31 +2203,102 @@ export default function StationPage() {
                             })}
                           </div>
                         </div>
-                        {/* Play Album Button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePlayAlbum(album); }}
-                          disabled={!spotifyConnected || !playerReady}
-                          style={{
-                            padding: "4px 10px",
-                            fontSize: 10,
-                            fontWeight: 600,
-                            background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 12,
-                            cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                          }}
-                          title={(() => {
-                            const albumTracksList = albumTracks[album.id] || [];
-                            const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
-                            const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
-                            return selectedFromThis.length > 0 
-                              ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
-                              : 'Play full album';
-                          })()}
-                        >
-                          ▶
-                        </button>
+                        {/* Album Playback Controls */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          {/* Backward */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePreviousTrack(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 10,
+                              background: "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
+                              border: "none",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Previous track"
+                          >
+                            ⏮
+                          </button>
+                          {/* Pause */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 10,
+                              background: "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
+                              border: "none",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Pause"
+                          >
+                            ⏸
+                          </button>
+                          {/* Stop */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 10,
+                              background: "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
+                              border: "none",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Stop"
+                          >
+                            ⏹
+                          </button>
+                          {/* Play */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePlayAlbum(album); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 10px",
+                              fontSize: 10,
+                              fontWeight: 600,
+                              background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: 12,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title={(() => {
+                              const albumTracksList = albumTracks[album.id] || [];
+                              const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
+                              const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
+                              return selectedFromThis.length > 0 
+                                ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
+                                : 'Play full album';
+                            })()}
+                          >
+                            ▶
+                          </button>
+                          {/* Forward */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
+                            disabled={!spotifyConnected || !playerReady}
+                            style={{
+                              padding: "4px 8px",
+                              fontSize: 10,
+                              background: "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
+                              border: "none",
+                              borderRadius: 8,
+                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                            }}
+                            title="Next track"
+                          >
+                            ⏭
+                          </button>
+                        </div>
                         {/* Tracks Button */}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleToggleAlbumExpand(album); }}
