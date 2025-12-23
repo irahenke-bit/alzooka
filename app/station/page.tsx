@@ -22,6 +22,17 @@ type Station = {
   name: string;
   description: string | null;
   created_at: string;
+  // Persisted state
+  selected_album_ids?: string[];
+  selected_playlist_ids?: string[];
+  last_track_uri?: string;
+  last_track_position?: number;
+  last_track_name?: string;
+  last_track_artist?: string;
+  last_track_image?: string;
+  last_track_album_name?: string;
+  last_track_playlist_name?: string;
+  last_track_duration?: number;
 };
 
 type StationAlbum = {
@@ -466,6 +477,33 @@ export default function StationPage() {
               setPlaylistGroups(mapping);
             }
           }
+          
+          // Restore saved playlist selections
+          if (stationData.selected_playlist_ids && Array.isArray(stationData.selected_playlist_ids)) {
+            setSelectedPlaylists(new Set(stationData.selected_playlist_ids));
+          }
+        }
+        
+        // Restore saved album selections
+        if (stationData.selected_album_ids && Array.isArray(stationData.selected_album_ids) && albumsData) {
+          const savedIds = new Set(stationData.selected_album_ids);
+          setManualSelections(savedIds);
+          setAlbums(albumsData.map(a => ({ ...a, is_selected: savedIds.has(a.id) })));
+          setSelectAll(albumsData.length > 0 && albumsData.every(a => savedIds.has(a.id)));
+        }
+        
+        // Restore last playing track info (for display only - won't auto-play)
+        if (stationData.last_track_uri && stationData.last_track_name) {
+          setCurrentTrack({
+            name: stationData.last_track_name,
+            artist: stationData.last_track_artist || "",
+            image: stationData.last_track_image || "",
+            albumName: stationData.last_track_album_name,
+            playlistName: stationData.last_track_playlist_name,
+          });
+          setCurrentlyPlayingTrackUri(stationData.last_track_uri);
+          setTrackPosition(stationData.last_track_position || 0);
+          setTrackDuration(stationData.last_track_duration || 0);
         }
       } else {
         setShowSetup(true);
@@ -476,6 +514,54 @@ export default function StationPage() {
     
     init();
   }, [supabase, router]);
+
+  // Save station state to database (debounced)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  async function saveStationState() {
+    if (!station) return;
+    
+    const selectedAlbumIds = Array.from(manualSelections);
+    const selectedPlaylistIds = Array.from(selectedPlaylists);
+    
+    await supabase
+      .from("stations")
+      .update({
+        selected_album_ids: selectedAlbumIds,
+        selected_playlist_ids: selectedPlaylistIds,
+        last_track_uri: currentlyPlayingTrackUri,
+        last_track_position: trackPosition,
+        last_track_name: currentTrack?.name || null,
+        last_track_artist: currentTrack?.artist || null,
+        last_track_image: currentTrack?.image || null,
+        last_track_album_name: currentTrack?.albumName || null,
+        last_track_playlist_name: currentTrack?.playlistName || null,
+        last_track_duration: trackDuration,
+        state_updated_at: new Date().toISOString(),
+      })
+      .eq("id", station.id);
+  }
+  
+  // Auto-save state when selections or playback changes (debounced to avoid too many writes)
+  useEffect(() => {
+    if (!station) return;
+    
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Debounce save by 2 seconds
+    saveTimeoutRef.current = setTimeout(() => {
+      saveStationState();
+    }, 2000);
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [station, manualSelections, selectedPlaylists, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration]);
 
   async function handleCreateStation() {
     if (!user || !stationName.trim()) return;
