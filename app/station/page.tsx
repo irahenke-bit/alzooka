@@ -282,6 +282,16 @@ export default function StationPage() {
           };
         } | null;
         if (!state) return;
+        
+        // Check if we're in the ignore window (e.g., after pressing stop)
+        const now = Date.now();
+        const isIgnoring = now <= ignorePositionUntilRef.current;
+        
+        // If paused and we're ignoring updates, don't update anything (stop was pressed)
+        if (state.paused && isIgnoring) {
+          return;
+        }
+        
         setIsPlaying(!state.paused);
         
         // Check if track changed - if so, reset position to 0
@@ -294,6 +304,10 @@ export default function StationPage() {
           
           // Get album name from Spotify and playlist name from our source map
           setTrackSourceMap(currentSourceMap => {
+            // If source map is empty, we've stopped - don't update track
+            if (Object.keys(currentSourceMap).length === 0) {
+              return currentSourceMap;
+            }
             const source = currentSourceMap[trackUri];
             setCurrentTrack({
               name: track.name,
@@ -318,8 +332,7 @@ export default function StationPage() {
         }
         
         // Only update position if we're not in the "ignore stale position" window
-        const now = Date.now();
-        if (now > ignorePositionUntilRef.current) {
+        if (!isIgnoring) {
           setTrackPosition(state.position);
         } else if (state.position < 2000) {
           // Accept small positions even during ignore window (track just started from beginning)
@@ -1342,14 +1355,22 @@ export default function StationPage() {
 
   async function handleStopPlayback() {
     if (!spotifyPlayer) return;
+    
+    // Set a flag to ignore player state updates for a moment
+    ignorePositionUntilRef.current = Date.now() + 2000;
+    
     await spotifyPlayer.pause();
+    
+    // Clear all playback state
     setTrackPosition(0);
+    setTrackDuration(0);
     setCurrentTrack(null);
     setIsPlaying(false);
     setCurrentlyPlayingAlbumId(null);
     setCurrentlyPlayingPlaylistId(null);
     setCurrentlyPlayingTrackUri(null);
     setTrackSourceMap({}); // Clear shuffle source info
+    
     // Clear all selections
     setSelectedPlaylists(new Set());
     setManualSelections(new Set());
