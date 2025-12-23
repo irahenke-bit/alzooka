@@ -979,7 +979,7 @@ export default function StationPage() {
       
       const trackUris = tracksToPlay.map(t => t.uri);
       
-      // Transfer playback to this device with play: true to start immediately
+      // Transfer playback to this device (don't auto-play yet)
       await fetch("https://api.spotify.com/v1/me/player", {
         method: "PUT",
         headers: {
@@ -988,11 +988,11 @@ export default function StationPage() {
         },
         body: JSON.stringify({
           device_ids: [spotifyDeviceId],
-          play: true,
+          play: false,
         }),
       });
       
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // Now start playing the specific tracks
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -1012,6 +1012,14 @@ export default function StationPage() {
         console.error("Playlist play failed:", errText);
         alert("Failed to start playlist playback");
         return;
+      }
+      
+      // Wait a moment then ensure playback actually starts with audio
+      await new Promise(resolve => setTimeout(resolve, 100));
+      try {
+        await spotifyPlayer.resume();
+      } catch {
+        // Ignore if already playing
       }
       
       setTrackPosition(0);
@@ -1659,8 +1667,17 @@ export default function StationPage() {
       }),
     });
     
+    // Wait a moment then ensure playback actually starts with audio
+    await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      await spotifyPlayer.resume();
+    } catch {
+      // Ignore if already playing
+    }
+    
     // Force UI to show 0
     setTrackPosition(0);
+    setIsPlaying(true);
   }
 
   async function handleSeek(position: number) {
