@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -161,6 +161,7 @@ export default function StationPage() {
   const [trackPosition, setTrackPosition] = useState(0);
   const [trackDuration, setTrackDuration] = useState(0);
   const [currentlyPlayingAlbumId, setCurrentlyPlayingAlbumId] = useState<string | null>(null);
+  const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -275,8 +276,16 @@ export default function StationPage() {
         if (!state) return;
         setIsPlaying(!state.paused);
         
-        // Always use Spotify's authoritative position
-        setTrackPosition(state.position);
+        // Only update position if we're not in the "ignore stale position" window
+        const now = Date.now();
+        if (now > ignorePositionUntilRef.current) {
+          // If position is very small (under 2 seconds), always accept it
+          // Otherwise, only accept if we're not ignoring
+          setTrackPosition(state.position);
+        } else if (state.position < 2000) {
+          // Accept small positions even during ignore window (track just started)
+          setTrackPosition(state.position);
+        }
         
         setTrackDuration(state.duration);
         if (state.track_window?.current_track) {
@@ -1222,6 +1231,9 @@ export default function StationPage() {
     
     // Track which album is playing
     setCurrentlyPlayingAlbumId(album.id);
+    
+    // Ignore stale position updates for the next 1 second
+    ignorePositionUntilRef.current = Date.now() + 1000;
     
     // FIRST: Pause any current playback and reset position
     try {
