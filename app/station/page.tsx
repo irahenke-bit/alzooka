@@ -2777,6 +2777,9 @@ export default function StationPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "70vh", overflowY: "auto" }}>
                 {playlists.map(playlist => {
                   const isSelected = selectedPlaylists.has(playlist.id);
+                  // Check if currently playing track is in this playlist
+                  const playlistTrackList = playlistTracks[playlist.id] || [];
+                  const hasCurrentTrack = currentlyPlayingTrackUri && playlistTrackList.some(t => t.uri === currentlyPlayingTrackUri);
                   return (
                     <div key={playlist.id}>
                       <div
@@ -2785,9 +2788,17 @@ export default function StationPage() {
                           alignItems: "center",
                           gap: 10,
                           padding: 10,
-                          background: isSelected ? "rgba(30, 215, 96, 0.1)" : "rgba(240, 235, 224, 0.03)",
+                          background: hasCurrentTrack 
+                            ? "rgba(30, 215, 96, 0.25)" 
+                            : isSelected 
+                              ? "rgba(30, 215, 96, 0.1)" 
+                              : "rgba(240, 235, 224, 0.03)",
                           borderRadius: viewingPlaylist === playlist.id ? "10px 10px 0 0" : 10,
-                          border: isSelected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)",
+                          border: hasCurrentTrack 
+                            ? "1px solid rgba(30, 215, 96, 0.5)" 
+                            : isSelected 
+                              ? "1px solid rgba(30, 215, 96, 0.3)" 
+                              : "1px solid rgba(240, 235, 224, 0.1)",
                           borderBottom: viewingPlaylist === playlist.id ? "none" : undefined,
                         }}
                       >
