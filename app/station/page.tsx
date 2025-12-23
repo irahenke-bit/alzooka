@@ -183,6 +183,12 @@ export default function StationPage() {
   const [currentlyPlayingTrackUri, setCurrentlyPlayingTrackUri] = useState<string | null>(null);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
+  // Queue management for sequential playlist playback
+  const [currentPlaylistQueue, setCurrentPlaylistQueue] = useState<string[]>([]); // Array of track URIs
+  const [currentQueueIndex, setCurrentQueueIndex] = useState<number>(0);
+  const [queuedNextTrack, setQueuedNextTrack] = useState<{ playlistId: string; trackUri: string } | null>(null); // User-queued track to play next
+  const lastTrackEndTimeRef = useRef<number>(0); // To prevent duplicate end detection
+  
   const router = useRouter();
   const supabase = createBrowserClient();
   
@@ -617,6 +623,96 @@ export default function StationPage() {
     };
   }, [station, manualSelections, selectedPlaylists, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration]);
 
+  // Detect track end and handle queue advancement / queued next track
+  useEffect(() => {
+    // Only act if paused and near end of track (within 2 seconds of end)
+    if (!isPlaying && trackDuration > 0 && trackPosition >= trackDuration - 2000) {
+      const now = Date.now();
+      // Prevent duplicate handling (debounce)
+      if (now - lastTrackEndTimeRef.current < 3000) return;
+      lastTrackEndTimeRef.current = now;
+      
+      // Check if user has queued a next track
+      if (queuedNextTrack && spotifyPlayer && spotifyDeviceId && spotifyToken) {
+        // Play the queued track and continue from there
+        const playlist = playlists.find(p => p.id === queuedNextTrack.playlistId);
+        if (playlist) {
+          const tracks = playlistTracks[playlist.id];
+          if (tracks) {
+            const startIndex = tracks.findIndex(t => t.uri === queuedNextTrack.trackUri);
+            if (startIndex >= 0) {
+              const remainingTracks = tracks.slice(startIndex);
+              const uris = remainingTracks.map(t => t.uri);
+              
+              // Update source map
+              const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+              remainingTracks.forEach(t => {
+                newSourceMap[t.uri] = { albumName: t.album || "", playlistName: playlist.name };
+              });
+              setTrackSourceMap(prev => ({ ...prev, ...newSourceMap }));
+              
+              // Play the queued tracks
+              fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+                method: "PUT",
+                headers: {
+                  "Authorization": `Bearer ${spotifyToken}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ uris, position_ms: 0 }),
+              }).then(() => {
+                setCurrentPlaylistQueue(uris);
+                setCurrentQueueIndex(0);
+                setCurrentlyPlayingPlaylistId(playlist.id);
+                setIsPlaying(true);
+              });
+              
+              setQueuedNextTrack(null);
+              return;
+            }
+          }
+        }
+        setQueuedNextTrack(null);
+      }
+      
+      // No queued track - check if we need to advance to next playlist
+      if (currentlyPlayingPlaylistId) {
+        const currentPlaylistIndex = playlists.findIndex(p => p.id === currentlyPlayingPlaylistId);
+        if (currentPlaylistIndex >= 0 && currentPlaylistIndex < playlists.length - 1) {
+          // There's a next playlist - play it
+          const nextPlaylist = playlists[currentPlaylistIndex + 1];
+          const nextTracks = playlistTracks[nextPlaylist.id];
+          
+          if (nextTracks && nextTracks.length > 0 && spotifyDeviceId && spotifyToken) {
+            const uris = nextTracks.map(t => t.uri);
+            
+            // Update source map
+            const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+            nextTracks.forEach(t => {
+              newSourceMap[t.uri] = { albumName: t.album || "", playlistName: nextPlaylist.name };
+            });
+            setTrackSourceMap(prev => ({ ...prev, ...newSourceMap }));
+            
+            // Play the next playlist
+            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+              method: "PUT",
+              headers: {
+                "Authorization": `Bearer ${spotifyToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ uris, position_ms: 0 }),
+            }).then(() => {
+              setCurrentPlaylistQueue(uris);
+              setCurrentQueueIndex(0);
+              setCurrentlyPlayingPlaylistId(nextPlaylist.id);
+              setViewingPlaylist(nextPlaylist.id); // Expand the next playlist
+              setIsPlaying(true);
+            });
+          }
+        }
+      }
+    }
+  }, [isPlaying, trackPosition, trackDuration, queuedNextTrack, currentlyPlayingPlaylistId, playlists, playlistTracks, spotifyPlayer, spotifyDeviceId, spotifyToken]);
+
   async function handleCreateStation() {
     if (!user || !stationName.trim()) return;
     
@@ -1027,6 +1123,10 @@ export default function StationPage() {
       }
       
       const trackUris = tracksToPlay.map(t => t.uri);
+      
+      // Set the queue for sequential playback tracking
+      setCurrentPlaylistQueue(trackUris);
+      setCurrentQueueIndex(0);
       
       // Start playing the specific tracks directly on our device
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -3263,8 +3363,13 @@ export default function StationPage() {
                                 onClick={() => {
                                   if (isSelectedStart) {
                                     setSelectedStartTrack(null);
+                                    setQueuedNextTrack(null); // Also clear queued next
                                   } else {
                                     setSelectedStartTrack({ playlistId: playlist.id, trackUri: track.uri });
+                                    // If something is currently playing, also queue this as the next track
+                                    if (isPlaying && currentlyPlayingTrackUri) {
+                                      setQueuedNextTrack({ playlistId: playlist.id, trackUri: track.uri });
+                                    }
                                   }
                                 }}
                                 style={{ 
@@ -3338,7 +3443,11 @@ export default function StationPage() {
                                     {isPlaying ? "⏸" : "▶"}
                                   </button>
                                 )}
-                                {isSelectedStart && !isCurrentTrack && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>START</span>}
+                                {isSelectedStart && !isCurrentTrack && (
+                                  <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>
+                                    {queuedNextTrack?.playlistId === playlist.id && queuedNextTrack?.trackUri === track.uri ? "NEXT" : "START"}
+                                  </span>
+                                )}
                               </div>
                             );
                           })}
