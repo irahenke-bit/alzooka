@@ -3211,7 +3211,7 @@ export default function StationPage() {
                       </div>
                       {/* Expanded Playlist Tracks */}
                       {viewingPlaylist === playlist.id && playlistTracks[playlist.id] && (
-                        <div style={{ padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
+                        <div style={{ padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12, minWidth: 0 }}>
                           {playlistTracks[playlist.id].map((track, idx) => {
                             const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
                             const isCurrentlyPlaying = isCurrentTrack && isPlaying;
@@ -3260,18 +3260,19 @@ export default function StationPage() {
                                     handleToggleTrackRemoval(playlist.id, track.uri);
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  style={{ cursor: "pointer", accentColor: "#e57373" }}
+                                  style={{ cursor: "pointer", accentColor: "#e57373", flexShrink: 0, width: 14, height: 14 }}
                                 />
-                                <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
+                                <span style={{ opacity: 0.5, width: 24, flexShrink: 0, textAlign: "right" }}>{idx + 1}</span>
                                 <span style={{ 
                                   flex: 1, 
+                                  minWidth: 0,
                                   overflow: "hidden", 
                                   textOverflow: "ellipsis", 
                                   whiteSpace: "nowrap",
                                   fontWeight: isCurrentTrack ? 600 : 400,
-                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
+                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
                                 }}>
-                                  {track.name}
+                                  {track.name || "(Unknown Track)"}
                                 </span>
                                 {track.artist && <span style={{ opacity: 0.5, fontSize: 10, flexShrink: 0 }}>{track.artist}</span>}
                                 {track.album && <span style={{ opacity: 0.4, fontSize: 9, flexShrink: 0, marginLeft: 4 }}>• {track.album}</span>}
