@@ -1350,6 +1350,12 @@ export default function StationPage() {
     setCurrentlyPlayingPlaylistId(null);
     setCurrentlyPlayingTrackUri(null);
     setTrackSourceMap({}); // Clear shuffle source info
+    // Clear all selections
+    setSelectedPlaylists(new Set());
+    setManualSelections(new Set());
+    setSelectAll(false);
+    // Update albums to be unselected
+    setAlbums(prev => prev.map(a => ({ ...a, is_selected: false })));
   }
 
   // Play a single album - either full album or just selected tracks from it
