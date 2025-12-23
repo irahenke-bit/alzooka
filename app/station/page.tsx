@@ -2780,14 +2780,17 @@ export default function StationPage() {
                           </button>
                           {/* Play/Pause Toggle */}
                           {(() => {
-                            const isThisAlbumPlaying = isPlaying && currentlyPlayingAlbumId === album.id;
+                            const isThisAlbumActive = currentlyPlayingAlbumId === album.id;
+                            const isThisAlbumPlaying = isPlaying && isThisAlbumActive;
                             return (
                               <button
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  if (isThisAlbumPlaying) {
+                                  if (isThisAlbumActive) {
+                                    // This album is the active source - just toggle play/pause
                                     handleTogglePlayback();
                                   } else {
+                                    // Different album - start it
                                     handlePlayAlbum(album);
                                   }
                                 }}
@@ -3129,14 +3132,17 @@ export default function StationPage() {
                           </button>
                           {/* Play/Pause Toggle */}
                           {(() => {
-                            const isThisPlaylistPlaying = isPlaying && currentlyPlayingPlaylistId === playlist.id;
+                            const isThisPlaylistActive = currentlyPlayingPlaylistId === playlist.id;
+                            const isThisPlaylistPlaying = isPlaying && isThisPlaylistActive;
                             return (
                               <button
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  if (isThisPlaylistPlaying) {
+                                  if (isThisPlaylistActive) {
+                                    // This playlist is the active source - just toggle play/pause
                                     handleTogglePlayback();
                                   } else {
+                                    // Different playlist - start it from beginning
                                     handlePlayPlaylist(playlist.id);
                                   }
                                 }}
