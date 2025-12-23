@@ -188,6 +188,8 @@ export default function StationPage() {
   const [currentQueueIndex, setCurrentQueueIndex] = useState<number>(0);
   const [queuedNextTrack, setQueuedNextTrack] = useState<{ playlistId: string; trackUri: string } | null>(null); // User-queued track to play next
   const lastTrackEndTimeRef = useRef<number>(0); // To prevent duplicate end detection
+  const wasPlayingRef = useRef<boolean>(false); // Track previous playing state
+  const manualPauseRef = useRef<boolean>(false); // Track if user manually paused
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -625,12 +627,23 @@ export default function StationPage() {
 
   // Detect track end and handle queue advancement / queued next track
   useEffect(() => {
-    // Only act if paused and near end of track (within 2 seconds of end)
-    if (!isPlaying && trackDuration > 0 && trackPosition >= trackDuration - 2000) {
+    // Detect transition from playing to paused (track ended)
+    const wasPlaying = wasPlayingRef.current;
+    wasPlayingRef.current = isPlaying;
+    
+    // Reset manual pause flag when playing resumes
+    if (isPlaying && !wasPlaying) {
+      manualPauseRef.current = false;
+    }
+    
+    // If we were playing and now we're not, and it wasn't a manual pause
+    if (wasPlaying && !isPlaying && !manualPauseRef.current) {
       const now = Date.now();
       // Prevent duplicate handling (debounce)
       if (now - lastTrackEndTimeRef.current < 3000) return;
       lastTrackEndTimeRef.current = now;
+      
+      console.log("Track ended - checking for next track or playlist");
       
       // Check if user has queued a next track
       if (queuedNextTrack && spotifyPlayer && spotifyDeviceId && spotifyToken) {
@@ -652,6 +665,7 @@ export default function StationPage() {
               setTrackSourceMap(prev => ({ ...prev, ...newSourceMap }));
               
               // Play the queued tracks
+              console.log("Playing queued track:", queuedNextTrack.trackUri, "with", uris.length, "tracks");
               fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
                 method: "PUT",
                 headers: {
@@ -667,6 +681,7 @@ export default function StationPage() {
               });
               
               setQueuedNextTrack(null);
+              setSelectedStartTrack(null); // Clear the visual indicator too
               return;
             }
           }
@@ -1655,6 +1670,10 @@ export default function StationPage() {
 
   async function handleTogglePlayback() {
     if (!spotifyPlayer) return;
+    // If currently playing, this is a manual pause
+    if (isPlaying) {
+      manualPauseRef.current = true;
+    }
     await spotifyPlayer.togglePlay();
   }
 
