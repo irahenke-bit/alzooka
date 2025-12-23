@@ -1132,10 +1132,13 @@ export default function StationPage() {
     }
 
     const selectedAlbums = albums.filter(a => a.is_selected);
+    const selectedPlaylistsList = playlists.filter(p => selectedPlaylists.has(p.id));
     console.log("Selected albums:", selectedAlbums.length, selectedAlbums.map(a => a.spotify_name));
+    console.log("Selected playlists:", selectedPlaylistsList.length, selectedPlaylistsList.map(p => p.name));
     
-    if (selectedAlbums.length === 0) {
-      alert("No albums selected");
+    // Check if anything is selected (albums OR playlists)
+    if (selectedAlbums.length === 0 && selectedPlaylistsList.length === 0) {
+      alert("No albums or playlists selected");
       return;
     }
 
@@ -1216,7 +1219,7 @@ export default function StationPage() {
       console.log("Total unique tracks collected:", allTrackUris.length);
       
       if (allTrackUris.length === 0) {
-        alert("No tracks found in selected albums");
+        alert("No tracks found in selected albums or playlists");
         return;
       }
       
