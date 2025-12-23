@@ -1213,6 +1213,19 @@ export default function StationPage() {
     // Reset position and play
     setTrackPosition(0);
     
+    // Activate player element (required for browser autoplay policy)
+    await spotifyPlayer.activateElement();
+    
+    // Transfer playback to our device first
+    await fetch("https://api.spotify.com/v1/me/player", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${spotifyToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
+    });
+    
     // Start playback with the track URIs in order
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
@@ -1222,6 +1235,9 @@ export default function StationPage() {
       },
       body: JSON.stringify({ uris: tracksToPlay.map(t => t.uri) }),
     });
+    
+    // Ensure playback starts
+    await spotifyPlayer.resume();
   }
 
   async function handleSeek(position: number) {
