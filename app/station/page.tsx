@@ -1218,7 +1218,7 @@ export default function StationPage() {
     
     if (tracksToPlay.length === 0) return;
     
-    // Reset position and play
+    // Reset position immediately
     setTrackPosition(0);
     
     // Activate player element (required for browser autoplay policy)
@@ -1234,14 +1234,17 @@ export default function StationPage() {
       body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
     });
     
-    // Start playback with the track URIs in order
+    // Start playback with the track URIs in order, starting at position 0
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ uris: tracksToPlay.map(t => t.uri) }),
+      body: JSON.stringify({ 
+        uris: tracksToPlay.map(t => t.uri),
+        position_ms: 0  // Explicitly start from beginning
+      }),
     });
     
     // Ensure playback starts
@@ -2211,10 +2214,10 @@ export default function StationPage() {
                             disabled={!spotifyConnected || !playerReady}
                             style={{
                               padding: "4px 8px",
-                              fontSize: 10,
-                              background: "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
-                              border: "none",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
                               borderRadius: 8,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
@@ -2222,33 +2225,16 @@ export default function StationPage() {
                           >
                             ⏮
                           </button>
-                          {/* Pause */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
-                            disabled={!spotifyConnected || !playerReady}
-                            style={{
-                              padding: "4px 8px",
-                              fontSize: 10,
-                              background: "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
-                              border: "none",
-                              borderRadius: 8,
-                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                            }}
-                            title="Pause"
-                          >
-                            ⏸
-                          </button>
                           {/* Stop */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
                               padding: "4px 8px",
-                              fontSize: 10,
-                              background: "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
-                              border: "none",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#e57373" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(229, 115, 115, 0.4)" : "1px solid transparent",
                               borderRadius: 8,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
@@ -2256,13 +2242,20 @@ export default function StationPage() {
                           >
                             ⏹
                           </button>
-                          {/* Play */}
+                          {/* Play/Pause Toggle */}
                           <button
-                            onClick={(e) => { e.stopPropagation(); handlePlayAlbum(album); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if (isPlaying) {
+                                handleTogglePlayback();
+                              } else {
+                                handlePlayAlbum(album);
+                              }
+                            }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 10px",
-                              fontSize: 10,
+                              padding: "4px 12px",
+                              fontSize: 12,
                               fontWeight: 600,
                               background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
                               color: "#fff",
@@ -2270,7 +2263,7 @@ export default function StationPage() {
                               borderRadius: 12,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
-                            title={(() => {
+                            title={isPlaying ? "Pause" : (() => {
                               const albumTracksList = albumTracks[album.id] || [];
                               const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
                               const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
@@ -2279,7 +2272,7 @@ export default function StationPage() {
                                 : 'Play full album';
                             })()}
                           >
-                            ▶
+                            {isPlaying ? "⏸" : "▶"}
                           </button>
                           {/* Forward */}
                           <button
@@ -2287,10 +2280,10 @@ export default function StationPage() {
                             disabled={!spotifyConnected || !playerReady}
                             style={{
                               padding: "4px 8px",
-                              fontSize: 10,
-                              background: "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
-                              border: "none",
+                              fontSize: 12,
+                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
+                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
+                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
                               borderRadius: 8,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
