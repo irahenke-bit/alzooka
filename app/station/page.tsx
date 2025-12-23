@@ -57,6 +57,7 @@ type SpotifyTrack = {
   uri: string;
   name: string;
   artist: string;
+  album?: string;
   image: string;
   duration_ms: number;
 };
@@ -513,6 +514,7 @@ export default function StationPage() {
               uri: t.uri,
               name: t.name,
               artist: t.artists.map(a => a.name).join(", "),
+              album: album.spotify_name, // Include album name
               image: album.spotify_image_url || "",
               duration_ms: t.duration_ms,
             }));
@@ -571,6 +573,7 @@ export default function StationPage() {
       spotify_uri: track.uri,
       spotify_name: track.name,
       spotify_artist: track.artist,
+      spotify_album: track.album || null,
       spotify_image_url: track.image,
       track_order: idx,
     }));
@@ -605,6 +608,7 @@ export default function StationPage() {
       spotify_uri: track.uri,
       spotify_name: track.name,
       spotify_artist: track.artist,
+      spotify_album: track.album || null,
       spotify_image_url: track.image,
       track_order: startOrder + idx,
     }));
@@ -632,6 +636,7 @@ export default function StationPage() {
             uri: t.spotify_uri,
             name: t.spotify_name,
             artist: t.spotify_artist || "",
+            album: t.spotify_album || "",
             image: t.spotify_image_url || "",
             duration_ms: 0,
           })),
@@ -676,6 +681,7 @@ export default function StationPage() {
           uri: t.spotify_uri,
           name: t.spotify_name,
           artist: t.spotify_artist || "",
+          album: t.spotify_album || "",
           image: t.spotify_image_url || "",
           duration_ms: 0,
         }));
@@ -1320,6 +1326,7 @@ export default function StationPage() {
         uri: t.uri,
         name: t.name,
         artist: t.artists.map((a: { name: string }) => a.name).join(", "),
+        album: album.spotify_name, // Include album name
         image: album.spotify_image_url || "",
         duration_ms: t.duration_ms,
       }));
@@ -2665,7 +2672,29 @@ export default function StationPage() {
                                 }}>
                                   {track.name}
                                 </span>
-                                {isCurrentlyPlaying && <span style={{ fontSize: 10, color: "var(--alzooka-gold)" }}>▶</span>}
+                                {isCurrentlyPlaying && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
+                                    style={{
+                                      background: "var(--alzooka-gold)",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                      fontSize: 10,
+                                      color: "#000",
+                                      marginLeft: 4,
+                                      flexShrink: 0,
+                                    }}
+                                    title={isPlaying ? "Pause" : "Play"}
+                                  >
+                                    {isPlaying ? "⏸" : "▶"}
+                                  </button>
+                                )}
                                 {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>}
                               </div>
                             );
@@ -2893,8 +2922,31 @@ export default function StationPage() {
                                 }}>
                                   {track.name}
                                 </span>
-                                {track.artist && <span style={{ opacity: 0.5, fontSize: 10 }}>{track.artist}</span>}
-                                {isCurrentlyPlaying && <span style={{ fontSize: 10, color: "var(--alzooka-gold)", marginLeft: 4 }}>▶</span>}
+                                {track.artist && <span style={{ opacity: 0.5, fontSize: 10, flexShrink: 0 }}>{track.artist}</span>}
+                                {track.album && <span style={{ opacity: 0.4, fontSize: 9, flexShrink: 0, marginLeft: 4 }}>• {track.album}</span>}
+                                {isCurrentlyPlaying && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
+                                    style={{
+                                      background: "var(--alzooka-gold)",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                      fontSize: 10,
+                                      color: "#000",
+                                      marginLeft: 4,
+                                      flexShrink: 0,
+                                    }}
+                                    title={isPlaying ? "Pause" : "Play"}
+                                  >
+                                    {isPlaying ? "⏸" : "▶"}
+                                  </button>
+                                )}
                                 {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>START</span>}
                               </div>
                             );
