@@ -987,6 +987,8 @@ export default function StationPage() {
   }
 
   const selectedCount = albums.filter(a => a.is_selected).length;
+  const selectedPlaylistCount = selectedPlaylists.size;
+  const hasAnySelected = selectedCount > 0 || selectedPlaylistCount > 0;
 
   // Spotify playback functions
   async function handleConnectSpotify() {
@@ -1435,22 +1437,28 @@ export default function StationPage() {
                 <>
                   <button
                     onClick={handleShufflePlay}
-                    disabled={selectedCount === 0}
+                    disabled={!hasAnySelected}
                     style={{
                       padding: "12px 24px",
                       fontSize: 14,
                       fontWeight: 600,
-                      background: selectedCount > 0 ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                      background: hasAnySelected ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
                       color: "#fff",
                       border: "none",
                       borderRadius: 24,
-                      cursor: selectedCount > 0 ? "pointer" : "not-allowed",
+                      cursor: hasAnySelected ? "pointer" : "not-allowed",
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
                     }}
                   >
-                    🔀 Shuffle Play ({selectedCount} albums)
+                    <span>🔀 Shuffle Play</span>
+                    <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", fontSize: 12, lineHeight: 1.3 }}>
+                      <span>({selectedCount} album{selectedCount !== 1 ? "s" : ""})</span>
+                      {selectedPlaylistCount > 0 && (
+                        <span>({selectedPlaylistCount} playlist{selectedPlaylistCount !== 1 ? "s" : ""})</span>
+                      )}
+                    </span>
                   </button>
                   <button
                     onClick={handleDisconnectSpotify}
