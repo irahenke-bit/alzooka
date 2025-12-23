@@ -960,11 +960,8 @@ export default function StationPage() {
     ignorePositionUntilRef.current = Date.now() + 1000;
     
     try {
-      // Pause first
-      try { await spotifyPlayer.pause(); } catch {}
-      setTrackPosition(0);
-      
       await spotifyPlayer.activateElement();
+      setTrackPosition(0);
       
       // Check if there's a selected start track for this playlist
       let tracksToPlay = tracks;
@@ -979,22 +976,7 @@ export default function StationPage() {
       
       const trackUris = tracksToPlay.map(t => t.uri);
       
-      // Transfer playback to this device (don't auto-play yet)
-      await fetch("https://api.spotify.com/v1/me/player", {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${spotifyToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          device_ids: [spotifyDeviceId],
-          play: false,
-        }),
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Now start playing the specific tracks
+      // Start playing the specific tracks directly on our device
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
@@ -1014,12 +996,13 @@ export default function StationPage() {
         return;
       }
       
-      // Wait a moment then ensure playback actually starts with audio
-      await new Promise(resolve => setTimeout(resolve, 100));
-      try {
-        await spotifyPlayer.resume();
-      } catch {
-        // Ignore if already playing
+      // Wait for track to load, then ensure audio starts via togglePlay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Get current state and toggle if needed to start audio
+      const state = await spotifyPlayer.getCurrentState() as { paused?: boolean } | null;
+      if (state && state.paused) {
+        await spotifyPlayer.togglePlay();
       }
       
       setTrackPosition(0);
@@ -1632,27 +1615,9 @@ export default function StationPage() {
     // Ignore stale position updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
     
-    // FIRST: Pause any current playback and reset position
-    try {
-      await spotifyPlayer.pause();
-    } catch {}
-    setTrackPosition(0);
-    
     // Activate player element (required for browser autoplay policy)
     await spotifyPlayer.activateElement();
-    
-    // Transfer playback to our device (don't auto-play yet)
-    await fetch("https://api.spotify.com/v1/me/player", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${spotifyToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
-    });
-    
-    // Wait for device transfer
-    await new Promise(resolve => setTimeout(resolve, 200));
+    setTrackPosition(0);
     
     // Start fresh playback with the track URIs starting at position 0
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -1667,12 +1632,13 @@ export default function StationPage() {
       }),
     });
     
-    // Wait a moment then ensure playback actually starts with audio
-    await new Promise(resolve => setTimeout(resolve, 100));
-    try {
-      await spotifyPlayer.resume();
-    } catch {
-      // Ignore if already playing
+    // Wait for track to load, then ensure audio starts via togglePlay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Get current state and toggle if needed to start audio
+    const state = await spotifyPlayer.getCurrentState() as { paused?: boolean } | null;
+    if (state && state.paused) {
+      await spotifyPlayer.togglePlay();
     }
     
     // Force UI to show 0
