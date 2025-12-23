@@ -1171,18 +1171,15 @@ export default function StationPage() {
 
   // Play a single album - either full album or just selected tracks from it
   async function handlePlayAlbum(album: StationAlbum) {
-    if (!spotifyPlayer || !spotifyDeviceId) return;
+    if (!spotifyPlayer || !spotifyDeviceId || !spotifyToken) return;
     
     // Get tracks for this album
     let tracks = albumTracks[album.id];
     if (!tracks) {
       // Fetch tracks if not already loaded
-      const token = await getSpotifyToken();
-      if (!token) return;
-      
       const albumId = album.spotify_uri.split(":")[2];
       const res = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${spotifyToken}` },
       });
       if (!res.ok) return;
       const data = await res.json();
@@ -1216,14 +1213,11 @@ export default function StationPage() {
     // Reset position and play
     setTrackPosition(0);
     
-    const token = await getSpotifyToken();
-    if (!token) return;
-    
     // Start playback with the track URIs in order
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${spotifyToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ uris: tracksToPlay.map(t => t.uri) }),
