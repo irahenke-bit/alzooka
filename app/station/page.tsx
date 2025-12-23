@@ -1411,7 +1411,7 @@ export default function StationPage() {
     <div style={{ minHeight: "100vh" }}>
       <Header user={user} userUsername={userUsername} userAvatarUrl={userAvatarUrl} />
       
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: 20 }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: 20 }}>
         {/* Station Header */}
         <div style={{ 
           background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(212, 168, 75, 0.15) 100%)",
