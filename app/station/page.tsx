@@ -1223,27 +1223,30 @@ export default function StationPage() {
     // Track which album is playing
     setCurrentlyPlayingAlbumId(album.id);
     
-    // Reset position immediately
+    // FIRST: Pause any current playback and reset position
+    try {
+      await spotifyPlayer.pause();
+    } catch {}
     setTrackPosition(0);
     
     // Activate player element (required for browser autoplay policy)
     await spotifyPlayer.activateElement();
     
-    // Transfer playback to our device and start playing
+    // Transfer playback to our device (don't auto-play yet)
     await fetch("https://api.spotify.com/v1/me/player", {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: true }),
+      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
     });
     
-    // Small delay to ensure device is active
-    await new Promise(resolve => setTimeout(resolve, 150));
+    // Wait for device transfer
+    await new Promise(resolve => setTimeout(resolve, 200));
     
-    // Start playback with the track URIs - position_ms: 0 forces start from beginning
-    const playResponse = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+    // Start fresh playback with the track URIs starting at position 0
+    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
@@ -1255,9 +1258,8 @@ export default function StationPage() {
       }),
     });
     
-    if (playResponse.ok) {
-      setTrackPosition(0);
-    }
+    // Force UI to show 0
+    setTrackPosition(0);
   }
 
   async function handleSeek(position: number) {
