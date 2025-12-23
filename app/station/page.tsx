@@ -1234,6 +1234,9 @@ export default function StationPage() {
       body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
     });
     
+    // Small delay to ensure device is ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Start playback with the track URIs in order, starting at position 0
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
@@ -1243,12 +1246,17 @@ export default function StationPage() {
       },
       body: JSON.stringify({ 
         uris: tracksToPlay.map(t => t.uri),
-        position_ms: 0  // Explicitly start from beginning
+        position_ms: 0
       }),
     });
     
+    // Wait a moment then seek to position 0 to ensure we're at the start
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await spotifyPlayer.seek(0);
+    
     // Ensure playback starts
     await spotifyPlayer.resume();
+    setTrackPosition(0);
   }
 
   async function handleSeek(position: number) {
