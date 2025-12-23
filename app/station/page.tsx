@@ -1640,8 +1640,14 @@ export default function StationPage() {
       const trackUri = station.last_track_uri;
       const position = station.last_track_position || 0;
       
+      // Ignore player state updates for a moment to prevent flicker
+      ignorePositionUntilRef.current = Date.now() + 2000;
+      
       try {
-        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+        // First activate the player element
+        await spotifyPlayer.activateElement();
+        
+        const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
           method: "PUT",
           headers: {
             "Authorization": `Bearer ${spotifyToken}`,
@@ -1652,9 +1658,18 @@ export default function StationPage() {
             position_ms: position,
           }),
         });
-        setIsPlaying(true);
+        
+        if (res.ok) {
+          setIsPlaying(true);
+          setTrackPosition(position);
+        } else {
+          console.error("Failed to resume track, status:", res.status);
+          // Reset so user can try again
+          hasPendingRestoreRef.current = true;
+        }
       } catch (err) {
         console.error("Failed to resume saved track:", err);
+        hasPendingRestoreRef.current = true;
       }
       return;
     }
