@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -925,6 +925,9 @@ export default function StationPage() {
       )
     : albums;
 
+  // Memoize selected track URIs for faster lookup
+  const selectedTrackUris = useMemo(() => new Set(selectedTracks.map(t => t.uri)), [selectedTracks]);
+
   function handleSearch() {
     setActiveSearch(searchInput);
   }
@@ -1322,7 +1325,7 @@ export default function StationPage() {
       }
     } else if (selectedFromThisAlbum.length > 0) {
       // Play only selected tracks, but in album order
-      tracksToPlay = tracks.filter(t => selectedTracks.some(st => st.uri === t.uri));
+      tracksToPlay = tracks.filter(t => selectedTrackUris.has(t.uri));
     } else {
       // Play full album in order
       tracksToPlay = tracks;
@@ -2579,7 +2582,7 @@ export default function StationPage() {
                           {albumTracks[album.id].map((track, idx) => {
                             const isCurrentlyPlaying = currentlyPlayingTrackUri === track.uri && isPlaying;
                             const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
-                            const isInPlaylistSelection = selectedTracks.some(t => t.uri === track.uri);
+                            const isInPlaylistSelection = selectedTrackUris.has(track.uri);
                             
                             return (
                               <div
@@ -2625,6 +2628,8 @@ export default function StationPage() {
                                     justifyContent: "center", 
                                     fontSize: 10,
                                     flexShrink: 0,
+                                    cursor: "pointer",
+                                    transition: "background 0.1s, border 0.1s",
                                   }}
                                 >
                                   {isInPlaylistSelection ? "✓" : ""}
