@@ -2661,7 +2661,8 @@ export default function StationPage() {
                       {expandedAlbums.has(album.id) && albumTracks[album.id] && (
                         <div style={{ marginLeft: 28, padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
                           {albumTracks[album.id].map((track, idx) => {
-                            const isCurrentlyPlaying = currentlyPlayingTrackUri === track.uri && isPlaying;
+                            const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
+                            const isCurrentlyPlaying = isCurrentTrack && isPlaying;
                             const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
                             const isInPlaylistSelection = selectedTrackUris.has(track.uri);
                             
@@ -2682,13 +2683,13 @@ export default function StationPage() {
                                   alignItems: "center",
                                   gap: 8,
                                   cursor: "pointer",
-                                  background: isCurrentlyPlaying 
-                                    ? "rgba(212, 168, 75, 0.25)" 
+                                  background: isCurrentTrack 
+                                    ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
                                     : isSelectedStart 
                                       ? "rgba(30, 215, 96, 0.3)" 
                                       : "transparent",
                                   borderRadius: 4,
-                                  borderLeft: isCurrentlyPlaying 
+                                  borderLeft: isCurrentTrack 
                                     ? "3px solid var(--alzooka-gold)" 
                                     : isSelectedStart 
                                       ? "3px solid #1DB954" 
@@ -2721,12 +2722,12 @@ export default function StationPage() {
                                   overflow: "hidden", 
                                   textOverflow: "ellipsis", 
                                   whiteSpace: "nowrap",
-                                  fontWeight: isCurrentlyPlaying ? 600 : 400,
-                                  color: isCurrentlyPlaying ? "var(--alzooka-gold)" : "inherit",
+                                  fontWeight: isCurrentTrack ? 600 : 400,
+                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
                                 }}>
                                   {track.name}
                                 </span>
-                                {isCurrentlyPlaying && (
+                                {isCurrentTrack && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
                                     style={{
@@ -2749,7 +2750,7 @@ export default function StationPage() {
                                     {isPlaying ? "⏸" : "▶"}
                                   </button>
                                 )}
-                                {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>}
+                                {isSelectedStart && !isCurrentTrack && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>}
                               </div>
                             );
                           })}
@@ -2933,7 +2934,8 @@ export default function StationPage() {
                       {viewingPlaylist === playlist.id && playlistTracks[playlist.id] && (
                         <div style={{ padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
                           {playlistTracks[playlist.id].map((track, idx) => {
-                            const isCurrentlyPlaying = currentlyPlayingTrackUri === track.uri && isPlaying;
+                            const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
+                            const isCurrentlyPlaying = isCurrentTrack && isPlaying;
                             const isSelectedStart = selectedStartTrack?.playlistId === playlist.id && selectedStartTrack?.trackUri === track.uri;
                             
                             return (
@@ -2952,13 +2954,13 @@ export default function StationPage() {
                                   alignItems: "center", 
                                   gap: 8,
                                   cursor: "pointer",
-                                  background: isCurrentlyPlaying 
-                                    ? "rgba(212, 168, 75, 0.25)" 
+                                  background: isCurrentTrack 
+                                    ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
                                     : isSelectedStart 
                                       ? "rgba(30, 215, 96, 0.3)" 
                                       : "transparent",
                                   borderRadius: 4,
-                                  borderLeft: isCurrentlyPlaying 
+                                  borderLeft: isCurrentTrack 
                                     ? "3px solid var(--alzooka-gold)" 
                                     : isSelectedStart 
                                       ? "3px solid #1DB954" 
@@ -2971,14 +2973,14 @@ export default function StationPage() {
                                   overflow: "hidden", 
                                   textOverflow: "ellipsis", 
                                   whiteSpace: "nowrap",
-                                  fontWeight: isCurrentlyPlaying ? 600 : 400,
-                                  color: isCurrentlyPlaying ? "var(--alzooka-gold)" : "inherit",
+                                  fontWeight: isCurrentTrack ? 600 : 400,
+                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
                                 }}>
                                   {track.name}
                                 </span>
                                 {track.artist && <span style={{ opacity: 0.5, fontSize: 10, flexShrink: 0 }}>{track.artist}</span>}
                                 {track.album && <span style={{ opacity: 0.4, fontSize: 9, flexShrink: 0, marginLeft: 4 }}>• {track.album}</span>}
-                                {isCurrentlyPlaying && (
+                                {isCurrentTrack && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
                                     style={{
@@ -3001,7 +3003,7 @@ export default function StationPage() {
                                     {isPlaying ? "⏸" : "▶"}
                                   </button>
                                 )}
-                                {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>START</span>}
+                                {isSelectedStart && !isCurrentTrack && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>START</span>}
                               </div>
                             );
                           })}
