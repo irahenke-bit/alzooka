@@ -273,7 +273,10 @@ export default function StationPage() {
         } | null;
         if (!state) return;
         setIsPlaying(!state.paused);
+        
+        // Always use Spotify's authoritative position
         setTrackPosition(state.position);
+        
         setTrackDuration(state.duration);
         if (state.track_window?.current_track) {
           setCurrentTrack({
@@ -1156,11 +1159,13 @@ export default function StationPage() {
 
   async function handleNextTrack() {
     if (!spotifyPlayer) return;
+    setTrackPosition(0); // Reset position immediately when skipping
     await spotifyPlayer.nextTrack();
   }
 
   async function handlePreviousTrack() {
     if (!spotifyPlayer) return;
+    setTrackPosition(0); // Reset position immediately when skipping
     await spotifyPlayer.previousTrack();
   }
 
@@ -1177,7 +1182,7 @@ export default function StationPage() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   }
 
-  // Update position timer
+  // Update position timer - resets when track changes
   useEffect(() => {
     if (!isPlaying) return;
     
@@ -1189,7 +1194,7 @@ export default function StationPage() {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [isPlaying, trackDuration]);
+  }, [isPlaying, trackDuration, currentTrack?.name]);
 
   if (loading) {
     return (
