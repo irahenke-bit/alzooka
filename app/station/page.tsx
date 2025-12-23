@@ -162,6 +162,8 @@ export default function StationPage() {
   const [trackDuration, setTrackDuration] = useState(0);
   const [currentlyPlayingAlbumId, setCurrentlyPlayingAlbumId] = useState<string | null>(null);
   const [currentlyPlayingPlaylistId, setCurrentlyPlayingPlaylistId] = useState<string | null>(null);
+  const [selectedStartTrack, setSelectedStartTrack] = useState<{ albumId?: string; playlistId?: string; trackUri: string } | null>(null);
+  const [currentlyPlayingTrackUri, setCurrentlyPlayingTrackUri] = useState<string | null>(null);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
   const router = useRouter();
@@ -269,6 +271,7 @@ export default function StationPage() {
           track_window: {
             current_track: {
               name: string;
+              uri: string;
               artists: { name: string }[];
               album: { images: { url: string }[] };
             };
@@ -295,6 +298,7 @@ export default function StationPage() {
             artist: state.track_window.current_track.artists.map(a => a.name).join(", "),
             image: state.track_window.current_track.album.images[0]?.url || "",
           });
+          setCurrentlyPlayingTrackUri(state.track_window.current_track.uri);
         }
       });
 
@@ -699,7 +703,18 @@ export default function StationPage() {
       
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const trackUris = tracks.map(t => t.uri);
+      // Check if there's a selected start track for this playlist
+      let tracksToPlay = tracks;
+      if (selectedStartTrack?.playlistId === playlistId) {
+        const startIndex = tracks.findIndex(t => t.uri === selectedStartTrack.trackUri);
+        if (startIndex >= 0) {
+          tracksToPlay = tracks.slice(startIndex);
+        }
+        // Clear the selected start track after using it
+        setSelectedStartTrack(null);
+      }
+      
+      const trackUris = tracksToPlay.map(t => t.uri);
       
       await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
@@ -1229,12 +1244,22 @@ export default function StationPage() {
     
     if (!tracks || tracks.length === 0) return;
     
-    // Check if any tracks from THIS album are in selectedTracks
+    // Check if any tracks from THIS album are in selectedTracks (for playlist creation)
     const albumTrackUris = new Set(tracks.map(t => t.uri));
     const selectedFromThisAlbum = selectedTracks.filter(t => albumTrackUris.has(t.uri));
     
     let tracksToPlay: SpotifyTrack[];
-    if (selectedFromThisAlbum.length > 0) {
+    
+    // Check if there's a selected start track for this album
+    if (selectedStartTrack?.albumId === album.id) {
+      // Find the index of the selected track and play from there
+      const startIndex = tracks.findIndex(t => t.uri === selectedStartTrack.trackUri);
+      if (startIndex >= 0) {
+        tracksToPlay = tracks.slice(startIndex);
+      } else {
+        tracksToPlay = tracks;
+      }
+    } else if (selectedFromThisAlbum.length > 0) {
       // Play only selected tracks, but in album order
       tracksToPlay = tracks.filter(t => selectedTracks.some(st => st.uri === t.uri));
     } else {
@@ -1243,6 +1268,11 @@ export default function StationPage() {
     }
     
     if (tracksToPlay.length === 0) return;
+    
+    // Clear the selected start track after using it
+    if (selectedStartTrack?.albumId === album.id) {
+      setSelectedStartTrack(null);
+    }
     
     // Track which album is playing (and clear playlist)
     setCurrentlyPlayingAlbumId(album.id);
@@ -2380,27 +2410,75 @@ export default function StationPage() {
                       {/* Expanded Tracks */}
                       {expandedAlbums.has(album.id) && albumTracks[album.id] && (
                         <div style={{ marginLeft: 28, padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
-                          {albumTracks[album.id].map((track, idx) => (
-                            <div
-                              key={track.uri}
-                              onClick={() => handleToggleTrackSelect(track)}
-                              style={{
-                                padding: "4px 6px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                cursor: "pointer",
-                                background: selectedTracks.some(t => t.uri === track.uri) ? "rgba(30, 215, 96, 0.15)" : "transparent",
-                                borderRadius: 4,
-                              }}
-                            >
-                              <span style={{ width: 16, height: 16, borderRadius: 3, border: selectedTracks.some(t => t.uri === track.uri) ? "none" : "1px solid rgba(255,255,255,0.3)", background: selectedTracks.some(t => t.uri === track.uri) ? "#1DB954" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
-                                {selectedTracks.some(t => t.uri === track.uri) ? "✓" : ""}
-                              </span>
-                              <span style={{ opacity: 0.5, width: 20 }}>{idx + 1}</span>
-                              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.name}</span>
-                            </div>
-                          ))}
+                          {albumTracks[album.id].map((track, idx) => {
+                            const isCurrentlyPlaying = currentlyPlayingTrackUri === track.uri && isPlaying;
+                            const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
+                            const isInPlaylistSelection = selectedTracks.some(t => t.uri === track.uri);
+                            
+                            return (
+                              <div
+                                key={track.uri}
+                                onClick={() => {
+                                  // Toggle selection as start track
+                                  if (isSelectedStart) {
+                                    setSelectedStartTrack(null);
+                                  } else {
+                                    setSelectedStartTrack({ albumId: album.id, trackUri: track.uri });
+                                  }
+                                }}
+                                style={{
+                                  padding: "4px 6px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                  background: isCurrentlyPlaying 
+                                    ? "rgba(212, 168, 75, 0.25)" 
+                                    : isSelectedStart 
+                                      ? "rgba(30, 215, 96, 0.3)" 
+                                      : "transparent",
+                                  borderRadius: 4,
+                                  borderLeft: isCurrentlyPlaying 
+                                    ? "3px solid var(--alzooka-gold)" 
+                                    : isSelectedStart 
+                                      ? "3px solid #1DB954" 
+                                      : "3px solid transparent",
+                                }}
+                              >
+                                {/* Checkbox for playlist selection */}
+                                <span 
+                                  onClick={(e) => { e.stopPropagation(); handleToggleTrackSelect(track); }}
+                                  style={{ 
+                                    width: 16, 
+                                    height: 16, 
+                                    borderRadius: 3, 
+                                    border: isInPlaylistSelection ? "none" : "1px solid rgba(255,255,255,0.3)", 
+                                    background: isInPlaylistSelection ? "#1DB954" : "transparent", 
+                                    display: "flex", 
+                                    alignItems: "center", 
+                                    justifyContent: "center", 
+                                    fontSize: 10,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {isInPlaylistSelection ? "✓" : ""}
+                                </span>
+                                <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
+                                <span style={{ 
+                                  flex: 1, 
+                                  overflow: "hidden", 
+                                  textOverflow: "ellipsis", 
+                                  whiteSpace: "nowrap",
+                                  fontWeight: isCurrentlyPlaying ? 600 : 400,
+                                  color: isCurrentlyPlaying ? "var(--alzooka-gold)" : "inherit",
+                                }}>
+                                  {track.name}
+                                </span>
+                                {isCurrentlyPlaying && <span style={{ fontSize: 10, color: "var(--alzooka-gold)" }}>▶</span>}
+                                {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -2580,13 +2658,56 @@ export default function StationPage() {
                       {/* Expanded Playlist Tracks */}
                       {viewingPlaylist === playlist.id && playlistTracks[playlist.id] && (
                         <div style={{ padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
-                          {playlistTracks[playlist.id].map((track, idx) => (
-                            <div key={track.uri} style={{ padding: "4px 6px", display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ opacity: 0.5, width: 20 }}>{idx + 1}</span>
-                              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.name}</span>
-                              {track.artist && <span style={{ opacity: 0.5, fontSize: 10 }}>{track.artist}</span>}
-                            </div>
-                          ))}
+                          {playlistTracks[playlist.id].map((track, idx) => {
+                            const isCurrentlyPlaying = currentlyPlayingTrackUri === track.uri && isPlaying;
+                            const isSelectedStart = selectedStartTrack?.playlistId === playlist.id && selectedStartTrack?.trackUri === track.uri;
+                            
+                            return (
+                              <div 
+                                key={track.uri} 
+                                onClick={() => {
+                                  if (isSelectedStart) {
+                                    setSelectedStartTrack(null);
+                                  } else {
+                                    setSelectedStartTrack({ playlistId: playlist.id, trackUri: track.uri });
+                                  }
+                                }}
+                                style={{ 
+                                  padding: "4px 6px", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  gap: 8,
+                                  cursor: "pointer",
+                                  background: isCurrentlyPlaying 
+                                    ? "rgba(212, 168, 75, 0.25)" 
+                                    : isSelectedStart 
+                                      ? "rgba(30, 215, 96, 0.3)" 
+                                      : "transparent",
+                                  borderRadius: 4,
+                                  borderLeft: isCurrentlyPlaying 
+                                    ? "3px solid var(--alzooka-gold)" 
+                                    : isSelectedStart 
+                                      ? "3px solid #1DB954" 
+                                      : "3px solid transparent",
+                                }}
+                              >
+                                <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
+                                <span style={{ 
+                                  flex: 1, 
+                                  overflow: "hidden", 
+                                  textOverflow: "ellipsis", 
+                                  whiteSpace: "nowrap",
+                                  fontWeight: isCurrentlyPlaying ? 600 : 400,
+                                  color: isCurrentlyPlaying ? "var(--alzooka-gold)" : "inherit",
+                                }}>
+                                  {track.name}
+                                </span>
+                                {track.artist && <span style={{ opacity: 0.5, fontSize: 10 }}>{track.artist}</span>}
+                                {isCurrentlyPlaying && <span style={{ fontSize: 10, color: "var(--alzooka-gold)", marginLeft: 4 }}>▶</span>}
+                                {isSelectedStart && !isCurrentlyPlaying && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8, marginLeft: 4 }}>START</span>}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
