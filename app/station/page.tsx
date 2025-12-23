@@ -480,13 +480,13 @@ export default function StationPage() {
           
           // Restore saved playlist selections
           if (stationData.selected_playlist_ids && Array.isArray(stationData.selected_playlist_ids)) {
-            setSelectedPlaylists(new Set(stationData.selected_playlist_ids));
+            setSelectedPlaylists(new Set<string>(stationData.selected_playlist_ids as string[]));
           }
         }
         
         // Restore saved album selections
         if (stationData.selected_album_ids && Array.isArray(stationData.selected_album_ids) && albumsData) {
-          const savedIds = new Set(stationData.selected_album_ids);
+          const savedIds = new Set<string>(stationData.selected_album_ids as string[]);
           setManualSelections(savedIds);
           setAlbums(albumsData.map(a => ({ ...a, is_selected: savedIds.has(a.id) })));
           setSelectAll(albumsData.length > 0 && albumsData.every(a => savedIds.has(a.id)));
