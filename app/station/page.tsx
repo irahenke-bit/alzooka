@@ -517,6 +517,58 @@ export default function StationPage() {
     init();
   }, [supabase, router]);
 
+  // Restore last track when player becomes ready
+  const hasRestoredTrackRef = useRef(false);
+  
+  useEffect(() => {
+    async function restoreLastTrack() {
+      // Only restore once, when player is ready and we have persisted track info
+      if (
+        hasRestoredTrackRef.current ||
+        !playerReady ||
+        !spotifyDeviceId ||
+        !spotifyToken ||
+        !station?.last_track_uri
+      ) {
+        return;
+      }
+      
+      hasRestoredTrackRef.current = true;
+      
+      const trackUri = station.last_track_uri;
+      const position = station.last_track_position || 0;
+      
+      try {
+        // Queue the track at the saved position, but paused
+        // First, start playback (this loads the track)
+        const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${spotifyToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: [trackUri],
+            position_ms: position,
+          }),
+        });
+        
+        if (playRes.ok) {
+          // Wait a moment for track to load, then pause
+          await new Promise(resolve => setTimeout(resolve, 300));
+          if (spotifyPlayer) {
+            await spotifyPlayer.pause();
+          }
+          setIsPlaying(false);
+        }
+      } catch (err) {
+        console.error("Failed to restore last track:", err);
+      }
+    }
+    
+    restoreLastTrack();
+  }, [playerReady, spotifyDeviceId, spotifyToken, station, spotifyPlayer]);
+
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
