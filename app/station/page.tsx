@@ -857,11 +857,35 @@ export default function StationPage() {
       return;
     }
     
-    const tracks = playlistTracks[playlistId];
+    // Load tracks if not already loaded
+    let tracks = playlistTracks[playlistId];
+    if (!tracks) {
+      const { data } = await supabase
+        .from("station_playlist_tracks")
+        .select("*")
+        .eq("playlist_id", playlistId)
+        .order("track_order", { ascending: true });
+      
+      if (data && data.length > 0) {
+        tracks = data.map(t => ({
+          uri: t.spotify_uri,
+          name: t.spotify_name,
+          artist: t.spotify_artist || "",
+          album: t.spotify_album || "",
+          image: t.spotify_image_url || "",
+          duration_ms: 0,
+        }));
+        setPlaylistTracks(prev => ({ ...prev, [playlistId]: tracks! }));
+      }
+    }
+    
     if (!tracks || tracks.length === 0) {
       alert("No tracks in this playlist");
       return;
     }
+    
+    // Expand the playlist so user can see tracks
+    setViewingPlaylist(playlistId);
     
     // Track which playlist is playing (and clear album)
     setCurrentlyPlayingPlaylistId(playlistId);
@@ -1308,33 +1332,15 @@ export default function StationPage() {
         console.error("Transfer failed:", err);
       }
 
-      // Fetch tracks from all selected albums and build source map
-      console.log("Fetching tracks from albums...");
-      const trackUriSet = new Set<string>(); // Use Set to deduplicate
+      // Build source map and collect tracks
+      console.log("Fetching tracks...");
       const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
       
-      // First, collect tracks from albums
-      for (const album of selectedAlbums) {
-        const albumId = album.spotify_uri.split(":")[2];
-        try {
-          const tracksRes = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
-            headers: { "Authorization": `Bearer ${spotifyToken}` },
-          });
-          if (tracksRes.ok) {
-            const tracksData = await tracksRes.json();
-            tracksData.items.forEach((t: { uri: string }) => {
-              trackUriSet.add(t.uri);
-              // Store album source (will be overwritten if also in playlist)
-              newSourceMap[t.uri] = { albumName: album.spotify_name };
-            });
-          }
-        } catch (e) {
-          console.error("Failed to fetch tracks for album:", albumId, e);
-        }
-      }
-      
-      // Also include tracks from selected playlists or playlists in active groups
+      // STEP 1: Collect tracks from selected playlists IN ORDER (these play first)
+      const playlistTrackUris: string[] = [];
+      const playlistTrackSet = new Set<string>(); // For deduplication
       const activeGroupIds = Array.from(activeGroups);
+      
       for (const playlist of playlists) {
         const pGroups = playlistGroups[playlist.id] || [];
         const isSelected = selectedPlaylists.has(playlist.id);
@@ -1347,43 +1353,70 @@ export default function StationPage() {
             const { data } = await supabase
               .from("station_playlist_tracks")
               .select("spotify_uri, spotify_album")
-              .eq("playlist_id", playlist.id);
+              .eq("playlist_id", playlist.id)
+              .order("track_order", { ascending: true });
             if (data) {
               tracks = data.map(t => ({ uri: t.spotify_uri, name: "", artist: "", album: t.spotify_album || "", image: "", duration_ms: 0 }));
             }
           }
           if (tracks) {
             tracks.forEach(t => {
-              trackUriSet.add(t.uri);
-              // Add playlist info, preserving album if already known
-              const existing = newSourceMap[t.uri];
-              newSourceMap[t.uri] = {
-                albumName: existing?.albumName || t.album || "",
-                playlistName: playlist.name,
-              };
+              // Only add if not already added (first playlist gets priority)
+              if (!playlistTrackSet.has(t.uri)) {
+                playlistTrackSet.add(t.uri);
+                playlistTrackUris.push(t.uri);
+                newSourceMap[t.uri] = {
+                  albumName: t.album || "",
+                  playlistName: playlist.name,
+                };
+              }
             });
           }
         }
       }
+      console.log("Playlist tracks (in order):", playlistTrackUris.length);
+      
+      // STEP 2: Collect tracks from selected albums (these get shuffled and play after playlists)
+      const albumTrackUris: string[] = [];
+      for (const album of selectedAlbums) {
+        const albumId = album.spotify_uri.split(":")[2];
+        try {
+          const tracksRes = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
+            headers: { "Authorization": `Bearer ${spotifyToken}` },
+          });
+          if (tracksRes.ok) {
+            const tracksData = await tracksRes.json();
+            tracksData.items.forEach((t: { uri: string }) => {
+              // Only add if NOT already in a playlist (avoid duplicates)
+              if (!playlistTrackSet.has(t.uri)) {
+                albumTrackUris.push(t.uri);
+                newSourceMap[t.uri] = { albumName: album.spotify_name };
+              }
+            });
+          }
+        } catch (e) {
+          console.error("Failed to fetch tracks for album:", albumId, e);
+        }
+      }
+      console.log("Album tracks (excluding playlist duplicates):", albumTrackUris.length);
       
       // Store the source map for player lookup
       setTrackSourceMap(newSourceMap);
       
-      const allTrackUris = Array.from(trackUriSet);
-      console.log("Total unique tracks collected:", allTrackUris.length);
+      // STEP 3: Shuffle only the album tracks using Fisher-Yates algorithm
+      for (let i = albumTrackUris.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [albumTrackUris[i], albumTrackUris[j]] = [albumTrackUris[j], albumTrackUris[i]];
+      }
       
-      if (allTrackUris.length === 0) {
+      // STEP 4: Final queue = playlists in order FIRST, then shuffled albums
+      const finalQueue = [...playlistTrackUris, ...albumTrackUris];
+      console.log("Final queue: playlists first (" + playlistTrackUris.length + "), then shuffled albums (" + albumTrackUris.length + "), total:", finalQueue.length);
+      
+      if (finalQueue.length === 0) {
         alert("No tracks found in selected albums or playlists");
         return;
       }
-      
-      // Shuffle the tracks using Fisher-Yates algorithm for true randomness
-      const shuffledTracks = [...allTrackUris];
-      for (let i = shuffledTracks.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledTracks[i], shuffledTracks[j]] = [shuffledTracks[j], shuffledTracks[i]];
-      }
-      console.log("Shuffled tracks, starting playback with", shuffledTracks.length, "tracks");
       
       // Pause any current playback first to clear old position state
       console.log("Pausing current playback before starting new shuffle");
@@ -1393,7 +1426,8 @@ export default function StationPage() {
       setTrackPosition(0);
       ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale updates for 2 seconds
       
-      // Start playback with shuffled tracks at position 0
+      // Start playback with final queue at position 0
+      // Playlists play first (in order), then shuffled album tracks
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
@@ -1401,7 +1435,7 @@ export default function StationPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: shuffledTracks.slice(0, 100), // Spotify limits to 100 tracks per request
+          uris: finalQueue.slice(0, 100), // Spotify limits to 100 tracks per request
           position_ms: 0, // Always start from beginning
         }),
       });
