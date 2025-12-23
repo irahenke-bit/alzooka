@@ -2182,7 +2182,7 @@ export default function StationPage() {
                 placeholder="Group name (e.g., Jazz, 70s Rock)"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
+                onKeyDown={(e) => { if (e.key === "Enter" && newGroupName.trim()) { e.preventDefault(); handleCreateGroup(); } }}
                 autoFocus
                 style={{
                   flex: 1,
