@@ -282,16 +282,8 @@ export default function StationPage() {
         if (!state) return;
         setIsPlaying(!state.paused);
         
-        // Only update position if we're not in the "ignore stale position" window
-        const now = Date.now();
-        if (now > ignorePositionUntilRef.current) {
-          // If position is very small (under 2 seconds), always accept it
-          // Otherwise, only accept if we're not ignoring
-          setTrackPosition(state.position);
-        } else if (state.position < 2000) {
-          // Accept small positions even during ignore window (track just started)
-          setTrackPosition(state.position);
-        }
+        // Check if track changed - if so, reset position to 0
+        const newTrackUri = state.track_window?.current_track?.uri;
         
         setTrackDuration(state.duration);
         if (state.track_window?.current_track) {
@@ -300,7 +292,26 @@ export default function StationPage() {
             artist: state.track_window.current_track.artists.map(a => a.name).join(", "),
             image: state.track_window.current_track.album.images[0]?.url || "",
           });
-          setCurrentlyPlayingTrackUri(state.track_window.current_track.uri);
+          
+          // If track changed, reset position to 0 and ignore stale updates
+          setCurrentlyPlayingTrackUri(prevUri => {
+            if (prevUri && newTrackUri && prevUri !== newTrackUri) {
+              // Track changed! Reset position
+              setTrackPosition(0);
+              ignorePositionUntilRef.current = Date.now() + 1500;
+              return newTrackUri;
+            }
+            return newTrackUri || prevUri;
+          });
+        }
+        
+        // Only update position if we're not in the "ignore stale position" window
+        const now = Date.now();
+        if (now > ignorePositionUntilRef.current) {
+          setTrackPosition(state.position);
+        } else if (state.position < 2000) {
+          // Accept small positions even during ignore window (track just started from beginning)
+          setTrackPosition(state.position);
         }
       });
 
@@ -1227,7 +1238,15 @@ export default function StationPage() {
       const shuffledTracks = [...allTrackUris].sort(() => Math.random() - 0.5);
       console.log("Shuffled tracks, starting playback with", shuffledTracks.length, "tracks");
       
-      // Start playback with shuffled tracks
+      // Pause any current playback first to clear old position state
+      console.log("Pausing current playback before starting new shuffle");
+      await spotifyPlayer.pause();
+      
+      // Reset our position tracking
+      setTrackPosition(0);
+      ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale updates for 2 seconds
+      
+      // Start playback with shuffled tracks at position 0
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
@@ -1236,6 +1255,7 @@ export default function StationPage() {
         },
         body: JSON.stringify({
           uris: shuffledTracks.slice(0, 100), // Spotify limits to 100 tracks per request
+          position_ms: 0, // Always start from beginning
         }),
       });
       console.log("Play response:", playRes.status);
@@ -1247,10 +1267,7 @@ export default function StationPage() {
         return;
       }
 
-      // Make sure playback starts
-      console.log("Resuming playback");
-      await spotifyPlayer.resume();
-      
+      // Don't call resume() - it can restore old position. The play endpoint starts playback automatically.
       setIsPlaying(true);
     } catch (err) {
       console.error("Playback error:", err);
