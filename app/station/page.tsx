@@ -165,7 +165,6 @@ export default function StationPage() {
   const [currentlyPlayingPlaylistId, setCurrentlyPlayingPlaylistId] = useState<string | null>(null);
   const [selectedStartTrack, setSelectedStartTrack] = useState<{ albumId?: string; playlistId?: string; trackUri: string } | null>(null);
   const [currentlyPlayingTrackUri, setCurrentlyPlayingTrackUri] = useState<string | null>(null);
-  const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
   
   const router = useRouter();
