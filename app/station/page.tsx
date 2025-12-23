@@ -3406,8 +3406,8 @@ export default function StationPage() {
                                 />
                                 <span style={{ opacity: 0.5, width: 24, flexShrink: 0, textAlign: "right" }}>{idx + 1}</span>
                                 <span style={{ 
-                                  flex: 1, 
-                                  minWidth: 0,
+                                  flexShrink: 0,
+                                  maxWidth: "40%",
                                   overflow: "hidden", 
                                   textOverflow: "ellipsis", 
                                   whiteSpace: "nowrap",
@@ -3416,8 +3416,17 @@ export default function StationPage() {
                                 }}>
                                   {track.name || "(Unknown Track)"}
                                 </span>
-                                {track.artist && <span style={{ opacity: 0.5, fontSize: 10, flexShrink: 0 }}>{track.artist}</span>}
-                                {track.album && <span style={{ opacity: 0.4, fontSize: 9, flexShrink: 0, marginLeft: 4 }}>• {track.album}</span>}
+                                {track.artist && <span style={{ opacity: 0.5, fontSize: 10, flexShrink: 0, marginLeft: 8 }}>{track.artist}</span>}
+                                {track.album && <span style={{ 
+                                  opacity: 0.4, 
+                                  fontSize: 9, 
+                                  marginLeft: 4,
+                                  flex: 1,
+                                  minWidth: 0,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}>• {track.album}</span>}
                                 {isCurrentTrack && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
