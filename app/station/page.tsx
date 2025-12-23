@@ -145,6 +145,7 @@ export default function StationPage() {
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [albumPendingDelete, setAlbumPendingDelete] = useState<StationAlbum | null>(null);
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
@@ -2549,7 +2550,7 @@ export default function StationPage() {
                         )}
                         {/* Remove Button */}
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleRemoveAlbum(album.id); }}
+                          onClick={(e) => { e.stopPropagation(); setAlbumPendingDelete(album); }}
                           style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 14, cursor: "pointer", opacity: 0.6 }}
                         >
                           ×
@@ -2895,6 +2896,87 @@ export default function StationPage() {
           }}
           existingUris={albums.map(a => a.spotify_uri)}
         />
+      )}
+
+      {/* Delete Album Confirmation Modal */}
+      {albumPendingDelete && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#1a2e2e",
+            border: "2px solid var(--alzooka-gold)",
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            width: "90%",
+            textAlign: "center",
+          }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600 }}>
+              Delete Album?
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, justifyContent: "center" }}>
+              {albumPendingDelete.spotify_image_url && (
+                <img 
+                  src={albumPendingDelete.spotify_image_url} 
+                  alt="" 
+                  style={{ width: 50, height: 50, borderRadius: 4 }} 
+                />
+              )}
+              <div style={{ textAlign: "left" }}>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{albumPendingDelete.spotify_name}</p>
+                <p style={{ margin: 0, opacity: 0.7, fontSize: 12 }}>{albumPendingDelete.spotify_artist}</p>
+              </div>
+            </div>
+            <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.8 }}>
+              Are you sure you want to remove this album from your station?
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={() => setAlbumPendingDelete(null)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "rgba(240, 235, 224, 0.1)",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handleRemoveAlbum(albumPendingDelete.id);
+                  setAlbumPendingDelete(null);
+                }}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "#e57373",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
