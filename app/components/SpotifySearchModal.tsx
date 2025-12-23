@@ -332,24 +332,24 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 const isAlreadyPosted = existingUris.includes(result.uri) || postedUris.has(result.uri);
                 const isPosting = postingId === result.id;
                 return (
-                  <button
-                    onClick={(e) => handleDirectPost(result, e)}
+              <button
+                onClick={(e) => handleDirectPost(result, e)}
                     disabled={postingId !== null || isAlreadyPosted}
-                    style={{
-                      padding: "8px 20px",
-                      fontSize: 14,
-                      fontWeight: 600,
+                style={{
+                  padding: "8px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
                       background: isAlreadyPosted ? "rgba(30, 215, 96, 0.3)" : "#1DB954",
                       color: isAlreadyPosted ? "#1DB954" : "#000",
                       border: isAlreadyPosted ? "1px solid #1DB954" : "none",
-                      borderRadius: 6,
+                  borderRadius: 6,
                       cursor: postingId !== null || isAlreadyPosted ? "not-allowed" : "pointer",
-                      opacity: postingId !== null ? 0.6 : 1,
-                      flexShrink: 0,
-                    }}
-                  >
+                  opacity: postingId !== null ? 0.6 : 1,
+                  flexShrink: 0,
+                }}
+              >
                     {isPosting ? "Posting..." : isAlreadyPosted ? "Posted ✓" : "Post"}
-                  </button>
+              </button>
                 );
               })()}
             </div>

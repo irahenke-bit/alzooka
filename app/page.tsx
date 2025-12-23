@@ -806,46 +806,46 @@ function FeedContent() {
     let feedPosts: any[] | null = [];
     
     const feedQuery = supabase
-      .from("posts")
-      .select(`
-        id,
-        content,
-        image_url,
-        image_urls,
-        video_url,
-        wall_user_id,
-        show_in_feed,
-        created_at,
-        edited_at,
-        edit_history,
-        user_id,
-        group_id,
-        shared_from_post_id,
-        users!posts_user_id_fkey (
-          username,
-          display_name,
-          avatar_url
-        ),
-        wall_user:users!posts_wall_user_id_fkey (
-          username,
-          display_name,
-          avatar_url
-        ),
-        groups:groups!posts_group_id_fkey (
-          id,
-          name
-        ),
-        comments (
+        .from("posts")
+        .select(`
           id,
           content,
+          image_url,
+          image_urls,
+          video_url,
+          wall_user_id,
+        show_in_feed,
           created_at,
+          edited_at,
+          edit_history,
           user_id,
-          parent_comment_id
-        )
-      `)
-      .is("group_id", null)
-      .order("created_at", { ascending: false });
-    
+          group_id,
+          shared_from_post_id,
+          users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          wall_user:users!posts_wall_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          groups:groups!posts_group_id_fkey (
+            id,
+            name
+          ),
+          comments (
+            id,
+            content,
+            created_at,
+            user_id,
+            parent_comment_id
+          )
+        `)
+        .is("group_id", null)
+        .order("created_at", { ascending: false });
+      
     if (showAllProfiles) {
       // World view: show all posts (but filter wall posts by show_in_feed later)
       const { data } = await feedQuery;
@@ -855,8 +855,8 @@ function FeedContent() {
       const allowedUserIds = userId ? [userId, ...friends] : friends;
       if (allowedUserIds.length > 0) {
         const { data } = await feedQuery.in("user_id", allowedUserIds);
-        feedPosts = data;
-      }
+      feedPosts = data;
+    }
     }
     
     // Filter out wall posts that have show_in_feed = false (unless it's on our wall or we made it)

@@ -958,6 +958,10 @@ export default function StationPage() {
         return;
       }
       
+      // Give Spotify a moment to process, then ensure playback starts
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await spotifyPlayer.resume();
+      
       setTrackPosition(0);
       setIsPlaying(true);
     } catch (err) {
