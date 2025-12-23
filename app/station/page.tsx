@@ -2524,6 +2524,7 @@ export default function StationPage() {
           onDirectPost={async (result) => {
             await handleAddAlbum(result);
           }}
+          existingUris={albums.map(a => a.spotify_uri)}
         />
       )}
     </div>

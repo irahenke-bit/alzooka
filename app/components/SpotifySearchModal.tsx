@@ -16,9 +16,10 @@ type SpotifySearchModalProps = {
   onClose: () => void;
   onSelect: (result: SpotifyResult, searchQuery: string) => void;
   onDirectPost?: (result: SpotifyResult, searchQuery: string) => Promise<void>;
+  existingUris?: string[]; // URIs of albums already in the station
 };
 
-export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifySearchModalProps) {
+export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUris = [] }: SpotifySearchModalProps) {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<"album" | "track">("album");
   const [results, setResults] = useState<SpotifyResult[]>([]);
@@ -26,6 +27,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifyS
   const [postingId, setPostingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [postedUris, setPostedUris] = useState<Set<string>>(new Set()); // Track newly posted during this session
 
   useEffect(() => {
     setMounted(true);
@@ -86,10 +88,14 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifyS
     e.stopPropagation();
     if (!onDirectPost || postingId) return;
     
+    // Don't allow posting if already posted
+    if (existingUris.includes(result.uri) || postedUris.has(result.uri)) return;
+    
     setPostingId(result.id);
     try {
       await onDirectPost(result, query);
-      // Don't close - allow user to continue searching and adding more albums
+      // Track this as posted
+      setPostedUris(prev => new Set(prev).add(result.uri));
       setPostingId(null);
     } catch {
       setPostingId(null);
@@ -322,24 +328,30 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifyS
                   {result.type === "album" ? "Album" : result.type === "track" ? "Track" : "Artist"}
                 </div>
               </div>
-              <button
-                onClick={(e) => handleDirectPost(result, e)}
-                disabled={postingId !== null}
-                style={{
-                  padding: "8px 20px",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  background: "#1DB954",
-                  color: "#000",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: postingId !== null ? "not-allowed" : "pointer",
-                  opacity: postingId !== null ? 0.6 : 1,
-                  flexShrink: 0,
-                }}
-              >
-                {postingId === result.id ? "Posting..." : "Post"}
-              </button>
+              {(() => {
+                const isAlreadyPosted = existingUris.includes(result.uri) || postedUris.has(result.uri);
+                const isPosting = postingId === result.id;
+                return (
+                  <button
+                    onClick={(e) => handleDirectPost(result, e)}
+                    disabled={postingId !== null || isAlreadyPosted}
+                    style={{
+                      padding: "8px 20px",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      background: isAlreadyPosted ? "rgba(30, 215, 96, 0.3)" : "#1DB954",
+                      color: isAlreadyPosted ? "#1DB954" : "#000",
+                      border: isAlreadyPosted ? "1px solid #1DB954" : "none",
+                      borderRadius: 6,
+                      cursor: postingId !== null || isAlreadyPosted ? "not-allowed" : "pointer",
+                      opacity: postingId !== null ? 0.6 : 1,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isPosting ? "Posting..." : isAlreadyPosted ? "Posted ✓" : "Post"}
+                  </button>
+                );
+              })()}
             </div>
           ))}
         </div>
