@@ -939,7 +939,7 @@ export default function StationPage() {
       
       const trackUris = tracksToPlay.map(t => t.uri);
       
-      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+      const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${spotifyToken}`,
@@ -951,7 +951,15 @@ export default function StationPage() {
         }),
       });
       
+      if (!playRes.ok) {
+        const errText = await playRes.text();
+        console.error("Playlist play failed:", errText);
+        alert("Failed to start playlist playback");
+        return;
+      }
+      
       setTrackPosition(0);
+      setIsPlaying(true);
     } catch (err) {
       console.error("Playlist playback error:", err);
       alert("Failed to play playlist");
