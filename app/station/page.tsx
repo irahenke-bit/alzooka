@@ -159,7 +159,8 @@ export default function StationPage() {
   const [spotifyPlayer, setSpotifyPlayer] = useState<SpotifyPlayer | null>(null);
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string; albumUri?: string } | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string; albumName?: string; playlistName?: string } | null>(null);
+  const [trackSourceMap, setTrackSourceMap] = useState<Record<string, { albumName: string; playlistName?: string }>>({}); // URI -> source info
   const [playerReady, setPlayerReady] = useState(false);
   const [trackPosition, setTrackPosition] = useState(0);
   const [trackDuration, setTrackDuration] = useState(0);
@@ -276,7 +277,7 @@ export default function StationPage() {
               name: string;
               uri: string;
               artists: { name: string }[];
-              album: { images: { url: string }[] };
+              album: { name: string; images: { url: string }[] };
             };
           };
         } | null;
@@ -288,10 +289,20 @@ export default function StationPage() {
         
         setTrackDuration(state.duration);
         if (state.track_window?.current_track) {
-          setCurrentTrack({
-            name: state.track_window.current_track.name,
-            artist: state.track_window.current_track.artists.map(a => a.name).join(", "),
-            image: state.track_window.current_track.album.images[0]?.url || "",
+          const track = state.track_window.current_track;
+          const trackUri = track.uri;
+          
+          // Get album name from Spotify and playlist name from our source map
+          setTrackSourceMap(currentSourceMap => {
+            const source = currentSourceMap[trackUri];
+            setCurrentTrack({
+              name: track.name,
+              artist: track.artists.map(a => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name || source?.albumName,
+              playlistName: source?.playlistName,
+            });
+            return currentSourceMap;
           });
           
           // If track changed, reset position to 0 and ignore stale updates
@@ -757,6 +768,17 @@ export default function StationPage() {
     setCurrentlyPlayingPlaylistId(playlistId);
     setCurrentlyPlayingAlbumId(null);
     
+    // Find the playlist name
+    const playlist = playlists.find(p => p.id === playlistId);
+    const playlistName = playlist?.name || "";
+    
+    // Build source map for these tracks (includes album from track data and playlist name)
+    const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+    tracks.forEach(t => {
+      newSourceMap[t.uri] = { albumName: t.album || "", playlistName };
+    });
+    setTrackSourceMap(newSourceMap);
+    
     // Ignore stale position updates
     ignorePositionUntilRef.current = Date.now() + 1000;
     
@@ -1187,20 +1209,25 @@ export default function StationPage() {
         console.error("Transfer failed:", err);
       }
 
-      // Fetch tracks from all selected albums
+      // Fetch tracks from all selected albums and build source map
       console.log("Fetching tracks from albums...");
       const trackUriSet = new Set<string>(); // Use Set to deduplicate
+      const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
       
-      for (const albumUri of albumUris) {
-        // Extract album ID from URI (spotify:album:XXXXX)
-        const albumId = albumUri.split(":")[2];
+      // First, collect tracks from albums
+      for (const album of selectedAlbums) {
+        const albumId = album.spotify_uri.split(":")[2];
         try {
           const tracksRes = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
             headers: { "Authorization": `Bearer ${spotifyToken}` },
           });
           if (tracksRes.ok) {
             const tracksData = await tracksRes.json();
-            tracksData.items.forEach((t: { uri: string }) => trackUriSet.add(t.uri));
+            tracksData.items.forEach((t: { uri: string }) => {
+              trackUriSet.add(t.uri);
+              // Store album source (will be overwritten if also in playlist)
+              newSourceMap[t.uri] = { albumName: album.spotify_name };
+            });
           }
         } catch (e) {
           console.error("Failed to fetch tracks for album:", albumId, e);
@@ -1220,17 +1247,28 @@ export default function StationPage() {
           if (!tracks) {
             const { data } = await supabase
               .from("station_playlist_tracks")
-              .select("spotify_uri")
+              .select("spotify_uri, spotify_album")
               .eq("playlist_id", playlist.id);
             if (data) {
-              tracks = data.map(t => ({ uri: t.spotify_uri, name: "", artist: "", image: "", duration_ms: 0 }));
+              tracks = data.map(t => ({ uri: t.spotify_uri, name: "", artist: "", album: t.spotify_album || "", image: "", duration_ms: 0 }));
             }
           }
           if (tracks) {
-            tracks.forEach(t => trackUriSet.add(t.uri));
+            tracks.forEach(t => {
+              trackUriSet.add(t.uri);
+              // Add playlist info, preserving album if already known
+              const existing = newSourceMap[t.uri];
+              newSourceMap[t.uri] = {
+                albumName: existing?.albumName || t.album || "",
+                playlistName: playlist.name,
+              };
+            });
           }
         }
       }
+      
+      // Store the source map for player lookup
+      setTrackSourceMap(newSourceMap);
       
       const allTrackUris = Array.from(trackUriSet);
       console.log("Total unique tracks collected:", allTrackUris.length);
@@ -1372,6 +1410,13 @@ export default function StationPage() {
     // Track which album is playing (and clear playlist)
     setCurrentlyPlayingAlbumId(album.id);
     setCurrentlyPlayingPlaylistId(null);
+    
+    // Build source map for these tracks (album only, no playlist)
+    const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+    tracksToPlay.forEach(t => {
+      newSourceMap[t.uri] = { albumName: album.spotify_name };
+    });
+    setTrackSourceMap(newSourceMap);
     
     // Ignore stale position updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
@@ -1594,6 +1639,11 @@ export default function StationPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{currentTrack.name}</p>
                     <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>{currentTrack.artist}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 11, opacity: 0.5 }}>
+                      {currentTrack.albumName && <span>Album: {currentTrack.albumName}</span>}
+                      {currentTrack.albumName && currentTrack.playlistName && <span> • </span>}
+                      {currentTrack.playlistName && <span>Playlist: {currentTrack.playlistName}</span>}
+                    </p>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button
