@@ -89,7 +89,8 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost }: SpotifyS
     setPostingId(result.id);
     try {
       await onDirectPost(result, query);
-      onClose();
+      // Don't close - allow user to continue searching and adding more albums
+      setPostingId(null);
     } catch {
       setPostingId(null);
     }
