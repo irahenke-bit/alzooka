@@ -146,6 +146,8 @@ export default function StationPage() {
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
+  const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
+  const [editingPlaylistGroups, setEditingPlaylistGroups] = useState<string | null>(null);
   
   // Spotify state
   const [spotifyConnected, setSpotifyConnected] = useState(false);
@@ -389,6 +391,24 @@ export default function StationPage() {
         
         if (playlistsData) {
           setPlaylists(playlistsData);
+          
+          // Load playlist-group relationships
+          const playlistIds = playlistsData.map(p => p.id);
+          if (playlistIds.length > 0) {
+            const { data: playlistGroupsData } = await supabase
+              .from("station_playlist_groups")
+              .select("playlist_id, group_id")
+              .in("playlist_id", playlistIds);
+            
+            if (playlistGroupsData) {
+              const mapping: Record<string, string[]> = {};
+              for (const pg of playlistGroupsData) {
+                if (!mapping[pg.playlist_id]) mapping[pg.playlist_id] = [];
+                mapping[pg.playlist_id].push(pg.group_id);
+              }
+              setPlaylistGroups(mapping);
+            }
+          }
         }
       } else {
         setShowSetup(true);
@@ -580,6 +600,34 @@ export default function StationPage() {
     await supabase.from("station_playlists").delete().eq("id", playlistId);
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
     if (viewingPlaylist === playlistId) setViewingPlaylist(null);
+  }
+
+  // Toggle playlist group membership
+  async function handleTogglePlaylistGroup(playlistId: string, groupId: string) {
+    const currentGroups = playlistGroups[playlistId] || [];
+    const isInGroup = currentGroups.includes(groupId);
+    
+    if (isInGroup) {
+      await supabase
+        .from("station_playlist_groups")
+        .delete()
+        .eq("playlist_id", playlistId)
+        .eq("group_id", groupId);
+      
+      setPlaylistGroups(prev => ({
+        ...prev,
+        [playlistId]: currentGroups.filter(g => g !== groupId),
+      }));
+    } else {
+      await supabase
+        .from("station_playlist_groups")
+        .insert({ playlist_id: playlistId, group_id: groupId });
+      
+      setPlaylistGroups(prev => ({
+        ...prev,
+        [playlistId]: [...currentGroups, groupId],
+      }));
+    }
   }
 
   // Play a playlist
@@ -999,7 +1047,7 @@ export default function StationPage() {
 
       // Fetch tracks from all selected albums
       console.log("Fetching tracks from albums...");
-      const allTrackUris: string[] = [];
+      const trackUriSet = new Set<string>(); // Use Set to deduplicate
       
       for (const albumUri of albumUris) {
         // Extract album ID from URI (spotify:album:XXXXX)
@@ -1010,15 +1058,40 @@ export default function StationPage() {
           });
           if (tracksRes.ok) {
             const tracksData = await tracksRes.json();
-            const trackUris = tracksData.items.map((t: { uri: string }) => t.uri);
-            allTrackUris.push(...trackUris);
+            tracksData.items.forEach((t: { uri: string }) => trackUriSet.add(t.uri));
           }
         } catch (e) {
           console.error("Failed to fetch tracks for album:", albumId, e);
         }
       }
       
-      console.log("Total tracks collected:", allTrackUris.length);
+      // Also include tracks from playlists that are in active groups
+      if (activeGroups.size > 0) {
+        const activeGroupIds = Array.from(activeGroups);
+        for (const playlist of playlists) {
+          const pGroups = playlistGroups[playlist.id] || [];
+          // Check if playlist is in any active group
+          if (pGroups.some(gid => activeGroupIds.includes(gid))) {
+            // Load playlist tracks if not already loaded
+            let tracks = playlistTracks[playlist.id];
+            if (!tracks) {
+              const { data } = await supabase
+                .from("station_playlist_tracks")
+                .select("spotify_uri")
+                .eq("playlist_id", playlist.id);
+              if (data) {
+                tracks = data.map(t => ({ uri: t.spotify_uri, name: "", artist: "", image: "", duration_ms: 0 }));
+              }
+            }
+            if (tracks) {
+              tracks.forEach(t => trackUriSet.add(t.uri));
+            }
+          }
+        }
+      }
+      
+      const allTrackUris = Array.from(trackUriSet);
+      console.log("Total unique tracks collected:", allTrackUris.length);
       
       if (allTrackUris.length === 0) {
         alert("No tracks found in selected albums");
@@ -1999,6 +2072,130 @@ export default function StationPage() {
                       <p style={{ margin: 0, fontSize: 12, opacity: 0.6 }}>
                         {playlistTracks[playlist.id]?.length || "..."} tracks
                       </p>
+                      {/* Playlist Groups */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+                        {(playlistGroups[playlist.id] || []).map(groupId => {
+                          const group = groups.find(g => g.id === groupId);
+                          if (!group) return null;
+                          return (
+                            <span
+                              key={groupId}
+                              style={{
+                                padding: "2px 8px",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                background: group.color,
+                                color: "#fff",
+                                borderRadius: 10,
+                              }}
+                            >
+                              {group.name}
+                            </span>
+                          );
+                        })}
+                        {groups.length > 0 && (
+                          <div style={{ position: "relative" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingPlaylistGroups(editingPlaylistGroups === playlist.id ? null : playlist.id);
+                              }}
+                              style={{
+                                padding: "4px 10px",
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: editingPlaylistGroups === playlist.id ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                                color: editingPlaylistGroups === playlist.id ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                                border: "1px solid rgba(240, 235, 224, 0.3)",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            >
+                              🏷️ Tag
+                            </button>
+                            
+                            {editingPlaylistGroups === playlist.id && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: "100%",
+                                  left: 0,
+                                  marginBottom: 8,
+                                  background: "#1a2e2e",
+                                  border: "2px solid var(--alzooka-gold)",
+                                  borderRadius: 10,
+                                  padding: 12,
+                                  zIndex: 1000,
+                                  minWidth: 180,
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600 }}>
+                                  Add to Groups:
+                                </p>
+                                {groups.map(group => {
+                                  const isInGroup = (playlistGroups[playlist.id] || []).includes(group.id);
+                                  return (
+                                    <label
+                                      key={group.id}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 10,
+                                        padding: "8px 6px",
+                                        cursor: "pointer",
+                                        fontSize: 14,
+                                        borderRadius: 6,
+                                        background: isInGroup ? `${group.color}22` : "transparent",
+                                        marginBottom: 4,
+                                      }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isInGroup}
+                                        onChange={() => handleTogglePlaylistGroup(playlist.id, group.id)}
+                                        style={{ 
+                                          width: 18, 
+                                          height: 18, 
+                                          accentColor: group.color 
+                                        }}
+                                      />
+                                      <span style={{ 
+                                        width: 12, 
+                                        height: 12, 
+                                        borderRadius: "50%", 
+                                        background: group.color,
+                                        flexShrink: 0,
+                                      }} />
+                                      <span style={{ fontWeight: isInGroup ? 600 : 400 }}>
+                                        {group.name}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                                <button
+                                  onClick={() => setEditingPlaylistGroups(null)}
+                                  style={{
+                                    marginTop: 10,
+                                    width: "100%",
+                                    padding: "8px",
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    background: "var(--alzooka-gold)",
+                                    color: "var(--alzooka-teal-dark)",
+                                    border: "none",
+                                    borderRadius: 6,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Done
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <button
                       onClick={(e) => {
