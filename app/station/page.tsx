@@ -966,20 +966,6 @@ export default function StationPage() {
       
       await spotifyPlayer.activateElement();
       
-      await fetch("https://api.spotify.com/v1/me/player", {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${spotifyToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          device_ids: [spotifyDeviceId],
-          play: false,
-        }),
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
       // Check if there's a selected start track for this playlist
       let tracksToPlay = tracks;
       if (selectedStartTrack?.playlistId === playlistId) {
@@ -993,6 +979,22 @@ export default function StationPage() {
       
       const trackUris = tracksToPlay.map(t => t.uri);
       
+      // Transfer playback to this device with play: true to start immediately
+      await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [spotifyDeviceId],
+          play: true,
+        }),
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // Now start playing the specific tracks
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
         method: "PUT",
         headers: {
@@ -1011,10 +1013,6 @@ export default function StationPage() {
         alert("Failed to start playlist playback");
         return;
       }
-      
-      // Give Spotify a moment to process, then ensure playback starts
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await spotifyPlayer.resume();
       
       setTrackPosition(0);
       setIsPlaying(true);
