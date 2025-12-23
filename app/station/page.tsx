@@ -156,10 +156,11 @@ export default function StationPage() {
   const [spotifyPlayer, setSpotifyPlayer] = useState<SpotifyPlayer | null>(null);
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string } | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<{ name: string; artist: string; image: string; albumUri?: string } | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [trackPosition, setTrackPosition] = useState(0);
   const [trackDuration, setTrackDuration] = useState(0);
+  const [currentlyPlayingAlbumId, setCurrentlyPlayingAlbumId] = useState<string | null>(null);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -1175,6 +1176,7 @@ export default function StationPage() {
     setTrackPosition(0);
     setCurrentTrack(null);
     setIsPlaying(false);
+    setCurrentlyPlayingAlbumId(null);
   }
 
   // Play a single album - either full album or just selected tracks from it
@@ -1218,27 +1220,30 @@ export default function StationPage() {
     
     if (tracksToPlay.length === 0) return;
     
+    // Track which album is playing
+    setCurrentlyPlayingAlbumId(album.id);
+    
     // Reset position immediately
     setTrackPosition(0);
     
     // Activate player element (required for browser autoplay policy)
     await spotifyPlayer.activateElement();
     
-    // Transfer playback to our device first
+    // Transfer playback to our device and start playing
     await fetch("https://api.spotify.com/v1/me/player", {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: false }),
+      body: JSON.stringify({ device_ids: [spotifyDeviceId], play: true }),
     });
     
-    // Small delay to ensure device is ready
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Small delay to ensure device is active
+    await new Promise(resolve => setTimeout(resolve, 150));
     
-    // Start playback with the track URIs in order, starting at position 0
-    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+    // Start playback with the track URIs - position_ms: 0 forces start from beginning
+    const playResponse = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
@@ -1250,13 +1255,9 @@ export default function StationPage() {
       }),
     });
     
-    // Wait a moment then seek to position 0 to ensure we're at the start
-    await new Promise(resolve => setTimeout(resolve, 200));
-    await spotifyPlayer.seek(0);
-    
-    // Ensure playback starts
-    await spotifyPlayer.resume();
-    setTrackPosition(0);
+    if (playResponse.ok) {
+      setTrackPosition(0);
+    }
   }
 
   async function handleSeek(position: number) {
@@ -2251,37 +2252,42 @@ export default function StationPage() {
                             ⏹
                           </button>
                           {/* Play/Pause Toggle */}
-                          <button
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              if (isPlaying) {
-                                handleTogglePlayback();
-                              } else {
-                                handlePlayAlbum(album);
-                              }
-                            }}
-                            disabled={!spotifyConnected || !playerReady}
-                            style={{
-                              padding: "4px 12px",
-                              fontSize: 12,
-                              fontWeight: 600,
-                              background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 12,
-                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                            }}
-                            title={isPlaying ? "Pause" : (() => {
-                              const albumTracksList = albumTracks[album.id] || [];
-                              const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
-                              const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
-                              return selectedFromThis.length > 0 
-                                ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
-                                : 'Play full album';
-                            })()}
-                          >
-                            {isPlaying ? "⏸" : "▶"}
-                          </button>
+                          {(() => {
+                            const isThisAlbumPlaying = isPlaying && currentlyPlayingAlbumId === album.id;
+                            return (
+                              <button
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  if (isThisAlbumPlaying) {
+                                    handleTogglePlayback();
+                                  } else {
+                                    handlePlayAlbum(album);
+                                  }
+                                }}
+                                disabled={!spotifyConnected || !playerReady}
+                                style={{
+                                  padding: "4px 12px",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: 12,
+                                  cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
+                                }}
+                                title={isThisAlbumPlaying ? "Pause" : (() => {
+                                  const albumTracksList = albumTracks[album.id] || [];
+                                  const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
+                                  const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
+                                  return selectedFromThis.length > 0 
+                                    ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
+                                    : 'Play full album';
+                                })()}
+                              >
+                                {isThisAlbumPlaying ? "⏸" : "▶"}
+                              </button>
+                            );
+                          })()}
                           {/* Forward */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
