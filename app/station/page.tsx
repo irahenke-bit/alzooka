@@ -1348,6 +1348,8 @@ export default function StationPage() {
     setIsPlaying(false);
     setCurrentlyPlayingAlbumId(null);
     setCurrentlyPlayingPlaylistId(null);
+    setCurrentlyPlayingTrackUri(null);
+    setTrackSourceMap({}); // Clear shuffle source info
   }
 
   // Play a single album - either full album or just selected tracks from it
@@ -1658,6 +1660,20 @@ export default function StationPage() {
                       }}
                     >
                       ⏮
+                    </button>
+                    <button
+                      onClick={handleStopPlayback}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#e57373",
+                        fontSize: 16,
+                        cursor: "pointer",
+                        padding: 8,
+                      }}
+                      title="Stop and clear shuffle"
+                    >
+                      ⏹
                     </button>
                     <button
                       onClick={handleTogglePlayback}
@@ -2777,9 +2793,9 @@ export default function StationPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "70vh", overflowY: "auto" }}>
                 {playlists.map(playlist => {
                   const isSelected = selectedPlaylists.has(playlist.id);
-                  // Check if currently playing track is in this playlist
-                  const playlistTrackList = playlistTracks[playlist.id] || [];
-                  const hasCurrentTrack = currentlyPlayingTrackUri && playlistTrackList.some(t => t.uri === currentlyPlayingTrackUri);
+                  // Check if currently playing track is from this playlist (using source map)
+                  const currentSource = currentlyPlayingTrackUri ? trackSourceMap[currentlyPlayingTrackUri] : null;
+                  const hasCurrentTrack = currentSource?.playlistName === playlist.name;
                   return (
                     <div key={playlist.id}>
                       <div
