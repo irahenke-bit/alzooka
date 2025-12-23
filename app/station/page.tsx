@@ -143,6 +143,7 @@ export default function StationPage() {
   const [playlists, setPlaylists] = useState<StationPlaylist[]>([]);
   const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
+  const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
@@ -2258,6 +2259,111 @@ export default function StationPage() {
           </div>
         )}
 
+        {/* Add to Existing Playlist Bar */}
+        {selectedTracks.length > 0 && playlists.length > 0 && (
+          <div style={{
+            padding: 16,
+            background: "rgba(30, 215, 96, 0.1)",
+            borderRadius: 12,
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+            border: "1px solid rgba(30, 215, 96, 0.2)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>
+                ✓ {selectedTracks.length} track{selectedTracks.length !== 1 ? "s" : ""} selected
+              </span>
+              <button
+                onClick={() => setSelectedTracks([])}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  color: "var(--alzooka-cream)",
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                Clear
+              </button>
+            </div>
+            
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowAddToPlaylistDropdown(!showAddToPlaylistDropdown)}
+                style={{
+                  padding: "10px 16px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  background: "#1DB954",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                ➕ Add to Playlist ▼
+              </button>
+              {showAddToPlaylistDropdown && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  marginTop: 4,
+                  background: "#1a2e2e",
+                  border: "1px solid rgba(30, 215, 96, 0.5)",
+                  borderRadius: 8,
+                  padding: 8,
+                  minWidth: 200,
+                  zIndex: 1000,
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+                }}>
+                  {playlists.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        handleAddToExistingPlaylist(p.id);
+                        setShowAddToPlaylistDropdown(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        fontSize: 13,
+                        background: "transparent",
+                        color: "var(--alzooka-cream)",
+                        border: "none",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(30, 215, 96, 0.2)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >
+                      {p.cover_image_url ? (
+                        <img src={p.cover_image_url} alt="" style={{ width: 28, height: 28, borderRadius: 4 }} />
+                      ) : (
+                        <div style={{ width: 28, height: 28, borderRadius: 4, background: "rgba(30, 215, 96, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎵</div>
+                      )}
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Two Column Layout: Albums (left) + Playlists (right) */}
         <div style={{ 
           display: "grid", 
@@ -2539,107 +2645,6 @@ export default function StationPage() {
                               </div>
                             );
                           })}
-                          
-                          {/* Batch Add to Playlist Bar */}
-                          {selectedTracks.length > 0 && playlists.length > 0 && (
-                            <div style={{
-                              marginTop: 8,
-                              padding: "8px 10px",
-                              background: "rgba(30, 215, 96, 0.15)",
-                              borderRadius: 6,
-                              border: "1px solid rgba(30, 215, 96, 0.3)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: 10,
-                            }}>
-                              <span style={{ fontSize: 12, fontWeight: 500 }}>
-                                {selectedTracks.length} track{selectedTracks.length > 1 ? "s" : ""} selected
-                              </span>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <div style={{ position: "relative" }}>
-                                  <button
-                                    onClick={() => setShowAddToPlaylistDropdown(!showAddToPlaylistDropdown)}
-                                    style={{
-                                      padding: "6px 12px",
-                                      fontSize: 11,
-                                      fontWeight: 600,
-                                      background: "#1DB954",
-                                      color: "#000",
-                                      border: "none",
-                                      borderRadius: 4,
-                                      cursor: "pointer",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 4,
-                                    }}
-                                  >
-                                    Add to Playlist ▼
-                                  </button>
-                                  {showAddToPlaylistDropdown && (
-                                    <div style={{
-                                      position: "absolute",
-                                      bottom: "100%",
-                                      right: 0,
-                                      marginBottom: 4,
-                                      background: "#1a2e2e",
-                                      border: "1px solid rgba(30, 215, 96, 0.5)",
-                                      borderRadius: 6,
-                                      padding: 6,
-                                      minWidth: 150,
-                                      zIndex: 1000,
-                                      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                                    }}>
-                                      {playlists.map(p => (
-                                        <button
-                                          key={p.id}
-                                          onClick={() => {
-                                            handleAddToExistingPlaylist(p.id);
-                                            setShowAddToPlaylistDropdown(false);
-                                          }}
-                                          style={{
-                                            width: "100%",
-                                            padding: "8px 10px",
-                                            fontSize: 12,
-                                            background: "transparent",
-                                            color: "var(--alzooka-cream)",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                            textAlign: "left",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 8,
-                                          }}
-                                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(30, 215, 96, 0.2)"}
-                                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                                        >
-                                          {p.cover_image_url && (
-                                            <img src={p.cover_image_url} alt="" style={{ width: 20, height: 20, borderRadius: 3 }} />
-                                          )}
-                                          {p.name}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                                <button
-                                  onClick={() => setSelectedTracks([])}
-                                  style={{
-                                    padding: "6px 10px",
-                                    fontSize: 11,
-                                    background: "rgba(240, 235, 224, 0.1)",
-                                    color: "var(--alzooka-cream)",
-                                    border: "1px solid rgba(240, 235, 224, 0.2)",
-                                    borderRadius: 4,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  Clear
-                                </button>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
