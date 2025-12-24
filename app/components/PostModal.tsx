@@ -797,7 +797,7 @@ export function PostModal({
 
     // Check if user is banned
     if (isUserBanned) {
-      alert("You have been banned from interacting with this group.");
+      alert("You have been banned from interacting with this community.");
       return;
     }
 
@@ -1846,7 +1846,7 @@ export function PostModal({
         >
           {isUserBanned ? (
             <div style={{ textAlign: "center", color: "#e57373", fontSize: 14 }}>
-              🚫 You have been banned from interacting with this group.
+              🚫 You have been banned from interacting with this community.
             </div>
           ) : (
             <>

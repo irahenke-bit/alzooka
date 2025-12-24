@@ -237,15 +237,15 @@ export function ShareModal({
 
           {/* Share to Group */}
           {loading ? (
-            <p style={{ opacity: 0.6, textAlign: "center" }}>Loading groups...</p>
+            <p style={{ opacity: 0.6, textAlign: "center" }}>Loading communities...</p>
           ) : groups.length === 0 ? (
             <p style={{ opacity: 0.6, textAlign: "center", fontSize: 13 }}>
-              You&apos;re not a member of any groups yet
+              You&apos;re not a member of any communities yet
             </p>
           ) : (
             <>
               <p style={{ margin: "0 0 12px 0", fontSize: 13, opacity: 0.7 }}>
-                Or share to a group:
+                Or share to a community:
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {groups.map((group) => (

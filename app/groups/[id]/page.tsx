@@ -853,7 +853,7 @@ export default function GroupPage() {
   }
 
   async function handleBanUser(userId: string) {
-    if (!user || !confirm("Ban this user from the group? They will no longer be able to view or interact with this group.")) return;
+    if (!user || !confirm("Ban this user from the community? They will no longer be able to view or interact with this community.")) return;
     
     // Insert ban record
     const { error: banError } = await supabase
@@ -877,7 +877,7 @@ export default function GroupPage() {
   }
 
   async function handleUnbanUser(odLid: string) {
-    if (!confirm("Unban this user? They will be able to rejoin the group.")) return;
+    if (!confirm("Unban this user? They will be able to rejoin the community.")) return;
     
     await supabase
       .from("group_bans")
@@ -888,7 +888,7 @@ export default function GroupPage() {
   }
 
   async function handleMakeAdmin(memberId: string, userId: string) {
-    if (!confirm("Make this user an admin? They will have full control over the group.")) return;
+    if (!confirm("Make this user an admin? They will have full control over the community.")) return;
     
     const { error } = await supabase
       .from("group_members")
@@ -1098,7 +1098,7 @@ export default function GroupPage() {
 
     // Check if user is banned
     if (isUserBanned) {
-      alert("You have been banned from interacting with this group.");
+      alert("You have been banned from interacting with this community.");
       return;
     }
 
@@ -1280,7 +1280,7 @@ export default function GroupPage() {
 
     // Check if user is banned
     if (isUserBanned) {
-      alert("You have been banned from interacting with this group.");
+      alert("You have been banned from interacting with this community.");
       return;
     }
 
@@ -1356,7 +1356,7 @@ export default function GroupPage() {
 
     // Check if user is banned
     if (isUserBanned) {
-      alert("You have been banned from interacting with this group.");
+      alert("You have been banned from interacting with this community.");
       return;
     }
 
@@ -1367,7 +1367,7 @@ export default function GroupPage() {
     });
 
     if (error) {
-      alert("Unable to join group. You may have been banned.");
+      alert("Unable to join community. You may have been banned.");
       return;
     }
 
@@ -1755,13 +1755,13 @@ export default function GroupPage() {
         .eq("id", groupId);
 
       if (error) {
-        alert("Failed to delete group: " + error.message);
+        alert("Failed to delete community: " + error.message);
         console.error("Delete error:", error);
       } else {
         router.push("/groups");
       }
     } catch (err) {
-      alert("An error occurred while deleting the group");
+      alert("An error occurred while deleting the community");
       console.error("Delete error:", err);
     }
   }
@@ -1787,7 +1787,7 @@ export default function GroupPage() {
       setNewGroupName("");
       setNewGroupDescription("");
     } else {
-      alert("Failed to update group info");
+      alert("Failed to update community info");
     }
   }
 
@@ -1802,8 +1802,8 @@ export default function GroupPage() {
   if (!group) {
     return (
       <div className="container" style={{ paddingTop: 40, textAlign: "center" }}>
-        <h1>Group not found</h1>
-        <Link href="/groups">← Back to Groups</Link>
+        <h1>Community not found</h1>
+        <Link href="/groups">← Back to Communities</Link>
       </div>
     );
   }
@@ -2190,7 +2190,7 @@ export default function GroupPage() {
                   </span>
                 )
               ) : (
-                <button onClick={handleJoin}>Join Group</button>
+                <button onClick={handleJoin}>Join Community</button>
               )}
             </div>
           </div>
@@ -2590,7 +2590,7 @@ export default function GroupPage() {
                 />
                 <div>
                   <div style={{ fontWeight: 600 }}>Include posts in my feed</div>
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>Show posts from this group in your main newsfeed</div>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>Show posts from this community in your main newsfeed</div>
                 </div>
               </label>
             </div>
@@ -2627,7 +2627,7 @@ export default function GroupPage() {
                     />
                     <div>
                       <div style={{ fontWeight: 600 }}>Friends only</div>
-                      <div style={{ fontSize: 12, opacity: 0.7 }}>Only show posts from your friends in this group</div>
+                      <div style={{ fontSize: 12, opacity: 0.7 }}>Only show posts from your friends in this community</div>
                     </div>
                   </label>
                 </div>
@@ -2872,14 +2872,14 @@ export default function GroupPage() {
             style={{ width: "90%", maxWidth: 500 }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Edit Group Info</h2>
+            <h2 style={{ margin: "0 0 16px 0", fontSize: 18 }}>Edit Community Info</h2>
             
             <label style={{ display: "block", marginBottom: 8, fontSize: 14, opacity: 0.8 }}>
               Group Name
             </label>
             <input
               type="text"
-              placeholder="Group name"
+              placeholder="Community name"
               value={newGroupName}
               onChange={e => setNewGroupName(e.target.value)}
               autoFocus
@@ -2891,7 +2891,7 @@ export default function GroupPage() {
               Description (optional)
             </label>
             <textarea
-              placeholder="Describe what this group is about..."
+              placeholder="Describe what this community is about..."
               value={newGroupDescription}
               onChange={e => setNewGroupDescription(e.target.value)}
               rows={3}
@@ -2930,7 +2930,7 @@ export default function GroupPage() {
       {/* Banned User Message */}
       {isUserBanned && (
         <div className="card" style={{ marginBottom: 24, textAlign: "center", padding: 20, background: "rgba(229, 115, 115, 0.1)", border: "1px solid rgba(229, 115, 115, 0.3)" }}>
-          <p style={{ margin: 0, color: "#e57373" }}>🚫 You have been banned from interacting with this group.</p>
+          <p style={{ margin: 0, color: "#e57373" }}>🚫 You have been banned from interacting with this community.</p>
         </div>
       )}
 
@@ -3440,7 +3440,7 @@ export default function GroupPage() {
       {/* Posts */}
       {!isMember && group.privacy === "private" ? (
         <div className="card" style={{ textAlign: "center", padding: 40 }}>
-          <p style={{ fontSize: 18, marginBottom: 12 }}>🔒 This is a private group</p>
+          <p style={{ fontSize: 18, marginBottom: 12 }}>🔒 This is a private community</p>
           {pendingInvite ? (
             <>
               <p className="text-muted" style={{ marginBottom: 16 }}>You have been invited to join!</p>

@@ -267,16 +267,16 @@ export default function GroupsPage() {
       <div className="container" style={{ paddingTop: 20, paddingBottom: 40 }}>
       {/* Page Title */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, margin: 0, fontWeight: 400 }}>Groups</h1>
+        <h1 style={{ fontSize: 28, margin: 0, fontWeight: 400 }}>Communities</h1>
         <button onClick={() => setShowCreateModal(true)}>
-          + Create Group
+          + Create Community
         </button>
       </div>
 
       {/* My Groups */}
       {myGroups.length > 0 && (
         <section style={{ marginBottom: 40 }}>
-          <h2 style={{ fontSize: 18, marginBottom: 16, opacity: 0.8 }}>Your Groups</h2>
+          <h2 style={{ fontSize: 18, marginBottom: 16, opacity: 0.8 }}>Your Communities</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
             {myGroups.map(group => (
               <Link 
@@ -330,15 +330,15 @@ export default function GroupsPage() {
       {/* Discover Groups */}
       <section>
         <h2 style={{ fontSize: 18, marginBottom: 16, opacity: 0.8 }}>
-          {myGroups.length > 0 ? "Discover Groups" : "All Groups"}
+          {myGroups.length > 0 ? "Discover Communities" : "All Communities"}
         </h2>
         {groups.length === 0 && myGroups.length === 0 ? (
           <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-            No groups yet. Be the first to create one!
+            No communities yet. Be the first to create one!
           </p>
         ) : groups.length === 0 ? (
           <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-            You&apos;ve joined all available groups!
+            You&apos;ve joined all available communities!
           </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
@@ -389,7 +389,7 @@ export default function GroupsPage() {
                     onClick={() => handleJoinGroup(group.id)}
                     style={{ width: "100%", marginTop: 12 }}
                   >
-                    Join Group
+                    Join Community
                   </button>
                 ) : (
                   <Link
@@ -408,7 +408,7 @@ export default function GroupsPage() {
                       fontSize: 14,
                     }}
                   >
-                    View Group
+                    View Community
                   </Link>
                 )}
               </div>
@@ -439,11 +439,11 @@ export default function GroupsPage() {
             style={{ width: "90%", maxWidth: 450 }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ margin: "0 0 20px 0", fontSize: 20 }}>Create a Group</h2>
+            <h2 style={{ margin: "0 0 20px 0", fontSize: 20 }}>Create a Community</h2>
             <form onSubmit={handleCreateGroup}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", marginBottom: 6, fontSize: 14, opacity: 0.8 }}>
-                  Group Name *
+                  Community Name *
                 </label>
                 <input
                   type="text"
@@ -461,7 +461,7 @@ export default function GroupsPage() {
                 <textarea
                   value={newGroupDescription}
                   onChange={e => setNewGroupDescription(e.target.value)}
-                  placeholder="What's this group about?"
+                  placeholder="What's this community about?"
                   rows={3}
                   maxLength={500}
                 />
@@ -494,13 +494,13 @@ export default function GroupsPage() {
                 </div>
                 <p className="text-muted" style={{ fontSize: 12, marginTop: 6 }}>
                   {newGroupPrivacy === "public" 
-                    ? "Anyone can find and join this group" 
+                    ? "Anyone can find and join this community" 
                     : "Only invited members can join"}
                 </p>
               </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <button type="submit" disabled={creating || !newGroupName.trim()}>
-                  {creating ? "Creating..." : "Create Group"}
+                  {creating ? "Creating..." : "Create Community"}
                 </button>
                 <button
                   type="button"

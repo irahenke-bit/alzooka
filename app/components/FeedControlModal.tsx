@@ -180,10 +180,10 @@ export function FeedControlModal({
               transition: "opacity 0.2s",
             }}
           >
-            {/* Groups */}
+            {/* Communities */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, opacity: 0.8 }}>
-                Groups
+                Communities
               </div>
               <label
                 style={{
@@ -203,7 +203,7 @@ export function FeedControlModal({
                   disabled={worldView}
                   style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
                 />
-                All groups on Alzooka
+                All communities on Alzooka
               </label>
               <label
                 style={{
@@ -222,7 +222,7 @@ export function FeedControlModal({
                   disabled={worldView}
                   style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
                 />
-                Only groups I&apos;m a member of
+                Only communities I&apos;m a member of
               </label>
             </div>
 

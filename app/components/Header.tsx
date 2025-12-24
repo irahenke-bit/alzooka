@@ -111,8 +111,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
 
       {/* Navigation Icons */}
       <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {/* Groups */}
-        <InstantTooltip text="Groups">
+        {/* Communities */}
+        <InstantTooltip text="Communities">
           <Link
             href="/groups"
             prefetch={true}

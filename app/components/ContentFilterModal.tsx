@@ -156,7 +156,7 @@ export function ContentFilterModal({
         {/* Content */}
         <div style={{ padding: 20, overflowY: "auto", flex: 1 }}>
           <p style={{ margin: "0 0 16px 0", fontSize: 14, opacity: 0.8 }}>
-            Add words or phrases to filter from your feed and groups. Posts containing these words will be hidden.
+            Add words or phrases to filter from your feed and communities. Posts containing these words will be hidden.
           </p>
 
           {/* Warning Modal */}
