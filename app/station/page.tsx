@@ -142,6 +142,10 @@ export default function StationPage() {
   const [albumGroups, setAlbumGroups] = useState<Record<string, string[]>>({}); // albumId -> groupIds
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  
+  // Station name editing
+  const [isEditingStationName, setIsEditingStationName] = useState(false);
+  const [editedStationName, setEditedStationName] = useState("");
   const [editingAlbumGroups, setEditingAlbumGroups] = useState<string | null>(null);
   const [bulkAddGroup, setBulkAddGroup] = useState<string | null>(null); // Group ID for bulk adding albums
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<string | null>(null);
@@ -1355,6 +1359,21 @@ export default function StationPage() {
     setActiveSearch("");
   }
 
+  // Station name editing
+  async function handleSaveStationName() {
+    if (!station || !editedStationName.trim()) return;
+    
+    const { error } = await supabase
+      .from("stations")
+      .update({ name: editedStationName.trim() })
+      .eq("id", station.id);
+    
+    if (!error) {
+      setStation({ ...station, name: editedStationName.trim() });
+    }
+    setIsEditingStationName(false);
+  }
+
   // Group management functions
   async function handleCreateGroup() {
     if (!station || !newGroupName.trim()) return;
@@ -2037,7 +2056,83 @@ export default function StationPage() {
               <p style={{ margin: 0, fontSize: 12, opacity: 0.6, textTransform: "uppercase", letterSpacing: 1 }}>
                 Alzooka FM
               </p>
-              <h1 style={{ margin: 0, fontSize: 24 }}>{station?.name}</h1>
+              {isEditingStationName ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input
+                    type="text"
+                    value={editedStationName}
+                    onChange={(e) => setEditedStationName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSaveStationName();
+                      } else if (e.key === "Escape") {
+                        setIsEditingStationName(false);
+                      }
+                    }}
+                    autoFocus
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 700,
+                      background: "rgba(0,0,0,0.3)",
+                      border: "1px solid var(--alzooka-gold)",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      color: "var(--alzooka-cream)",
+                      outline: "none",
+                      width: 250,
+                    }}
+                  />
+                  <button
+                    onClick={handleSaveStationName}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "var(--alzooka-gold)",
+                      color: "var(--alzooka-teal-dark)",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setIsEditingStationName(false)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "transparent",
+                      color: "var(--alzooka-cream)",
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <h1 
+                  onClick={() => {
+                    setEditedStationName(station?.name || "");
+                    setIsEditingStationName(true);
+                  }}
+                  style={{ 
+                    margin: 0, 
+                    fontSize: 24, 
+                    cursor: "pointer",
+                    transition: "opacity 0.15s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                  title="Click to edit station name"
+                >
+                  {station?.name}
+                </h1>
+              )}
             </div>
           </div>
           
