@@ -3220,18 +3220,18 @@ export default function StationPage() {
                           </div>
                         </div>
                         {/* Album Playback Controls */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                           {/* Backward */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handlePreviousTrack(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Previous track"
@@ -3243,12 +3243,12 @@ export default function StationPage() {
                             onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#e57373" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(229, 115, 115, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Stop"
@@ -3273,13 +3273,13 @@ export default function StationPage() {
                                 }}
                                 disabled={!spotifyConnected || !playerReady}
                                 style={{
-                                  padding: "4px 12px",
-                                  fontSize: 12,
+                                  padding: "3px 8px",
+                                  fontSize: 10,
                                   fontWeight: 600,
                                   background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
                                   color: "#fff",
                                   border: "none",
-                                  borderRadius: 12,
+                                  borderRadius: 10,
                                   cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                                 }}
                                 title={isThisAlbumPlaying ? "Pause" : (() => {
@@ -3300,12 +3300,12 @@ export default function StationPage() {
                             onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Next track"
@@ -3608,18 +3608,18 @@ export default function StationPage() {
                           </div>
                         </div>
                         {/* Playlist Playback Controls */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                           {/* Backward */}
                           <button
                             onClick={(e) => { e.stopPropagation(); handlePreviousTrack(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Previous track"
@@ -3631,12 +3631,12 @@ export default function StationPage() {
                             onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#e57373" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(229, 115, 115, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Stop"
@@ -3661,13 +3661,13 @@ export default function StationPage() {
                                 }}
                                 disabled={!spotifyConnected || !playerReady}
                                 style={{
-                                  padding: "4px 12px",
-                                  fontSize: 12,
+                                  padding: "3px 8px",
+                                  fontSize: 10,
                                   fontWeight: 600,
                                   background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
                                   color: "#fff",
                                   border: "none",
-                                  borderRadius: 12,
+                                  borderRadius: 10,
                                   cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                                 }}
                                 title={isThisPlaylistPlaying ? "Pause" : "Play playlist"}
@@ -3681,12 +3681,12 @@ export default function StationPage() {
                             onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
                             disabled={!spotifyConnected || !playerReady}
                             style={{
-                              padding: "4px 8px",
-                              fontSize: 12,
+                              padding: "3px 5px",
+                              fontSize: 10,
                               background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
                               color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
                               border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 8,
+                              borderRadius: 6,
                               cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
                             }}
                             title="Next track"
