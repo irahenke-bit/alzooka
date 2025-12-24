@@ -24,10 +24,14 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
   const [searchType, setSearchType] = useState<"album" | "track">("album");
   const [results, setResults] = useState<SpotifyResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [postingId, setPostingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
   const [postedUris, setPostedUris] = useState<Set<string>>(new Set()); // Track newly posted during this session
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [lastQuery, setLastQuery] = useState(""); // Track the query that was searched
   
   // Track if mousedown started on backdrop (to prevent close when selecting text)
   const mouseDownOnBackdropRef = useRef(false);
@@ -48,28 +52,36 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setHasMore(false);
+      setOffset(0);
+      setLastQuery("");
       return;
     }
 
     const timer = setTimeout(async () => {
       setLoading(true);
       setError("");
+      setOffset(0); // Reset offset for new search
 
       try {
         const response = await fetch(
-          `/api/spotify/search?q=${encodeURIComponent(query)}&type=${searchType}`
+          `/api/spotify/search?q=${encodeURIComponent(query)}&type=${searchType}&offset=0`
         );
         const data = await response.json();
 
         if (!response.ok) {
           setError(data.error || "Search failed");
           setResults([]);
+          setHasMore(false);
         } else {
           setResults(data.results || []);
+          setHasMore(data.hasMore || false);
+          setLastQuery(query);
         }
       } catch {
         setError("Failed to search Spotify");
         setResults([]);
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
@@ -77,6 +89,31 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
 
     return () => clearTimeout(timer);
   }, [query, searchType]);
+
+  // Load more results
+  async function loadMore() {
+    if (loadingMore || !hasMore || !lastQuery.trim()) return;
+    
+    setLoadingMore(true);
+    const newOffset = results.length;
+    
+    try {
+      const response = await fetch(
+        `/api/spotify/search?q=${encodeURIComponent(lastQuery)}&type=${searchType}&offset=${newOffset}`
+      );
+      const data = await response.json();
+
+      if (response.ok && data.results) {
+        setResults(prev => [...prev, ...data.results]);
+        setHasMore(data.hasMore || false);
+        setOffset(newOffset);
+      }
+    } catch {
+      console.error("Failed to load more results");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -366,6 +403,36 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
               })()}
             </div>
           ))}
+          
+          {/* Load More Button */}
+          {hasMore && results.length > 0 && (
+            <div style={{ padding: "16px 20px", textAlign: "center" }}>
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{
+                  padding: "10px 32px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "transparent",
+                  color: "#1DB954",
+                  border: "1px solid #1DB954",
+                  borderRadius: 20,
+                  cursor: loadingMore ? "not-allowed" : "pointer",
+                  opacity: loadingMore ? 0.6 : 1,
+                }}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
+          
+          {/* End of results indicator */}
+          {!hasMore && results.length > 0 && !loading && (
+            <div style={{ padding: "16px 20px", textAlign: "center", opacity: 0.5, fontSize: 13 }}>
+              End of results
+            </div>
+          )}
         </div>
       </div>
     </div>,

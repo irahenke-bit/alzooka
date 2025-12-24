@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
   const type = searchParams.get("type") || "album"; // album, track, artist
+  const offset = searchParams.get("offset") || "0";
+  const limit = searchParams.get("limit") || "20"; // Increased from 10 to 20
 
   if (!query) {
     return NextResponse.json({ error: "Query parameter 'q' is required" }, { status: 400 });
@@ -63,7 +65,8 @@ export async function GET(request: NextRequest) {
       `https://api.spotify.com/v1/search?${new URLSearchParams({
         q: query,
         type: type,
-        limit: "10",
+        limit: limit,
+        offset: offset,
       })}`,
       {
         headers: {
@@ -89,8 +92,12 @@ export async function GET(request: NextRequest) {
       uri: string;
       type: string;
     }> = [];
+    let total = 0;
+    let hasMore = false;
 
     if (type === "album" && data.albums) {
+      total = data.albums.total;
+      hasMore = (parseInt(offset) + data.albums.items.length) < total;
       results = data.albums.items.map((album: {
         id: string;
         name: string;
@@ -106,6 +113,8 @@ export async function GET(request: NextRequest) {
         type: "album",
       }));
     } else if (type === "track" && data.tracks) {
+      total = data.tracks.total;
+      hasMore = (parseInt(offset) + data.tracks.items.length) < total;
       results = data.tracks.items.map((track: {
         id: string;
         name: string;
@@ -121,6 +130,8 @@ export async function GET(request: NextRequest) {
         type: "track",
       }));
     } else if (type === "artist" && data.artists) {
+      total = data.artists.total;
+      hasMore = (parseInt(offset) + data.artists.items.length) < total;
       results = data.artists.items.map((artist: {
         id: string;
         name: string;
@@ -136,7 +147,7 @@ export async function GET(request: NextRequest) {
       }));
     }
 
-    return NextResponse.json({ results });
+    return NextResponse.json({ results, total, hasMore, offset: parseInt(offset) });
   } catch (error) {
     console.error("Spotify search error:", error);
     return NextResponse.json({ error: "Failed to search Spotify" }, { status: 500 });
