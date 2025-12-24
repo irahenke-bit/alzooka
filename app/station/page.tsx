@@ -395,12 +395,15 @@ export default function StationPage() {
         }
         
         // Only update position if we're not in the "ignore stale position" window
-        if (!isIgnoring) {
+        // AND we're actually playing (not paused waiting to restore)
+        if (!isIgnoring && !state.paused) {
           setTrackPosition(state.position);
-        } else if (state.position < 2000) {
+        } else if (state.position < 2000 && !state.paused) {
           // Accept small positions even during ignore window (track just started from beginning)
           setTrackPosition(state.position);
         }
+        // If paused and we have a pending restore, don't update position at all
+        // This prevents stale Spotify state from overwriting our saved position
       });
 
       player.connect();
@@ -598,6 +601,10 @@ export default function StationPage() {
     const selectedPlaylistIds = Array.from(selectedPlaylists);
     const activeGroupIdsList = Array.from(activeGroups);
     
+    // Only save track position if we're actively playing or just paused (not from stale state)
+    // If hasPendingRestoreRef is true, we haven't started playing yet, so don't overwrite saved position
+    const shouldSavePosition = !hasPendingRestoreRef.current && currentlyPlayingTrackUri;
+    
     await supabase
       .from("stations")
       .update({
@@ -607,7 +614,7 @@ export default function StationPage() {
         shuffle_queue: currentPlaylistQueue,
         shuffle_queue_index: currentQueueIndex,
         last_track_uri: currentlyPlayingTrackUri,
-        last_track_position: trackPosition,
+        last_track_position: shouldSavePosition ? trackPosition : (station.last_track_position || 0),
         last_track_name: currentTrack?.name || null,
         last_track_artist: currentTrack?.artist || null,
         last_track_image: currentTrack?.image || null,
@@ -638,7 +645,7 @@ export default function StationPage() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [station, manualSelections, selectedPlaylists, activeGroups, currentPlaylistQueue, currentQueueIndex, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration]);
+  }, [station, manualSelections, selectedPlaylists, activeGroups, currentPlaylistQueue, currentQueueIndex, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration, isPlaying]);
 
   // Detect track end and handle queue advancement / queued next track
   useEffect(() => {
