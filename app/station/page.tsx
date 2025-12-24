@@ -1119,6 +1119,14 @@ export default function StationPage() {
       return;
     }
     
+    // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
+    // This is required for browser autoplay policies
+    try {
+      await spotifyPlayer.activateElement();
+    } catch (e) {
+      console.log("activateElement error (may be ok):", e);
+    }
+    
     // Load tracks if not already loaded
     let tracks = playlistTracks[playlistId];
     if (!tracks) {
@@ -1168,7 +1176,6 @@ export default function StationPage() {
     ignorePositionUntilRef.current = Date.now() + 1000;
     
     try {
-      await spotifyPlayer.activateElement();
       setTrackPosition(0);
       
       // Check if there's a selected start track for this playlist
@@ -1209,6 +1216,19 @@ export default function StationPage() {
       }
       
       console.log("Playlist playback started with", trackUris.length, "tracks");
+      
+      // Ensure playback actually starts (sometimes the API queues but doesn't play)
+      setTimeout(async () => {
+        try {
+          const state = await spotifyPlayer.getCurrentState();
+          if (state && state.paused) {
+            console.log("Playback was paused after API call, resuming...");
+            await spotifyPlayer.resume();
+          }
+        } catch (e) {
+          console.log("Resume check error:", e);
+        }
+      }, 300);
       
       setTrackPosition(0);
       setIsPlaying(true);
@@ -1818,6 +1838,14 @@ export default function StationPage() {
   async function handlePlayAlbum(album: StationAlbum) {
     if (!spotifyPlayer || !spotifyDeviceId || !spotifyToken) return;
     
+    // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
+    // This is required for browser autoplay policies
+    try {
+      await spotifyPlayer.activateElement();
+    } catch (e) {
+      console.log("activateElement error (may be ok):", e);
+    }
+    
     // Get tracks for this album
     let tracks = albumTracks[album.id];
     if (!tracks) {
@@ -1885,12 +1913,10 @@ export default function StationPage() {
     // Ignore stale position updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
     
-    // Activate player element (required for browser autoplay policy)
-    await spotifyPlayer.activateElement();
     setTrackPosition(0);
     
     // Start fresh playback with the track URIs starting at position 0
-    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+    const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${spotifyToken}`,
@@ -1902,7 +1928,25 @@ export default function StationPage() {
       }),
     });
     
+    if (!playRes.ok) {
+      console.error("Album play failed:", await playRes.text());
+      return;
+    }
+    
     console.log("Album playback started with", tracksToPlay.length, "tracks");
+    
+    // Ensure playback actually starts (sometimes the API queues but doesn't play)
+    setTimeout(async () => {
+      try {
+        const state = await spotifyPlayer.getCurrentState();
+        if (state && state.paused) {
+          console.log("Playback was paused after API call, resuming...");
+          await spotifyPlayer.resume();
+        }
+      } catch (e) {
+        console.log("Resume check error:", e);
+      }
+    }, 300);
     
     // Force UI to show 0
     setTrackPosition(0);
