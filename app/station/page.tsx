@@ -1232,6 +1232,9 @@ export default function StationPage() {
       return;
     }
     
+    // Clear pending restore flag - we're starting fresh playback
+    hasPendingRestoreRef.current = false;
+    
     // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
     // This is required for browser autoplay policies
     try {
@@ -1696,6 +1699,9 @@ export default function StationPage() {
   async function handleShufflePlay() {
     console.log("Shuffle play clicked", { spotifyDeviceId, spotifyToken: spotifyToken ? "present" : "missing" });
     
+    // Clear pending restore flag - we're starting fresh playback
+    hasPendingRestoreRef.current = false;
+    
     if (!spotifyDeviceId || !spotifyToken || !spotifyPlayer) {
       alert("Please connect Spotify first");
       return;
@@ -2085,6 +2091,9 @@ export default function StationPage() {
   // Play a single album - either full album or just selected tracks from it
   async function handlePlayAlbum(album: StationAlbum) {
     if (!spotifyPlayer || !spotifyDeviceId || !spotifyToken) return;
+    
+    // Clear pending restore flag - we're starting fresh playback
+    hasPendingRestoreRef.current = false;
     
     // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
     // This is required for browser autoplay policies
