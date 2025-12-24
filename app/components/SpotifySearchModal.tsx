@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 type SpotifyResult = {
@@ -28,6 +28,9 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
   const [postedUris, setPostedUris] = useState<Set<string>>(new Set()); // Track newly posted during this session
+  
+  // Track if mousedown started on backdrop (to prevent close when selecting text)
+  const mouseDownOnBackdropRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -117,8 +120,17 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
         padding: "40px 20px",
         overflowY: "auto",
       }}
+      onMouseDown={(e) => {
+        // Track if mousedown started on the backdrop itself
+        mouseDownOnBackdropRef.current = e.target === e.currentTarget;
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        // Only close if both mousedown AND click were on the backdrop
+        // This prevents closing when user drags outside while selecting text
+        if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) {
+          onClose();
+        }
+        mouseDownOnBackdropRef.current = false;
       }}
     >
       <div
