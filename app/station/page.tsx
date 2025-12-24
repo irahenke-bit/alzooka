@@ -561,9 +561,69 @@ export default function StationPage() {
           setTrackDuration(stationData.last_track_duration || 0);
         }
         
-        // Restore active groups
-        if (stationData.active_group_ids && Array.isArray(stationData.active_group_ids)) {
-          setActiveGroups(new Set<string>(stationData.active_group_ids as string[]));
+        // Restore active groups AND apply album/playlist selections based on those groups
+        if (stationData.active_group_ids && Array.isArray(stationData.active_group_ids) && stationData.active_group_ids.length > 0) {
+          const restoredActiveGroups = new Set<string>(stationData.active_group_ids as string[]);
+          setActiveGroups(restoredActiveGroups);
+          
+          // Build album groups mapping for lookup (we already loaded this above)
+          const albumGroupMapping: Record<string, string[]> = {};
+          if (albumIds && albumIds.length > 0) {
+            const { data: albumGroupsData } = await supabase
+              .from("station_album_groups")
+              .select("album_id, group_id")
+              .in("album_id", albumIds);
+            
+            if (albumGroupsData) {
+              for (const ag of albumGroupsData) {
+                if (!albumGroupMapping[ag.album_id]) albumGroupMapping[ag.album_id] = [];
+                albumGroupMapping[ag.album_id].push(ag.group_id);
+              }
+            }
+          }
+          
+          // Select albums that belong to ANY restored active group
+          const albumsToSelect = new Set<string>();
+          for (const [albumId, groupIds] of Object.entries(albumGroupMapping)) {
+            if (groupIds.some(gid => restoredActiveGroups.has(gid))) {
+              albumsToSelect.add(albumId);
+            }
+          }
+          
+          if (albumsToSelect.size > 0 && albumsData) {
+            setManualSelections(albumsToSelect);
+            setAlbums(albumsData.map(a => ({ ...a, is_selected: albumsToSelect.has(a.id) })));
+            setSelectAll(albumsData.length > 0 && albumsData.every(a => albumsToSelect.has(a.id)));
+          }
+          
+          // Build playlist groups mapping for lookup
+          const playlistGroupMapping: Record<string, string[]> = {};
+          if (playlistsData && playlistsData.length > 0) {
+            const playlistIds = playlistsData.map(p => p.id);
+            const { data: playlistGroupsData } = await supabase
+              .from("station_playlist_groups")
+              .select("playlist_id, group_id")
+              .in("playlist_id", playlistIds);
+            
+            if (playlistGroupsData) {
+              for (const pg of playlistGroupsData) {
+                if (!playlistGroupMapping[pg.playlist_id]) playlistGroupMapping[pg.playlist_id] = [];
+                playlistGroupMapping[pg.playlist_id].push(pg.group_id);
+              }
+            }
+          }
+          
+          // Select playlists that belong to ANY restored active group
+          const playlistsToSelect = new Set<string>();
+          for (const [playlistId, groupIds] of Object.entries(playlistGroupMapping)) {
+            if (groupIds.some(gid => restoredActiveGroups.has(gid))) {
+              playlistsToSelect.add(playlistId);
+            }
+          }
+          
+          if (playlistsToSelect.size > 0) {
+            setSelectedPlaylists(playlistsToSelect);
+          }
         }
         
         // Restore shuffle queue
@@ -635,10 +695,10 @@ export default function StationPage() {
       clearTimeout(saveTimeoutRef.current);
     }
     
-    // Debounce save by 2 seconds
+    // Debounce save by 500ms (was 2 seconds, but that's too slow for track changes)
     saveTimeoutRef.current = setTimeout(() => {
       saveStationState();
-    }, 2000);
+    }, 500);
     
     return () => {
       if (saveTimeoutRef.current) {
@@ -1791,6 +1851,26 @@ export default function StationPage() {
       
       // Don't call resume() - it can restore old position. The play endpoint starts playback automatically.
       setIsPlaying(true);
+      
+      // Immediately save state to database (don't rely on debounce for critical playback changes)
+      // We need to save the shuffled tracks queue right away
+      if (station) {
+        const selectedAlbumIds = Array.from(manualSelections);
+        const selectedPlaylistIds = Array.from(selectedPlaylists);
+        const activeGroupIdsList = Array.from(activeGroups);
+        
+        await supabase
+          .from("stations")
+          .update({
+            selected_album_ids: selectedAlbumIds,
+            selected_playlist_ids: selectedPlaylistIds,
+            active_group_ids: activeGroupIdsList,
+            shuffle_queue: shuffledTracks,
+            shuffle_queue_index: 0,
+            state_updated_at: new Date().toISOString(),
+          })
+          .eq("id", station.id);
+      }
     } catch (err) {
       console.error("Playback error:", err);
       alert("Failed to start playback. Make sure you have Spotify Premium.");
