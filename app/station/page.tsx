@@ -191,6 +191,10 @@ export default function StationPage() {
   const wasPlayingRef = useRef<boolean>(false); // Track previous playing state
   const manualPauseRef = useRef<boolean>(false); // Track if user manually paused
   
+  // Drag and drop state for reordering tracks
+  const [draggingTrack, setDraggingTrack] = useState<{ playlistId: string; trackUri: string; index: number } | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  
   const router = useRouter();
   const supabase = createBrowserClient();
   
@@ -986,6 +990,34 @@ export default function StationPage() {
     // Clear selection
     setTracksToRemove(null);
     setConfirmRemoveTracks(false);
+  }
+
+  // Reorder tracks within a playlist
+  async function handleReorderTracks(playlistId: string, fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    
+    const tracks = playlistTracks[playlistId];
+    if (!tracks) return;
+    
+    // Create new order
+    const newTracks = [...tracks];
+    const [movedTrack] = newTracks.splice(fromIndex, 1);
+    newTracks.splice(toIndex, 0, movedTrack);
+    
+    // Update local state immediately for responsiveness
+    setPlaylistTracks(prev => ({
+      ...prev,
+      [playlistId]: newTracks,
+    }));
+    
+    // Update track_order in database for all affected tracks
+    for (let i = 0; i < newTracks.length; i++) {
+      await supabase
+        .from("station_playlist_tracks")
+        .update({ track_order: i })
+        .eq("playlist_id", playlistId)
+        .eq("spotify_uri", newTracks[i].uri);
+    }
   }
 
   // Toggle playlist selection for shuffle
@@ -3370,9 +3402,40 @@ export default function StationPage() {
                             const isSelectedStart = selectedStartTrack?.playlistId === playlist.id && selectedStartTrack?.trackUri === track.uri;
                             const isSelectedForRemoval = tracksToRemove?.playlistId === playlist.id && tracksToRemove.trackUris.has(track.uri);
                             
+                            const isDragging = draggingTrack?.playlistId === playlist.id && draggingTrack?.index === idx;
+                            const isDropTarget = draggingTrack?.playlistId === playlist.id && dropTargetIndex === idx;
+                            
                             return (
                               <div 
-                                key={track.uri} 
+                                key={track.uri}
+                                draggable
+                                onDragStart={(e) => {
+                                  setDraggingTrack({ playlistId: playlist.id, trackUri: track.uri, index: idx });
+                                  e.dataTransfer.effectAllowed = "move";
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  if (draggingTrack?.playlistId === playlist.id && draggingTrack.index !== idx) {
+                                    setDropTargetIndex(idx);
+                                  }
+                                }}
+                                onDragLeave={() => {
+                                  if (dropTargetIndex === idx) {
+                                    setDropTargetIndex(null);
+                                  }
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  if (draggingTrack?.playlistId === playlist.id && draggingTrack.index !== idx) {
+                                    handleReorderTracks(playlist.id, draggingTrack.index, idx);
+                                  }
+                                  setDraggingTrack(null);
+                                  setDropTargetIndex(null);
+                                }}
+                                onDragEnd={() => {
+                                  setDraggingTrack(null);
+                                  setDropTargetIndex(null);
+                                }}
                                 onClick={() => {
                                   if (isSelectedStart) {
                                     setSelectedStartTrack(null);
@@ -3390,15 +3453,19 @@ export default function StationPage() {
                                   display: "flex", 
                                   alignItems: "center", 
                                   gap: 8,
-                                  cursor: "pointer",
-                                  background: isSelectedForRemoval
-                                    ? "rgba(229, 115, 115, 0.2)"
-                                    : isCurrentTrack 
-                                      ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
-                                      : isSelectedStart 
-                                        ? "rgba(30, 215, 96, 0.3)" 
-                                        : "transparent",
+                                  cursor: isDragging ? "grabbing" : "grab",
+                                  opacity: isDragging ? 0.5 : 1,
+                                  background: isDropTarget
+                                    ? "rgba(30, 215, 96, 0.4)"
+                                    : isSelectedForRemoval
+                                      ? "rgba(229, 115, 115, 0.2)"
+                                      : isCurrentTrack 
+                                        ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
+                                        : isSelectedStart 
+                                          ? "rgba(30, 215, 96, 0.3)" 
+                                          : "transparent",
                                   borderRadius: 4,
+                                  borderTop: isDropTarget ? "2px solid #1DB954" : "2px solid transparent",
                                   borderLeft: isSelectedForRemoval
                                     ? "3px solid #e57373"
                                     : isCurrentTrack 
@@ -3406,6 +3473,7 @@ export default function StationPage() {
                                       : isSelectedStart 
                                         ? "3px solid #1DB954" 
                                         : "3px solid transparent",
+                                  transition: "background 0.15s, border 0.15s",
                                 }}
                               >
                                 {/* Checkbox for removal */}
