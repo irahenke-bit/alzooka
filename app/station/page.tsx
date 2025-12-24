@@ -2477,7 +2477,7 @@ export default function StationPage() {
           border: "1px solid rgba(240, 235, 224, 0.1)",
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <h3 style={{ margin: 0, fontSize: 14, opacity: 0.7 }}>Groups</h3>
+            <h3 style={{ margin: 0, fontSize: 14, opacity: 0.7 }}>Communities</h3>
             <div style={{ display: "flex", gap: 8 }}>
               {activeGroups.size > 0 && (
                 <button
@@ -2508,7 +2508,7 @@ export default function StationPage() {
                   cursor: "pointer",
                 }}
               >
-                + New Group
+                + New Community
               </button>
             </div>
           </div>
@@ -2518,7 +2518,7 @@ export default function StationPage() {
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <input
                 type="text"
-                placeholder="Group name (e.g., Jazz, 70s Rock)"
+                placeholder="Community name (e.g., Jazz, 70s Rock)"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && newGroupName.trim()) { e.preventDefault(); handleCreateGroup(); } }}
@@ -2555,7 +2555,7 @@ export default function StationPage() {
           {/* Group Toggles */}
           {groups.length === 0 ? (
             <p style={{ margin: 0, fontSize: 13, opacity: 0.5 }}>
-              No groups yet. Create groups to organize your albums by genre, mood, or era.
+              No communities yet. Create communities to organize your albums by genre, mood, or era.
             </p>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -2596,7 +2596,7 @@ export default function StationPage() {
                         cursor: "pointer",
                         opacity: isBulkEditing ? 1 : 0.6,
                       }}
-                      title={isBulkEditing ? "Done editing" : "Add albums to this group"}
+                      title={isBulkEditing ? "Done editing" : "Add albums to this community"}
                     >
                       {isBulkEditing ? "Done" : "Edit"}
                     </button>
@@ -2614,7 +2614,7 @@ export default function StationPage() {
                         opacity: 0.4,
                         lineHeight: 1,
                       }}
-                      title="Delete group"
+                      title="Delete community"
                     >
                       ×
                     </button>
@@ -2641,7 +2641,7 @@ export default function StationPage() {
                           Delete <strong>{group.name}</strong>?
                         </p>
                         <p style={{ margin: "0 0 12px", fontSize: 12, opacity: 0.7 }}>
-                          This will remove the group. Albums won't be deleted.
+                          This will remove the community. Albums won't be deleted.
                         </p>
                         <div style={{ display: "flex", gap: 8 }}>
                           <button
@@ -2693,7 +2693,7 @@ export default function StationPage() {
           {/* Hint when no albums are tagged */}
           {groups.length > 0 && albums.length > 0 && Object.keys(albumGroups).length === 0 && !bulkAddGroup && (
             <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--alzooka-gold)" }}>
-              💡 Click <strong>"Edit"</strong> next to a group, then click albums to add them
+              💡 Click <strong>"Edit"</strong> next to a community, then click albums to add them
             </p>
           )}
         </div>
@@ -2719,7 +2719,7 @@ export default function StationPage() {
                   </span>
                 </p>
                 <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>
-                  Click albums below to add or remove them from this group
+                  Click albums below to add or remove them from this community
                 </p>
               </div>
             </div>
@@ -3185,7 +3185,7 @@ export default function StationPage() {
                       {/* Group Picker Dropdown */}
                       {editingAlbumGroups === album.id && (
                         <div style={{ marginLeft: 28, marginTop: 4, padding: 10, background: "#1a2e2e", border: "2px solid var(--alzooka-gold)", borderRadius: 8, zIndex: 1000 }} onClick={(e) => e.stopPropagation()}>
-                          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600 }}>Add to Groups:</p>
+                          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600 }}>Add to Communities:</p>
                           {groups.map(group => {
                             const isInGroup = (albumGroups[album.id] || []).includes(group.id);
                             return (
