@@ -25,6 +25,9 @@ type Station = {
   // Persisted state
   selected_album_ids?: string[];
   selected_playlist_ids?: string[];
+  active_group_ids?: string[];
+  shuffle_queue?: string[];
+  shuffle_queue_index?: number;
   last_track_uri?: string;
   last_track_position?: number;
   last_track_name?: string;
@@ -373,6 +376,18 @@ export default function StationPage() {
               // Track changed! Reset position
               setTrackPosition(0);
               ignorePositionUntilRef.current = Date.now() + 1500;
+              
+              // Update queue index if playing from a queue
+              setCurrentPlaylistQueue(currentQueue => {
+                if (currentQueue.length > 0) {
+                  const newIndex = currentQueue.indexOf(newTrackUri);
+                  if (newIndex >= 0) {
+                    setCurrentQueueIndex(newIndex);
+                  }
+                }
+                return currentQueue;
+              });
+              
               return newTrackUri;
             }
             return newTrackUri || prevUri;
@@ -542,6 +557,17 @@ export default function StationPage() {
           setTrackPosition(stationData.last_track_position || 0);
           setTrackDuration(stationData.last_track_duration || 0);
         }
+        
+        // Restore active groups
+        if (stationData.active_group_ids && Array.isArray(stationData.active_group_ids)) {
+          setActiveGroups(new Set<string>(stationData.active_group_ids as string[]));
+        }
+        
+        // Restore shuffle queue
+        if (stationData.shuffle_queue && Array.isArray(stationData.shuffle_queue)) {
+          setCurrentPlaylistQueue(stationData.shuffle_queue as string[]);
+          setCurrentQueueIndex(stationData.shuffle_queue_index || 0);
+        }
       } else {
         setShowSetup(true);
       }
@@ -570,12 +596,16 @@ export default function StationPage() {
     
     const selectedAlbumIds = Array.from(manualSelections);
     const selectedPlaylistIds = Array.from(selectedPlaylists);
+    const activeGroupIdsList = Array.from(activeGroups);
     
     await supabase
       .from("stations")
       .update({
         selected_album_ids: selectedAlbumIds,
         selected_playlist_ids: selectedPlaylistIds,
+        active_group_ids: activeGroupIdsList,
+        shuffle_queue: currentPlaylistQueue,
+        shuffle_queue_index: currentQueueIndex,
         last_track_uri: currentlyPlayingTrackUri,
         last_track_position: trackPosition,
         last_track_name: currentTrack?.name || null,
@@ -608,7 +638,7 @@ export default function StationPage() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [station, manualSelections, selectedPlaylists, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration]);
+  }, [station, manualSelections, selectedPlaylists, activeGroups, currentPlaylistQueue, currentQueueIndex, currentlyPlayingTrackUri, trackPosition, currentTrack, trackDuration]);
 
   // Detect track end and handle queue advancement / queued next track
   useEffect(() => {
@@ -1748,6 +1778,10 @@ export default function StationPage() {
         return;
       }
 
+      // Store the full shuffle queue for persistence and tracking
+      setCurrentPlaylistQueue(shuffledTracks);
+      setCurrentQueueIndex(0);
+      
       // Don't call resume() - it can restore old position. The play endpoint starts playback automatically.
       setIsPlaying(true);
     } catch (err) {
@@ -1780,6 +1814,16 @@ export default function StationPage() {
         // First activate the player element
         await spotifyPlayer.activateElement();
         
+        // Check if we have a saved queue - if so, play from queue position
+        let urisToPlay: string[] = [trackUri];
+        if (currentPlaylistQueue.length > 0 && currentQueueIndex < currentPlaylistQueue.length) {
+          // Play from the saved queue position onwards
+          urisToPlay = currentPlaylistQueue.slice(currentQueueIndex);
+          if (urisToPlay.length > 100) {
+            urisToPlay = urisToPlay.slice(0, 100); // Spotify limit
+          }
+        }
+        
         const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
           method: "PUT",
           headers: {
@@ -1787,7 +1831,7 @@ export default function StationPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            uris: [trackUri],
+            uris: urisToPlay,
             position_ms: position,
           }),
         });
@@ -1937,10 +1981,15 @@ export default function StationPage() {
     setCurrentlyPlayingTrackUri(null);
     setTrackSourceMap({}); // Clear shuffle source info
     
+    // Clear shuffle queue
+    setCurrentPlaylistQueue([]);
+    setCurrentQueueIndex(0);
+    
     // Clear all selections
     setSelectedPlaylists(new Set());
     setManualSelections(new Set());
     setSelectAll(false);
+    setActiveGroups(new Set()); // Also clear active groups
     // Update albums to be unselected
     setAlbums(prev => prev.map(a => ({ ...a, is_selected: false })));
   }

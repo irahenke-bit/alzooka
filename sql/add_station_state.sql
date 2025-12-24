@@ -5,6 +5,13 @@
 ALTER TABLE stations ADD COLUMN IF NOT EXISTS selected_album_ids JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE stations ADD COLUMN IF NOT EXISTS selected_playlist_ids JSONB DEFAULT '[]'::jsonb;
 
+-- Active groups (stored as JSON array of group IDs)
+ALTER TABLE stations ADD COLUMN IF NOT EXISTS active_group_ids JSONB DEFAULT '[]'::jsonb;
+
+-- Shuffle queue persistence
+ALTER TABLE stations ADD COLUMN IF NOT EXISTS shuffle_queue JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE stations ADD COLUMN IF NOT EXISTS shuffle_queue_index INT DEFAULT 0;
+
 -- Last playing track info
 ALTER TABLE stations ADD COLUMN IF NOT EXISTS last_track_uri TEXT;
 ALTER TABLE stations ADD COLUMN IF NOT EXISTS last_track_position INT DEFAULT 0;
