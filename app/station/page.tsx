@@ -568,11 +568,12 @@ export default function StationPage() {
           
           // Build album groups mapping for lookup (we already loaded this above)
           const albumGroupMapping: Record<string, string[]> = {};
-          if (albumIds && albumIds.length > 0) {
+          const restoredAlbumIds = albumsData ? albumsData.map(a => a.id) : [];
+          if (restoredAlbumIds.length > 0) {
             const { data: albumGroupsData } = await supabase
               .from("station_album_groups")
               .select("album_id, group_id")
-              .in("album_id", albumIds);
+              .in("album_id", restoredAlbumIds);
             
             if (albumGroupsData) {
               for (const ag of albumGroupsData) {
