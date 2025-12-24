@@ -87,12 +87,27 @@ declare global {
   }
 }
 
+interface SpotifyPlayerState {
+  paused: boolean;
+  position: number;
+  duration: number;
+  track_window: {
+    current_track: {
+      uri: string;
+      name: string;
+      artists: { name: string }[];
+      album: { images: { url: string }[] };
+      duration_ms: number;
+    };
+  };
+}
+
 interface SpotifyPlayer {
   connect: () => Promise<boolean>;
   disconnect: () => void;
   addListener: (event: string, callback: (state: unknown) => void) => void;
   removeListener: (event: string) => void;
-  getCurrentState: () => Promise<unknown>;
+  getCurrentState: () => Promise<SpotifyPlayerState | null>;
   setName: (name: string) => void;
   getVolume: () => Promise<number>;
   setVolume: (volume: number) => Promise<void>;
