@@ -1814,6 +1814,102 @@ export default function StationPage() {
   async function handleNextTrack() {
     if (!spotifyPlayer) return;
     setTrackPosition(0); // Reset position immediately when skipping
+    
+    // If there's a queued/highlighted track (from playlist), jump to it
+    if (queuedNextTrack && spotifyDeviceId && spotifyToken) {
+      const playlist = playlists.find(p => p.id === queuedNextTrack.playlistId);
+      if (playlist) {
+        const tracks = playlistTracks[playlist.id];
+        if (tracks) {
+          const startIndex = tracks.findIndex(t => t.uri === queuedNextTrack.trackUri);
+          if (startIndex >= 0) {
+            const remainingTracks = tracks.slice(startIndex);
+            const uris = remainingTracks.map(t => t.uri);
+            
+            // Update queue state
+            setCurrentPlaylistQueue(uris);
+            setCurrentQueueIndex(0);
+            setCurrentlyPlayingPlaylistId(playlist.id);
+            setCurrentlyPlayingAlbumId(null);
+            
+            // Build source map
+            const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+            remainingTracks.forEach(t => {
+              newSourceMap[t.uri] = { albumName: t.album || "", playlistName: playlist.name };
+            });
+            setTrackSourceMap(newSourceMap);
+            
+            // Play from the queued track
+            ignorePositionUntilRef.current = Date.now() + 1000;
+            await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+              method: "PUT",
+              headers: {
+                "Authorization": `Bearer ${spotifyToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ uris, position_ms: 0 }),
+            });
+            
+            // Clear the queued track and selected start
+            setQueuedNextTrack(null);
+            setSelectedStartTrack(null);
+            setIsPlaying(true);
+            return;
+          }
+        }
+      }
+      
+      // If we couldn't find the track, clear the queue and do normal next
+      setQueuedNextTrack(null);
+      setSelectedStartTrack(null);
+    }
+    
+    // Check if there's a highlighted track in an album (selectedStartTrack with albumId)
+    if (selectedStartTrack?.albumId && spotifyDeviceId && spotifyToken) {
+      const album = albums.find(a => a.id === selectedStartTrack.albumId);
+      if (album) {
+        const tracks = albumTracks[album.id];
+        if (tracks) {
+          const startIndex = tracks.findIndex(t => t.uri === selectedStartTrack.trackUri);
+          if (startIndex >= 0) {
+            const remainingTracks = tracks.slice(startIndex);
+            const uris = remainingTracks.map(t => t.uri);
+            
+            // Update state
+            setCurrentlyPlayingAlbumId(album.id);
+            setCurrentlyPlayingPlaylistId(null);
+            
+            // Build source map
+            const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
+            remainingTracks.forEach(t => {
+              newSourceMap[t.uri] = { albumName: album.spotify_name };
+            });
+            setTrackSourceMap(newSourceMap);
+            
+            // Play from the selected track
+            ignorePositionUntilRef.current = Date.now() + 1000;
+            await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+              method: "PUT",
+              headers: {
+                "Authorization": `Bearer ${spotifyToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ uris, position_ms: 0 }),
+            });
+            
+            // Clear the selected start
+            setSelectedStartTrack(null);
+            setIsPlaying(true);
+            return;
+          }
+        }
+      }
+      
+      // If we couldn't find the track, clear and do normal next
+      setSelectedStartTrack(null);
+    }
+    
+    // Normal next track behavior
     await spotifyPlayer.nextTrack();
   }
 
