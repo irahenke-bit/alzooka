@@ -195,6 +195,10 @@ export default function StationPage() {
   const [draggingTrack, setDraggingTrack] = useState<{ playlistId: string; trackUri: string; index: number } | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   
+  // Drag and drop state for dragging from album to playlist
+  const [draggingAlbumTrack, setDraggingAlbumTrack] = useState<SpotifyTrack | null>(null);
+  const [dropTargetPlaylistId, setDropTargetPlaylistId] = useState<string | null>(null);
+  
   const router = useRouter();
   const supabase = createBrowserClient();
   
@@ -990,6 +994,49 @@ export default function StationPage() {
     // Clear selection
     setTracksToRemove(null);
     setConfirmRemoveTracks(false);
+  }
+
+  // Add a track from an album to a playlist (via drag and drop)
+  async function handleDropTrackToPlaylist(track: SpotifyTrack, playlistId: string, atIndex?: number) {
+    const existingTracks = playlistTracks[playlistId] || [];
+    
+    // Check if track already exists in playlist
+    if (existingTracks.some(t => t.uri === track.uri)) {
+      return; // Already in playlist, do nothing
+    }
+    
+    // Determine position
+    const insertIndex = atIndex !== undefined ? atIndex : existingTracks.length;
+    
+    // Create new tracks array with the inserted track
+    const newTracks = [...existingTracks];
+    newTracks.splice(insertIndex, 0, track);
+    
+    // Update local state immediately
+    setPlaylistTracks(prev => ({
+      ...prev,
+      [playlistId]: newTracks,
+    }));
+    
+    // Insert into database
+    await supabase.from("station_playlist_tracks").insert({
+      playlist_id: playlistId,
+      spotify_uri: track.uri,
+      spotify_name: track.name,
+      spotify_artist: track.artist,
+      spotify_album: track.album || null,
+      spotify_image_url: track.image,
+      track_order: insertIndex,
+    });
+    
+    // Update track_order for all tracks after the insert point
+    for (let i = insertIndex + 1; i < newTracks.length; i++) {
+      await supabase
+        .from("station_playlist_tracks")
+        .update({ track_order: i })
+        .eq("playlist_id", playlistId)
+        .eq("spotify_uri", newTracks[i].uri);
+    }
   }
 
   // Reorder tracks within a playlist
@@ -3069,6 +3116,16 @@ export default function StationPage() {
                             return (
                               <div
                                 key={track.uri}
+                                draggable
+                                onDragStart={(e) => {
+                                  setDraggingAlbumTrack(track);
+                                  e.dataTransfer.effectAllowed = "copy";
+                                }}
+                                onDragEnd={() => {
+                                  setDraggingAlbumTrack(null);
+                                  setDropTargetPlaylistId(null);
+                                  setDropTargetIndex(null);
+                                }}
                                 onClick={() => {
                                   // Toggle selection as start track
                                   if (isSelectedStart) {
@@ -3082,7 +3139,7 @@ export default function StationPage() {
                                   display: "flex",
                                   alignItems: "center",
                                   gap: 8,
-                                  cursor: "pointer",
+                                  cursor: "grab",
                                   background: isCurrentTrack 
                                     ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
                                     : isSelectedStart 
@@ -3094,6 +3151,7 @@ export default function StationPage() {
                                     : isSelectedStart 
                                       ? "3px solid #1DB954" 
                                       : "3px solid transparent",
+                                  opacity: draggingAlbumTrack?.uri === track.uri ? 0.5 : 1,
                                 }}
                               >
                                 {/* Checkbox for playlist selection */}
@@ -3232,23 +3290,48 @@ export default function StationPage() {
                   return (
                     <div key={playlist.id}>
                       <div
+                        onDragOver={(e) => {
+                          if (draggingAlbumTrack) {
+                            e.preventDefault();
+                            setDropTargetPlaylistId(playlist.id);
+                          }
+                        }}
+                        onDragLeave={() => {
+                          if (dropTargetPlaylistId === playlist.id && viewingPlaylist !== playlist.id) {
+                            setDropTargetPlaylistId(null);
+                          }
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (draggingAlbumTrack && viewingPlaylist !== playlist.id) {
+                            // Drop on closed playlist - add to end
+                            handleDropTrackToPlaylist(draggingAlbumTrack, playlist.id);
+                          }
+                          setDropTargetPlaylistId(null);
+                          setDraggingAlbumTrack(null);
+                        }}
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
                           padding: 10,
-                          background: hasCurrentTrack 
-                            ? "rgba(30, 215, 96, 0.25)" 
-                            : isSelected 
-                              ? "rgba(30, 215, 96, 0.1)" 
-                              : "rgba(240, 235, 224, 0.03)",
+                          background: dropTargetPlaylistId === playlist.id && viewingPlaylist !== playlist.id
+                            ? "rgba(30, 215, 96, 0.4)"
+                            : hasCurrentTrack 
+                              ? "rgba(30, 215, 96, 0.25)" 
+                              : isSelected 
+                                ? "rgba(30, 215, 96, 0.1)" 
+                                : "rgba(240, 235, 224, 0.03)",
                           borderRadius: viewingPlaylist === playlist.id ? "10px 10px 0 0" : 10,
-                          border: hasCurrentTrack 
-                            ? "1px solid rgba(30, 215, 96, 0.5)" 
-                            : isSelected 
-                              ? "1px solid rgba(30, 215, 96, 0.3)" 
-                              : "1px solid rgba(240, 235, 224, 0.1)",
+                          border: dropTargetPlaylistId === playlist.id && viewingPlaylist !== playlist.id
+                            ? "2px dashed #1DB954"
+                            : hasCurrentTrack 
+                              ? "1px solid rgba(30, 215, 96, 0.5)" 
+                              : isSelected 
+                                ? "1px solid rgba(30, 215, 96, 0.3)" 
+                                : "1px solid rgba(240, 235, 224, 0.1)",
                           borderBottom: viewingPlaylist === playlist.id ? "none" : undefined,
+                          transition: "background 0.15s, border 0.15s",
                         }}
                       >
                         {/* Checkbox */}
@@ -3403,7 +3486,8 @@ export default function StationPage() {
                             const isSelectedForRemoval = tracksToRemove?.playlistId === playlist.id && tracksToRemove.trackUris.has(track.uri);
                             
                             const isDragging = draggingTrack?.playlistId === playlist.id && draggingTrack?.index === idx;
-                            const isDropTarget = draggingTrack?.playlistId === playlist.id && dropTargetIndex === idx;
+                            const isDropTarget = (draggingTrack?.playlistId === playlist.id && dropTargetIndex === idx) || 
+                              (draggingAlbumTrack && dropTargetPlaylistId === playlist.id && dropTargetIndex === idx);
                             
                             return (
                               <div 
@@ -3415,7 +3499,13 @@ export default function StationPage() {
                                 }}
                                 onDragOver={(e) => {
                                   e.preventDefault();
+                                  // Handle reordering within same playlist
                                   if (draggingTrack?.playlistId === playlist.id && draggingTrack.index !== idx) {
+                                    setDropTargetIndex(idx);
+                                  }
+                                  // Handle drop from album track
+                                  if (draggingAlbumTrack) {
+                                    setDropTargetPlaylistId(playlist.id);
                                     setDropTargetIndex(idx);
                                   }
                                 }}
@@ -3426,15 +3516,24 @@ export default function StationPage() {
                                 }}
                                 onDrop={(e) => {
                                   e.preventDefault();
+                                  // Handle reordering within same playlist
                                   if (draggingTrack?.playlistId === playlist.id && draggingTrack.index !== idx) {
                                     handleReorderTracks(playlist.id, draggingTrack.index, idx);
                                   }
+                                  // Handle drop from album track
+                                  if (draggingAlbumTrack) {
+                                    handleDropTrackToPlaylist(draggingAlbumTrack, playlist.id, idx);
+                                  }
                                   setDraggingTrack(null);
                                   setDropTargetIndex(null);
+                                  setDraggingAlbumTrack(null);
+                                  setDropTargetPlaylistId(null);
                                 }}
                                 onDragEnd={() => {
                                   setDraggingTrack(null);
                                   setDropTargetIndex(null);
+                                  setDraggingAlbumTrack(null);
+                                  setDropTargetPlaylistId(null);
                                 }}
                                 onClick={() => {
                                   if (isSelectedStart) {
@@ -3541,6 +3640,45 @@ export default function StationPage() {
                               </div>
                             );
                           })}
+                          {/* Drop zone at end of playlist for album tracks */}
+                          {draggingAlbumTrack && (
+                            <div
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                setDropTargetPlaylistId(playlist.id);
+                                setDropTargetIndex(playlistTracks[playlist.id].length);
+                              }}
+                              onDragLeave={() => {
+                                setDropTargetIndex(null);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (draggingAlbumTrack) {
+                                  handleDropTrackToPlaylist(draggingAlbumTrack, playlist.id);
+                                }
+                                setDraggingAlbumTrack(null);
+                                setDropTargetPlaylistId(null);
+                                setDropTargetIndex(null);
+                              }}
+                              style={{
+                                padding: "8px 6px",
+                                marginTop: 4,
+                                borderRadius: 4,
+                                border: dropTargetPlaylistId === playlist.id && dropTargetIndex === playlistTracks[playlist.id].length
+                                  ? "2px dashed #1DB954"
+                                  : "2px dashed rgba(30, 215, 96, 0.3)",
+                                background: dropTargetPlaylistId === playlist.id && dropTargetIndex === playlistTracks[playlist.id].length
+                                  ? "rgba(30, 215, 96, 0.2)"
+                                  : "transparent",
+                                textAlign: "center",
+                                fontSize: 11,
+                                color: "rgba(30, 215, 96, 0.7)",
+                                transition: "background 0.15s, border 0.15s",
+                              }}
+                            >
+                              Drop here to add at end
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
