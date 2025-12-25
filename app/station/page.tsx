@@ -181,6 +181,7 @@ export default function StationPage() {
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [albumPendingDelete, setAlbumPendingDelete] = useState<StationAlbum | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [confirmBulkDeletePlaylists, setConfirmBulkDeletePlaylists] = useState(false);
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
@@ -1493,6 +1494,32 @@ export default function StationPage() {
     setAlbums(prev => prev.filter(a => !manualSelections.has(a.id)));
     setManualSelections(new Set());
     setConfirmBulkDelete(false);
+  }
+  
+  async function handleBulkDeletePlaylists() {
+    // Delete all selected playlists
+    const playlistsToDelete = Array.from(selectedPlaylists);
+    if (playlistsToDelete.length === 0) return;
+    
+    // Delete from database (also delete associated tracks)
+    for (const playlistId of playlistsToDelete) {
+      // Delete tracks first
+      await supabase
+        .from("station_playlist_tracks")
+        .delete()
+        .eq("playlist_id", playlistId);
+      
+      // Then delete playlist
+      await supabase
+        .from("station_playlists")
+        .delete()
+        .eq("id", playlistId);
+    }
+    
+    // Update state
+    setPlaylists(prev => prev.filter(p => !selectedPlaylists.has(p.id)));
+    setSelectedPlaylists(new Set());
+    setConfirmBulkDeletePlaylists(false);
   }
 
   // Filter albums by active search (only when search is applied)
@@ -3716,9 +3743,32 @@ export default function StationPage() {
                 </div>
               )}
 
-              <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600 }}>
-                📋 Playlists ({playlists.length})
-              </h3>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+                  📋 Playlists ({playlists.length})
+                </h3>
+                {/* Delete Selected Playlists Button - only shows when playlists are selected (not via groups) */}
+                {selectedPlaylists.size > 0 && activeGroups.size === 0 && (
+                  <button
+                    onClick={() => setConfirmBulkDeletePlaylists(true)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#e57373",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    🗑️ Delete ({selectedPlaylists.size})
+                  </button>
+                )}
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "70vh", overflowY: "auto" }}>
                 {playlists.map(playlist => {
                   const isSelected = selectedPlaylists.has(playlist.id);
@@ -4268,6 +4318,70 @@ export default function StationPage() {
               </button>
               <button
                 onClick={handleBulkDeleteAlbums}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "#e57373",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Playlists Confirmation Modal */}
+      {confirmBulkDeletePlaylists && selectedPlaylists.size > 0 && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#1a2e2e",
+            border: "2px solid #e57373",
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            textAlign: "center",
+          }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600, color: "#e57373" }}>
+              Delete {selectedPlaylists.size} Playlist{selectedPlaylists.size !== 1 ? "s" : ""}?
+            </h3>
+            <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.8 }}>
+              Are you sure you want to delete {selectedPlaylists.size} playlist{selectedPlaylists.size !== 1 ? "s" : ""} and all their tracks? This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={() => setConfirmBulkDeletePlaylists(false)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "rgba(240, 235, 224, 0.1)",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDeletePlaylists}
                 style={{
                   padding: "10px 20px",
                   fontSize: 14,
