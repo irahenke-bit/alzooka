@@ -180,6 +180,7 @@ export default function StationPage() {
   const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [albumPendingDelete, setAlbumPendingDelete] = useState<StationAlbum | null>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
@@ -1474,6 +1475,25 @@ export default function StationPage() {
       return newSet;
     });
   }
+  
+  async function handleBulkDeleteAlbums() {
+    // Delete all manually selected albums (not group-selected)
+    const albumsToDelete = Array.from(manualSelections);
+    if (albumsToDelete.length === 0) return;
+    
+    // Delete from database
+    for (const albumId of albumsToDelete) {
+      await supabase
+        .from("station_albums")
+        .delete()
+        .eq("id", albumId);
+    }
+    
+    // Update state
+    setAlbums(prev => prev.filter(a => !manualSelections.has(a.id)));
+    setManualSelections(new Set());
+    setConfirmBulkDelete(false);
+  }
 
   // Filter albums by active search (only when search is applied)
   const filteredAlbums = activeSearch.trim()
@@ -2747,6 +2767,28 @@ export default function StationPage() {
               🔍
             </button>
           </div>
+          
+          {/* Delete Selected Button - only shows when albums are manually selected (not via groups) */}
+          {manualSelections.size > 0 && activeGroups.size === 0 && (
+            <button
+              onClick={() => setConfirmBulkDelete(true)}
+              style={{
+                padding: "8px 16px",
+                fontSize: 14,
+                fontWeight: 600,
+                background: "#e57373",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              🗑️ Delete Selected ({manualSelections.size})
+            </button>
+          )}
           
           {/* Add Album Button */}
           <button
@@ -4174,6 +4216,70 @@ export default function StationPage() {
                 }}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Albums Confirmation Modal */}
+      {confirmBulkDelete && manualSelections.size > 0 && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#1a2e2e",
+            border: "2px solid #e57373",
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            textAlign: "center",
+          }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600, color: "#e57373" }}>
+              Delete {manualSelections.size} Album{manualSelections.size !== 1 ? "s" : ""}?
+            </h3>
+            <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.8 }}>
+              Are you sure you want to remove {manualSelections.size} album{manualSelections.size !== 1 ? "s" : ""} from your station? This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={() => setConfirmBulkDelete(false)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "rgba(240, 235, 224, 0.1)",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDeleteAlbums}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: "#e57373",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Delete All
               </button>
             </div>
           </div>
