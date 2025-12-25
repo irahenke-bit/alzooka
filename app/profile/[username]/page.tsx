@@ -383,6 +383,26 @@ export default function ProfilePage() {
       setAllowWallPosts(profileData.allow_wall_posts ?? true);
       setWallFriendsOnly(profileData.wall_friends_only ?? true);
 
+      // Check if user has a password by examining their auth identities (for own profile)
+      // This syncs the has_password field if it's out of date
+      if (user && user.id === profileData.id) {
+        // Check if user has email identity with password (not just magic link)
+        // A user has a password if they have an "email" provider identity
+        const hasEmailIdentity = user.identities?.some(
+          (identity) => identity.provider === "email"
+        );
+        
+        // If the auth system says they have password but DB says no, update DB
+        if (hasEmailIdentity && !profileData.has_password) {
+          await supabase
+            .from("users")
+            .update({ has_password: true })
+            .eq("id", user.id);
+          // Update local profile data
+          profileData.has_password = true;
+        }
+      }
+
       // Calculate karma stats for privacy eligibility (only for own profile)
       if (user && user.id === profileData.id) {
         // Get all posts and comments by this user
