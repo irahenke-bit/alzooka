@@ -1,10 +1,11 @@
 "use client";
 
+import React, { memo } from "react";
 import { useMiniPlayer } from "@/app/contexts/MiniPlayerContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function MiniPlayer() {
+const MiniPlayer = memo(function MiniPlayer() {
   const { currentTrack, isPlaying, onTogglePlay, onStop, onNext } = useMiniPlayer();
   const pathname = usePathname();
 
@@ -90,6 +91,8 @@ export default function MiniPlayer() {
             alignItems: "center",
             justifyContent: "center",
             fontSize: 14,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
           }}
           title="Stop"
         >
@@ -111,6 +114,8 @@ export default function MiniPlayer() {
             alignItems: "center",
             justifyContent: "center",
             fontSize: 18,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
           }}
           title={isPlaying ? "Pause" : "Play"}
         >
@@ -132,6 +137,8 @@ export default function MiniPlayer() {
             alignItems: "center",
             justifyContent: "center",
             fontSize: 14,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
           }}
           title="Next"
         >
@@ -158,4 +165,6 @@ export default function MiniPlayer() {
       </Link>
     </div>
   );
-}
+});
+
+export default MiniPlayer;

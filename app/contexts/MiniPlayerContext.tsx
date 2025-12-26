@@ -34,6 +34,16 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
   
+  // Use refs for values that callbacks need but shouldn't cause callback recreation
+  const isPlayingRef = useRef(isPlaying);
+  const spotifyTokenRef = useRef(spotifyToken);
+  const spotifyDeviceIdRef = useRef(spotifyDeviceId);
+  
+  // Keep refs in sync
+  isPlayingRef.current = isPlaying;
+  spotifyTokenRef.current = spotifyToken;
+  spotifyDeviceIdRef.current = spotifyDeviceId;
+  
   // Station callbacks for stop/next (these need station state to clear selections etc)
   const stationCallbacksRef = useRef<{ onStopCallback: () => void; onNextCallback: () => void } | null>(null);
 
@@ -47,38 +57,47 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   // Toggle play/pause - makes direct Spotify API call
+  // Uses refs so callback identity stays stable
   const onTogglePlay = useCallback(async () => {
-    if (!spotifyToken || !spotifyDeviceId) return;
+    const token = spotifyTokenRef.current;
+    const deviceId = spotifyDeviceIdRef.current;
+    const playing = isPlayingRef.current;
+    
+    if (!token || !deviceId) return;
     
     try {
-      if (isPlaying) {
+      if (playing) {
         // Pause
-        await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${spotifyDeviceId}`, {
+        await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
           method: "PUT",
-          headers: { "Authorization": `Bearer ${spotifyToken}` },
+          headers: { "Authorization": `Bearer ${token}` },
         });
         setIsPlaying(false);
       } else {
         // Resume
-        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
           method: "PUT",
-          headers: { "Authorization": `Bearer ${spotifyToken}` },
+          headers: { "Authorization": `Bearer ${token}` },
         });
         setIsPlaying(true);
       }
     } catch (err) {
       console.error("Mini player toggle failed:", err);
     }
-  }, [spotifyToken, spotifyDeviceId, isPlaying]);
+  }, []); // Empty deps - uses refs
 
   // Stop - pause and clear track
+  // Uses refs so callback identity stays stable
   const onStop = useCallback(async () => {
-    if (!spotifyToken || !spotifyDeviceId) return;
+    const token = spotifyTokenRef.current;
+    const deviceId = spotifyDeviceIdRef.current;
+    
+    if (!token || !deviceId) return;
     
     try {
-      await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${spotifyDeviceId}`, {
+      await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
         method: "PUT",
-        headers: { "Authorization": `Bearer ${spotifyToken}` },
+        headers: { "Authorization": `Bearer ${token}` },
       });
       setIsPlaying(false);
       setCurrentTrack(null);
@@ -87,23 +106,27 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     } catch (err) {
       console.error("Mini player stop failed:", err);
     }
-  }, [spotifyToken, spotifyDeviceId]);
+  }, []); // Empty deps - uses refs
 
   // Next track
+  // Uses refs so callback identity stays stable
   const onNext = useCallback(async () => {
-    if (!spotifyToken || !spotifyDeviceId) return;
+    const token = spotifyTokenRef.current;
+    const deviceId = spotifyDeviceIdRef.current;
+    
+    if (!token || !deviceId) return;
     
     try {
-      await fetch(`https://api.spotify.com/v1/me/player/next?device_id=${spotifyDeviceId}`, {
+      await fetch(`https://api.spotify.com/v1/me/player/next?device_id=${deviceId}`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${spotifyToken}` },
+        headers: { "Authorization": `Bearer ${token}` },
       });
       // Station callback will update track info
       stationCallbacksRef.current?.onNextCallback();
     } catch (err) {
       console.error("Mini player next failed:", err);
     }
-  }, [spotifyToken, spotifyDeviceId]);
+  }, []); // Empty deps - uses refs
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
