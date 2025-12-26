@@ -218,19 +218,31 @@ export default function StationPage() {
   const router = useRouter();
   const supabase = createBrowserClient();
   
-  // Check for error params in URL
+  // Check for error and resume params in URL
   const [authError, setAuthError] = useState<string | null>(null);
+  const [shouldAutoResume, setShouldAutoResume] = useState(false);
+  
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const error = params.get("error");
       const details = params.get("details");
       const uri = params.get("uri");
+      const resume = params.get("resume");
+      
       if (error) {
         let msg = error;
         if (details) msg += `: ${details}`;
         if (uri) msg += ` (URI: ${uri})`;
         setAuthError(msg);
+      }
+      
+      // Check if we should auto-resume from mini player
+      if (resume === "true") {
+        setShouldAutoResume(true);
+        // Clear the resume param from URL without reload
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
       }
     }
   }, []);
@@ -736,6 +748,32 @@ export default function StationPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-resume playback when coming from mini player "Resume" button
+  const autoResumeTriggeredRef = useRef(false);
+  useEffect(() => {
+    // Only trigger once, when player is ready and we should auto-resume
+    if (!shouldAutoResume || !playerReady || !spotifyPlayer || autoResumeTriggeredRef.current) return;
+    
+    // Check if we have saved state to resume (from station's last_track_uri or selected albums/playlists)
+    const hasSelectedAlbums = albums.some(a => a.is_selected);
+    const hasSelectedPlaylists = selectedPlaylists.size > 0;
+    const hasSavedTrack = !!station?.last_track_uri;
+    
+    if (hasSelectedAlbums || hasSelectedPlaylists || hasSavedTrack) {
+      autoResumeTriggeredRef.current = true;
+      setShouldAutoResume(false);
+      
+      // Small delay to ensure everything is ready
+      setTimeout(() => {
+        // Trigger shuffle play which will use the already-selected albums/playlists
+        handleShufflePlay();
+        // Update mini player state to playing
+        miniPlayer.setPlayerState("playing");
+      }, 500);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoResume, playerReady, spotifyPlayer, albums, selectedPlaylists, station?.last_track_uri]);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1435,6 +1473,13 @@ export default function StationPage() {
       
       setTrackPosition(0);
       setIsPlaying(true);
+      
+      // Set playback context for mini player persistence
+      miniPlayer.setPlaybackContext({
+        type: "playlist",
+        uri: playlistId,
+      });
+      miniPlayer.setPlayerState("playing");
     } catch (err) {
       console.error("Playlist playback error:", err);
       alert("Failed to play playlist");
@@ -2003,6 +2048,13 @@ export default function StationPage() {
       // Don't call resume() - it can restore old position. The play endpoint starts playback automatically.
       setIsPlaying(true);
       
+      // Set playback context for mini player persistence
+      miniPlayer.setPlaybackContext({
+        type: "shuffle_group",
+        trackUris: shuffledTracks.slice(0, 100),
+      });
+      miniPlayer.setPlayerState("playing");
+      
       // Immediately save state to database (don't rely on debounce for critical playback changes)
       // We need to save the shuffled tracks queue right away
       if (station) {
@@ -2385,6 +2437,13 @@ export default function StationPage() {
     // Force UI to show 0
     setTrackPosition(0);
     setIsPlaying(true);
+    
+    // Set playback context for mini player persistence
+    miniPlayer.setPlaybackContext({
+      type: "album",
+      uri: album.spotify_uri,
+    });
+    miniPlayer.setPlayerState("playing");
   }
 
   async function handleSeek(position: number) {

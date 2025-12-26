@@ -3,18 +3,126 @@
 import React, { memo } from "react";
 import { useMiniPlayer } from "@/app/contexts/MiniPlayerContext";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const MiniPlayer = memo(function MiniPlayer() {
-  const { currentTrack, isPlaying, onTogglePlay, onStop, onNext } = useMiniPlayer();
+  const { 
+    currentTrack, 
+    isPlaying, 
+    playerState,
+    onTogglePlay, 
+    onStop, 
+    onNext,
+    onDismiss,
+  } = useMiniPlayer();
   const pathname = usePathname();
+  const router = useRouter();
 
   // Don't show on station page (it has its own player)
   if (pathname === "/station") return null;
 
-  // Don't show if no track
-  if (!currentTrack) return null;
+  // Don't show if hidden or no track
+  if (playerState === "hidden" || !currentTrack) return null;
 
+  // Collapsed state - just show track info and resume button
+  if (playerState === "collapsed") {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 52,
+          background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
+          borderTop: "1px solid rgba(201, 162, 39, 0.3)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: 12,
+          zIndex: 9999,
+        }}
+      >
+        {/* Album Art */}
+        {currentTrack.image && (
+          <img
+            src={currentTrack.image}
+            alt={currentTrack.name}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 4,
+              objectFit: "cover",
+              opacity: 0.8,
+            }}
+          />
+        )}
+
+        {/* Track Info */}
+        <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "rgba(240, 235, 224, 0.7)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {currentTrack.name} • {currentTrack.artist}
+          </div>
+        </div>
+
+        {/* Resume Button - navigates to station to resume */}
+        <button
+          onClick={() => router.push("/station?resume=true")}
+          style={{
+            padding: "8px 20px",
+            background: "#c9a227",
+            border: "none",
+            borderRadius: 20,
+            color: "#1a1a1a",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          ▶ Resume
+        </button>
+
+        {/* Dismiss Button */}
+        <button
+          onClick={onDismiss}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(240, 235, 224, 0.1)",
+            color: "rgba(240, 235, 224, 0.5)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 14,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
+          }}
+          title="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  // Full playing state
   return (
     <div
       style={{
