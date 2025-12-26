@@ -1,14 +1,13 @@
 "use client";
 
-import { SpotifyPlayerProvider } from "@/app/contexts/SpotifyPlayerContext";
+import { MiniPlayerProvider } from "@/app/contexts/MiniPlayerContext";
 import MiniPlayer from "@/app/components/MiniPlayer";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SpotifyPlayerProvider>
+    <MiniPlayerProvider>
       {children}
       <MiniPlayer />
-    </SpotifyPlayerProvider>
+    </MiniPlayerProvider>
   );
 }
-

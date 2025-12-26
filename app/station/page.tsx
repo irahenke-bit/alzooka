@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Header from "@/app/components/Header";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
-// Global player disabled for now due to performance issues
-// import { useSpotifyPlayer } from "@/app/contexts/SpotifyPlayerContext";
+import { useMiniPlayer } from "@/app/contexts/MiniPlayerContext";
 
 type SpotifyResult = {
   id: string;
@@ -127,8 +126,8 @@ const GROUP_COLORS = [
 ];
 
 export default function StationPage() {
-  // Global player disabled for now due to performance issues
-  // const globalPlayer = useSpotifyPlayer();
+  // Get mini player context for syncing track info to other pages
+  const miniPlayer = useMiniPlayer();
   
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string | null>(null);
@@ -671,6 +670,38 @@ export default function StationPage() {
     }
     
     syncWithSpotify();
+  }, [spotifyPlayer, playerReady]);
+
+  // Sync track info to mini player context (only when track or play state changes, not position)
+  useEffect(() => {
+    if (currentTrack) {
+      miniPlayer.setCurrentTrack({
+        name: currentTrack.name,
+        artist: currentTrack.artist,
+        image: currentTrack.image,
+        albumName: currentTrack.albumName,
+        playlistName: currentTrack.playlistName,
+      });
+    } else {
+      miniPlayer.setCurrentTrack(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.name, currentTrack?.artist]);
+
+  // Sync play state to mini player
+  useEffect(() => {
+    miniPlayer.setIsPlaying(isPlaying);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying]);
+
+  // Register control functions with mini player context
+  useEffect(() => {
+    miniPlayer.registerControls({
+      toggle: () => handleTogglePlayback(),
+      stop: () => handleStopPlayback(),
+      next: () => handleNextTrack(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spotifyPlayer, playerReady]);
 
   // Save station state to database (debounced)
