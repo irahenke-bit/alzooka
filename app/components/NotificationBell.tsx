@@ -136,27 +136,34 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
         .eq("addressee_id", userId);
     }
     
-    // Update the notification to show it's been handled
-    // We'll change the type so it doesn't show buttons anymore
+    // Update the notification in the database to show it's been handled
+    const newType = accept ? "friend_accepted" : "friend_declined";
+    const newTitle = accept ? "You accepted this friend request" : "You declined this friend request";
+    
+    await supabase
+      .from("notifications")
+      .update({ 
+        type: newType,
+        title: newTitle,
+        content: null,
+        is_read: true 
+      })
+      .eq("id", notification.id);
+    
+    // Update local state to match
     setNotifications((prev) =>
       prev.map((n) => 
         n.id === notification.id 
           ? { 
               ...n, 
-              type: accept ? "friend_accepted" : "friend_declined",
-              title: accept ? "You accepted this friend request" : "You declined this friend request",
+              type: newType,
+              title: newTitle,
               content: null,
               is_read: true
             } 
           : n
       )
     );
-    
-    // Mark as read
-    await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", notification.id);
     
     setRespondingTo(null);
   }
