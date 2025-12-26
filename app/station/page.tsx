@@ -3387,7 +3387,7 @@ export default function StationPage() {
                   return (
                     <div key={album.id} style={{ marginBottom: 4 }}>
                       <div
-                        onClick={bulkAddGroup ? () => toggleAlbumInBulkGroup(album.id) : undefined}
+                        onClick={bulkAddGroup ? () => toggleAlbumInBulkGroup(album.id) : () => handleToggleAlbumExpand(album)}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -3400,7 +3400,7 @@ export default function StationPage() {
                           border: bulkAddGroup
                             ? (isInBulkGroup ? `2px solid ${bulkGroupColor}` : "1px dashed rgba(240, 235, 224, 0.2)")
                             : (album.is_selected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)"),
-                          cursor: bulkAddGroup ? "pointer" : "default",
+                          cursor: "pointer",
                         }}
                       >
                         {/* Checkbox */}
@@ -3409,6 +3409,7 @@ export default function StationPage() {
                             type="checkbox"
                             checked={album.is_selected}
                             onChange={() => handleToggleAlbum(album.id)}
+                            onClick={(e) => e.stopPropagation()}
                             style={{ width: 18, height: 18, accentColor: "#1DB954", cursor: "pointer" }}
                           />
                         )}
@@ -3821,13 +3822,16 @@ export default function StationPage() {
                                 : "1px solid rgba(240, 235, 224, 0.1)",
                           borderBottom: viewingPlaylist === playlist.id ? "none" : undefined,
                           transition: "background 0.15s, border 0.15s",
+                          cursor: "pointer",
                         }}
+                        onClick={() => handleViewPlaylist(playlist.id)}
                       >
                         {/* Checkbox */}
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleTogglePlaylistSelection(playlist.id)}
+                          onClick={(e) => e.stopPropagation()}
                           style={{ width: 18, height: 18, accentColor: "#1DB954", cursor: "pointer" }}
                         />
                         {/* Cover */}
@@ -3837,7 +3841,7 @@ export default function StationPage() {
                           <div style={{ width: 44, height: 44, borderRadius: 6, background: "rgba(30, 215, 96, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>🎵</div>
                         )}
                         {/* Info */}
-                        <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => handleViewPlaylist(playlist.id)}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{playlist.name}</p>
                           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
                             {(playlistGroups[playlist.id] || []).map(gid => {
