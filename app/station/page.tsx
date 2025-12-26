@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Header from "@/app/components/Header";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
+import { useSpotifyPlayer } from "@/app/contexts/SpotifyPlayerContext";
 
 type SpotifyResult = {
   id: string;
@@ -125,6 +126,9 @@ const GROUP_COLORS = [
 ];
 
 export default function StationPage() {
+  // Get the global player context to sync track info for mini player on other pages
+  const globalPlayer = useSpotifyPlayer();
+  
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string | null>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
@@ -638,6 +642,32 @@ export default function StationPage() {
       hasPendingRestoreRef.current = true;
     }
   }, [station]);
+
+  // Sync current track to global context for mini player on other pages
+  useEffect(() => {
+    if (currentTrack) {
+      globalPlayer.setCurrentTrack({
+        name: currentTrack.name,
+        artist: currentTrack.artist,
+        image: currentTrack.image,
+        albumName: currentTrack.albumName,
+        playlistName: currentTrack.playlistName,
+      });
+    } else {
+      globalPlayer.setCurrentTrack(null);
+    }
+  }, [currentTrack, globalPlayer]);
+
+  // Sync playback state to global context
+  useEffect(() => {
+    globalPlayer.setIsPlaying(isPlaying);
+  }, [isPlaying, globalPlayer]);
+
+  // Sync track position/duration to global context
+  useEffect(() => {
+    globalPlayer.setTrackPosition(trackPosition);
+    globalPlayer.setTrackDuration(trackDuration);
+  }, [trackPosition, trackDuration, globalPlayer]);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
