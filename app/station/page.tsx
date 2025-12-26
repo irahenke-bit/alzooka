@@ -142,6 +142,7 @@ export default function StationPage() {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [confirmBulkDeletePlaylists, setConfirmBulkDeletePlaylists] = useState(false);
   const [showAddToGroupDropdown, setShowAddToGroupDropdown] = useState(false);
+  const [showRemoveFromGroupDropdown, setShowRemoveFromGroupDropdown] = useState(false);
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
@@ -1820,6 +1821,44 @@ export default function StationPage() {
     
     // Close dropdown and clear selection
     setShowAddToGroupDropdown(false);
+  }
+
+  // Remove all selected albums from a group
+  async function handleRemoveSelectedAlbumsFromGroup(groupId: string) {
+    const selectedAlbumIds = Array.from(manualSelections);
+    if (selectedAlbumIds.length === 0) return;
+    
+    // Filter to only albums that are actually in this group
+    const albumsToRemove = selectedAlbumIds.filter(albumId => {
+      const currentGroups = albumGroups[albumId] || [];
+      return currentGroups.includes(groupId);
+    });
+    
+    if (albumsToRemove.length === 0) {
+      setShowRemoveFromGroupDropdown(false);
+      return;
+    }
+    
+    // Delete all at once
+    for (const albumId of albumsToRemove) {
+      await supabase
+        .from("station_album_groups")
+        .delete()
+        .eq("album_id", albumId)
+        .eq("group_id", groupId);
+    }
+    
+    // Update local state
+    setAlbumGroups(prev => {
+      const updated = { ...prev };
+      for (const albumId of albumsToRemove) {
+        updated[albumId] = (updated[albumId] || []).filter(gid => gid !== groupId);
+      }
+      return updated;
+    });
+    
+    // Close dropdown
+    setShowRemoveFromGroupDropdown(false);
   }
 
   function clearActiveGroups() {
@@ -3562,7 +3601,10 @@ export default function StationPage() {
                   {groups.length > 0 && (
                     <div style={{ position: "relative" }}>
                       <button
-                        onClick={() => setShowAddToGroupDropdown(!showAddToGroupDropdown)}
+                        onClick={() => {
+                          setShowAddToGroupDropdown(!showAddToGroupDropdown);
+                          setShowRemoveFromGroupDropdown(false);
+                        }}
                         style={{
                           padding: "6px 12px",
                           fontSize: 12,
@@ -3623,6 +3665,95 @@ export default function StationPage() {
                               {group.name}
                             </button>
                           ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Remove from Group Dropdown */}
+                  {groups.length > 0 && (
+                    <div style={{ position: "relative" }}>
+                      <button
+                        onClick={() => {
+                          setShowRemoveFromGroupDropdown(!showRemoveFromGroupDropdown);
+                          setShowAddToGroupDropdown(false);
+                        }}
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          background: "rgba(229, 115, 115, 0.2)",
+                          color: "#e57373",
+                          border: "1px solid rgba(229, 115, 115, 0.4)",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        📁 Remove from Group
+                      </button>
+                      {showRemoveFromGroupDropdown && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            marginTop: 4,
+                            background: "var(--alzooka-teal-dark)",
+                            border: "1px solid rgba(229, 115, 115, 0.3)",
+                            borderRadius: 8,
+                            padding: 8,
+                            zIndex: 100,
+                            minWidth: 180,
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                          }}
+                        >
+                          <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
+                            Remove {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} from:
+                          </div>
+                          {groups.map(group => {
+                            // Count how many selected albums are in this group
+                            const selectedInGroup = Array.from(manualSelections).filter(albumId => 
+                              (albumGroups[albumId] || []).includes(group.id)
+                            ).length;
+                            
+                            return (
+                              <button
+                                key={group.id}
+                                onClick={() => handleRemoveSelectedAlbumsFromGroup(group.id)}
+                                disabled={selectedInGroup === 0}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  width: "100%",
+                                  padding: "8px 10px",
+                                  background: "transparent",
+                                  border: "none",
+                                  borderRadius: 4,
+                                  color: selectedInGroup > 0 ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
+                                  fontSize: 13,
+                                  cursor: selectedInGroup > 0 ? "pointer" : "default",
+                                  textAlign: "left",
+                                  opacity: selectedInGroup > 0 ? 1 : 0.5,
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (selectedInGroup > 0) e.currentTarget.style.background = "rgba(229, 115, 115, 0.2)";
+                                }}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                              >
+                                <span style={{ width: 12, height: 12, borderRadius: "50%", background: group.color, flexShrink: 0 }} />
+                                {group.name}
+                                {selectedInGroup > 0 && (
+                                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#e57373" }}>
+                                    ({selectedInGroup})
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
