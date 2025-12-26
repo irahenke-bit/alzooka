@@ -643,6 +643,35 @@ export default function StationPage() {
     }
   }, [station]);
 
+  // Sync with Spotify's actual current state when returning to the page
+  useEffect(() => {
+    async function syncWithSpotify() {
+      if (!spotifyPlayer || !playerReady) return;
+      
+      try {
+        const state = await spotifyPlayer.getCurrentState();
+        if (state && state.track_window?.current_track) {
+          const track = state.track_window.current_track;
+          setCurrentTrack(prev => ({
+            name: track.name,
+            artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+            image: track.album.images[0]?.url || "",
+            albumName: track.album.name,
+            playlistName: prev?.playlistName, // Keep playlist name if we have it
+          }));
+          setCurrentlyPlayingTrackUri(track.uri);
+          setTrackPosition(state.position);
+          setTrackDuration(state.duration);
+          setIsPlaying(!state.paused);
+        }
+      } catch (err) {
+        console.error("Failed to sync with Spotify state:", err);
+      }
+    }
+    
+    syncWithSpotify();
+  }, [spotifyPlayer, playerReady]);
+
   // Sync current track to global context for mini player on other pages
   useEffect(() => {
     if (currentTrack) {
