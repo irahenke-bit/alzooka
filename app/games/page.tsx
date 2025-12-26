@@ -148,6 +148,64 @@ export default function GamesPage() {
     return Math.round((stats.wins / stats.games_played) * 100);
   }
 
+  async function acceptChallenge(challenge: Challenge) {
+    if (!user) return;
+
+    // Get random questions for the game
+    const { data: questions } = await supabase
+      .from("trivia_questions")
+      .select("id")
+      .eq("is_approved", true)
+      .limit(challenge.mode === "five_second" ? 10 : 50);
+
+    if (!questions || questions.length === 0) {
+      alert("No questions available. Please try again later.");
+      return;
+    }
+
+    const questionIds = questions.map(q => q.id);
+
+    // Create the game record
+    const { data: game, error } = await supabase
+      .from("trivia_games")
+      .insert({
+        mode: challenge.mode,
+        player1_id: challenge.challenger_id,
+        player2_id: challenge.challenged_id,
+        player1_allow_sharing: challenge.challenger_allow_sharing,
+        player2_allow_sharing: false, // Will be set when accepting
+        question_ids: questionIds,
+        status: "active",
+        started_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error || !game) {
+      console.error("Failed to create game:", error);
+      alert("Failed to start game. Please try again.");
+      return;
+    }
+
+    // Update challenge status
+    await supabase
+      .from("trivia_challenges")
+      .update({ status: "accepted", game_id: game.id })
+      .eq("id", challenge.id);
+
+    // Navigate to play the game
+    router.push(`/games/play?mode=${challenge.mode}&gameId=${game.id}`);
+  }
+
+  async function declineChallenge(challengeId: string) {
+    await supabase
+      .from("trivia_challenges")
+      .update({ status: "declined" })
+      .eq("id", challengeId);
+
+    setChallenges(prev => prev.filter(c => c.id !== challengeId));
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
@@ -392,7 +450,7 @@ export default function GamesPage() {
                     {!isChallenger && (
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
-                          onClick={() => {/* TODO: Decline */}}
+                          onClick={() => declineChallenge(challenge.id)}
                           style={{
                             padding: "8px 16px",
                             background: "transparent",
@@ -405,7 +463,7 @@ export default function GamesPage() {
                           Decline
                         </button>
                         <button
-                          onClick={() => {/* TODO: Accept and play */}}
+                          onClick={() => acceptChallenge(challenge)}
                           style={{
                             padding: "8px 16px",
                             background: "var(--alzooka-gold)",

@@ -265,6 +265,7 @@ export default function ProfilePage() {
   const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [karmaStats, setKarmaStats] = useState<KarmaStats | null>(null);
+  const [triviaStats, setTriviaStats] = useState<{ rating: number; games_played: number } | null>(null);
   const [isFriend, setIsFriend] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -382,6 +383,17 @@ export default function ProfilePage() {
       setEditBio(profileData.bio || "");
       setAllowWallPosts(profileData.allow_wall_posts ?? true);
       setWallFriendsOnly(profileData.wall_friends_only ?? true);
+
+      // Fetch trivia stats for badge display
+      const { data: triviaData } = await supabase
+        .from("trivia_player_stats")
+        .select("rating, games_played")
+        .eq("user_id", profileData.id)
+        .single();
+
+      if (triviaData && triviaData.games_played > 0) {
+        setTriviaStats(triviaData);
+      }
 
       // Check if user has a password by examining their auth identities (for own profile)
       // This syncs the has_password field if it's out of date
@@ -2110,6 +2122,30 @@ export default function ProfilePage() {
                     {profile.bio}
                   </p>
                 )}
+
+                {/* Trivia Player Badge */}
+                {triviaStats && (
+                  <Link
+                    href={`/games/${profile.username}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "4px 10px",
+                      background: "rgba(201, 162, 39, 0.15)",
+                      border: "1px solid rgba(201, 162, 39, 0.3)",
+                      borderRadius: 16,
+                      fontSize: 12,
+                      color: "var(--alzooka-gold)",
+                      textDecoration: "none",
+                      marginBottom: 12,
+                    }}
+                    title={`Rating: ${triviaStats.rating} • ${triviaStats.games_played} games played`}
+                  >
+                    🎯 Trivia Player
+                  </Link>
+                )}
+
                 <p className="text-muted" style={{ margin: "0 0 16px 0", fontSize: 14 }}>
                   Joined {joinDate}
                 </p>
