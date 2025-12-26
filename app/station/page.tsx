@@ -3594,8 +3594,8 @@ export default function StationPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
                 💿 Albums ({albums.length})
               </h3>
-              {/* Action buttons for selected albums - only shows when albums are manually selected (not via groups) */}
-              {manualSelections.size > 0 && activeGroups.size === 0 && (
+              {/* Action buttons for selected albums - shows when any albums are selected */}
+              {manualSelections.size > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {/* Click-outside overlay to close dropdowns */}
                   {(showAddToGroupDropdown || showRemoveFromGroupDropdown) && (
