@@ -233,63 +233,121 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
 
         {/* User Avatar with Dropdown */}
         {user && userUsername && (
-          <div ref={menuRef} style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              title="Menu"
-              style={{
-                background: "transparent",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              {userAvatarUrl ? (
-                <img
-                  src={userAvatarUrl}
-                  alt="Profile"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "2px solid var(--alzooka-gold)",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "50%",
-                    background: "var(--alzooka-gold)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--alzooka-teal-dark)",
-                    fontWeight: 700,
-                    fontSize: 14,
-                  }}
-                >
-                  {(userUsername || "?").charAt(0).toUpperCase()}
-                </div>
-              )}
-              <span
-                style={{
-                  color: "var(--alzooka-cream)",
-                  fontSize: 10,
-                  opacity: 0.6,
-                }}
-              >
-                ▼
-              </span>
-            </button>
+          <ProfileDropdown
+            menuRef={menuRef}
+            showUserMenu={showUserMenu}
+            setShowUserMenu={setShowUserMenu}
+            userAvatarUrl={userAvatarUrl}
+            userUsername={userUsername}
+            currentPage={currentPage}
+            isOwnProfile={isOwnProfile}
+            handleSignOut={handleSignOut}
+          />
+        )}
+      </nav>
+    </header>
+  );
+}
 
-            {/* Dropdown Menu */}
-            {showUserMenu && (
+// Separate component for profile dropdown with hover logic
+function ProfileDropdown({
+  menuRef,
+  showUserMenu,
+  setShowUserMenu,
+  userAvatarUrl,
+  userUsername,
+  currentPage,
+  isOwnProfile,
+  handleSignOut,
+}: {
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  showUserMenu: boolean;
+  setShowUserMenu: (show: boolean) => void;
+  userAvatarUrl: string | null;
+  userUsername: string;
+  currentPage: string;
+  isOwnProfile: boolean;
+  handleSignOut: () => void;
+}) {
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  function handleMouseEnter() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setShowUserMenu(true);
+  }
+
+  function handleMouseLeave() {
+    closeTimeoutRef.current = setTimeout(() => {
+      setShowUserMenu(false);
+    }, 150);
+  }
+
+  return (
+    <div 
+      ref={menuRef} 
+      style={{ position: "relative" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        style={{
+          background: showUserMenu ? "rgba(240, 235, 224, 0.1)" : "transparent",
+          border: "none",
+          padding: 4,
+          borderRadius: 20,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          transition: "background 0.2s",
+        }}
+      >
+        {userAvatarUrl ? (
+          <img
+            src={userAvatarUrl}
+            alt="Profile"
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              objectFit: "cover",
+              border: "2px solid var(--alzooka-gold)",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "var(--alzooka-gold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--alzooka-teal-dark)",
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
+            {(userUsername || "?").charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span
+          style={{
+            color: "var(--alzooka-cream)",
+            fontSize: 10,
+            opacity: 0.6,
+          }}
+        >
+          ▼
+        </span>
+      </div>
+
+      {/* Dropdown Menu */}
+      {showUserMenu && (
               <div
                 style={{
                   position: "absolute",
@@ -386,9 +444,6 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 </button>
               </div>
             )}
-          </div>
-        )}
-      </nav>
-    </header>
+    </div>
   );
 }
