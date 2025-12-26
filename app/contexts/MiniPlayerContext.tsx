@@ -5,7 +5,54 @@ import React, { createContext, useContext, useState, useMemo, useCallback, useRe
 const STORAGE_KEY = "alzooka_mini_player";
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
-interface TrackInfo {
+// Spotify Player types
+interface SpotifyPlayerState {
+  paused: boolean;
+  position: number;
+  duration: number;
+  track_window: {
+    current_track: {
+      uri: string;
+      name: string;
+      artists: { name: string }[];
+      album: { images: { url: string }[]; name: string };
+      duration_ms: number;
+    };
+  };
+}
+
+interface SpotifyPlayer {
+  connect: () => Promise<boolean>;
+  disconnect: () => void;
+  addListener: (event: string, callback: (state: unknown) => void) => void;
+  removeListener: (event: string) => void;
+  getCurrentState: () => Promise<SpotifyPlayerState | null>;
+  setName: (name: string) => void;
+  getVolume: () => Promise<number>;
+  setVolume: (volume: number) => Promise<void>;
+  pause: () => Promise<void>;
+  resume: () => Promise<void>;
+  togglePlay: () => Promise<void>;
+  seek: (position_ms: number) => Promise<void>;
+  previousTrack: () => Promise<void>;
+  nextTrack: () => Promise<void>;
+  activateElement: () => Promise<void>;
+}
+
+declare global {
+  interface Window {
+    Spotify: {
+      Player: new (options: {
+        name: string;
+        getOAuthToken: (cb: (token: string) => void) => void;
+        volume: number;
+      }) => SpotifyPlayer;
+    };
+    onSpotifyWebPlaybackSDKReady: () => void;
+  }
+}
+
+export interface TrackInfo {
   name: string;
   artist: string;
   image: string;
@@ -13,11 +60,11 @@ interface TrackInfo {
   playlistName?: string;
 }
 
-interface PlaybackContext {
+export interface PlaybackContext {
   type: "album" | "playlist" | "shuffle_group";
-  uri?: string; // Spotify URI for album/playlist
-  groupId?: string; // For shuffle groups
-  trackUris?: string[]; // For shuffle groups, the list of track URIs
+  uri?: string;
+  groupId?: string;
+  trackUris?: string[];
 }
 
 interface PersistedSession {
@@ -26,34 +73,65 @@ interface PersistedSession {
   timestamp: number;
 }
 
-type PlayerState = "hidden" | "collapsed" | "playing";
+export type PlayerState = "hidden" | "collapsed" | "playing";
+
+// Station page callback interface for more granular control
+export interface StationCallbacks {
+  onTrackChange?: (track: TrackInfo, uri: string) => void;
+  onPlayStateChange?: (isPlaying: boolean) => void;
+  onPositionChange?: (position: number, duration: number) => void;
+  onStop?: () => void;
+  onNext?: () => void;
+}
 
 interface MiniPlayerContextType {
+  // Player state
   currentTrack: TrackInfo | null;
   isPlaying: boolean;
   playerState: PlayerState;
   playbackContext: PlaybackContext | null;
+  trackPosition: number;
+  trackDuration: number;
+  
+  // Spotify connection
   spotifyToken: string | null;
   spotifyDeviceId: string | null;
+  spotifyPlayer: SpotifyPlayer | null;
+  playerReady: boolean;
+  
+  // State setters
   setCurrentTrack: (track: TrackInfo | null) => void;
   setIsPlaying: (playing: boolean) => void;
   setPlaybackContext: (context: PlaybackContext | null) => void;
-  setSpotifyCredentials: (token: string, deviceId: string) => void;
+  setPlayerState: (state: PlayerState) => void;
+  setTrackPosition: (position: number) => void;
+  setTrackDuration: (duration: number) => void;
+  
+  // Spotify connection
+  initializeSpotify: (userId: string) => Promise<void>;
+  
   // Control functions
   onTogglePlay: () => Promise<void>;
   onStop: () => Promise<void>;
   onNext: () => Promise<void>;
+  onPrevious: () => Promise<void>;
+  onSeek: (position: number) => Promise<void>;
   onDismiss: () => void;
-  // Set player state directly (for station page to use on resume)
-  setPlayerState: (state: PlayerState) => void;
-  // Callbacks for station page
-  registerStationCallbacks: (callbacks: { 
-    onStopCallback: () => void; 
-    onNextCallback: () => void;
-  }) => void;
+  
+  // Station page integration
+  registerStationCallbacks: (callbacks: StationCallbacks) => void;
+  unregisterStationCallbacks: () => void;
 }
 
 const MiniPlayerContext = createContext<MiniPlayerContextType | null>(null);
+
+// Module-level player instance - persists across component remounts
+let globalPlayer: SpotifyPlayer | null = null;
+let globalDeviceId: string | null = null;
+let playerInitializing = false;
+
+// Module-level callbacks for station page
+let stationCallbacks: StationCallbacks | null = null;
 
 export function MiniPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrackState] = useState<TrackInfo | null>(null);
@@ -62,15 +140,15 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   const [playbackContext, setPlaybackContext] = useState<PlaybackContext | null>(null);
   const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
+  const [spotifyPlayer, setSpotifyPlayer] = useState<SpotifyPlayer | null>(null);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [trackPosition, setTrackPosition] = useState(0);
+  const [trackDuration, setTrackDuration] = useState(0);
   
-  // Wrapper for setIsPlaying with deduplication
-  const setIsPlaying = useCallback((playing: boolean) => {
-    if (playing !== isPlayingRef.current) {
-      setIsPlayingState(playing);
-    }
-  }, []);
+  // User ID ref for token refresh
+  const userIdRef = useRef<string | null>(null);
   
-  // Use refs for values that callbacks need but shouldn't cause callback recreation
+  // Refs for stable callbacks
   const isPlayingRef = useRef(isPlayingState);
   const spotifyTokenRef = useRef(spotifyToken);
   const spotifyDeviceIdRef = useRef(spotifyDeviceId);
@@ -84,11 +162,9 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   playbackContextRef.current = playbackContext;
   currentTrackRef.current = currentTrack;
   
-  // Station callbacks
-  const stationCallbacksRef = useRef<{ 
-    onStopCallback: () => void; 
-    onNextCallback: () => void;
-  } | null>(null);
+  // Throttle position updates
+  const lastPositionUpdate = useRef(0);
+  const POSITION_THROTTLE = 500;
 
   // Load persisted session on mount
   useEffect(() => {
@@ -99,23 +175,209 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         const age = Date.now() - session.timestamp;
         
         if (age < SESSION_TIMEOUT_MS) {
-          // Session is still valid - show collapsed state
           setCurrentTrackState(session.track);
           setPlaybackContext(session.context);
           setPlayerState("collapsed");
         } else {
-          // Session expired - clear it
           localStorage.removeItem(STORAGE_KEY);
         }
       }
     } catch (err) {
       console.error("Failed to load mini player session:", err);
     }
+    
+    // If we have an existing player, use it
+    if (globalPlayer && globalDeviceId) {
+      setSpotifyPlayer(globalPlayer);
+      setSpotifyDeviceId(globalDeviceId);
+      setPlayerReady(true);
+      
+      // Sync state from existing player
+      globalPlayer.getCurrentState().then((state) => {
+        if (state) {
+          setIsPlayingState(!state.paused);
+          setTrackPosition(state.position);
+          setTrackDuration(state.duration);
+          if (state.track_window?.current_track) {
+            const track = state.track_window.current_track;
+            setCurrentTrackState({
+              name: track.name,
+              artist: track.artists.map((a) => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name,
+            });
+            if (!state.paused) {
+              setPlayerState("playing");
+            }
+          }
+        }
+      });
+    }
+  }, []);
+  
+  // Initialize Spotify player
+  const initializeSpotify = useCallback(async (userId: string) => {
+    userIdRef.current = userId;
+    
+    // If player already exists, just update state and return
+    if (globalPlayer && globalDeviceId) {
+      setSpotifyPlayer(globalPlayer);
+      setSpotifyDeviceId(globalDeviceId);
+      setPlayerReady(true);
+      return;
+    }
+    
+    if (playerInitializing) return;
+    playerInitializing = true;
+    
+    try {
+      // Fetch token
+      const response = await fetch(`/api/spotify/token?userId=${userId}`);
+      if (!response.ok) {
+        playerInitializing = false;
+        return;
+      }
+      const data = await response.json();
+      const token = data.access_token;
+      setSpotifyToken(token);
+      spotifyTokenRef.current = token;
+      
+      // Load SDK if not already loaded
+      if (!document.getElementById("spotify-sdk")) {
+        const script = document.createElement("script");
+        script.id = "spotify-sdk";
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
+      
+      const initPlayer = () => {
+        const player = new window.Spotify.Player({
+          name: "Alzooka FM",
+          getOAuthToken: async (cb) => {
+            // Always fetch fresh token
+            if (userIdRef.current) {
+              try {
+                const res = await fetch(`/api/spotify/token?userId=${userIdRef.current}`);
+                const data = await res.json();
+                spotifyTokenRef.current = data.access_token;
+                setSpotifyToken(data.access_token);
+                cb(data.access_token);
+              } catch {
+                cb(spotifyTokenRef.current || "");
+              }
+            } else {
+              cb(spotifyTokenRef.current || "");
+            }
+          },
+          volume: 0.5,
+        });
+        
+        player.addListener("initialization_error", (e) => {
+          const error = e as { message: string };
+          console.error("Spotify init error:", error.message);
+          playerInitializing = false;
+        });
+        
+        player.addListener("authentication_error", (e) => {
+          const error = e as { message: string };
+          console.error("Spotify auth error:", error.message);
+          playerInitializing = false;
+        });
+        
+        player.addListener("account_error", (e) => {
+          const error = e as { message: string };
+          console.error("Spotify account error:", error.message);
+          alert("Spotify Premium is required for playback");
+          playerInitializing = false;
+        });
+        
+        player.addListener("ready", (e) => {
+          const data = e as { device_id: string };
+          console.log("Spotify player ready, device ID:", data.device_id);
+          globalPlayer = player;
+          globalDeviceId = data.device_id;
+          playerInitializing = false;
+          setSpotifyPlayer(player);
+          setSpotifyDeviceId(data.device_id);
+          setPlayerReady(true);
+        });
+        
+        // Player state changes - updates mini player state
+        player.addListener("player_state_changed", (e) => {
+          const state = e as SpotifyPlayerState | null;
+          if (!state) return;
+          
+          const playing = !state.paused;
+          setIsPlayingState(playing);
+          setTrackDuration(state.duration);
+          
+          // Notify station page
+          stationCallbacks?.onPlayStateChange?.(playing);
+          
+          if (state.track_window?.current_track) {
+            const track = state.track_window.current_track;
+            const trackInfo: TrackInfo = {
+              name: track.name,
+              artist: track.artists.map((a) => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name,
+            };
+            setCurrentTrackState(trackInfo);
+            
+            // Update player state
+            if (playing) {
+              setPlayerState("playing");
+            }
+            
+            // Notify station page
+            stationCallbacks?.onTrackChange?.(trackInfo, track.uri);
+            
+            // Persist to localStorage
+            const session: PersistedSession = {
+              track: trackInfo,
+              context: playbackContextRef.current,
+              timestamp: Date.now(),
+            };
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+            } catch (err) {
+              console.error("Failed to persist session:", err);
+            }
+          }
+          
+          // Throttle position updates
+          const now = Date.now();
+          if (now - lastPositionUpdate.current >= POSITION_THROTTLE) {
+            lastPositionUpdate.current = now;
+            setTrackPosition(state.position);
+            stationCallbacks?.onPositionChange?.(state.position, state.duration);
+          }
+        });
+        
+        player.connect();
+      };
+      
+      if (window.Spotify) {
+        initPlayer();
+      } else {
+        window.onSpotifyWebPlaybackSDKReady = initPlayer;
+      }
+    } catch (err) {
+      console.error("Failed to initialize Spotify:", err);
+      playerInitializing = false;
+    }
   }, []);
 
-  // Persist session when track changes (with deduplication to prevent unnecessary updates)
+  // Wrapper for setIsPlaying with deduplication
+  const setIsPlaying = useCallback((playing: boolean) => {
+    if (playing !== isPlayingRef.current) {
+      setIsPlayingState(playing);
+    }
+  }, []);
+
+  // Persist session when track changes
   const setCurrentTrack = useCallback((track: TrackInfo | null) => {
-    // Only update if track actually changed
     const current = currentTrackRef.current;
     if (track === null && current === null) return;
     if (track && current && track.name === current.name && track.artist === current.artist) return;
@@ -123,7 +385,6 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     setCurrentTrackState(track);
     
     if (track) {
-      // Save to localStorage
       const session: PersistedSession = {
         track,
         context: playbackContextRef.current,
@@ -137,127 +398,86 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  // Update player state based on isPlaying
-  useEffect(() => {
-    if (isPlayingState && currentTrack) {
-      setPlayerState("playing");
-    } else if (currentTrack && !isPlayingState && playerState === "playing") {
-      // Just paused - stay in playing state (will collapse after user interaction or timeout)
-      // For now, keep showing full controls when paused
-    }
-  }, [isPlayingState, currentTrack, playerState]);
-
-  const setSpotifyCredentials = useCallback((token: string, deviceId: string) => {
-    setSpotifyToken(token);
-    setSpotifyDeviceId(deviceId);
+  // Register station callbacks
+  const registerStationCallbacks = useCallback((callbacks: StationCallbacks) => {
+    stationCallbacks = callbacks;
+  }, []);
+  
+  const unregisterStationCallbacks = useCallback(() => {
+    stationCallbacks = null;
   }, []);
 
-  const registerStationCallbacks = useCallback((callbacks: { 
-    onStopCallback: () => void; 
-    onNextCallback: () => void;
-  }) => {
-    stationCallbacksRef.current = callbacks;
-  }, []);
-
-  // Toggle play/pause
+  // Toggle play/pause using SDK player
   const onTogglePlay = useCallback(async () => {
-    const token = spotifyTokenRef.current;
-    const deviceId = spotifyDeviceIdRef.current;
-    const playing = isPlayingRef.current;
-    
-    if (!token || !deviceId) return;
+    const player = globalPlayer;
+    if (!player) return;
     
     try {
-      if (playing) {
-        await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-          method: "PUT",
-          headers: { "Authorization": `Bearer ${token}` },
-        });
-        setIsPlayingState(false);
-      } else {
-        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-          method: "PUT",
-          headers: { "Authorization": `Bearer ${token}` },
-        });
-        setIsPlayingState(true);
-        setPlayerState("playing");
-      }
+      await player.togglePlay();
     } catch (err) {
-      console.error("Mini player toggle failed:", err);
+      console.error("Toggle play failed:", err);
     }
   }, []);
 
-  // Stop - pause and clear track
+  // Stop playback
   const onStop = useCallback(async () => {
-    const token = spotifyTokenRef.current;
-    const deviceId = spotifyDeviceIdRef.current;
-    
-    if (!token || !deviceId) return;
+    const player = globalPlayer;
+    if (!player) return;
     
     try {
-      await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      await player.pause();
       setIsPlayingState(false);
       setCurrentTrackState(null);
       setPlaybackContext(null);
       setPlayerState("hidden");
+      setTrackPosition(0);
+      setTrackDuration(0);
       localStorage.removeItem(STORAGE_KEY);
-      stationCallbacksRef.current?.onStopCallback();
+      stationCallbacks?.onStop?.();
     } catch (err) {
-      console.error("Mini player stop failed:", err);
+      console.error("Stop failed:", err);
     }
   }, []);
 
-  // Helper to fetch current track from Spotify and update context
-  const fetchCurrentTrack = useCallback(async () => {
-    const token = spotifyTokenRef.current;
-    if (!token) return;
-    
-    try {
-      const res = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      if (res.ok && res.status !== 204) {
-        const data = await res.json();
-        if (data.item) {
-          const track = data.item;
-          setCurrentTrackState({
-            name: track.name,
-            artist: track.artists.map((a: { name: string }) => a.name).join(", "),
-            image: track.album.images[0]?.url || "",
-            albumName: track.album.name,
-          });
-          setIsPlayingState(data.is_playing);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch current track:", err);
-    }
-  }, []);
-
-  // Next track
+  // Next track using SDK player
   const onNext = useCallback(async () => {
-    const token = spotifyTokenRef.current;
-    const deviceId = spotifyDeviceIdRef.current;
-    
-    if (!token || !deviceId) return;
+    const player = globalPlayer;
+    if (!player) return;
     
     try {
-      await fetch(`https://api.spotify.com/v1/me/player/next?device_id=${deviceId}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      stationCallbacksRef.current?.onNextCallback();
-      // Fetch updated track info after a short delay
-      setTimeout(() => fetchCurrentTrack(), 500);
+      await player.nextTrack();
+      stationCallbacks?.onNext?.();
     } catch (err) {
-      console.error("Mini player next failed:", err);
+      console.error("Next track failed:", err);
     }
-  }, [fetchCurrentTrack]);
+  }, []);
+  
+  // Previous track
+  const onPrevious = useCallback(async () => {
+    const player = globalPlayer;
+    if (!player) return;
+    
+    try {
+      await player.previousTrack();
+    } catch (err) {
+      console.error("Previous track failed:", err);
+    }
+  }, []);
+  
+  // Seek
+  const onSeek = useCallback(async (position: number) => {
+    const player = globalPlayer;
+    if (!player) return;
+    
+    try {
+      await player.seek(position);
+      setTrackPosition(position);
+    } catch (err) {
+      console.error("Seek failed:", err);
+    }
+  }, []);
 
-  // Dismiss the player (user clicked X)
+  // Dismiss the player
   const onDismiss = useCallback(() => {
     setPlayerState("hidden");
     setCurrentTrackState(null);
@@ -265,7 +485,6 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  // Expose isPlayingState as isPlaying for consumers
   const isPlaying = isPlayingState;
   
   const value = useMemo(() => ({
@@ -273,19 +492,34 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     isPlaying,
     playerState,
     playbackContext,
+    trackPosition,
+    trackDuration,
     spotifyToken,
     spotifyDeviceId,
+    spotifyPlayer,
+    playerReady,
     setCurrentTrack,
     setIsPlaying,
     setPlaybackContext,
-    setSpotifyCredentials,
+    setPlayerState,
+    setTrackPosition,
+    setTrackDuration,
+    initializeSpotify,
     onTogglePlay,
     onStop,
     onNext,
+    onPrevious,
+    onSeek,
     onDismiss,
-    setPlayerState,
     registerStationCallbacks,
-  }), [currentTrack, isPlaying, playerState, playbackContext, spotifyToken, spotifyDeviceId, setCurrentTrack, setIsPlaying, setSpotifyCredentials, onTogglePlay, onStop, onNext, onDismiss, registerStationCallbacks]);
+    unregisterStationCallbacks,
+  }), [
+    currentTrack, isPlaying, playerState, playbackContext, trackPosition, trackDuration,
+    spotifyToken, spotifyDeviceId, spotifyPlayer, playerReady,
+    setCurrentTrack, setIsPlaying, initializeSpotify, 
+    onTogglePlay, onStop, onNext, onPrevious, onSeek, onDismiss,
+    registerStationCallbacks, unregisterStationCallbacks,
+  ]);
 
   return (
     <MiniPlayerContext.Provider value={value}>
@@ -302,5 +536,5 @@ export function useMiniPlayer() {
   return context;
 }
 
-// Export the PlaybackContext type for use in other files
-export type { PlaybackContext, TrackInfo };
+// Export SpotifyPlayer type for station page
+export type { SpotifyPlayer, SpotifyPlayerState };
