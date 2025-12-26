@@ -2182,8 +2182,48 @@ export default function StationPage() {
       setSelectedStartTrack(null);
     }
     
-    // Normal next track behavior
-    await spotifyPlayer.nextTrack();
+    // Normal next track behavior - use our managed queue instead of Spotify's internal queue
+    // This prevents issues with Spotify's queue getting out of sync
+    if (currentPlaylistQueue.length > 0 && spotifyDeviceId && spotifyToken) {
+      const nextIndex = currentQueueIndex + 1;
+      
+      if (nextIndex < currentPlaylistQueue.length) {
+        // Play from our queue starting at the next track
+        const remainingTracks = currentPlaylistQueue.slice(nextIndex);
+        
+        ignorePositionUntilRef.current = Date.now() + 1000;
+        ignoreTrackUpdatesFor(1000);
+        
+        const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${spotifyToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: remainingTracks.slice(0, 100), // Spotify limits to 100
+            position_ms: 0, // Always start from beginning
+          }),
+        });
+        
+        if (playRes.ok || playRes.status === 204) {
+          setCurrentQueueIndex(nextIndex);
+          setIsPlaying(true);
+        } else {
+          console.error("Failed to play next track from queue:", await playRes.text());
+          // Fall back to Spotify's next track
+          await spotifyPlayer.nextTrack();
+        }
+      } else {
+        // End of queue - could loop back to beginning or stop
+        console.log("Reached end of queue");
+        // For now, just use Spotify's behavior
+        await spotifyPlayer.nextTrack();
+      }
+    } else {
+      // No managed queue - use Spotify's built-in next
+      await spotifyPlayer.nextTrack();
+    }
   }
 
   async function handlePreviousTrack() {
