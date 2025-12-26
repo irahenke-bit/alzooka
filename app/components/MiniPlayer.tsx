@@ -254,6 +254,31 @@ const MiniPlayer = memo(function MiniPlayer() {
         </button>
       </div>
 
+      {/* Dismiss Button - only shows when paused */}
+      {!isPlaying && (
+        <button
+          onClick={onDismiss}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(240, 235, 224, 0.15)",
+            color: "rgba(240, 235, 224, 0.6)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 14,
+            willChange: "transform",
+            WebkitTapHighlightColor: "transparent",
+          }}
+          title="Close Player"
+        >
+          ✕
+        </button>
+      )}
+
       {/* Open Station Link */}
       <Link
         href="/station"
