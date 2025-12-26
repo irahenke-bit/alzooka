@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 import { useMiniPlayer } from "@/app/contexts/MiniPlayerContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ const MiniPlayer = memo(function MiniPlayer() {
     currentTrack, 
     isPlaying, 
     playerState,
+    playerReady,
     onTogglePlay, 
     onStop, 
     onNext,
@@ -17,6 +18,40 @@ const MiniPlayer = memo(function MiniPlayer() {
     onResume,
   } = useMiniPlayer();
   const pathname = usePathname();
+
+  // Global spacebar handler for play/pause
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Only handle spacebar
+      if (e.code !== "Space") return;
+      
+      // Don't trigger if user is typing in an input, textarea, or contenteditable
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      
+      // Only handle if player is ready and we have a track
+      if (!playerReady || !currentTrack) return;
+      
+      // Prevent default (page scrolling)
+      e.preventDefault();
+      
+      // Toggle play/pause
+      if (playerState === "collapsed") {
+        onResume();
+      } else {
+        onTogglePlay();
+      }
+    }
+    
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [playerReady, currentTrack, playerState, onTogglePlay, onResume]);
 
   // Don't show on station page (it has its own player)
   if (pathname === "/station") return null;
