@@ -246,7 +246,7 @@ export default function StationPage() {
     miniPlayer.initializeSpotify(user.id);
   }, [user, miniPlayer.initializeSpotify]);
   
-  // Sync player from context to local state
+  // Sync player from context to local state (only when player instance changes)
   useEffect(() => {
     if (miniPlayer.spotifyPlayer && miniPlayer.spotifyDeviceId) {
       setSpotifyPlayer(miniPlayer.spotifyPlayer);
@@ -256,6 +256,30 @@ export default function StationPage() {
       setSpotifyConnected(true);
     }
   }, [miniPlayer.spotifyPlayer, miniPlayer.spotifyDeviceId, miniPlayer.playerReady, miniPlayer.spotifyToken]);
+  
+  // On mount, sync playback state from context if music is already playing
+  // This is critical when navigating TO the station while music is playing
+  const hasSyncedFromContext = useRef(false);
+  useEffect(() => {
+    if (hasSyncedFromContext.current) return;
+    if (!miniPlayer.spotifyPlayer) return;
+    
+    hasSyncedFromContext.current = true;
+    
+    if (miniPlayer.isPlaying) {
+      setIsPlaying(true);
+      userInitiatedPlaybackRef.current = true;
+    }
+    if (miniPlayer.currentTrack) {
+      setCurrentTrack({
+        name: miniPlayer.currentTrack.name,
+        artist: miniPlayer.currentTrack.artist,
+        image: miniPlayer.currentTrack.image,
+        albumName: miniPlayer.currentTrack.albumName,
+        playlistName: miniPlayer.currentTrack.playlistName,
+      });
+    }
+  }, [miniPlayer.spotifyPlayer, miniPlayer.isPlaying, miniPlayer.currentTrack]);
   
   // Register callbacks with the global context so it can update station page state
   useEffect(() => {
