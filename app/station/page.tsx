@@ -125,6 +125,11 @@ const GROUP_COLORS = [
   "#607D8B", // Blue Grey
 ];
 
+// Module-level variables to persist Spotify player across navigations
+let globalSpotifyPlayer: SpotifyPlayer | null = null;
+let globalSpotifyDeviceId: string | null = null;
+let globalPlayerInitializing = false;
+
 export default function StationPage() {
   // Get mini player context for syncing track info to other pages
   const miniPlayer = useMiniPlayer();
@@ -273,6 +278,43 @@ export default function StationPage() {
   useEffect(() => {
     if (!spotifyToken) return;
 
+    // If we already have a player from a previous mount, just reuse it
+    if (globalSpotifyPlayer && globalSpotifyDeviceId) {
+      console.log("Reusing existing Spotify player, device ID:", globalSpotifyDeviceId);
+      setSpotifyPlayer(globalSpotifyPlayer);
+      setSpotifyDeviceId(globalSpotifyDeviceId);
+      setPlayerReady(true);
+      
+      // Sync current playback state from the existing player
+      globalSpotifyPlayer.getCurrentState().then((state) => {
+        if (state) {
+          userInitiatedPlaybackRef.current = true; // Music is already playing
+          setIsPlaying(!state.paused);
+          setTrackPosition(state.position);
+          setTrackDuration(state.duration);
+          if (state.track_window?.current_track) {
+            const track = state.track_window.current_track;
+            setCurrentTrack({
+              name: track.name,
+              artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name,
+            });
+            setCurrentlyPlayingTrackUri(track.uri);
+          }
+        }
+      });
+      return;
+    }
+
+    // Don't initialize if already initializing
+    if (globalPlayerInitializing) {
+      console.log("Player already initializing, waiting...");
+      return;
+    }
+
+    globalPlayerInitializing = true;
+
     // Load the Spotify SDK script
     if (!document.getElementById("spotify-sdk")) {
       const script = document.createElement("script");
@@ -303,22 +345,28 @@ export default function StationPage() {
       player.addListener("initialization_error", (e) => {
         const error = e as { message: string };
         console.error("Spotify init error:", error.message);
+        globalPlayerInitializing = false;
       });
       player.addListener("authentication_error", (e) => {
         const error = e as { message: string };
         console.error("Spotify auth error:", error.message);
         setSpotifyConnected(false);
+        globalPlayerInitializing = false;
       });
       player.addListener("account_error", (e) => {
         const error = e as { message: string };
         console.error("Spotify account error:", error.message);
         alert("Spotify Premium is required for playback");
+        globalPlayerInitializing = false;
       });
 
       // Ready
       player.addListener("ready", (e) => {
         const data = e as { device_id: string };
         console.log("Spotify player ready, device ID:", data.device_id);
+        globalSpotifyPlayer = player;
+        globalSpotifyDeviceId = data.device_id;
+        globalPlayerInitializing = false;
         setSpotifyDeviceId(data.device_id);
         setPlayerReady(true);
       });
@@ -425,11 +473,8 @@ export default function StationPage() {
       window.onSpotifyWebPlaybackSDKReady();
     }
 
-    return () => {
-      if (spotifyPlayer) {
-        spotifyPlayer.disconnect();
-      }
-    };
+    // Don't disconnect player on unmount - we want music to keep playing!
+    // The player persists in globalSpotifyPlayer
   }, [spotifyToken]);
 
   useEffect(() => {
