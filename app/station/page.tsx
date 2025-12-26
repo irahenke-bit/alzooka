@@ -357,11 +357,9 @@ export default function StationPage() {
           
           // Get album name from Spotify and playlist name from our source map
           setTrackSourceMap(currentSourceMap => {
-            // If source map is empty, we've stopped - don't update track
-            if (Object.keys(currentSourceMap).length === 0) {
-              return currentSourceMap;
-            }
             const source = currentSourceMap[trackUri];
+            // Always update currentTrack with Spotify data, even if source map is empty
+            // (source map may be empty after a page refresh/restore)
             setCurrentTrack({
               name: track.name,
               artist: track.artists.map(a => a.name).join(", "),
