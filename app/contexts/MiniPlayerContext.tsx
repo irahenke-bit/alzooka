@@ -309,19 +309,34 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         });
         
         // Player state changes - updates mini player state
-        // Optimized to reduce re-renders
+        // HEAVILY optimized to prevent lag - most events are ignored
         let lastTrackUri = "";
         let lastPlayingState: boolean | null = null;
+        let lastProcessedTime = 0;
+        const MIN_PROCESS_INTERVAL = 250; // Only process events every 250ms max
         
         player.addListener("player_state_changed", (e) => {
           const state = e as SpotifyPlayerState | null;
           if (!state) return;
           
+          // CRITICAL: Skip most events entirely - only process every 250ms
+          const now = Date.now();
           const playing = !state.paused;
           const currentUri = state.track_window?.current_track?.uri || "";
           
+          // Always process pause/play changes immediately (but only if state actually changed)
+          const playStateChanged = playing !== lastPlayingState;
+          const trackChanged = currentUri && currentUri !== lastTrackUri;
+          
+          // Skip if nothing important changed AND we processed recently
+          if (!playStateChanged && !trackChanged && (now - lastProcessedTime < MIN_PROCESS_INTERVAL)) {
+            return;
+          }
+          
+          lastProcessedTime = now;
+          
           // Only update playing state if it changed
-          if (playing !== lastPlayingState) {
+          if (playStateChanged) {
             lastPlayingState = playing;
             setIsPlayingState(playing);
             stationCallbacks?.onPlayStateChange?.(playing);
@@ -332,7 +347,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           }
           
           // Only update track info if track changed
-          if (currentUri && currentUri !== lastTrackUri) {
+          if (trackChanged) {
             lastTrackUri = currentUri;
             const track = state.track_window.current_track;
             const trackInfo: TrackInfo = {
@@ -360,12 +375,12 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             }
           }
           
-          // Throttle position updates heavily - only needed for station page progress bar
-          const now = Date.now();
-          if (now - lastPositionUpdate.current >= POSITION_THROTTLE) {
+          // Only update position if station page is listening (has callbacks registered)
+          // This prevents unnecessary state updates when on other pages
+          if (stationCallbacks?.onPositionChange && (now - lastPositionUpdate.current >= POSITION_THROTTLE)) {
             lastPositionUpdate.current = now;
             setTrackPosition(state.position);
-            stationCallbacks?.onPositionChange?.(state.position, state.duration);
+            stationCallbacks.onPositionChange(state.position, state.duration);
           }
         });
         
