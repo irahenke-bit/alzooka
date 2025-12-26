@@ -141,6 +141,7 @@ export default function StationPage() {
   const [albumPendingDelete, setAlbumPendingDelete] = useState<StationAlbum | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [confirmBulkDeletePlaylists, setConfirmBulkDeletePlaylists] = useState(false);
+  const [showAddToGroupDropdown, setShowAddToGroupDropdown] = useState(false);
   const [viewingPlaylist, setViewingPlaylist] = useState<string | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<Record<string, SpotifyTrack[]>>({});
   const [playlistGroups, setPlaylistGroups] = useState<Record<string, string[]>>({}); // playlistId -> groupIds
@@ -1780,6 +1781,45 @@ export default function StationPage() {
         [albumId]: [...(prev[albumId] || []), groupId]
       }));
     }
+  }
+
+  // Add all selected albums to a group
+  async function handleAddSelectedAlbumsToGroup(groupId: string) {
+    const selectedAlbumIds = Array.from(manualSelections);
+    if (selectedAlbumIds.length === 0) return;
+    
+    // Filter out albums that are already in this group
+    const albumsToAdd = selectedAlbumIds.filter(albumId => {
+      const currentGroups = albumGroups[albumId] || [];
+      return !currentGroups.includes(groupId);
+    });
+    
+    if (albumsToAdd.length === 0) {
+      setShowAddToGroupDropdown(false);
+      return;
+    }
+    
+    // Insert all at once
+    const inserts = albumsToAdd.map(albumId => ({
+      album_id: albumId,
+      group_id: groupId,
+    }));
+    
+    await supabase
+      .from("station_album_groups")
+      .insert(inserts);
+    
+    // Update local state
+    setAlbumGroups(prev => {
+      const updated = { ...prev };
+      for (const albumId of albumsToAdd) {
+        updated[albumId] = [...(updated[albumId] || []), groupId];
+      }
+      return updated;
+    });
+    
+    // Close dropdown and clear selection
+    setShowAddToGroupDropdown(false);
   }
 
   function clearActiveGroups() {
@@ -3515,26 +3555,99 @@ export default function StationPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
                 💿 Albums ({albums.length})
               </h3>
-              {/* Delete Selected Albums Button - only shows when albums are manually selected (not via groups) */}
+              {/* Action buttons for selected albums - only shows when albums are manually selected (not via groups) */}
               {manualSelections.size > 0 && activeGroups.size === 0 && (
-                <button
-                  onClick={() => setConfirmBulkDelete(true)}
-                  style={{
-                    padding: "6px 12px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    background: "#e57373",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  🗑️ Delete ({manualSelections.size})
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {/* Add to Group Dropdown */}
+                  {groups.length > 0 && (
+                    <div style={{ position: "relative" }}>
+                      <button
+                        onClick={() => setShowAddToGroupDropdown(!showAddToGroupDropdown)}
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          background: "rgba(201, 162, 39, 0.2)",
+                          color: "var(--alzooka-gold)",
+                          border: "1px solid rgba(201, 162, 39, 0.4)",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        📁 Add to Group
+                      </button>
+                      {showAddToGroupDropdown && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            marginTop: 4,
+                            background: "var(--alzooka-teal-dark)",
+                            border: "1px solid rgba(201, 162, 39, 0.3)",
+                            borderRadius: 8,
+                            padding: 8,
+                            zIndex: 100,
+                            minWidth: 160,
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                          }}
+                        >
+                          <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
+                            Add {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} to:
+                          </div>
+                          {groups.map(group => (
+                            <button
+                              key={group.id}
+                              onClick={() => handleAddSelectedAlbumsToGroup(group.id)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                width: "100%",
+                                padding: "8px 10px",
+                                background: "transparent",
+                                border: "none",
+                                borderRadius: 4,
+                                color: "var(--alzooka-cream)",
+                                fontSize: 13,
+                                cursor: "pointer",
+                                textAlign: "left",
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                            >
+                              <span style={{ width: 12, height: 12, borderRadius: "50%", background: group.color, flexShrink: 0 }} />
+                              {group.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => setConfirmBulkDelete(true)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#e57373",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    🗑️ Delete ({manualSelections.size})
+                  </button>
+                </div>
               )}
             </div>
             {filteredAlbums.length === 0 ? (
