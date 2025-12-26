@@ -673,6 +673,7 @@ export default function StationPage() {
   }, [spotifyPlayer, playerReady]);
 
   // Sync current track to global context for mini player on other pages
+  // Note: globalPlayer excluded from deps to avoid infinite loops (context object changes on every render)
   useEffect(() => {
     if (currentTrack) {
       globalPlayer.setCurrentTrack({
@@ -685,18 +686,21 @@ export default function StationPage() {
     } else {
       globalPlayer.setCurrentTrack(null);
     }
-  }, [currentTrack, globalPlayer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack]);
 
   // Sync playback state to global context
   useEffect(() => {
     globalPlayer.setIsPlaying(isPlaying);
-  }, [isPlaying, globalPlayer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying]);
 
   // Sync track position/duration to global context
   useEffect(() => {
     globalPlayer.setTrackPosition(trackPosition);
     globalPlayer.setTrackDuration(trackDuration);
-  }, [trackPosition, trackDuration, globalPlayer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackPosition, trackDuration]);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
