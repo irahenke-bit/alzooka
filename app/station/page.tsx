@@ -130,6 +130,21 @@ let globalSpotifyPlayer: SpotifyPlayer | null = null;
 let globalSpotifyDeviceId: string | null = null;
 let globalPlayerInitializing = false;
 
+// Module-level flag to track if station page is mounted
+// This is used by the event listener to know whether to update state
+let stationPageMounted = false;
+
+// Module-level state setters that get updated when station page mounts
+let stationStateSetters: {
+  setIsPlaying: (v: boolean) => void;
+  setTrackPosition: (v: number) => void;
+  setTrackDuration: (v: number) => void;
+  setCurrentTrack: (v: { name: string; artist: string; image: string; albumName?: string } | null) => void;
+  setCurrentlyPlayingTrackUri: (v: string) => void;
+  userInitiatedPlaybackRef: { current: boolean };
+  ignorePositionUntilRef: { current: number };
+} | null = null;
+
 export default function StationPage() {
   // Get mini player context for syncing track info to other pages
   const miniPlayer = useMiniPlayer();
@@ -274,11 +289,22 @@ export default function StationPage() {
     checkSpotifyConnection();
   }, [user]);
 
-  // Track if component is mounted to prevent state updates after unmount
-  const isMountedRef = useRef(true);
+  // Register state setters with module-level variable so event listener can find them
   useEffect(() => {
-    isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
+    stationPageMounted = true;
+    stationStateSetters = {
+      setIsPlaying,
+      setTrackPosition,
+      setTrackDuration,
+      setCurrentTrack,
+      setCurrentlyPlayingTrackUri,
+      userInitiatedPlaybackRef,
+      ignorePositionUntilRef,
+    };
+    return () => {
+      stationPageMounted = false;
+      stationStateSetters = null;
+    };
   }, []);
 
   // Initialize Spotify Web Playback SDK
@@ -294,7 +320,7 @@ export default function StationPage() {
       
       // Sync current playback state from the existing player
       globalSpotifyPlayer.getCurrentState().then((state) => {
-        if (state && isMountedRef.current) {
+        if (state && stationPageMounted) {
           userInitiatedPlaybackRef.current = true;
           setIsPlaying(!state.paused);
           setTrackPosition(state.position);
@@ -353,7 +379,7 @@ export default function StationPage() {
       player.addListener("authentication_error", (e) => {
         const error = e as { message: string };
         console.error("Spotify auth error:", error.message);
-        if (isMountedRef.current) setSpotifyConnected(false);
+        if (stationPageMounted) setSpotifyConnected(false);
         globalPlayerInitializing = false;
       });
       player.addListener("account_error", (e) => {
@@ -369,43 +395,45 @@ export default function StationPage() {
         globalSpotifyPlayer = player;
         globalSpotifyDeviceId = data.device_id;
         globalPlayerInitializing = false;
-        if (isMountedRef.current) {
+        if (stationPageMounted) {
           setSpotifyDeviceId(data.device_id);
           setPlayerReady(true);
         }
       });
 
-      // Player state changes - only update if mounted
+      // Player state changes - uses module-level setters so it works after remount
       player.addListener("player_state_changed", (e) => {
         const state = e as SpotifyPlayerState | null;
-        if (!state || !isMountedRef.current) return;
-        if (!userInitiatedPlaybackRef.current) return;
+        if (!state || !stationPageMounted || !stationStateSetters) return;
+        
+        const s = stationStateSetters;
+        if (!s.userInitiatedPlaybackRef.current) return;
         
         const now = Date.now();
-        const isIgnoring = now <= ignorePositionUntilRef.current;
+        const isIgnoring = now <= s.ignorePositionUntilRef.current;
         if (state.paused && isIgnoring) return;
         
-        setIsPlaying(!state.paused);
-        setTrackDuration(state.duration);
+        s.setIsPlaying(!state.paused);
+        s.setTrackDuration(state.duration);
         
         if (state.track_window?.current_track) {
           const track = state.track_window.current_track;
-          setCurrentTrack({
+          s.setCurrentTrack({
             name: track.name,
             artist: track.artists.map((a: { name: string }) => a.name).join(", "),
             image: track.album.images[0]?.url || "",
             albumName: track.album.name,
           });
-          setCurrentlyPlayingTrackUri(track.uri);
+          s.setCurrentlyPlayingTrackUri(track.uri);
         }
         
         if (!isIgnoring && !state.paused) {
-          setTrackPosition(state.position);
+          s.setTrackPosition(state.position);
         }
       });
 
       player.connect();
-      if (isMountedRef.current) {
+      if (stationPageMounted) {
         setSpotifyPlayer(player);
       }
     };
