@@ -131,6 +131,14 @@ let playerInitializing = false;
 // Module-level callbacks for station page
 let stationCallbacks: StationCallbacks | null = null;
 
+// Module-level flag to ignore stale track updates when starting new playback
+let ignoreTrackUpdatesUntil = 0;
+
+// Function to set the ignore flag (called by station page when starting new playback)
+export function ignoreTrackUpdatesFor(ms: number) {
+  ignoreTrackUpdatesUntil = Date.now() + ms;
+}
+
 export function MiniPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrackState] = useState<TrackInfo | null>(null);
   const [isPlayingState, setIsPlayingState] = useState(false);
@@ -340,8 +348,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             }
           }
           
-          // Only update track info if track changed
-          if (trackChanged) {
+          // Only update track info if track changed AND we're not ignoring stale updates
+          // The ignoreTrackUpdatesUntil flag is set when starting new playback
+          // to prevent showing old track info from other devices/sessions
+          if (trackChanged && now > ignoreTrackUpdatesUntil) {
             lastTrackUri = currentUri;
             const track = state.track_window.current_track;
             const trackInfo: TrackInfo = {

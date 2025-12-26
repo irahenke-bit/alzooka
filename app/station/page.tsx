@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Header from "@/app/components/Header";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
-import { useMiniPlayer, TrackInfo, SpotifyPlayer } from "@/app/contexts/MiniPlayerContext";
+import { useMiniPlayer, TrackInfo, SpotifyPlayer, ignoreTrackUpdatesFor } from "@/app/contexts/MiniPlayerContext";
 
 type SpotifyResult = {
   id: string;
@@ -91,8 +91,7 @@ const GROUP_COLORS = [
   "#607D8B", // Blue Grey
 ];
 
-// Flag to ignore stale track info when starting new playback
-let ignoreTrackUpdatesUntil = 0;
+// Note: ignoreTrackUpdatesFor() is now imported from context
 
 export default function StationPage() {
   // Get mini player context for syncing track info to other pages
@@ -1348,7 +1347,7 @@ export default function StationPage() {
     
     // Ignore stale position and track updates
     ignorePositionUntilRef.current = Date.now() + 1000;
-    ignoreTrackUpdatesUntil = Date.now() + 1000;
+    ignoreTrackUpdatesFor(1000);
     setCurrentTrack(null); // Clear immediately
     
     try {
@@ -1955,7 +1954,7 @@ export default function StationPage() {
       setTrackPosition(0);
       setCurrentTrack(null); // Clear immediately so we don't show stale track
       ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale position updates
-      ignoreTrackUpdatesUntil = Date.now() + 2000; // Ignore stale track updates from phone/other devices
+      ignoreTrackUpdatesFor(2000); // Ignore stale track updates from phone/other devices
       
       // Start playback with shuffled tracks at position 0
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -2335,7 +2334,7 @@ export default function StationPage() {
     
     // Ignore stale position and track updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
-    ignoreTrackUpdatesUntil = Date.now() + 1000;
+    ignoreTrackUpdatesFor(1000);
     setCurrentTrack(null); // Clear immediately
     
     setTrackPosition(0);
