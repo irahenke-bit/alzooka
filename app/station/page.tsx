@@ -131,8 +131,11 @@ let globalSpotifyDeviceId: string | null = null;
 let globalPlayerInitializing = false;
 
 // Module-level flag to track if station page is mounted
-// This is used by the event listener to know whether to update state
 let stationPageMounted = false;
+
+// Throttle position updates to max once per 500ms
+let lastPositionUpdate = 0;
+const POSITION_UPDATE_THROTTLE = 500;
 
 // Module-level state setters that get updated when station page mounts
 let stationStateSetters: {
@@ -402,9 +405,12 @@ export default function StationPage() {
       });
 
       // Player state changes - uses module-level setters so it works after remount
+      // Throttled to prevent excessive updates
       player.addListener("player_state_changed", (e) => {
         const state = e as SpotifyPlayerState | null;
-        if (!state || !stationPageMounted || !stationStateSetters) return;
+        // Early exit if not mounted - minimize work when on other pages
+        if (!stationPageMounted || !stationStateSetters) return;
+        if (!state) return;
         
         const s = stationStateSetters;
         if (!s.userInitiatedPlaybackRef.current) return;
@@ -427,8 +433,12 @@ export default function StationPage() {
           s.setCurrentlyPlayingTrackUri(track.uri);
         }
         
+        // Throttle position updates
         if (!isIgnoring && !state.paused) {
-          s.setTrackPosition(state.position);
+          if (now - lastPositionUpdate >= POSITION_UPDATE_THROTTLE) {
+            lastPositionUpdate = now;
+            s.setTrackPosition(state.position);
+          }
         }
       });
 

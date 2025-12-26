@@ -210,6 +210,33 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  // Helper to fetch current track from Spotify and update context
+  const fetchCurrentTrack = useCallback(async () => {
+    const token = spotifyTokenRef.current;
+    if (!token) return;
+    
+    try {
+      const res = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (res.ok && res.status !== 204) {
+        const data = await res.json();
+        if (data.item) {
+          const track = data.item;
+          setCurrentTrackState({
+            name: track.name,
+            artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+            image: track.album.images[0]?.url || "",
+            albumName: track.album.name,
+          });
+          setIsPlayingState(data.is_playing);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch current track:", err);
+    }
+  }, []);
+
   // Next track
   const onNext = useCallback(async () => {
     const token = spotifyTokenRef.current;
@@ -223,10 +250,12 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         headers: { "Authorization": `Bearer ${token}` },
       });
       stationCallbacksRef.current?.onNextCallback();
+      // Fetch updated track info after a short delay
+      setTimeout(() => fetchCurrentTrack(), 500);
     } catch (err) {
       console.error("Mini player next failed:", err);
     }
-  }, []);
+  }, [fetchCurrentTrack]);
 
   // Dismiss the player (user clicked X)
   const onDismiss = useCallback(() => {
