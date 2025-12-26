@@ -701,15 +701,41 @@ export default function StationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
-  // Register control functions with mini player context
+  // Share Spotify credentials with mini player context for direct API control
   useEffect(() => {
-    miniPlayer.registerControls({
-      toggle: () => handleTogglePlayback(),
-      stop: () => handleStopPlayback(),
-      next: () => handleNextTrack(),
+    if (spotifyToken && spotifyDeviceId) {
+      miniPlayer.setSpotifyCredentials(spotifyToken, spotifyDeviceId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spotifyToken, spotifyDeviceId]);
+
+  // Register station callbacks for stop/next (these need station state)
+  useEffect(() => {
+    miniPlayer.registerStationCallbacks({
+      onStopCallback: () => {
+        // Clear all station state when stopped from mini player
+        setTrackPosition(0);
+        setTrackDuration(0);
+        setCurrentTrack(null);
+        setCurrentlyPlayingAlbumId(null);
+        setCurrentlyPlayingPlaylistId(null);
+        setCurrentlyPlayingTrackUri(null);
+        setTrackSourceMap({});
+        setCurrentPlaylistQueue([]);
+        setCurrentQueueIndex(0);
+        setSelectedPlaylists(new Set());
+        setManualSelections(new Set());
+        setSelectAll(false);
+        setActiveGroups(new Set());
+        setAlbums(prev => prev.map(a => ({ ...a, is_selected: false })));
+        userInitiatedPlaybackRef.current = false;
+      },
+      onNextCallback: () => {
+        setTrackPosition(0);
+      },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spotifyPlayer, playerReady]);
+  }, []);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
