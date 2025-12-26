@@ -137,6 +137,9 @@ let stationPageMounted = false;
 let lastPositionUpdate = 0;
 const POSITION_UPDATE_THROTTLE = 500;
 
+// Flag to ignore stale track info when starting new playback
+let ignoreTrackUpdatesUntil = 0;
+
 // Module-level state setters that get updated when station page mounts
 let stationStateSetters: {
   setIsPlaying: (v: boolean) => void;
@@ -416,13 +419,16 @@ export default function StationPage() {
         if (!s.userInitiatedPlaybackRef.current) return;
         
         const now = Date.now();
-        const isIgnoring = now <= s.ignorePositionUntilRef.current;
-        if (state.paused && isIgnoring) return;
+        const isIgnoringPosition = now <= s.ignorePositionUntilRef.current;
+        const isIgnoringTrack = now <= ignoreTrackUpdatesUntil;
+        
+        if (state.paused && isIgnoringPosition) return;
         
         s.setIsPlaying(!state.paused);
         s.setTrackDuration(state.duration);
         
-        if (state.track_window?.current_track) {
+        // Only update track info if we're not ignoring stale updates
+        if (!isIgnoringTrack && state.track_window?.current_track) {
           const track = state.track_window.current_track;
           s.setCurrentTrack({
             name: track.name,
@@ -434,7 +440,7 @@ export default function StationPage() {
         }
         
         // Throttle position updates
-        if (!isIgnoring && !state.paused) {
+        if (!isIgnoringPosition && !state.paused) {
           if (now - lastPositionUpdate >= POSITION_UPDATE_THROTTLE) {
             lastPositionUpdate = now;
             s.setTrackPosition(state.position);
@@ -1511,8 +1517,10 @@ export default function StationPage() {
     });
     setTrackSourceMap(newSourceMap);
     
-    // Ignore stale position updates
+    // Ignore stale position and track updates
     ignorePositionUntilRef.current = Date.now() + 1000;
+    ignoreTrackUpdatesUntil = Date.now() + 1000;
+    setCurrentTrack(null); // Clear immediately
     
     try {
       setTrackPosition(0);
@@ -2114,9 +2122,11 @@ export default function StationPage() {
       console.log("Pausing current playback before starting new shuffle");
       await spotifyPlayer.pause();
       
-      // Reset our position tracking
+      // Reset our position tracking and clear stale track info
       setTrackPosition(0);
-      ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale updates for 2 seconds
+      setCurrentTrack(null); // Clear immediately so we don't show stale track
+      ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale position updates
+      ignoreTrackUpdatesUntil = Date.now() + 2000; // Ignore stale track updates from phone/other devices
       
       // Start playback with shuffled tracks at position 0
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -2494,8 +2504,10 @@ export default function StationPage() {
     });
     setTrackSourceMap(newSourceMap);
     
-    // Ignore stale position updates for the next 1 second
+    // Ignore stale position and track updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
+    ignoreTrackUpdatesUntil = Date.now() + 1000;
+    setCurrentTrack(null); // Clear immediately
     
     setTrackPosition(0);
     
