@@ -2131,6 +2131,31 @@ export default function StationPage() {
     setActiveGroups(new Set()); // Also clear active groups
     // Update albums to be unselected
     setAlbums(prev => prev.map(a => ({ ...a, is_selected: false })));
+    
+    // Clear saved state in database so it doesn't restore the old session
+    if (station) {
+      await supabase
+        .from("stations")
+        .update({
+          last_track_uri: null,
+          last_track_position: 0,
+          last_track_name: null,
+          last_track_artist: null,
+          last_track_image: null,
+          last_track_album_name: null,
+          last_track_playlist_name: null,
+          last_track_duration: 0,
+          shuffle_queue: [],
+          shuffle_queue_index: 0,
+          selected_album_ids: [],
+          selected_playlist_ids: [],
+          active_group_ids: [],
+        })
+        .eq("id", station.id);
+    }
+    
+    // Reset pending restore flag since we've cleared everything
+    hasPendingRestoreRef.current = false;
   }
 
   // Play a single album - either full album or just selected tracks from it
@@ -3381,6 +3406,8 @@ export default function StationPage() {
                 {filteredAlbums.map(album => {
                   const isInBulkGroup = bulkAddGroup && (albumGroups[album.id] || []).includes(bulkAddGroup);
                   const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
+                  // Check if currently playing track is from this album
+                  const hasCurrentTrack = currentTrack?.albumName === album.spotify_name;
                   
                   return (
                     <div key={album.id} style={{ marginBottom: 4 }}>
@@ -3393,11 +3420,15 @@ export default function StationPage() {
                           padding: 10,
                           background: bulkAddGroup
                             ? (isInBulkGroup ? `${bulkGroupColor}33` : "rgba(240, 235, 224, 0.03)")
-                            : (album.is_selected ? "rgba(30, 215, 96, 0.1)" : "rgba(240, 235, 224, 0.03)"),
+                            : hasCurrentTrack
+                              ? "rgba(30, 215, 96, 0.25)"
+                              : (album.is_selected ? "rgba(30, 215, 96, 0.1)" : "rgba(240, 235, 224, 0.03)"),
                           borderRadius: 10,
                           border: bulkAddGroup
                             ? (isInBulkGroup ? `2px solid ${bulkGroupColor}` : "1px dashed rgba(240, 235, 224, 0.2)")
-                            : (album.is_selected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)"),
+                            : hasCurrentTrack
+                              ? "1px solid rgba(30, 215, 96, 0.5)"
+                              : (album.is_selected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)"),
                           cursor: "pointer",
                         }}
                       >
