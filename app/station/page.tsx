@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Header from "@/app/components/Header";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
-import { useSpotifyPlayer } from "@/app/contexts/SpotifyPlayerContext";
+// Global player disabled for now due to performance issues
+// import { useSpotifyPlayer } from "@/app/contexts/SpotifyPlayerContext";
 
 type SpotifyResult = {
   id: string;
@@ -126,8 +127,8 @@ const GROUP_COLORS = [
 ];
 
 export default function StationPage() {
-  // Get the global player context to sync track info for mini player on other pages
-  const globalPlayer = useSpotifyPlayer();
+  // Global player disabled for now due to performance issues
+  // const globalPlayer = useSpotifyPlayer();
   
   const [user, setUser] = useState<User | null>(null);
   const [userUsername, setUserUsername] = useState<string | null>(null);
@@ -308,9 +309,6 @@ export default function StationPage() {
         console.log("Spotify player ready, device ID:", data.device_id);
         setSpotifyDeviceId(data.device_id);
         setPlayerReady(true);
-        // Share player with global context for mini player on other pages
-        globalPlayer.setSpotifyPlayer(player);
-        globalPlayer.setPlayerReady(true);
       });
 
       // Player state changes
@@ -674,36 +672,6 @@ export default function StationPage() {
     
     syncWithSpotify();
   }, [spotifyPlayer, playerReady]);
-
-  // Sync current track to global context for mini player on other pages
-  // Note: globalPlayer excluded from deps to avoid infinite loops (context object changes on every render)
-  useEffect(() => {
-    if (currentTrack) {
-      globalPlayer.setCurrentTrack({
-        name: currentTrack.name,
-        artist: currentTrack.artist,
-        image: currentTrack.image,
-        albumName: currentTrack.albumName,
-        playlistName: currentTrack.playlistName,
-      });
-    } else {
-      globalPlayer.setCurrentTrack(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrack]);
-
-  // Sync playback state to global context
-  useEffect(() => {
-    globalPlayer.setIsPlaying(isPlaying);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying]);
-
-  // Sync track position/duration to global context
-  useEffect(() => {
-    globalPlayer.setTrackPosition(trackPosition);
-    globalPlayer.setTrackDuration(trackDuration);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackPosition, trackDuration]);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
