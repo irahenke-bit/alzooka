@@ -76,20 +76,7 @@ type SpotifyTrack = {
   duration_ms: number;
 };
 
-// Spotify Player types
-declare global {
-  interface Window {
-    Spotify: {
-      Player: new (options: {
-        name: string;
-        getOAuthToken: (cb: (token: string) => void) => void;
-        volume: number;
-      }) => SpotifyPlayer;
-    };
-    onSpotifyWebPlaybackSDKReady: () => void;
-  }
-}
-
+// Spotify Player types are now in SpotifyPlayerContext
 interface SpotifyPlayerState {
   paused: boolean;
   position: number;
@@ -99,7 +86,7 @@ interface SpotifyPlayerState {
       uri: string;
       name: string;
       artists: { name: string }[];
-      album: { images: { url: string }[] };
+      album: { images: { url: string }[]; name: string };
       duration_ms: number;
     };
   };
