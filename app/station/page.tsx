@@ -197,6 +197,7 @@ export default function StationPage() {
   const [selectedStartTrack, setSelectedStartTrack] = useState<{ albumId?: string; playlistId?: string; trackUri: string } | null>(null);
   const [currentlyPlayingTrackUri, setCurrentlyPlayingTrackUri] = useState<string | null>(null);
   const ignorePositionUntilRef = useRef<number>(0); // Timestamp to ignore stale position updates
+  const userInitiatedPlaybackRef = useRef<boolean>(false); // Only show tracks when user explicitly starts playback
   
   // Queue management for sequential playlist playback
   const [currentPlaylistQueue, setCurrentPlaylistQueue] = useState<string[]>([]); // Array of track URIs
@@ -326,6 +327,12 @@ export default function StationPage() {
           };
         } | null;
         if (!state) return;
+        
+        // Ignore all state updates until user explicitly starts playback
+        // This prevents Spotify's autoplay from showing ghost tracks
+        if (!userInitiatedPlaybackRef.current) {
+          return;
+        }
         
         // Check if we're in the ignore window (e.g., after pressing stop)
         const now = Date.now();
@@ -1286,6 +1293,8 @@ export default function StationPage() {
     
     // Clear pending restore flag - we're starting fresh playback
     hasPendingRestoreRef.current = false;
+    // Mark that user initiated playback - allow player state updates
+    userInitiatedPlaybackRef.current = true;
     
     // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
     // This is required for browser autoplay policies
@@ -1675,27 +1684,19 @@ export default function StationPage() {
     await handleToggleAlbumGroup(albumId, bulkAddGroup);
   }
 
-  async function handleToggleGroup(groupId: string) {
+  function handleToggleGroup(groupId: string) {
     const isActive = activeGroups.has(groupId);
     
-    // Update active groups
-    setActiveGroups(prev => {
-      const newSet = new Set(prev);
-      if (isActive) {
-        newSet.delete(groupId);
-      } else {
-        newSet.add(groupId);
-      }
-      return newSet;
-    });
-    
-    // Calculate which albums should be selected based on all active groups
+    // Calculate new active groups immediately
     const newActiveGroups = new Set(activeGroups);
     if (isActive) {
       newActiveGroups.delete(groupId);
     } else {
       newActiveGroups.add(groupId);
     }
+    
+    // Update active groups state immediately
+    setActiveGroups(newActiveGroups);
     
     // If no groups are active, keep current selection
     if (newActiveGroups.size === 0) {
@@ -1710,23 +1711,41 @@ export default function StationPage() {
       }
     }
     
-    // Update album selections in database and state
-    for (const album of albums) {
-      const shouldBeSelected = albumsToSelect.has(album.id);
-      if (album.is_selected !== shouldBeSelected) {
-        await supabase
-          .from("station_albums")
-          .update({ is_selected: shouldBeSelected })
-          .eq("id", album.id);
+    // Select playlists that belong to ANY active group
+    const playlistsToSelect = new Set<string>();
+    for (const [playlistId, groupIds] of Object.entries(playlistGroups)) {
+      if (groupIds.some(gid => newActiveGroups.has(gid))) {
+        playlistsToSelect.add(playlistId);
       }
     }
     
+    // Update UI state immediately (optimistic update)
     setAlbums(prev => prev.map(a => ({
       ...a,
       is_selected: albumsToSelect.has(a.id)
     })));
-    
+    setManualSelections(albumsToSelect);
+    setSelectedPlaylists(playlistsToSelect);
     setSelectAll(false);
+    
+    // Database updates in background (fire and forget, batched)
+    const albumIdsToSelect = Array.from(albumsToSelect);
+    const albumIdsToUnselect = albums.filter(a => !albumsToSelect.has(a.id)).map(a => a.id);
+    
+    if (albumIdsToSelect.length > 0) {
+      supabase
+        .from("station_albums")
+        .update({ is_selected: true })
+        .in("id", albumIdsToSelect)
+        .then(() => {});
+    }
+    if (albumIdsToUnselect.length > 0) {
+      supabase
+        .from("station_albums")
+        .update({ is_selected: false })
+        .in("id", albumIdsToUnselect)
+        .then(() => {});
+    }
   }
 
   async function handleToggleAlbumGroup(albumId: string, groupId: string) {
@@ -1798,6 +1817,8 @@ export default function StationPage() {
     
     // Clear pending restore flag - we're starting fresh playback
     hasPendingRestoreRef.current = false;
+    // Mark that user initiated playback - allow player state updates
+    userInitiatedPlaybackRef.current = true;
     
     if (!spotifyDeviceId || !spotifyToken || !spotifyPlayer) {
       alert("Please connect Spotify first");
@@ -1991,6 +2012,9 @@ export default function StationPage() {
       return;
     }
     
+    // Mark that user initiated playback - allow player state updates
+    userInitiatedPlaybackRef.current = true;
+    
     // If we have a pending restore (page was refreshed with saved track), load it now
     if (hasPendingRestoreRef.current && station?.last_track_uri && spotifyDeviceId && spotifyToken) {
       hasPendingRestoreRef.current = false;
@@ -2157,6 +2181,9 @@ export default function StationPage() {
   async function handleStopPlayback() {
     if (!spotifyPlayer) return;
     
+    // Reset user initiated flag - ignore any future autoplay from Spotify
+    userInitiatedPlaybackRef.current = false;
+    
     // Set a flag to ignore player state updates for a moment
     ignorePositionUntilRef.current = Date.now() + 2000;
     
@@ -2216,6 +2243,8 @@ export default function StationPage() {
     
     // Clear pending restore flag - we're starting fresh playback
     hasPendingRestoreRef.current = false;
+    // Mark that user initiated playback - allow player state updates
+    userInitiatedPlaybackRef.current = true;
     
     // CRITICAL: Activate element IMMEDIATELY on user click, before any async operations
     // This is required for browser autoplay policies
