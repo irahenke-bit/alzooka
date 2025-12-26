@@ -257,29 +257,39 @@ export default function StationPage() {
     }
   }, [miniPlayer.spotifyPlayer, miniPlayer.spotifyDeviceId, miniPlayer.playerReady, miniPlayer.spotifyToken]);
   
-  // On mount, sync playback state from context if music is already playing
-  // This is critical when navigating TO the station while music is playing
-  const hasSyncedFromContext = useRef(false);
+  // On mount, fetch CURRENT playback state directly from Spotify player
+  // This ensures we show the actual playing track, not stale context state
+  const hasSyncedFromPlayer = useRef(false);
   useEffect(() => {
-    if (hasSyncedFromContext.current) return;
+    if (hasSyncedFromPlayer.current) return;
     if (!miniPlayer.spotifyPlayer) return;
     
-    hasSyncedFromContext.current = true;
+    hasSyncedFromPlayer.current = true;
     
-    if (miniPlayer.isPlaying) {
-      setIsPlaying(true);
-      userInitiatedPlaybackRef.current = true;
-    }
-    if (miniPlayer.currentTrack) {
-      setCurrentTrack({
-        name: miniPlayer.currentTrack.name,
-        artist: miniPlayer.currentTrack.artist,
-        image: miniPlayer.currentTrack.image,
-        albumName: miniPlayer.currentTrack.albumName,
-        playlistName: miniPlayer.currentTrack.playlistName,
-      });
-    }
-  }, [miniPlayer.spotifyPlayer, miniPlayer.isPlaying, miniPlayer.currentTrack]);
+    // Fetch current state directly from the player
+    miniPlayer.spotifyPlayer.getCurrentState().then((state) => {
+      if (state) {
+        setIsPlaying(!state.paused);
+        setTrackPosition(state.position);
+        setTrackDuration(state.duration);
+        
+        if (!state.paused) {
+          userInitiatedPlaybackRef.current = true;
+        }
+        
+        if (state.track_window?.current_track) {
+          const track = state.track_window.current_track;
+          setCurrentTrack({
+            name: track.name,
+            artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+            image: track.album.images[0]?.url || "",
+            albumName: track.album.name,
+          });
+          setCurrentlyPlayingTrackUri(track.uri);
+        }
+      }
+    });
+  }, [miniPlayer.spotifyPlayer]);
   
   // Register callbacks with the global context so it can update station page state
   useEffect(() => {
