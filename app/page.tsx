@@ -169,6 +169,9 @@ function FeedContent() {
   const [feedShowAllProfiles, setFeedShowAllProfiles] = useState<boolean>(true);
   const [feedShowAllGroups, setFeedShowAllGroups] = useState<boolean>(true);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+  const POSTS_PER_PAGE = 10;
   const [userFriends, setUserFriends] = useState<string[]>([]);
   const [groupPreferences, setGroupPreferences] = useState<GroupPreference[]>([]);
   const [votes, setVotes] = useState<Record<string, Vote>>({});
@@ -186,6 +189,7 @@ function FeedContent() {
   const [loadingLinkPreview, setLoadingLinkPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [modalPost, setModalPost] = useState<Post | null>(null);
@@ -791,13 +795,36 @@ function FeedContent() {
     openModalForComment();
   }, [highlightCommentId, highlightPostId, notificationTimestamp, loading, router]);
 
+  // Infinite scroll observer - load more posts when scrolling near bottom
+  useEffect(() => {
+    if (!loadMoreRef.current || loading) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMorePosts && !loadingMorePosts) {
+          loadMorePosts();
+        }
+      },
+      { rootMargin: "400px" } // Start loading 400px before reaching the end
+    );
+    
+    observer.observe(loadMoreRef.current);
+    
+    return () => observer.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMorePosts, loadingMorePosts, loading]);
+
   async function loadPosts(
     friends: string[] = userFriends,
     prefs: GroupPreference[] = groupPreferences,
     currentUserId?: string,
     showAllProfiles: boolean = feedShowAllProfiles,
-    showAllGroups: boolean = feedShowAllGroups
+    showAllGroups: boolean = feedShowAllGroups,
+    reset: boolean = true // If true, start from beginning; if false, load more
   ): Promise<Post[]> {
+    // Calculate offset for pagination
+    const offset = reset ? 0 : posts.length;
+    
     // 1. Load regular feed posts (non-group posts)
     // If showAllProfiles is true, load from everyone; otherwise, only from friends + self
     const userId = currentUserId || user?.id;
@@ -844,7 +871,8 @@ function FeedContent() {
           )
         `)
         .is("group_id", null)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(offset, offset + POSTS_PER_PAGE - 1);
       
     if (showAllProfiles) {
       // World view: show all posts (but filter wall posts by show_in_feed later)
@@ -928,7 +956,7 @@ function FeedContent() {
           `)
           .in("group_id", memberGroupIds)
           .order("created_at", { ascending: false })
-          .limit(100);
+          .range(offset, offset + POSTS_PER_PAGE - 1);
         
         groupPosts = allGroupPostsData || [];
       }
@@ -977,7 +1005,8 @@ function FeedContent() {
         `)
         .in("group_id", groupIds)
         .gte("created_at", today.toISOString())
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(50); // Limit for performance, filtered posts will be further reduced
       
       // Apply filters per group
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1141,8 +1170,47 @@ function FeedContent() {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-    setPosts(postsWithNestedComments);
+    // Determine if there are more posts to load
+    // If we got fewer posts than requested, we've reached the end
+    const totalNewPosts = (feedPosts?.length || 0) + groupPosts.length;
+    setHasMorePosts(totalNewPosts >= POSTS_PER_PAGE);
+
+    if (reset) {
+      setPosts(postsWithNestedComments);
+    } else {
+      // Append new posts, avoiding duplicates
+      setPosts(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const newPosts = postsWithNestedComments.filter(p => !existingIds.has(p.id));
+        return [...prev, ...newPosts];
+      });
+    }
+    
     return postsWithNestedComments;
+  }
+
+  // Load more posts for infinite scroll
+  async function loadMorePosts() {
+    if (loadingMorePosts || !hasMorePosts) return;
+    
+    setLoadingMorePosts(true);
+    try {
+      const newPosts = await loadPosts(
+        userFriends,
+        groupPreferences,
+        user?.id,
+        feedShowAllProfiles,
+        feedShowAllGroups,
+        false // reset = false means append
+      );
+      
+      if (newPosts.length > 0) {
+        await loadVoteTotals(newPosts);
+        await loadReactions(newPosts);
+      }
+    } finally {
+      setLoadingMorePosts(false);
+    }
   }
 
   async function loadUserVotes(userId: string) {
@@ -2073,27 +2141,46 @@ function FeedContent() {
               No posts yet. Be the first to share something.
             </p>
           ) : (
-            visiblePosts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                user={user!} 
-                supabase={supabase}
-                votes={votes}
-                voteTotals={voteTotals}
-                onVote={handleVote}
-                isHighlighted={post.id === highlightPostId}
-                onOpenModal={() => setModalPost(post)}
-                onCommentAdded={async () => {
-                  const refreshedPosts = await loadPosts();
-                  await loadUserVotes(user!.id);
-                  await loadVoteTotals(refreshedPosts);
-                  await loadReactions(refreshedPosts);
-                }}
-                reactions={reactions[post.id] || []}
-                onReactionsChange={(newReactions) => handleReactionsChange(post.id, newReactions)}
-              />
-            ))
+            <>
+              {visiblePosts.map((post) => (
+                <PostCard 
+                  key={post.id} 
+                  post={post} 
+                  user={user!} 
+                  supabase={supabase}
+                  votes={votes}
+                  voteTotals={voteTotals}
+                  onVote={handleVote}
+                  isHighlighted={post.id === highlightPostId}
+                  onOpenModal={() => setModalPost(post)}
+                  onCommentAdded={async () => {
+                    const refreshedPosts = await loadPosts();
+                    await loadUserVotes(user!.id);
+                    await loadVoteTotals(refreshedPosts);
+                    await loadReactions(refreshedPosts);
+                  }}
+                  reactions={reactions[post.id] || []}
+                  onReactionsChange={(newReactions) => handleReactionsChange(post.id, newReactions)}
+                />
+              ))}
+              
+              {/* Load more sentinel for infinite scroll */}
+              <div ref={loadMoreRef} style={{ height: 1 }} />
+              
+              {/* Loading indicator */}
+              {loadingMorePosts && (
+                <div style={{ textAlign: "center", padding: 20 }}>
+                  <p className="text-muted">Loading more posts...</p>
+                </div>
+              )}
+              
+              {/* End of feed indicator */}
+              {!hasMorePosts && posts.length > 0 && (
+                <div style={{ textAlign: "center", padding: 20 }}>
+                  <p className="text-muted">You&apos;ve reached the end!</p>
+                </div>
+              )}
+            </>
           );
         })()}
       </div>
