@@ -86,13 +86,11 @@ export interface StationCallbacks {
 }
 
 interface MiniPlayerContextType {
-  // Player state
+  // Player state (only stable values - no frequently changing position)
   currentTrack: TrackInfo | null;
   isPlaying: boolean;
   playerState: PlayerState;
   playbackContext: PlaybackContext | null;
-  trackPosition: number;
-  trackDuration: number;
   
   // Spotify connection
   spotifyToken: string | null;
@@ -105,8 +103,6 @@ interface MiniPlayerContextType {
   setIsPlaying: (playing: boolean) => void;
   setPlaybackContext: (context: PlaybackContext | null) => void;
   setPlayerState: (state: PlayerState) => void;
-  setTrackPosition: (position: number) => void;
-  setTrackDuration: (duration: number) => void;
   
   // Spotify connection
   initializeSpotify: (userId: string) => Promise<void>;
@@ -578,13 +574,14 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
 
   const isPlaying = isPlayingState;
   
+  // NOTE: trackPosition and trackDuration are NOT included in the context value
+  // They change too frequently and would cause all consumers to re-render
+  // The station page gets position updates through its registered callbacks
   const value = useMemo(() => ({
     currentTrack,
     isPlaying,
     playerState,
     playbackContext,
-    trackPosition,
-    trackDuration,
     spotifyToken,
     spotifyDeviceId,
     spotifyPlayer,
@@ -593,8 +590,6 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     setIsPlaying,
     setPlaybackContext,
     setPlayerState,
-    setTrackPosition,
-    setTrackDuration,
     initializeSpotify,
     onTogglePlay,
     onStop,
@@ -606,7 +601,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     registerStationCallbacks,
     unregisterStationCallbacks,
   }), [
-    currentTrack, isPlaying, playerState, playbackContext, trackPosition, trackDuration,
+    currentTrack, isPlaying, playerState, playbackContext,
     spotifyToken, spotifyDeviceId, spotifyPlayer, playerReady,
     setCurrentTrack, setIsPlaying, initializeSpotify, 
     onTogglePlay, onStop, onNext, onPrevious, onSeek, onDismiss, onResume,
