@@ -749,31 +749,108 @@ export default function StationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Resume playback from saved position (used by auto-resume)
+  async function handleResumeFromSaved() {
+    if (!spotifyPlayer || !spotifyDeviceId || !spotifyToken || !station) return;
+    
+    // Clear pending restore flag
+    hasPendingRestoreRef.current = false;
+    userInitiatedPlaybackRef.current = true;
+    
+    try {
+      await spotifyPlayer.activateElement();
+    } catch (e) {
+      console.log("activateElement error (may be ok):", e);
+    }
+    
+    // Check if we have a saved shuffle queue
+    const savedQueue = station.shuffle_queue;
+    const savedIndex = station.shuffle_queue_index || 0;
+    const savedPosition = station.last_track_position || 0;
+    const savedTrackUri = station.last_track_uri;
+    
+    if (savedQueue && savedQueue.length > 0 && savedTrackUri) {
+      console.log("Resuming from saved queue at index", savedIndex, "position", savedPosition);
+      
+      // Find the track in the queue
+      const trackIndex = savedQueue.indexOf(savedTrackUri);
+      const startIndex = trackIndex >= 0 ? trackIndex : savedIndex;
+      
+      // Get the remaining tracks from this point
+      const remainingTracks = savedQueue.slice(startIndex);
+      
+      if (remainingTracks.length === 0) {
+        console.log("No remaining tracks, starting fresh shuffle");
+        handleShufflePlay();
+        return;
+      }
+      
+      // Transfer playback to our device
+      await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [spotifyDeviceId],
+          play: false,
+        }),
+      });
+      
+      // Start playback with the remaining queue, seeking to saved position
+      const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${spotifyToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: remainingTracks.slice(0, 100),
+          position_ms: savedPosition,
+        }),
+      });
+      
+      if (playRes.ok) {
+        setCurrentPlaylistQueue(savedQueue);
+        setCurrentQueueIndex(startIndex);
+        setIsPlaying(true);
+        setTrackPosition(savedPosition);
+        miniPlayer.setPlayerState("playing");
+        console.log("Resumed playback successfully");
+      } else {
+        console.error("Resume playback failed:", await playRes.text());
+        // Fallback to shuffle play
+        handleShufflePlay();
+      }
+    } else {
+      // No saved queue, just do a regular shuffle play
+      console.log("No saved queue, starting fresh shuffle");
+      handleShufflePlay();
+    }
+  }
+
   // Auto-resume playback when coming from mini player "Resume" button
   const autoResumeTriggeredRef = useRef(false);
   useEffect(() => {
     // Only trigger once, when player is ready and we should auto-resume
     if (!shouldAutoResume || !playerReady || !spotifyPlayer || autoResumeTriggeredRef.current) return;
     
-    // Check if we have saved state to resume (from station's last_track_uri or selected albums/playlists)
-    const hasSelectedAlbums = albums.some(a => a.is_selected);
-    const hasSelectedPlaylists = selectedPlaylists.size > 0;
+    // Check if we have saved state to resume
     const hasSavedTrack = !!station?.last_track_uri;
+    const hasSavedQueue = station?.shuffle_queue && station.shuffle_queue.length > 0;
     
-    if (hasSelectedAlbums || hasSelectedPlaylists || hasSavedTrack) {
+    if (hasSavedTrack || hasSavedQueue) {
       autoResumeTriggeredRef.current = true;
       setShouldAutoResume(false);
       
       // Small delay to ensure everything is ready
       setTimeout(() => {
-        // Trigger shuffle play which will use the already-selected albums/playlists
-        handleShufflePlay();
-        // Update mini player state to playing
-        miniPlayer.setPlayerState("playing");
+        handleResumeFromSaved();
       }, 500);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldAutoResume, playerReady, spotifyPlayer, albums, selectedPlaylists, station?.last_track_uri]);
+  }, [shouldAutoResume, playerReady, spotifyPlayer, station?.last_track_uri, station?.shuffle_queue]);
 
   // Save station state to database (debounced)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);

@@ -57,21 +57,28 @@ const MiniPlayerContext = createContext<MiniPlayerContextType | null>(null);
 
 export function MiniPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrackState] = useState<TrackInfo | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingState, setIsPlayingState] = useState(false);
   const [playerState, setPlayerState] = useState<PlayerState>("hidden");
   const [playbackContext, setPlaybackContext] = useState<PlaybackContext | null>(null);
   const [spotifyToken, setSpotifyToken] = useState<string | null>(null);
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
   
+  // Wrapper for setIsPlaying with deduplication
+  const setIsPlaying = useCallback((playing: boolean) => {
+    if (playing !== isPlayingRef.current) {
+      setIsPlayingState(playing);
+    }
+  }, []);
+  
   // Use refs for values that callbacks need but shouldn't cause callback recreation
-  const isPlayingRef = useRef(isPlaying);
+  const isPlayingRef = useRef(isPlayingState);
   const spotifyTokenRef = useRef(spotifyToken);
   const spotifyDeviceIdRef = useRef(spotifyDeviceId);
   const playbackContextRef = useRef(playbackContext);
   const currentTrackRef = useRef(currentTrack);
   
   // Keep refs in sync
-  isPlayingRef.current = isPlaying;
+  isPlayingRef.current = isPlayingState;
   spotifyTokenRef.current = spotifyToken;
   spotifyDeviceIdRef.current = spotifyDeviceId;
   playbackContextRef.current = playbackContext;
@@ -106,8 +113,13 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  // Persist session when track changes
+  // Persist session when track changes (with deduplication to prevent unnecessary updates)
   const setCurrentTrack = useCallback((track: TrackInfo | null) => {
+    // Only update if track actually changed
+    const current = currentTrackRef.current;
+    if (track === null && current === null) return;
+    if (track && current && track.name === current.name && track.artist === current.artist) return;
+    
     setCurrentTrackState(track);
     
     if (track) {
@@ -127,13 +139,13 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
 
   // Update player state based on isPlaying
   useEffect(() => {
-    if (isPlaying && currentTrack) {
+    if (isPlayingState && currentTrack) {
       setPlayerState("playing");
-    } else if (currentTrack && !isPlaying && playerState === "playing") {
+    } else if (currentTrack && !isPlayingState && playerState === "playing") {
       // Just paused - stay in playing state (will collapse after user interaction or timeout)
       // For now, keep showing full controls when paused
     }
-  }, [isPlaying, currentTrack, playerState]);
+  }, [isPlayingState, currentTrack, playerState]);
 
   const setSpotifyCredentials = useCallback((token: string, deviceId: string) => {
     setSpotifyToken(token);
@@ -161,13 +173,13 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           method: "PUT",
           headers: { "Authorization": `Bearer ${token}` },
         });
-        setIsPlaying(false);
+        setIsPlayingState(false);
       } else {
         await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
           method: "PUT",
           headers: { "Authorization": `Bearer ${token}` },
         });
-        setIsPlaying(true);
+        setIsPlayingState(true);
         setPlayerState("playing");
       }
     } catch (err) {
@@ -187,7 +199,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
       });
-      setIsPlaying(false);
+      setIsPlayingState(false);
       setCurrentTrackState(null);
       setPlaybackContext(null);
       setPlayerState("hidden");
@@ -224,6 +236,9 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // Expose isPlayingState as isPlaying for consumers
+  const isPlaying = isPlayingState;
+  
   const value = useMemo(() => ({
     currentTrack,
     isPlaying,
@@ -241,7 +256,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     onDismiss,
     setPlayerState,
     registerStationCallbacks,
-  }), [currentTrack, isPlaying, playerState, playbackContext, spotifyToken, spotifyDeviceId, setCurrentTrack, setSpotifyCredentials, onTogglePlay, onStop, onNext, onDismiss, registerStationCallbacks]);
+  }), [currentTrack, isPlaying, playerState, playbackContext, spotifyToken, spotifyDeviceId, setCurrentTrack, setIsPlaying, setSpotifyCredentials, onTogglePlay, onStop, onNext, onDismiss, registerStationCallbacks]);
 
   return (
     <MiniPlayerContext.Provider value={value}>
