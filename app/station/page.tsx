@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -129,6 +129,10 @@ const GROUP_COLORS = [
 let globalSpotifyPlayer: SpotifyPlayer | null = null;
 let globalSpotifyDeviceId: string | null = null;
 let globalPlayerInitializing = false;
+
+// Callback refs that the player_state_changed listener will use
+// These get updated when the station page mounts
+let playerStateCallback: ((state: SpotifyPlayerState | null) => void) | null = null;
 
 export default function StationPage() {
   // Get mini player context for syncing track info to other pages
@@ -274,6 +278,58 @@ export default function StationPage() {
     checkSpotifyConnection();
   }, [user]);
 
+  // Handler for player state changes - extracted so we can update the callback ref
+  const handlePlayerStateChange = useCallback((state: SpotifyPlayerState | null) => {
+    if (!state) return;
+    
+    // Ignore all state updates until user explicitly starts playback
+    if (!userInitiatedPlaybackRef.current) return;
+    
+    // Check if we're in the ignore window
+    const now = Date.now();
+    const isIgnoring = now <= ignorePositionUntilRef.current;
+    
+    if (state.paused && isIgnoring) return;
+    
+    setIsPlaying(!state.paused);
+    setTrackDuration(state.duration);
+    
+    if (state.track_window?.current_track) {
+      const track = state.track_window.current_track;
+      const newTrackUri = track.uri;
+      
+      // Update current track
+      setCurrentTrack({
+        name: track.name,
+        artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+        image: track.album.images[0]?.url || "",
+        albumName: track.album.name,
+      });
+      
+      setCurrentlyPlayingTrackUri(prevUri => {
+        if (prevUri && newTrackUri && prevUri !== newTrackUri) {
+          setTrackPosition(0);
+          ignorePositionUntilRef.current = Date.now() + 1500;
+        }
+        return newTrackUri || prevUri;
+      });
+    }
+    
+    if (!isIgnoring && !state.paused) {
+      setTrackPosition(state.position);
+    } else if (state.position < 2000 && !state.paused) {
+      setTrackPosition(state.position);
+    }
+  }, []);
+
+  // Register the callback so the global listener can find it
+  useEffect(() => {
+    playerStateCallback = handlePlayerStateChange;
+    return () => {
+      playerStateCallback = null;
+    };
+  }, [handlePlayerStateChange]);
+
   // Initialize Spotify Web Playback SDK
   useEffect(() => {
     if (!spotifyToken) return;
@@ -288,26 +344,13 @@ export default function StationPage() {
       // Sync current playback state from the existing player
       globalSpotifyPlayer.getCurrentState().then((state) => {
         if (state) {
-          userInitiatedPlaybackRef.current = true; // Music is already playing
-          setIsPlaying(!state.paused);
-          setTrackPosition(state.position);
-          setTrackDuration(state.duration);
-          if (state.track_window?.current_track) {
-            const track = state.track_window.current_track;
-            setCurrentTrack({
-              name: track.name,
-              artist: track.artists.map((a: { name: string }) => a.name).join(", "),
-              image: track.album.images[0]?.url || "",
-              albumName: track.album.name,
-            });
-            setCurrentlyPlayingTrackUri(track.uri);
-          }
+          userInitiatedPlaybackRef.current = true;
+          handlePlayerStateChange(state);
         }
       });
       return;
     }
 
-    // Don't initialize if already initializing
     if (globalPlayerInitializing) {
       console.log("Player already initializing, waiting...");
       return;
@@ -315,7 +358,6 @@ export default function StationPage() {
 
     globalPlayerInitializing = true;
 
-    // Load the Spotify SDK script
     if (!document.getElementById("spotify-sdk")) {
       const script = document.createElement("script");
       script.id = "spotify-sdk";
@@ -328,7 +370,6 @@ export default function StationPage() {
       const player = new window.Spotify.Player({
         name: "Alzooka FM",
         getOAuthToken: (cb) => {
-          // Refresh token if needed
           if (user) {
             fetch(`/api/spotify/token?userId=${user.id}`)
               .then(res => res.json())
@@ -341,7 +382,6 @@ export default function StationPage() {
         volume: 0.5,
       });
 
-      // Error handling
       player.addListener("initialization_error", (e) => {
         const error = e as { message: string };
         console.error("Spotify init error:", error.message);
@@ -360,7 +400,6 @@ export default function StationPage() {
         globalPlayerInitializing = false;
       });
 
-      // Ready
       player.addListener("ready", (e) => {
         const data = e as { device_id: string };
         console.log("Spotify player ready, device ID:", data.device_id);
@@ -371,111 +410,21 @@ export default function StationPage() {
         setPlayerReady(true);
       });
 
-      // Player state changes
+      // Use the callback ref so state updates go to the current component
       player.addListener("player_state_changed", (e) => {
-        const state = e as {
-          paused: boolean;
-          position: number;
-          duration: number;
-          track_window: {
-            current_track: {
-              name: string;
-              uri: string;
-              artists: { name: string }[];
-              album: { name: string; images: { url: string }[] };
-            };
-          };
-        } | null;
-        if (!state) return;
-        
-        // Ignore all state updates until user explicitly starts playback
-        // This prevents Spotify's autoplay from showing ghost tracks
-        if (!userInitiatedPlaybackRef.current) {
-          return;
+        if (playerStateCallback) {
+          playerStateCallback(e as SpotifyPlayerState | null);
         }
-        
-        // Check if we're in the ignore window (e.g., after pressing stop)
-        const now = Date.now();
-        const isIgnoring = now <= ignorePositionUntilRef.current;
-        
-        // If paused and we're ignoring updates, don't update anything (stop was pressed)
-        if (state.paused && isIgnoring) {
-          return;
-        }
-        
-        setIsPlaying(!state.paused);
-        
-        // Check if track changed - if so, reset position to 0
-        const newTrackUri = state.track_window?.current_track?.uri;
-        
-        setTrackDuration(state.duration);
-        if (state.track_window?.current_track) {
-          const track = state.track_window.current_track;
-          const trackUri = track.uri;
-          
-          // Get album name from Spotify and playlist name from our source map
-          setTrackSourceMap(currentSourceMap => {
-            const source = currentSourceMap[trackUri];
-            // Always update currentTrack with Spotify data, even if source map is empty
-            // (source map may be empty after a page refresh/restore)
-            setCurrentTrack({
-              name: track.name,
-              artist: track.artists.map(a => a.name).join(", "),
-              image: track.album.images[0]?.url || "",
-              albumName: track.album.name || source?.albumName,
-              playlistName: source?.playlistName,
-            });
-            return currentSourceMap;
-          });
-          
-          // If track changed, reset position to 0 and ignore stale updates
-          setCurrentlyPlayingTrackUri(prevUri => {
-            if (prevUri && newTrackUri && prevUri !== newTrackUri) {
-              // Track changed! Reset position
-              setTrackPosition(0);
-              ignorePositionUntilRef.current = Date.now() + 1500;
-              
-              // Update queue index if playing from a queue
-              setCurrentPlaylistQueue(currentQueue => {
-                if (currentQueue.length > 0) {
-                  const newIndex = currentQueue.indexOf(newTrackUri);
-                  if (newIndex >= 0) {
-                    setCurrentQueueIndex(newIndex);
-                  }
-                }
-                return currentQueue;
-              });
-              
-              return newTrackUri;
-            }
-            return newTrackUri || prevUri;
-          });
-        }
-        
-        // Only update position if we're not in the "ignore stale position" window
-        // AND we're actually playing (not paused waiting to restore)
-        if (!isIgnoring && !state.paused) {
-          setTrackPosition(state.position);
-        } else if (state.position < 2000 && !state.paused) {
-          // Accept small positions even during ignore window (track just started from beginning)
-          setTrackPosition(state.position);
-        }
-        // If paused and we have a pending restore, don't update position at all
-        // This prevents stale Spotify state from overwriting our saved position
       });
 
       player.connect();
       setSpotifyPlayer(player);
     };
 
-    // If SDK already loaded, initialize
     if (window.Spotify) {
       window.onSpotifyWebPlaybackSDKReady();
     }
-
-    // Don't disconnect player on unmount - we want music to keep playing!
-    // The player persists in globalSpotifyPlayer
-  }, [spotifyToken]);
+  }, [spotifyToken, handlePlayerStateChange]);
 
   useEffect(() => {
     async function init() {
