@@ -315,23 +315,34 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         let lastTrackUri = "";
         let lastPlayingState: boolean | null = null;
         let lastProcessedTime = 0;
-        const MIN_PROCESS_INTERVAL = 250; // Only process events every 250ms max
+        // When ON station page (callbacks registered): process every 250ms for responsive UI
+        // When NOT on station page: only process every 2 seconds to prevent lag
+        const STATION_INTERVAL = 250;
+        const BACKGROUND_INTERVAL = 2000;
         
         player.addListener("player_state_changed", (e) => {
           const state = e as SpotifyPlayerState | null;
           if (!state) return;
           
-          // CRITICAL: Skip most events entirely - only process every 250ms
           const now = Date.now();
           const playing = !state.paused;
           const currentUri = state.track_window?.current_track?.uri || "";
           
-          // Always process pause/play changes immediately (but only if state actually changed)
+          // Check if anything important changed
           const playStateChanged = playing !== lastPlayingState;
           const trackChanged = currentUri && currentUri !== lastTrackUri;
           
+          // Use much longer throttle when not on station page
+          const isOnStationPage = stationCallbacks !== null;
+          const throttleInterval = isOnStationPage ? STATION_INTERVAL : BACKGROUND_INTERVAL;
+          
           // Skip if nothing important changed AND we processed recently
-          if (!playStateChanged && !trackChanged && (now - lastProcessedTime < MIN_PROCESS_INTERVAL)) {
+          if (!playStateChanged && !trackChanged && (now - lastProcessedTime < throttleInterval)) {
+            return;
+          }
+          
+          // For background mode, skip even position callbacks entirely
+          if (!isOnStationPage && !playStateChanged && !trackChanged) {
             return;
           }
           
@@ -349,8 +360,6 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           }
           
           // Only update track info if track changed AND we're not ignoring stale updates
-          // The ignoreTrackUpdatesUntil flag is set when starting new playback
-          // to prevent showing old track info from other devices/sessions
           if (trackChanged && now > ignoreTrackUpdatesUntil) {
             lastTrackUri = currentUri;
             const track = state.track_window.current_track;
@@ -365,22 +374,23 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             // Notify station page (pass duration through callback)
             stationCallbacks?.onTrackChange?.(trackInfo, track.uri);
             
-            // Persist to localStorage
-            const session: PersistedSession = {
-              track: trackInfo,
-              context: playbackContextRef.current,
-              timestamp: Date.now(),
-            };
-            try {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-            } catch (err) {
-              console.error("Failed to persist session:", err);
-            }
+            // Persist to localStorage (defer to prevent blocking)
+            setTimeout(() => {
+              const session: PersistedSession = {
+                track: trackInfo,
+                context: playbackContextRef.current,
+                timestamp: Date.now(),
+              };
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+              } catch (err) {
+                console.error("Failed to persist session:", err);
+              }
+            }, 0);
           }
           
-          // Only notify station page if it's listening (has callbacks registered)
-          // No state updates here - station page manages its own position state
-          if (stationCallbacks?.onPositionChange && (now - lastPositionUpdate.current >= POSITION_THROTTLE)) {
+          // Only notify station page of position if it's listening
+          if (isOnStationPage && stationCallbacks?.onPositionChange && (now - lastPositionUpdate.current >= POSITION_THROTTLE)) {
             lastPositionUpdate.current = now;
             stationCallbacks.onPositionChange(state.position, state.duration);
           }
