@@ -103,3 +103,12 @@ button:disabled {
 .text-muted {
   color: rgba(240, 235, 224, 0.6);
 }
+
+/* Group tag with removable X on hover */
+.group-tag-removable:hover .group-tag-remove-btn {
+  display: inline-flex !important;
+}
+
+.group-tag-remove-btn:hover {
+  background: rgba(0,0,0,0.7) !important;
+}
