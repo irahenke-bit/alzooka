@@ -140,8 +140,8 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   const [spotifyDeviceId, setSpotifyDeviceId] = useState<string | null>(null);
   const [spotifyPlayer, setSpotifyPlayer] = useState<SpotifyPlayer | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
-  const [trackPosition, setTrackPosition] = useState(0);
-  const [trackDuration, setTrackDuration] = useState(0);
+  // NOTE: trackPosition and trackDuration are NOT stored as state here
+  // They would cause constant re-renders. Station page manages its own position state.
   
   // User ID ref for token refresh
   const userIdRef = useRef<string | null>(null);
@@ -193,12 +193,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
       setSpotifyDeviceId(globalDeviceId);
       setPlayerReady(true);
       
-      // Sync state from existing player
+      // Sync state from existing player (only essential state, no position)
       globalPlayer.getCurrentState().then((state) => {
         if (state) {
           setIsPlayingState(!state.paused);
-          setTrackPosition(state.position);
-          setTrackDuration(state.duration);
           if (state.track_window?.current_track) {
             const track = state.track_window.current_track;
             setCurrentTrackState({
@@ -353,9 +351,8 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
               albumName: track.album.name,
             };
             setCurrentTrackState(trackInfo);
-            setTrackDuration(state.duration);
             
-            // Notify station page
+            // Notify station page (pass duration through callback)
             stationCallbacks?.onTrackChange?.(trackInfo, track.uri);
             
             // Persist to localStorage
@@ -371,11 +368,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             }
           }
           
-          // Only update position if station page is listening (has callbacks registered)
-          // This prevents unnecessary state updates when on other pages
+          // Only notify station page if it's listening (has callbacks registered)
+          // No state updates here - station page manages its own position state
           if (stationCallbacks?.onPositionChange && (now - lastPositionUpdate.current >= POSITION_THROTTLE)) {
             lastPositionUpdate.current = now;
-            setTrackPosition(state.position);
             stationCallbacks.onPositionChange(state.position, state.duration);
           }
         });
@@ -455,8 +451,6 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
       setCurrentTrackState(null);
       setPlaybackContext(null);
       setPlayerState("hidden");
-      setTrackPosition(0);
-      setTrackDuration(0);
       localStorage.removeItem(STORAGE_KEY);
       stationCallbacks?.onStop?.();
     } catch (err) {
@@ -496,7 +490,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     
     try {
       await player.seek(position);
-      setTrackPosition(position);
+      // Note: Position state is managed by station page, not context
     } catch (err) {
       console.error("Seek failed:", err);
     }
