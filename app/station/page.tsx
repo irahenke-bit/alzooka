@@ -2795,28 +2795,6 @@ export default function StationPage() {
             </button>
           </div>
           
-          {/* Delete Selected Button - only shows when albums are manually selected (not via groups) */}
-          {manualSelections.size > 0 && activeGroups.size === 0 && (
-            <button
-              onClick={() => setConfirmBulkDelete(true)}
-              style={{
-                padding: "8px 16px",
-                fontSize: 14,
-                fontWeight: 600,
-                background: "#e57373",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              🗑️ Delete Selected ({manualSelections.size})
-            </button>
-          )}
-          
           {/* Add Album Button */}
           <button
             onClick={() => setShowSpotifySearch(true)}
@@ -3366,9 +3344,32 @@ export default function StationPage() {
         }}>
           {/* Left Column: Albums */}
           <div style={{ minWidth: 0 }}>
-            <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600 }}>
-              💿 Albums ({albums.length})
-            </h3>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+                💿 Albums ({albums.length})
+              </h3>
+              {/* Delete Selected Albums Button - only shows when albums are manually selected (not via groups) */}
+              {manualSelections.size > 0 && activeGroups.size === 0 && (
+                <button
+                  onClick={() => setConfirmBulkDelete(true)}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    background: "#e57373",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  🗑️ Delete ({manualSelections.size})
+                </button>
+              )}
+            </div>
             {filteredAlbums.length === 0 ? (
               <div style={{
                 textAlign: "center",
