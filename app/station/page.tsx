@@ -308,6 +308,9 @@ export default function StationPage() {
         console.log("Spotify player ready, device ID:", data.device_id);
         setSpotifyDeviceId(data.device_id);
         setPlayerReady(true);
+        // Share player with global context for mini player on other pages
+        globalPlayer.setSpotifyPlayer(player);
+        globalPlayer.setPlayerReady(true);
       });
 
       // Player state changes

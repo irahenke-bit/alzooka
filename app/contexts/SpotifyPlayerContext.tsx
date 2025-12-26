@@ -88,6 +88,10 @@ interface SpotifyPlayerContextType {
   setTrackDuration: (duration: number) => void;
   setIsPlaying: (playing: boolean) => void;
   
+  // For station page to share its player
+  setSpotifyPlayer: (player: SpotifyPlayer | null) => void;
+  setPlayerReady: (ready: boolean) => void;
+  
   // Refs for ignoring stale updates
   ignorePositionUntilRef: React.MutableRefObject<number>;
 }
@@ -318,6 +322,8 @@ export function SpotifyPlayerProvider({ children }: { children: React.ReactNode 
     setTrackPosition,
     setTrackDuration,
     setIsPlaying,
+    setSpotifyPlayer,
+    setPlayerReady,
     ignorePositionUntilRef,
   };
 
