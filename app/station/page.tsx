@@ -3597,6 +3597,24 @@ export default function StationPage() {
               {/* Action buttons for selected albums - only shows when albums are manually selected (not via groups) */}
               {manualSelections.size > 0 && activeGroups.size === 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {/* Click-outside overlay to close dropdowns */}
+                  {(showAddToGroupDropdown || showRemoveFromGroupDropdown) && (
+                    <div
+                      onClick={() => {
+                        setShowAddToGroupDropdown(false);
+                        setShowRemoveFromGroupDropdown(false);
+                      }}
+                      style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 99,
+                      }}
+                    />
+                  )}
+                  
                   {/* Add to Group Dropdown */}
                   {groups.length > 0 && (
                     <div style={{ position: "relative" }}>
