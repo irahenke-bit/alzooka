@@ -3,7 +3,7 @@
 import React, { memo } from "react";
 import { useMiniPlayer } from "@/app/contexts/MiniPlayerContext";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const MiniPlayer = memo(function MiniPlayer() {
   const { 
@@ -14,9 +14,9 @@ const MiniPlayer = memo(function MiniPlayer() {
     onStop, 
     onNext,
     onDismiss,
+    onResume,
   } = useMiniPlayer();
   const pathname = usePathname();
-  const router = useRouter();
 
   // Don't show on station page (it has its own player)
   if (pathname === "/station") return null;
@@ -74,9 +74,9 @@ const MiniPlayer = memo(function MiniPlayer() {
           </div>
         </div>
 
-        {/* Resume Button - navigates to station to resume */}
+        {/* Resume Button - resumes playback without navigating */}
         <button
-          onClick={() => router.push("/station?resume=true")}
+          onClick={onResume}
           style={{
             padding: "8px 20px",
             background: "#c9a227",

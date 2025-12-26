@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { createBrowserClient } from "@/lib/supabase";
 
 const STORAGE_KEY = "alzooka_mini_player";
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -117,6 +118,7 @@ interface MiniPlayerContextType {
   onPrevious: () => Promise<void>;
   onSeek: (position: number) => Promise<void>;
   onDismiss: () => void;
+  onResume: () => Promise<void>; // Resume playback from collapsed state without navigation
   
   // Station page integration
   registerStationCallbacks: (callbacks: StationCallbacks) => void;
@@ -162,9 +164,12 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   playbackContextRef.current = playbackContext;
   currentTrackRef.current = currentTrack;
   
-  // Throttle position updates
+  // Throttle position updates - only update every 2 seconds to reduce lag
   const lastPositionUpdate = useRef(0);
-  const POSITION_THROTTLE = 500;
+  const POSITION_THROTTLE = 2000;
+  
+  // Supabase client for fetching user
+  const supabase = createBrowserClient();
 
   // Load persisted session on mount
   useEffect(() => {
@@ -304,18 +309,31 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         });
         
         // Player state changes - updates mini player state
+        // Optimized to reduce re-renders
+        let lastTrackUri = "";
+        let lastPlayingState: boolean | null = null;
+        
         player.addListener("player_state_changed", (e) => {
           const state = e as SpotifyPlayerState | null;
           if (!state) return;
           
           const playing = !state.paused;
-          setIsPlayingState(playing);
-          setTrackDuration(state.duration);
+          const currentUri = state.track_window?.current_track?.uri || "";
           
-          // Notify station page
-          stationCallbacks?.onPlayStateChange?.(playing);
+          // Only update playing state if it changed
+          if (playing !== lastPlayingState) {
+            lastPlayingState = playing;
+            setIsPlayingState(playing);
+            stationCallbacks?.onPlayStateChange?.(playing);
+            
+            if (playing) {
+              setPlayerState("playing");
+            }
+          }
           
-          if (state.track_window?.current_track) {
+          // Only update track info if track changed
+          if (currentUri && currentUri !== lastTrackUri) {
+            lastTrackUri = currentUri;
             const track = state.track_window.current_track;
             const trackInfo: TrackInfo = {
               name: track.name,
@@ -324,11 +342,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
               albumName: track.album.name,
             };
             setCurrentTrackState(trackInfo);
-            
-            // Update player state
-            if (playing) {
-              setPlayerState("playing");
-            }
+            setTrackDuration(state.duration);
             
             // Notify station page
             stationCallbacks?.onTrackChange?.(trackInfo, track.uri);
@@ -346,7 +360,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             }
           }
           
-          // Throttle position updates
+          // Throttle position updates heavily - only needed for station page progress bar
           const now = Date.now();
           if (now - lastPositionUpdate.current >= POSITION_THROTTLE) {
             lastPositionUpdate.current = now;
@@ -485,6 +499,68 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // Resume playback from collapsed state (after refresh) without navigating
+  const onResume = useCallback(async () => {
+    try {
+      // Get the current user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        console.error("No user session for resume");
+        return;
+      }
+      
+      const userId = session.user.id;
+      
+      // Initialize Spotify if not ready
+      if (!globalPlayer || !globalDeviceId) {
+        await initializeSpotify(userId);
+        
+        // Wait for player to be ready (poll for up to 5 seconds)
+        let attempts = 0;
+        while ((!globalPlayer || !globalDeviceId) && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        if (!globalPlayer || !globalDeviceId) {
+          console.error("Failed to initialize Spotify player for resume");
+          return;
+        }
+      }
+      
+      // Get fresh token
+      const tokenRes = await fetch(`/api/spotify/token?userId=${userId}`);
+      if (!tokenRes.ok) {
+        console.error("Failed to get Spotify token for resume");
+        return;
+      }
+      const tokenData = await tokenRes.json();
+      const token = tokenData.access_token;
+      
+      // Activate element (needed for autoplay policy)
+      try {
+        await globalPlayer.activateElement();
+      } catch (e) {
+        console.log("activateElement error (may be ok):", e);
+      }
+      
+      // Resume playback on our device
+      const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${globalDeviceId}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      
+      if (res.ok || res.status === 204) {
+        setPlayerState("playing");
+        setIsPlayingState(true);
+      } else {
+        console.error("Resume playback failed:", await res.text());
+      }
+    } catch (err) {
+      console.error("Resume failed:", err);
+    }
+  }, [initializeSpotify, supabase]);
+
   const isPlaying = isPlayingState;
   
   const value = useMemo(() => ({
@@ -511,13 +587,14 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     onPrevious,
     onSeek,
     onDismiss,
+    onResume,
     registerStationCallbacks,
     unregisterStationCallbacks,
   }), [
     currentTrack, isPlaying, playerState, playbackContext, trackPosition, trackDuration,
     spotifyToken, spotifyDeviceId, spotifyPlayer, playerReady,
     setCurrentTrack, setIsPlaying, initializeSpotify, 
-    onTogglePlay, onStop, onNext, onPrevious, onSeek, onDismiss,
+    onTogglePlay, onStop, onNext, onPrevious, onSeek, onDismiss, onResume,
     registerStationCallbacks, unregisterStationCallbacks,
   ]);
 
