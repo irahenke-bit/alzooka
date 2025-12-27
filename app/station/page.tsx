@@ -4306,8 +4306,14 @@ export default function StationPage() {
             )}
 
             {/* Expanded Tracks Section - Rendered outside the grid */}
+            {expandedAlbums.size > 0 && (
+              <div style={{ padding: 10, background: "red", color: "white", marginTop: 16 }}>
+                DEBUG: {expandedAlbums.size} album(s) expanded: {Array.from(expandedAlbums).join(", ")}
+              </div>
+            )}
             {Array.from(expandedAlbums).map(expandedAlbumId => {
               const album = albums.find(a => a.id === expandedAlbumId);
+              console.log("Expanded album lookup:", expandedAlbumId, "found:", !!album);
               if (!album) return null;
               
               const tracks = albumTracks[expandedAlbumId];
