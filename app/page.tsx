@@ -2225,7 +2225,15 @@ function FeedContent() {
       {openModalPosts.map((modalData, index) => {
         const { modalId, post: modalPost } = modalData;
         const modalWindow = postModals.openModals.find(m => m.postId === modalPost.id);
-        const isTopModal = index === openModalPosts.length - 1;
+        // Use the context's modal ID for all context operations
+        const contextModalId = modalWindow?.id || modalId;
+        // Determine if this is the topmost modal by comparing zIndex values
+        const thisZIndex = modalWindow?.zIndex ?? (10000 + index);
+        const maxZIndex = Math.max(...openModalPosts.map((m, i) => {
+          const mw = postModals.openModals.find(w => w.postId === m.post.id);
+          return mw?.zIndex ?? (10000 + i);
+        }));
+        const isTopModal = thisZIndex === maxZIndex;
         
         return user && (
           <PostModal
@@ -2238,14 +2246,14 @@ function FeedContent() {
             onVote={handleVote}
             highlightCommentId={isTopModal ? highlightCommentId : null}
             onClose={() => closePostModal(modalId)}
-            // Multi-window props
-            modalId={modalId}
+            // Multi-window props - use context's ID for context operations
+            modalId={contextModalId}
             initialPosition={modalWindow?.position}
             initialSize={modalWindow?.size}
             zIndex={modalWindow?.zIndex ?? (10000 + index)}
-            onBringToFront={() => postModals.bringToFront(modalId)}
-            onPositionChange={(pos) => postModals.updateModalPosition(modalId, pos)}
-            onSizeChange={(size) => postModals.updateModalSize(modalId, size)}
+            onBringToFront={() => postModals.bringToFront(contextModalId)}
+            onPositionChange={(pos) => postModals.updateModalPosition(contextModalId, pos)}
+            onSizeChange={(size) => postModals.updateModalSize(contextModalId, size)}
             hideBackdrop={!isTopModal} // Only show backdrop for topmost modal
             seeThroughMode={postModals.seeThroughMode}
             onToggleSeeThroughMode={postModals.toggleSeeThroughMode}
