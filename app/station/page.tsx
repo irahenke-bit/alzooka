@@ -528,8 +528,38 @@ export default function StationPage() {
           setSelectAll(albumsData.length > 0 && albumsData.every(a => savedIds.has(a.id)));
         }
         
-        // Restore last playing track info (for display only - won't auto-play)
-        if (stationData.last_track_uri && stationData.last_track_name) {
+        // Restore last playing track info - but ONLY if Spotify player is not currently playing
+        // If player is playing, we should sync from the player (done in separate effect), not from stale DB values
+        const player = miniPlayer.spotifyPlayer;
+        let playerIsActive = false;
+        if (player) {
+          try {
+            const playerState = await player.getCurrentState();
+            if (playerState && !playerState.paused) {
+              playerIsActive = true;
+              console.log("[Station] Player is active, syncing from player instead of database");
+              // Sync from actual player state
+              setTrackPosition(playerState.position);
+              setTrackDuration(playerState.duration);
+              if (playerState.track_window?.current_track) {
+                const track = playerState.track_window.current_track;
+                setCurrentTrack({
+                  name: track.name,
+                  artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+                  image: track.album.images[0]?.url || "",
+                  albumName: track.album.name,
+                });
+                setCurrentlyPlayingTrackUri(track.uri);
+              }
+            }
+          } catch (err) {
+            console.log("[Station] Could not get player state:", err);
+          }
+        }
+        
+        // Only restore from database if player is NOT active
+        if (!playerIsActive && stationData.last_track_uri && stationData.last_track_name) {
+          console.log("[Station] Player not active, restoring from database");
           setCurrentTrack({
             name: stationData.last_track_name,
             artist: stationData.last_track_artist || "",
