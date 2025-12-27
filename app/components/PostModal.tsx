@@ -738,6 +738,36 @@ export function PostModal({
     };
   }
 
+  // Handle drag from anywhere on empty background
+  function handleBackgroundDragStart(e: React.MouseEvent) {
+    // Only start drag on left click
+    if (e.button !== 0) return;
+    
+    // Check if clicked on an interactive element - don't drag from those
+    const target = e.target as HTMLElement;
+    const interactiveElements = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'IMG', 'IFRAME'];
+    
+    // Check the element and its parents up to 3 levels for interactive elements
+    let element: HTMLElement | null = target;
+    for (let i = 0; i < 5 && element; i++) {
+      if (interactiveElements.includes(element.tagName)) return;
+      if (element.getAttribute('role') === 'button') return;
+      if (element.classList.contains('vote-button')) return;
+      if (element.onclick) return;
+      element = element.parentElement;
+    }
+    
+    e.preventDefault();
+    setIsDragging(true);
+    
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      modalX: modalPosition?.x ?? 0,
+      modalY: modalPosition?.y ?? 0,
+    };
+  }
+
   // Resize handlers
   function handleResizeStart(e: React.MouseEvent, direction: string) {
     if (e.button !== 0) return;
@@ -1784,10 +1814,12 @@ export function PostModal({
         <div
           ref={commentsContainerRef}
           onClick={clearHighlight}
+          onMouseDown={handleBackgroundDragStart}
           style={{
             flex: 1,
             overflowY: "auto",
             padding: "20px",
+            cursor: isDragging ? "grabbing" : undefined,
           }}
         >
           {/* Post Content */}
@@ -2146,11 +2178,13 @@ export function PostModal({
 
         {/* Fixed Comment Input at Bottom */}
         <div
+          onMouseDown={handleBackgroundDragStart}
           style={{
             padding: "16px 20px",
             borderTop: "1px solid rgba(240, 235, 224, 0.1)",
             background: "var(--alzooka-teal-light)",
             borderRadius: "0 0 12px 12px",
+            cursor: isDragging ? "grabbing" : undefined,
           }}
         >
           {isUserBanned ? (
