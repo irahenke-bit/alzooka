@@ -129,18 +129,47 @@ export default function GlobalModalsRenderer() {
     setLoadingPosts(prev => new Set([...prev, ...postIdsToFetch]));
     
     async function fetchPosts() {
+      console.log("GlobalModalsRenderer: Fetching posts with IDs:", postIdsToFetch);
+      
       const { data, error } = await supabase
         .from("posts")
         .select(`
-          *,
-          users(username, display_name, avatar_url),
-          wall_user:wall_user_id(username, display_name, avatar_url),
-          comments(
-            *,
-            users(username, display_name, avatar_url)
+          id,
+          content,
+          image_url,
+          image_urls,
+          video_url,
+          wall_user_id,
+          created_at,
+          edited_at,
+          edit_history,
+          user_id,
+          users!posts_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          wall_user:users!posts_wall_user_id_fkey (
+            username,
+            display_name,
+            avatar_url
+          ),
+          comments (
+            id,
+            content,
+            created_at,
+            user_id,
+            parent_comment_id,
+            users (
+              username,
+              display_name,
+              avatar_url
+            )
           )
         `)
         .in("id", postIdsToFetch);
+      
+      console.log("GlobalModalsRenderer: Fetch result - data:", data, "error:", error);
       
       if (error) {
         console.error("Error fetching posts for modals:", error);
@@ -155,8 +184,21 @@ export default function GlobalModalsRenderer() {
       if (data) {
         const newPostsData: Record<string, Post> = {};
         data.forEach(p => {
-          const commentsWithReplies = buildCommentTreeRecursive(p.comments || []);
-          newPostsData[p.id] = { ...p, comments: commentsWithReplies };
+          // Transform comments to handle Supabase's array format for users
+          const transformedComments = (p.comments || []).map((c: any) => ({
+            ...c,
+            users: Array.isArray(c.users) ? c.users[0] : c.users,
+          }));
+          const commentsWithReplies = buildCommentTreeRecursive(transformedComments as Comment[]);
+          
+          // Transform post user and wall_user
+          const transformedPost = {
+            ...p,
+            users: Array.isArray(p.users) ? p.users[0] : p.users,
+            wall_user: Array.isArray(p.wall_user) ? p.wall_user[0] : p.wall_user,
+            comments: commentsWithReplies,
+          };
+          newPostsData[p.id] = transformedPost as Post;
         });
         
         setPostsData(prev => ({ ...prev, ...newPostsData }));
