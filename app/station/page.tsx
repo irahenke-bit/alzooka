@@ -134,6 +134,7 @@ export default function StationPage() {
   
   // Playlist state
   const [playlists, setPlaylists] = useState<StationPlaylist[]>([]);
+  const [activeTab, setActiveTab] = useState<"albums" | "playlists">("albums");
   const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
@@ -3731,13 +3732,46 @@ export default function StationPage() {
           </div>
         )}
 
-        {/* Two Column Layout: Albums (left) + Playlists (right) */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: playlists.length > 0 ? "1fr 1px 1fr" : "1fr",
-          gap: 24, 
-          alignItems: "start",
-        }}>
+        {/* Tab Navigation for Albums / Playlists */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(240, 235, 224, 0.15)" }}>
+            <button
+              onClick={() => setActiveTab("albums")}
+              style={{
+                padding: "12px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                background: activeTab === "albums" ? "rgba(30, 215, 96, 0.15)" : "transparent",
+                color: activeTab === "albums" ? "#1DB954" : "rgba(240, 235, 224, 0.6)",
+                border: "none",
+                borderBottom: activeTab === "albums" ? "2px solid #1DB954" : "2px solid transparent",
+                cursor: "pointer",
+                marginBottom: -1,
+              }}
+            >
+              Albums ({albums.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("playlists")}
+              style={{
+                padding: "12px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                background: activeTab === "playlists" ? "rgba(201, 162, 39, 0.15)" : "transparent",
+                color: activeTab === "playlists" ? "#c9a227" : "rgba(240, 235, 224, 0.6)",
+                border: "none",
+                borderBottom: activeTab === "playlists" ? "2px solid #c9a227" : "2px solid transparent",
+                cursor: "pointer",
+                marginBottom: -1,
+              }}
+            >
+              Playlists ({playlists.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Content based on active tab */}
+        <div style={{ display: activeTab === "albums" ? "block" : "none" }}>
           {/* Left Column: Albums */}
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -4313,16 +4347,12 @@ export default function StationPage() {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Divider */}
-          {playlists.length > 0 && (
-            <div style={{ width: 1, background: "rgba(240, 235, 224, 0.2)", alignSelf: "stretch" }} />
-          )}
-
-          {/* Right Column: Playlists */}
-          {playlists.length > 0 && (
-            <div style={{ minWidth: 0 }}>
-              {/* Remove from Playlist Bar */}
+        {/* Playlists Tab Content */}
+        <div style={{ display: activeTab === "playlists" ? "block" : "none" }}>
+          <div style={{ minWidth: 0 }}>
+            {/* Remove from Playlist Bar */}
               {tracksToRemove && tracksToRemove.trackUris.size > 0 && (
                 <div style={{
                   background: "rgba(229, 115, 115, 0.15)",
@@ -4804,8 +4834,7 @@ export default function StationPage() {
                   );
                 })}
               </div>
-            </div>
-          )}
+          </div>
         </div>
 
       </div>
