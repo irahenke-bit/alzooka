@@ -446,6 +446,11 @@ export function PostModal({
   const [submitting, setSubmitting] = useState(false);
   const [showEditHistory, setShowEditHistory] = useState(false);
   const [mounted, setMounted] = useState(false);
+  
+  // Draggable modal state
+  const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; modalX: number; modalY: number } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
@@ -674,6 +679,51 @@ export function PostModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  // Drag handlers for moveable modal
+  useEffect(() => {
+    if (!isDragging) return;
+    
+    function handleMouseMove(e: MouseEvent) {
+      if (!dragStartRef.current) return;
+      
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      
+      setModalPosition({
+        x: dragStartRef.current.modalX + deltaX,
+        y: dragStartRef.current.modalY + deltaY,
+      });
+    }
+    
+    function handleMouseUp() {
+      setIsDragging(false);
+      dragStartRef.current = null;
+    }
+    
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
+
+  function handleDragStart(e: React.MouseEvent) {
+    // Only start drag on left click
+    if (e.button !== 0) return;
+    
+    e.preventDefault();
+    setIsDragging(true);
+    
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      modalX: modalPosition?.x ?? 0,
+      modalY: modalPosition?.y ?? 0,
+    };
+  }
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -1426,11 +1476,15 @@ export function PostModal({
           display: "flex",
           flexDirection: "column",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          animation: "modalSlideIn 0.2s ease-out",
+          animation: modalPosition ? "none" : "modalSlideIn 0.2s ease-out",
+          // Apply position transform if dragged
+          transform: modalPosition ? `translate(${modalPosition.x}px, ${modalPosition.y}px)` : undefined,
+          cursor: isDragging ? "grabbing" : undefined,
         }}
       >
-        {/* Modal Header */}
+        {/* Modal Header - Draggable */}
         <div
+          onMouseDown={handleDragStart}
           style={{
             padding: "16px 20px",
             borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
@@ -1438,6 +1492,8 @@ export function PostModal({
             justifyContent: "center",
             alignItems: "center",
             position: "relative",
+            cursor: isDragging ? "grabbing" : "grab",
+            userSelect: "none",
           }}
         >
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--alzooka-cream)" }}>
