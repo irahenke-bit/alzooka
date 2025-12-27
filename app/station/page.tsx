@@ -1942,9 +1942,9 @@ export default function StationPage() {
       console.log("Activating player element");
       await spotifyPlayer.activateElement();
       
-      // First, transfer playback to our device
+      // Start transfer and track fetching in parallel for faster startup
       console.log("Transferring playback to device:", spotifyDeviceId);
-      const transferRes = await fetch("https://api.spotify.com/v1/me/player", {
+      const transferPromise = fetch("https://api.spotify.com/v1/me/player", {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${spotifyToken}`,
@@ -1954,20 +1954,33 @@ export default function StationPage() {
           device_ids: [spotifyDeviceId],
           play: false,
         }),
-      });
-      console.log("Transfer response:", transferRes.status);
-      if (!transferRes.ok && transferRes.status !== 204) {
-        const err = await transferRes.text();
-        console.error("Transfer failed:", err);
-      }
+      }).then(res => {
+        console.log("Transfer response:", res.status);
+        if (!res.ok && res.status !== 204) {
+          res.text().then(err => console.error("Transfer failed:", err));
+        }
+      }).catch(err => console.error("Transfer error:", err));
 
-      // Fetch tracks from all selected albums and build source map
+      // Fetch tracks from all selected albums and playlists IN PARALLEL
       console.log("Fetching tracks from albums...");
       const trackUriSet = new Set<string>(); // Use Set to deduplicate
       const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
       
-      // First, collect tracks from albums
-      for (const album of selectedAlbums) {
+      // First, collect tracks from albums - use cache when available, fetch missing in parallel
+      const albumsNeedingFetch = selectedAlbums.filter(a => !albumTracks[a.id]);
+      const albumsFromCache = selectedAlbums.filter(a => albumTracks[a.id]);
+      
+      // Add cached album tracks immediately
+      for (const album of albumsFromCache) {
+        const cachedTracks = albumTracks[album.id];
+        cachedTracks.forEach((t: SpotifyTrack) => {
+          trackUriSet.add(t.uri);
+          newSourceMap[t.uri] = { albumName: album.spotify_name };
+        });
+      }
+      
+      // Fetch missing album tracks in parallel
+      const albumFetchPromises = albumsNeedingFetch.map(async (album) => {
         const albumId = album.spotify_uri.split(":")[2];
         try {
           const tracksRes = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`, {
@@ -1975,47 +1988,79 @@ export default function StationPage() {
           });
           if (tracksRes.ok) {
             const tracksData = await tracksRes.json();
-            tracksData.items.forEach((t: { uri: string }) => {
-              trackUriSet.add(t.uri);
-              // Store album source (will be overwritten if also in playlist)
-              newSourceMap[t.uri] = { albumName: album.spotify_name };
-            });
+            return { album, tracks: tracksData.items as { uri: string }[] };
           }
         } catch (e) {
           console.error("Failed to fetch tracks for album:", albumId, e);
         }
-      }
+        return null;
+      });
       
       // Also include tracks from selected playlists or playlists in active groups
       const activeGroupIds = Array.from(activeGroups);
-      for (const playlist of playlists) {
+      const playlistsToInclude = playlists.filter(playlist => {
         const pGroups = playlistGroups[playlist.id] || [];
         const isSelected = selectedPlaylists.has(playlist.id);
         const isInActiveGroup = activeGroupIds.length > 0 && pGroups.some(gid => activeGroupIds.includes(gid));
-        
-        if (isSelected || isInActiveGroup) {
-          // Load playlist tracks if not already loaded
-          let tracks = playlistTracks[playlist.id];
-          if (!tracks) {
-            const { data } = await supabase
-              .from("station_playlist_tracks")
-              .select("spotify_uri, spotify_album")
-              .eq("playlist_id", playlist.id);
-            if (data) {
-              tracks = data.map(t => ({ uri: t.spotify_uri, name: "", artist: "", album: t.spotify_album || "", image: "", duration_ms: 0 }));
-            }
-          }
-          if (tracks) {
-            tracks.forEach(t => {
-              trackUriSet.add(t.uri);
-              // Add playlist info, preserving album if already known
-              const existing = newSourceMap[t.uri];
-              newSourceMap[t.uri] = {
-                albumName: existing?.albumName || t.album || "",
-                playlistName: playlist.name,
-              };
-            });
-          }
+        return isSelected || isInActiveGroup;
+      });
+      
+      // Separate cached vs needs fetch for playlists
+      const playlistsFromCache = playlistsToInclude.filter(p => playlistTracks[p.id]);
+      const playlistsNeedingFetch = playlistsToInclude.filter(p => !playlistTracks[p.id]);
+      
+      // Add cached playlist tracks immediately
+      for (const playlist of playlistsFromCache) {
+        const cachedTracks = playlistTracks[playlist.id];
+        cachedTracks.forEach(t => {
+          trackUriSet.add(t.uri);
+          const existing = newSourceMap[t.uri];
+          newSourceMap[t.uri] = {
+            albumName: existing?.albumName || t.album || "",
+            playlistName: playlist.name,
+          };
+        });
+      }
+      
+      // Fetch missing playlist tracks in parallel
+      const playlistFetchPromises = playlistsNeedingFetch.map(async (playlist) => {
+        const { data } = await supabase
+          .from("station_playlist_tracks")
+          .select("spotify_uri, spotify_album")
+          .eq("playlist_id", playlist.id);
+        if (data) {
+          return { playlist, tracks: data.map(t => ({ uri: t.spotify_uri, album: t.spotify_album || "" })) };
+        }
+        return null;
+      });
+      
+      // Wait for all fetches to complete in parallel
+      const [albumResults, playlistResults] = await Promise.all([
+        Promise.all(albumFetchPromises),
+        Promise.all(playlistFetchPromises),
+      ]);
+      
+      // Process album fetch results
+      for (const result of albumResults) {
+        if (result) {
+          result.tracks.forEach((t: { uri: string }) => {
+            trackUriSet.add(t.uri);
+            newSourceMap[t.uri] = { albumName: result.album.spotify_name };
+          });
+        }
+      }
+      
+      // Process playlist fetch results
+      for (const result of playlistResults) {
+        if (result) {
+          result.tracks.forEach(t => {
+            trackUriSet.add(t.uri);
+            const existing = newSourceMap[t.uri];
+            newSourceMap[t.uri] = {
+              albumName: existing?.albumName || t.album || "",
+              playlistName: result.playlist.name,
+            };
+          });
         }
       }
       
@@ -2037,6 +2082,9 @@ export default function StationPage() {
         [shuffledTracks[i], shuffledTracks[j]] = [shuffledTracks[j], shuffledTracks[i]];
       }
       console.log("Shuffled tracks, starting playback with", shuffledTracks.length, "tracks");
+      
+      // Wait for transfer to complete before playing
+      await transferPromise;
       
       // Pause any current playback first to clear old position state
       console.log("Pausing current playback before starting new shuffle");
@@ -2083,24 +2131,31 @@ export default function StationPage() {
       });
       miniPlayer.setPlayerState("playing");
       
-      // Immediately save state to database (don't rely on debounce for critical playback changes)
-      // We need to save the shuffled tracks queue right away
+      // Save state to database in background (don't block playback start)
       if (station) {
         const selectedAlbumIds = Array.from(manualSelections);
         const selectedPlaylistIds = Array.from(selectedPlaylists);
         const activeGroupIdsList = Array.from(activeGroups);
         
-        await supabase
-          .from("stations")
-          .update({
-            selected_album_ids: selectedAlbumIds,
-            selected_playlist_ids: selectedPlaylistIds,
-            active_group_ids: activeGroupIdsList,
-            shuffle_queue: shuffledTracks,
-            shuffle_queue_index: 0,
-            state_updated_at: new Date().toISOString(),
-          })
-          .eq("id", station.id);
+        // Fire and forget - don't await
+        (async () => {
+          try {
+            await supabase
+              .from("stations")
+              .update({
+                selected_album_ids: selectedAlbumIds,
+                selected_playlist_ids: selectedPlaylistIds,
+                active_group_ids: activeGroupIdsList,
+                shuffle_queue: shuffledTracks,
+                shuffle_queue_index: 0,
+                state_updated_at: new Date().toISOString(),
+              })
+              .eq("id", station.id);
+            console.log("Station state saved");
+          } catch (err) {
+            console.error("Failed to save station state:", err);
+          }
+        })();
       }
     } catch (err) {
       console.error("Playback error:", err);
