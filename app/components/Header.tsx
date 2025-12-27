@@ -75,6 +75,10 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
   return (
     <header
       style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+        background: "var(--alzooka-teal)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
