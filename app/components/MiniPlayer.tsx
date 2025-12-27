@@ -11,6 +11,7 @@ const MiniPlayer = memo(function MiniPlayer() {
     isPlaying, 
     playerState,
     playerReady,
+    playbackContext,
     onTogglePlay, 
     onStop, 
     onNext,
@@ -18,6 +19,9 @@ const MiniPlayer = memo(function MiniPlayer() {
     onResume,
   } = useMiniPlayer();
   const pathname = usePathname();
+  
+  // Get source station info if playing from someone else's station
+  const sourceStation = playbackContext?.sourceStation;
 
   // Global spacebar handler for play/pause
   useEffect(() => {
@@ -215,6 +219,21 @@ const MiniPlayer = memo(function MiniPlayer() {
           {currentTrack.artist}
           {currentTrack.albumName && ` • ${currentTrack.albumName}`}
         </div>
+        {/* Source station indicator */}
+        {sourceStation && (
+          <div
+            style={{
+              fontSize: 11,
+              color: "#1DB954",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              marginTop: 2,
+            }}
+          >
+            Playing from {sourceStation.displayName}&apos;s Station
+          </div>
+        )}
       </div>
 
       {/* Controls */}
@@ -314,22 +333,36 @@ const MiniPlayer = memo(function MiniPlayer() {
         ✕
       </button>
 
-      {/* Open Station Link */}
+      {/* Open Station Link - goes to source station if playing from someone else's */}
       <Link
-        href="/station"
+        href={sourceStation ? `/station/${sourceStation.username}` : "/station"}
         style={{
           padding: "8px 16px",
-          background: "rgba(201, 162, 39, 0.2)",
-          border: "1px solid rgba(201, 162, 39, 0.4)",
+          background: sourceStation 
+            ? "rgba(30, 215, 96, 0.2)" 
+            : "rgba(201, 162, 39, 0.2)",
+          border: sourceStation
+            ? "1px solid rgba(30, 215, 96, 0.4)"
+            : "1px solid rgba(201, 162, 39, 0.4)",
           borderRadius: 20,
-          color: "#c9a227",
+          color: sourceStation ? "#1DB954" : "#c9a227",
           fontSize: 12,
           fontWeight: 600,
           textDecoration: "none",
           whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
         }}
       >
-        Open Station
+        {sourceStation && sourceStation.avatarUrl && (
+          <img 
+            src={sourceStation.avatarUrl} 
+            alt="" 
+            style={{ width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }}
+          />
+        )}
+        {sourceStation ? `${sourceStation.displayName}'s Station` : "Open Station"}
       </Link>
     </div>
   );

@@ -503,6 +503,11 @@ export default function ViewStationPage() {
         miniPlayer.setPlaybackContext({
           type: "shuffle_group",
           trackUris: allTracks.slice(0, 100),
+          sourceStation: stationOwner ? {
+            username: stationOwner.username,
+            displayName: stationOwner.display_name || stationOwner.username,
+            avatarUrl: stationOwner.avatar_url || undefined,
+          } : undefined,
         });
         miniPlayer.setPlayerState("playing");
       }
@@ -581,6 +586,11 @@ export default function ViewStationPage() {
         miniPlayer.setPlaybackContext({
           type: "shuffle_group",
           trackUris: allTracks.slice(0, 100),
+          sourceStation: stationOwner ? {
+            username: stationOwner.username,
+            displayName: stationOwner.display_name || stationOwner.username,
+            avatarUrl: stationOwner.avatar_url || undefined,
+          } : undefined,
         });
         miniPlayer.setPlayerState("playing");
       }
@@ -641,6 +651,11 @@ export default function ViewStationPage() {
           type: "album",
           uri: album.spotify_uri,
           trackUris,
+          sourceStation: stationOwner ? {
+            username: stationOwner.username,
+            displayName: stationOwner.display_name || stationOwner.username,
+            avatarUrl: stationOwner.avatar_url || undefined,
+          } : undefined,
         });
         miniPlayer.setPlayerState("playing");
       }

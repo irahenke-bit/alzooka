@@ -66,6 +66,12 @@ export interface PlaybackContext {
   uri?: string;
   groupId?: string;
   trackUris?: string[];
+  // Source station info (when playing from someone else's station)
+  sourceStation?: {
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+  };
 }
 
 interface PersistedSession {
