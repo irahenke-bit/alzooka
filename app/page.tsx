@@ -9,7 +9,6 @@ import { Logo } from "@/app/components/Logo";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import Header from "@/app/components/Header";
-import { PostModal } from "@/app/components/PostModal";
 import { usePostModals } from "@/app/contexts/PostModalsContext";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
@@ -193,39 +192,11 @@ function FeedContent() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  // Multi-window modal support - array of open posts with their modal IDs
-  const [openModalPosts, setOpenModalPosts] = useState<Array<{ modalId: string; post: Post }>>([]);
   const postModals = usePostModals();
   
-  // Helper to open a post in a modal window
+  // Helper to open a post in a modal window (handled globally by GlobalModalsRenderer)
   const openPostModal = (post: Post) => {
-    // Check if already open in our local state
-    const existing = openModalPosts.find(m => m.post.id === post.id);
-    if (existing) {
-      postModals.bringToFront(existing.modalId);
-      return;
-    }
-    
-    // Try to open via context (handles max check and shows message if at limit)
-    const success = postModals.openModal(post.id);
-    if (success) {
-      // Generate a unique modal ID
-      const modalId = `modal-${Date.now()}-${post.id}`;
-      setOpenModalPosts(prev => [...prev, { modalId, post }]);
-    }
-  };
-  
-  // Helper to close a modal
-  const closePostModal = (modalId: string) => {
-    postModals.closeModal(modalId);
-    setOpenModalPosts(prev => prev.filter(m => m.modalId !== modalId));
-  };
-  
-  // Helper to update a specific modal's post data
-  const updateModalPost = (postId: string, updater: (post: Post) => Post) => {
-    setOpenModalPosts(prev => prev.map(m => 
-      m.post.id === postId ? { ...m, post: updater(m.post) } : m
-    ));
+    postModals.openModal(post.id);
   };
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -728,18 +699,7 @@ function FeedContent() {
     };
   }, []);
 
-  // Global escape key handler - closes the topmost modal
-  useEffect(() => {
-    function handleGlobalEscape(e: KeyboardEvent) {
-      if (e.key === "Escape" && openModalPosts.length > 0) {
-        // Close the most recently opened modal (last in array)
-        const lastModal = openModalPosts[openModalPosts.length - 1];
-        closePostModal(lastModal.modalId);
-      }
-    }
-    window.addEventListener("keydown", handleGlobalEscape);
-    return () => window.removeEventListener("keydown", handleGlobalEscape);
-  }, [openModalPosts]);
+  // Note: Global escape key handling is now done in GlobalModalsRenderer
 
   // Handle URL param changes for comment highlighting (e.g., from notification clicks)
   useEffect(() => {
@@ -2221,117 +2181,7 @@ function FeedContent() {
         })()}
       </div>
 
-      {/* Multi-Window Post Modals */}
-      {openModalPosts.map((modalData, index) => {
-        const { modalId, post: modalPost } = modalData;
-        const modalWindow = postModals.openModals.find(m => m.postId === modalPost.id);
-        // Use the context's modal ID for all context operations
-        const contextModalId = modalWindow?.id || modalId;
-        // Determine if this is the topmost modal by comparing zIndex values
-        const thisZIndex = modalWindow?.zIndex ?? (10000 + index);
-        const maxZIndex = Math.max(...openModalPosts.map((m, i) => {
-          const mw = postModals.openModals.find(w => w.postId === m.post.id);
-          return mw?.zIndex ?? (10000 + i);
-        }));
-        const isTopModal = thisZIndex === maxZIndex;
-        
-        return user && (
-          <PostModal
-            key={modalId}
-            post={modalPost}
-            user={user}
-            supabase={supabase}
-            votes={votes}
-            voteTotals={voteTotals}
-            onVote={handleVote}
-            highlightCommentId={isTopModal ? highlightCommentId : null}
-            onClose={() => closePostModal(modalId)}
-            // Multi-window props - use context's ID for context operations
-            modalId={contextModalId}
-            initialPosition={modalWindow?.position}
-            initialSize={modalWindow?.size}
-            zIndex={modalWindow?.zIndex ?? (10000 + index)}
-            onBringToFront={() => postModals.bringToFront(contextModalId)}
-            onPositionChange={(pos) => postModals.updateModalPosition(contextModalId, pos)}
-            onSizeChange={(size) => postModals.updateModalSize(contextModalId, size)}
-            hideBackdrop={!isTopModal} // Only show backdrop for topmost modal
-            seeThroughMode={postModals.seeThroughMode}
-            onToggleSeeThroughMode={postModals.toggleSeeThroughMode}
-            onCommentAdded={(newComment, deletedCommentId) => {
-              if (newComment) {
-                // Optimistically add the new comment to this modal's post
-                setOpenModalPosts(prev => prev.map(m => {
-                  if (m.modalId !== modalId) return m;
-                  
-                  const updatedComments = [...(m.post.comments || [])];
-                  
-                  if (newComment.parent_comment_id) {
-                    // It's a reply - find the parent and add to its replies
-                    const addReplyToParent = (comments: Comment[]): Comment[] => {
-                      return comments.map(c => {
-                        if (c.id === newComment.parent_comment_id) {
-                          return {
-                            ...c,
-                            replies: [...(c.replies || []), newComment]
-                          };
-                        }
-                        if (c.replies && c.replies.length > 0) {
-                          return {
-                            ...c,
-                            replies: addReplyToParent(c.replies)
-                          };
-                        }
-                        return c;
-                      });
-                    };
-                    return {
-                      ...m,
-                      post: { ...m.post, comments: addReplyToParent(updatedComments) }
-                    };
-                  } else {
-                    // It's a top-level comment - add to the end
-                    return {
-                      ...m,
-                      post: { ...m.post, comments: [...updatedComments, newComment] }
-                    };
-                  }
-                }));
-              }
-              
-              // Handle comment deletion optimistically
-              if (deletedCommentId) {
-                setOpenModalPosts(prev => prev.map(m => {
-                  if (m.modalId !== modalId) return m;
-                  
-                  const removeComment = (comments: Comment[]): Comment[] => {
-                    return comments
-                      .filter(c => c.id !== deletedCommentId)
-                      .map(c => ({
-                        ...c,
-                        replies: c.replies ? removeComment(c.replies) : []
-                      }));
-                  };
-                  
-                  return {
-                    ...m,
-                    post: { ...m.post, comments: removeComment(m.post.comments || []) }
-                  };
-                }));
-              }
-
-              // Also update the main posts list in the background
-              loadPosts().then(async (refreshedPosts) => {
-                await loadUserVotes(user.id);
-                await loadVoteTotals(refreshedPosts);
-                await loadReactions(refreshedPosts);
-              });
-            }}
-            onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
-            postReactions={reactions[modalPost.id] || []}
-            onPostReactionsChange={(newReactions) => handleReactionsChange(modalPost.id, newReactions)}
-          />
-        );
-      })}
+      {/* Note: Post modals are now rendered globally by GlobalModalsRenderer in Providers.tsx */}
       </div>
     </>
   );
