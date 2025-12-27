@@ -4013,11 +4013,10 @@ export default function StationPage() {
                   const isExpanded = expandedAlbums.has(album.id);
                   
                   return (
-                    <React.Fragment key={album.id}>
-                      {/* Album Card */}
-                      <div
-                        style={{
-                          background: hasCurrentTrack
+                    <div
+                      key={album.id}
+                      style={{
+                        background: hasCurrentTrack
                             ? "rgba(30, 215, 96, 0.15)"
                             : album.is_selected
                               ? "rgba(30, 215, 96, 0.08)"
@@ -4301,276 +4300,293 @@ export default function StationPage() {
                           </div>
                         )}
                       </div>
-
-                      {/* Expanded Tracks with Inline Drop Zone - spans full grid width */}
-                      {isExpanded && albumTracks[album.id] && (
-                        <div
-                          style={{
-                            gridColumn: "1 / -1",
-                            marginTop: -8,
-                            marginBottom: 16,
-                            padding: 12,
-                            background: "rgba(0,0,0,0.25)",
-                            borderRadius: 12,
-                            border: "1px solid rgba(201, 162, 39, 0.2)",
-                            display: "flex",
-                            gap: 16,
-                            alignItems: "stretch",
-                          }}
-                        >
-                          {/* Left: Track List */}
-                          <div
-                            style={{
-                              flex: 1,
-                              minWidth: 0,
-                              fontSize: 12,
-                            }}
-                          >
-                            {albumTracks[album.id].map((track, idx) => {
-                              const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
-                              const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
-                              const isInPlaylistSelection = selectedTrackUris.has(track.uri);
-
-                              return (
-                                <div
-                                  key={track.uri}
-                                  draggable
-                                  onDragStart={(e) => {
-                                    setDraggingAlbumTrack(track);
-                                    e.dataTransfer.effectAllowed = "copy";
-                                  }}
-                                  onDragEnd={() => {
-                                    setDraggingAlbumTrack(null);
-                                    setDropTargetPlaylistId(null);
-                                    setDropTargetIndex(null);
-                                  }}
-                                  onClick={() => {
-                                    if (isSelectedStart) {
-                                      setSelectedStartTrack(null);
-                                    } else {
-                                      setSelectedStartTrack({ albumId: album.id, trackUri: track.uri });
-                                    }
-                                  }}
-                                  style={{
-                                    padding: "4px 6px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    cursor: "grab",
-                                    background: isCurrentTrack
-                                      ? "rgba(212, 168, 75, 0.25)"
-                                      : isSelectedStart
-                                        ? "rgba(30, 215, 96, 0.3)"
-                                        : "transparent",
-                                    borderRadius: 4,
-                                    borderLeft: isCurrentTrack
-                                      ? "3px solid var(--alzooka-gold)"
-                                      : isSelectedStart
-                                        ? "3px solid #1DB954"
-                                        : "3px solid transparent",
-                                    opacity: draggingAlbumTrack?.uri === track.uri ? 0.5 : 1,
-                                  }}
-                                >
-                                  <span
-                                    onClick={(e) => { e.stopPropagation(); handleToggleTrackSelect(track); }}
-                                    style={{
-                                      width: 16,
-                                      height: 16,
-                                      borderRadius: 3,
-                                      border: isInPlaylistSelection ? "none" : "1px solid rgba(255,255,255,0.3)",
-                                      background: isInPlaylistSelection ? "#1DB954" : "transparent",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      fontSize: 10,
-                                      flexShrink: 0,
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    {isInPlaylistSelection ? "✓" : ""}
-                                  </span>
-                                  <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
-                                  <span
-                                    style={{
-                                      flex: 1,
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      whiteSpace: "nowrap",
-                                      fontWeight: isCurrentTrack ? 600 : 400,
-                                      color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
-                                    }}
-                                  >
-                                    {track.name}
-                                  </span>
-                                  {isCurrentTrack && (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
-                                      style={{
-                                        background: "var(--alzooka-gold)",
-                                        border: "none",
-                                        borderRadius: "50%",
-                                        width: 20,
-                                        height: 20,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        cursor: "pointer",
-                                        fontSize: 10,
-                                        color: "#000",
-                                        flexShrink: 0,
-                                      }}
-                                    >
-                                      {isPlaying ? "⏸" : "▶"}
-                                    </button>
-                                  )}
-                                  {isSelectedStart && !isCurrentTrack && (
-                                    <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Right: Inline Drop Zone */}
-                          <div
-                            style={{
-                              width: 220,
-                              flexShrink: 0,
-                              padding: 10,
-                              background: "rgba(0,0,0,0.2)",
-                              borderRadius: 8,
-                              display: "flex",
-                              flexDirection: "column",
-                              overflow: "hidden",
-                            }}
-                          >
-                            <h5 style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "var(--alzooka-gold)" }}>
-                              📋 Add to Playlist
-                            </h5>
-                            <div
-                              style={{
-                                flex: 1,
-                                overflowY: "auto",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 4,
-                                minHeight: 0,
-                              }}
-                            >
-                              {playlists.length === 0 ? (
-                                <p style={{ fontSize: 10, opacity: 0.5, textAlign: "center", margin: "8px 0" }}>
-                                  No playlists yet
-                                </p>
-                              ) : (
-                                playlists.map(playlist => {
-                                  const isDropTarget = dropTargetPlaylistId === playlist.id;
-                                  return (
-                                    <div
-                                      key={playlist.id}
-                                      onDragOver={(e) => {
-                                        if (draggingAlbumTrack) {
-                                          e.preventDefault();
-                                          setDropTargetPlaylistId(playlist.id);
-                                        }
-                                      }}
-                                      onDragLeave={() => {
-                                        if (dropTargetPlaylistId === playlist.id) {
-                                          setDropTargetPlaylistId(null);
-                                        }
-                                      }}
-                                      onDrop={async (e) => {
-                                        e.preventDefault();
-                                        if (draggingAlbumTrack) {
-                                          const existingTracks = playlistTracks[playlist.id] || [];
-                                          const nextOrder = existingTracks.length;
-                                          
-                                          await supabase.from("station_playlist_tracks").insert({
-                                            playlist_id: playlist.id,
-                                            spotify_uri: draggingAlbumTrack.uri,
-                                            spotify_name: draggingAlbumTrack.name,
-                                            spotify_artist: draggingAlbumTrack.artist,
-                                            spotify_album: draggingAlbumTrack.album || "",
-                                            spotify_image_url: draggingAlbumTrack.image || "",
-                                            duration_ms: draggingAlbumTrack.duration_ms || 0,
-                                            track_order: nextOrder,
-                                          });
-
-                                          // Refresh playlist tracks
-                                          const { data } = await supabase
-                                            .from("station_playlist_tracks")
-                                            .select("*")
-                                            .eq("playlist_id", playlist.id)
-                                            .order("track_order", { ascending: true });
-
-                                          if (data) {
-                                            setPlaylistTracks(prev => ({
-                                              ...prev,
-                                              [playlist.id]: data.map(t => ({
-                                                uri: t.spotify_uri,
-                                                name: t.spotify_name,
-                                                artist: t.spotify_artist,
-                                                album: t.spotify_album,
-                                                image: t.spotify_image_url,
-                                                duration_ms: t.duration_ms,
-                                              })),
-                                            }));
-                                          }
-
-                                          setDropTargetPlaylistId(null);
-                                          setDraggingAlbumTrack(null);
-                                        }
-                                      }}
-                                      style={{
-                                        padding: "8px 10px",
-                                        background: isDropTarget
-                                          ? "rgba(30, 215, 96, 0.3)"
-                                          : "rgba(240, 235, 224, 0.05)",
-                                        borderRadius: 6,
-                                        cursor: "pointer",
-                                        border: isDropTarget
-                                          ? "2px dashed #1DB954"
-                                          : "1px solid transparent",
-                                        transition: "background 0.15s, border 0.15s",
-                                        fontSize: 11,
-                                        fontWeight: 500,
-                                      }}
-                                    >
-                                      {playlist.name}
-                                      <span style={{ opacity: 0.5, marginLeft: 4 }}>
-                                        ({playlistTracks[playlist.id]?.length || 0})
-                                      </span>
-                                    </div>
-                                  );
-                                })
-                              )}
-                            </div>
-                            <button
-                              onClick={() => {
-                                setShowCreatePlaylist(true);
-                                setActiveTab("playlists");
-                              }}
-                              style={{
-                                marginTop: 8,
-                                padding: "6px 8px",
-                                fontSize: 10,
-                                fontWeight: 600,
-                                background: "rgba(30, 215, 96, 0.2)",
-                                color: "#1DB954",
-                                border: "1px solid rgba(30, 215, 96, 0.4)",
-                                borderRadius: 6,
-                                cursor: "pointer",
-                              }}
-                            >
-                              + New Playlist
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </React.Fragment>
                   );
                 })}
               </div>
             )}
+
+            {/* Expanded Tracks Section - Rendered outside the grid */}
+            {Array.from(expandedAlbums).map(expandedAlbumId => {
+              const album = albums.find(a => a.id === expandedAlbumId);
+              if (!album || !albumTracks[expandedAlbumId]) return null;
+              
+              return (
+                <div
+                  key={`expanded-${expandedAlbumId}`}
+                  style={{
+                    marginTop: 16,
+                    padding: 12,
+                    background: "rgba(0,0,0,0.25)",
+                    borderRadius: 12,
+                    border: "1px solid rgba(201, 162, 39, 0.2)",
+                    display: "flex",
+                    gap: 16,
+                    alignItems: "stretch",
+                  }}
+                >
+                  {/* Album Info Header */}
+                  <div style={{ width: 80, flexShrink: 0 }}>
+                    <img
+                      src={album.spotify_image_url || ""}
+                      alt={album.spotify_name}
+                      style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover" }}
+                    />
+                    <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {album.spotify_name}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 10, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {album.spotify_artist}
+                    </p>
+                  </div>
+
+                  {/* Track List */}
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: 12,
+                    }}
+                  >
+                    {albumTracks[expandedAlbumId].map((track, idx) => {
+                      const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
+                      const isSelectedStart = selectedStartTrack?.albumId === expandedAlbumId && selectedStartTrack?.trackUri === track.uri;
+                      const isInPlaylistSelection = selectedTrackUris.has(track.uri);
+
+                      return (
+                        <div
+                          key={track.uri}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggingAlbumTrack(track);
+                            e.dataTransfer.effectAllowed = "copy";
+                          }}
+                          onDragEnd={() => {
+                            setDraggingAlbumTrack(null);
+                            setDropTargetPlaylistId(null);
+                            setDropTargetIndex(null);
+                          }}
+                          onClick={() => {
+                            if (isSelectedStart) {
+                              setSelectedStartTrack(null);
+                            } else {
+                              setSelectedStartTrack({ albumId: expandedAlbumId, trackUri: track.uri });
+                            }
+                          }}
+                          style={{
+                            padding: "4px 6px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            cursor: "grab",
+                            background: isCurrentTrack
+                              ? "rgba(212, 168, 75, 0.25)"
+                              : isSelectedStart
+                                ? "rgba(30, 215, 96, 0.3)"
+                                : "transparent",
+                            borderRadius: 4,
+                            borderLeft: isCurrentTrack
+                              ? "3px solid var(--alzooka-gold)"
+                              : isSelectedStart
+                                ? "3px solid #1DB954"
+                                : "3px solid transparent",
+                            opacity: draggingAlbumTrack?.uri === track.uri ? 0.5 : 1,
+                          }}
+                        >
+                          <span
+                            onClick={(e) => { e.stopPropagation(); handleToggleTrackSelect(track); }}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: 3,
+                              border: isInPlaylistSelection ? "none" : "1px solid rgba(255,255,255,0.3)",
+                              background: isInPlaylistSelection ? "#1DB954" : "transparent",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 10,
+                              flexShrink: 0,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {isInPlaylistSelection ? "✓" : ""}
+                          </span>
+                          <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
+                          <span
+                            style={{
+                              flex: 1,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              fontWeight: isCurrentTrack ? 600 : 400,
+                              color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
+                            }}
+                          >
+                            {track.name}
+                          </span>
+                          {isCurrentTrack && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
+                              style={{
+                                background: "var(--alzooka-gold)",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: 20,
+                                height: 20,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                fontSize: 10,
+                                color: "#000",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {isPlaying ? "⏸" : "▶"}
+                            </button>
+                          )}
+                          {isSelectedStart && !isCurrentTrack && (
+                            <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Drop Zone */}
+                  <div
+                    style={{
+                      width: 220,
+                      flexShrink: 0,
+                      padding: 10,
+                      background: "rgba(0,0,0,0.2)",
+                      borderRadius: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <h5 style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+                      📋 Add to Playlist
+                    </h5>
+                    <div
+                      style={{
+                        flex: 1,
+                        overflowY: "auto",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                        minHeight: 0,
+                      }}
+                    >
+                      {playlists.length === 0 ? (
+                        <p style={{ fontSize: 10, opacity: 0.5, textAlign: "center", margin: "8px 0" }}>
+                          No playlists yet
+                        </p>
+                      ) : (
+                        playlists.map(playlist => {
+                          const isDropTarget = dropTargetPlaylistId === playlist.id;
+                          return (
+                            <div
+                              key={playlist.id}
+                              onDragOver={(e) => {
+                                if (draggingAlbumTrack) {
+                                  e.preventDefault();
+                                  setDropTargetPlaylistId(playlist.id);
+                                }
+                              }}
+                              onDragLeave={() => {
+                                if (dropTargetPlaylistId === playlist.id) {
+                                  setDropTargetPlaylistId(null);
+                                }
+                              }}
+                              onDrop={async (e) => {
+                                e.preventDefault();
+                                if (draggingAlbumTrack) {
+                                  const existingTracks = playlistTracks[playlist.id] || [];
+                                  const nextOrder = existingTracks.length;
+                                  
+                                  await supabase.from("station_playlist_tracks").insert({
+                                    playlist_id: playlist.id,
+                                    spotify_uri: draggingAlbumTrack.uri,
+                                    spotify_name: draggingAlbumTrack.name,
+                                    spotify_artist: draggingAlbumTrack.artist,
+                                    spotify_album: draggingAlbumTrack.album || "",
+                                    spotify_image_url: draggingAlbumTrack.image || "",
+                                    duration_ms: draggingAlbumTrack.duration_ms || 0,
+                                    track_order: nextOrder,
+                                  });
+
+                                  const { data } = await supabase
+                                    .from("station_playlist_tracks")
+                                    .select("*")
+                                    .eq("playlist_id", playlist.id)
+                                    .order("track_order", { ascending: true });
+
+                                  if (data) {
+                                    setPlaylistTracks(prev => ({
+                                      ...prev,
+                                      [playlist.id]: data.map(t => ({
+                                        uri: t.spotify_uri,
+                                        name: t.spotify_name,
+                                        artist: t.spotify_artist,
+                                        album: t.spotify_album,
+                                        image: t.spotify_image_url,
+                                        duration_ms: t.duration_ms,
+                                      })),
+                                    }));
+                                  }
+
+                                  setDropTargetPlaylistId(null);
+                                  setDraggingAlbumTrack(null);
+                                }
+                              }}
+                              style={{
+                                padding: "8px 10px",
+                                background: isDropTarget
+                                  ? "rgba(30, 215, 96, 0.3)"
+                                  : "rgba(240, 235, 224, 0.05)",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                                border: isDropTarget
+                                  ? "2px dashed #1DB954"
+                                  : "1px solid transparent",
+                                transition: "background 0.15s, border 0.15s",
+                                fontSize: 11,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {playlist.name}
+                              <span style={{ opacity: 0.5, marginLeft: 4 }}>
+                                ({playlistTracks[playlist.id]?.length || 0})
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowCreatePlaylist(true);
+                        setActiveTab("playlists");
+                      }}
+                      style={{
+                        marginTop: 8,
+                        padding: "6px 8px",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        background: "rgba(30, 215, 96, 0.2)",
+                        color: "#1DB954",
+                        border: "1px solid rgba(30, 215, 96, 0.4)",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + New Playlist
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
         </div>
