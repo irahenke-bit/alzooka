@@ -70,6 +70,8 @@ export interface PlaybackContext {
 
 interface PersistedSession {
   track: TrackInfo;
+  trackUri: string; // The actual Spotify URI needed to play this track
+  position: number; // Playback position in ms
   context: PlaybackContext | null;
   timestamp: number;
 }
@@ -134,6 +136,10 @@ let stationCallbacks: StationCallbacks | null = null;
 // Module-level flag to ignore stale track updates when starting new playback
 let ignoreTrackUpdatesUntil = 0;
 
+// Module-level storage for current track URI and position (for persistence)
+let currentTrackUri = "";
+let currentPosition = 0;
+
 // Function to set the ignore flag (called by station page when starting new playback)
 export function ignoreTrackUpdatesFor(ms: number) {
   ignoreTrackUpdatesUntil = Date.now() + ms;
@@ -175,6 +181,9 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   // Supabase client for fetching user
   const supabase = createBrowserClient();
 
+  // Ref to store persisted session data for resume
+  const persistedSessionRef = useRef<PersistedSession | null>(null);
+
   // Load persisted session on mount
   useEffect(() => {
     try {
@@ -187,6 +196,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           setCurrentTrackState(session.track);
           setPlaybackContext(session.context);
           setPlayerState("collapsed");
+          // Store full session for resume
+          persistedSessionRef.current = session;
+          currentTrackUri = session.trackUri || "";
+          currentPosition = session.position || 0;
         } else {
           localStorage.removeItem(STORAGE_KEY);
         }
@@ -205,8 +218,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
       globalPlayer.getCurrentState().then((state) => {
         if (state) {
           setIsPlayingState(!state.paused);
+          currentPosition = state.position;
           if (state.track_window?.current_track) {
             const track = state.track_window.current_track;
+            currentTrackUri = track.uri;
             setCurrentTrackState({
               name: track.name,
               artist: track.artists.map((a) => a.name).join(", "),
@@ -221,6 +236,31 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
       });
     }
   }, []);
+  
+  // Periodically save position to localStorage (every 5 seconds while playing)
+  useEffect(() => {
+    if (!isPlayingState || !currentTrackUri) return;
+    
+    const savePosition = () => {
+      if (currentTrackUri && currentTrackRef.current) {
+        const session: PersistedSession = {
+          track: currentTrackRef.current,
+          trackUri: currentTrackUri,
+          position: currentPosition,
+          context: playbackContextRef.current,
+          timestamp: Date.now(),
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+        } catch (err) {
+          console.error("Failed to persist position:", err);
+        }
+      }
+    };
+    
+    const interval = setInterval(savePosition, 5000);
+    return () => clearInterval(interval);
+  }, [isPlayingState]);
   
   // Initialize Spotify player
   const initializeSpotify = useCallback(async (userId: string) => {
@@ -362,6 +402,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           // Only update track info if track changed AND we're not ignoring stale updates
           if (trackChanged && now > ignoreTrackUpdatesUntil) {
             lastTrackUri = currentUri;
+            currentTrackUri = currentUri; // Store for persistence
             const track = state.track_window.current_track;
             const trackInfo: TrackInfo = {
               name: track.name,
@@ -374,10 +415,12 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             // Notify station page (pass duration through callback)
             stationCallbacks?.onTrackChange?.(trackInfo, track.uri);
             
-            // Persist to localStorage (defer to prevent blocking)
+            // Persist to localStorage with URI and position (defer to prevent blocking)
             setTimeout(() => {
               const session: PersistedSession = {
                 track: trackInfo,
+                trackUri: currentUri,
+                position: state.position,
                 context: playbackContextRef.current,
                 timestamp: Date.now(),
               };
@@ -388,6 +431,9 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
               }
             }, 0);
           }
+          
+          // Always update position for persistence (even if not notifying callbacks)
+          currentPosition = state.position;
           
           // Only notify station page of position if it's listening
           if (isOnStationPage && stationCallbacks?.onPositionChange && (now - lastPositionUpdate.current >= POSITION_THROTTLE)) {
@@ -428,6 +474,8 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     if (track) {
       const session: PersistedSession = {
         track,
+        trackUri: currentTrackUri,
+        position: currentPosition,
         context: playbackContextRef.current,
         timestamp: Date.now(),
       };
@@ -454,6 +502,27 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     if (!player) return;
     
     try {
+      // If we're about to pause, save the current position first
+      if (isPlayingRef.current && currentTrackUri && currentTrackRef.current) {
+        const state = await player.getCurrentState();
+        if (state) {
+          currentPosition = state.position;
+          const session: PersistedSession = {
+            track: currentTrackRef.current,
+            trackUri: currentTrackUri,
+            position: state.position,
+            context: playbackContextRef.current,
+            timestamp: Date.now(),
+          };
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+            console.log(`Saved position on pause: ${state.position}ms for ${currentTrackUri}`);
+          } catch (err) {
+            console.error("Failed to save position on pause:", err);
+          }
+        }
+      }
+      
       await player.togglePlay();
     } catch (err) {
       console.error("Toggle play failed:", err);
@@ -569,17 +638,45 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
         console.log("activateElement error (may be ok):", e);
       }
       
-      // Resume playback on our device
-      const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${globalDeviceId}`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      // Check if we have a saved track URI and position to resume from
+      const savedSession = persistedSessionRef.current;
+      const trackUri = currentTrackUri || savedSession?.trackUri;
+      const position = currentPosition || savedSession?.position || 0;
       
-      if (res.ok || res.status === 204) {
-        setPlayerState("playing");
-        setIsPlayingState(true);
+      if (trackUri) {
+        // Resume specific track at specific position
+        console.log(`Resuming track ${trackUri} at position ${position}ms`);
+        const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${globalDeviceId}`, {
+          method: "PUT",
+          headers: { 
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: [trackUri],
+            position_ms: position,
+          }),
+        });
+        
+        if (res.ok || res.status === 204) {
+          setPlayerState("playing");
+          setIsPlayingState(true);
+        } else {
+          console.error("Resume playback failed:", await res.text());
+        }
       } else {
-        console.error("Resume playback failed:", await res.text());
+        // Fallback: just try to resume whatever Spotify has
+        const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${globalDeviceId}`, {
+          method: "PUT",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+        
+        if (res.ok || res.status === 204) {
+          setPlayerState("playing");
+          setIsPlayingState(true);
+        } else {
+          console.error("Resume playback failed:", await res.text());
+        }
       }
     } catch (err) {
       console.error("Resume failed:", err);
