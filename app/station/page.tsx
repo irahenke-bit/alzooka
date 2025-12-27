@@ -3773,7 +3773,12 @@ export default function StationPage() {
         </div>
 
         {/* Content based on active tab */}
-        <div style={{ display: activeTab === "albums" ? "grid" : "none", gridTemplateColumns: "1fr 280px", gap: 20 }}>
+        <div style={{ 
+          display: activeTab === "albums" ? "grid" : "none", 
+          gridTemplateColumns: expandedAlbums.size > 0 ? "1fr 280px" : "1fr", 
+          gap: 20,
+          transition: "grid-template-columns 0.2s ease-in-out",
+        }}>
           {/* Left Column: Albums */}
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -4423,7 +4428,8 @@ export default function StationPage() {
             )}
           </div>
 
-          {/* Right Column: Playlist Sidebar (Drop Zone) */}
+          {/* Right Column: Playlist Sidebar (Drop Zone) - Only visible when tracks are expanded */}
+          {expandedAlbums.size > 0 && (
           <div
             style={{
               background: "rgba(0, 0, 0, 0.2)",
@@ -4853,6 +4859,7 @@ export default function StationPage() {
               + New Playlist
             </button>
           </div>
+          )}
         </div>
 
         {/* Playlists Tab Content */}
