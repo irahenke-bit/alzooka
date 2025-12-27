@@ -2120,12 +2120,30 @@ export default function ProfilePage() {
                 
                 {/* Friend Button (only show on other people's profiles) */}
                 {currentUser && !isOwnProfile && (
-                  <div style={{ marginBottom: 12 }}>
+                  <div style={{ marginBottom: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <FriendButton
                       currentUserId={currentUser.id}
                       currentUsername={currentUserUsername}
                       targetUserId={profile.id}
                     />
+                    <Link
+                      href={`/station/${profile.username}`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "8px 16px",
+                        background: "rgba(30, 215, 96, 0.15)",
+                        border: "1px solid rgba(30, 215, 96, 0.4)",
+                        borderRadius: 8,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#1DB954",
+                        textDecoration: "none",
+                      }}
+                    >
+                      🎵 Visit Station
+                    </Link>
                   </div>
                 )}
                 {profile.bio && (
