@@ -794,8 +794,10 @@ export function PostModal({
     const resizeDirection = isResizing;
     
     // Get viewport dimensions for clamping
-    const maxWidth = window.innerWidth - 40;
-    const maxHeight = window.innerHeight - 40;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const maxWidth = viewportWidth - 40;
+    const maxHeight = viewportHeight - 40;
     
     function handleMouseMove(e: MouseEvent) {
       if (!resizeStartRef.current) return;
@@ -803,8 +805,12 @@ export function PostModal({
       e.preventDefault();
       e.stopPropagation();
       
-      const deltaX = e.clientX - resizeStartRef.current.x;
-      const deltaY = e.clientY - resizeStartRef.current.y;
+      // Clamp mouse position to viewport to prevent extreme values
+      const clampedX = Math.max(0, Math.min(viewportWidth, e.clientX));
+      const clampedY = Math.max(0, Math.min(viewportHeight, e.clientY));
+      
+      const deltaX = clampedX - resizeStartRef.current.x;
+      const deltaY = clampedY - resizeStartRef.current.y;
       
       let newWidth = resizeStartRef.current.width;
       let newHeight = resizeStartRef.current.height;
@@ -816,11 +822,11 @@ export function PostModal({
         newWidth = Math.min(maxWidth, Math.max(400, resizeStartRef.current.width + deltaX));
       }
       if (resizeDirection.includes('w')) {
-        const proposedWidth = resizeStartRef.current.width - deltaX;
-        newWidth = Math.min(maxWidth, Math.max(400, proposedWidth));
-        // Only adjust position if width actually changed
-        const actualDelta = resizeStartRef.current.width - newWidth;
-        newX = resizeStartRef.current.modalX - actualDelta;
+        // Calculate how much we can actually resize
+        const maxDelta = resizeStartRef.current.width - 400; // Can only shrink to 400
+        const clampedDelta = Math.max(-maxDelta, Math.min(deltaX, maxWidth - resizeStartRef.current.width));
+        newWidth = resizeStartRef.current.width - clampedDelta;
+        newX = resizeStartRef.current.modalX + clampedDelta;
       }
       
       // Handle vertical resizing with min/max bounds
@@ -828,12 +834,21 @@ export function PostModal({
         newHeight = Math.min(maxHeight, Math.max(300, resizeStartRef.current.height + deltaY));
       }
       if (resizeDirection.includes('n')) {
-        const proposedHeight = resizeStartRef.current.height - deltaY;
-        newHeight = Math.min(maxHeight, Math.max(300, proposedHeight));
-        // Only adjust position if height actually changed
-        const actualDelta = resizeStartRef.current.height - newHeight;
-        newY = resizeStartRef.current.modalY - actualDelta;
+        // Calculate how much we can actually resize
+        const maxDelta = resizeStartRef.current.height - 300; // Can only shrink to 300
+        const clampedDelta = Math.max(-maxDelta, Math.min(deltaY, maxHeight - resizeStartRef.current.height));
+        newHeight = resizeStartRef.current.height - clampedDelta;
+        newY = resizeStartRef.current.modalY + clampedDelta;
       }
+      
+      // Clamp position to keep modal at least partially visible
+      const maxPositionX = viewportWidth - 100; // Keep at least 100px visible
+      const maxPositionY = viewportHeight - 100;
+      const minPositionX = -(newWidth - 100);
+      const minPositionY = -(newHeight - 100);
+      
+      newX = Math.max(minPositionX, Math.min(maxPositionX, newX));
+      newY = Math.max(minPositionY, Math.min(maxPositionY, newY));
       
       setModalSize({ width: newWidth, height: newHeight });
       
