@@ -1727,13 +1727,6 @@ export function PostModal({
 
   const modalContent = (
     <div
-      onClick={(e) => {
-        // Don't close if we were just resizing or dragging
-        if (isResizing || isDragging || justFinishedResizingRef.current) return;
-        // In multi-window mode with no backdrop, don't close on background click
-        if (hideBackdrop) return;
-        if (!seeThroughMode) onClose();
-      }}
       style={{
         position: "fixed",
         top: 0,
@@ -1747,10 +1740,29 @@ export function PostModal({
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
-        // In multi-window mode, let clicks pass through to windows behind
-        pointerEvents: hideBackdrop ? "none" : (seeThroughMode ? "none" : "auto"),
+        // Always let clicks pass through the wrapper - modal content handles its own events
+        pointerEvents: "none",
       }}
     >
+      {/* Clickable backdrop layer - only for top modal, allows clicking outside to close */}
+      {!hideBackdrop && !seeThroughMode && (
+        <div
+          onClick={(e) => {
+            // Don't close if we were just resizing or dragging
+            if (isResizing || isDragging || justFinishedResizingRef.current) return;
+            onClose();
+          }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: "auto",
+            zIndex: 0,
+          }}
+        />
+      )}
       {/* Modal Content */}
       <div
         ref={modalRef}
@@ -1779,7 +1791,7 @@ export function PostModal({
             isResizing === 'e' || isResizing === 'w' ? 'ew-resize' :
             isResizing === 'ne' || isResizing === 'sw' ? 'nesw-resize' : 'nwse-resize'
           ) : undefined,
-          // Re-enable pointer events for the modal itself in see-through mode
+          // Re-enable pointer events for the modal itself
           pointerEvents: "auto",
           // Add border in see-through mode so modal is distinguishable
           border: seeThroughMode 
@@ -1787,6 +1799,8 @@ export function PostModal({
             : "none",
           position: "relative",
           overflow: "hidden",
+          // Ensure modal content is above the backdrop click layer
+          zIndex: 1,
         }}
       >
         {/* Resize Handles */}
