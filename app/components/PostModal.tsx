@@ -799,6 +799,11 @@ export function PostModal({
     const maxWidth = viewportWidth - 40;
     const maxHeight = viewportHeight - 40;
     
+    // Get the initial modal rect to know its actual viewport position
+    const initialRect = modalRef.current?.getBoundingClientRect();
+    const initialTop = initialRect?.top ?? 0;
+    const initialLeft = initialRect?.left ?? 0;
+    
     function handleMouseMove(e: MouseEvent) {
       if (!resizeStartRef.current) return;
       
@@ -823,10 +828,20 @@ export function PostModal({
       }
       if (resizeDirection.includes('w')) {
         // Calculate how much we can actually resize
-        const maxDelta = resizeStartRef.current.width - 400; // Can only shrink to 400
-        const clampedDelta = Math.max(-maxDelta, Math.min(deltaX, maxWidth - resizeStartRef.current.width));
+        const maxDelta = resizeStartRef.current.width - 400;
+        // Also check left edge doesn't go past viewport
+        const maxLeftMove = initialLeft + resizeStartRef.current.modalX - newX;
+        const clampedDelta = Math.max(-maxDelta, Math.min(deltaX, Math.min(maxWidth - resizeStartRef.current.width, initialLeft)));
         newWidth = resizeStartRef.current.width - clampedDelta;
         newX = resizeStartRef.current.modalX + clampedDelta;
+        
+        // Ensure left edge doesn't go past viewport left (x=0)
+        const newLeft = initialLeft + (newX - resizeStartRef.current.modalX);
+        if (newLeft < 0) {
+          const adjustment = -newLeft;
+          newX += adjustment;
+          newWidth -= adjustment;
+        }
       }
       
       // Handle vertical resizing with min/max bounds
@@ -835,27 +850,46 @@ export function PostModal({
       }
       if (resizeDirection.includes('n')) {
         // Calculate how much we can actually resize
-        const maxDelta = resizeStartRef.current.height - 300; // Can only shrink to 300
+        const maxDelta = resizeStartRef.current.height - 300;
         const clampedDelta = Math.max(-maxDelta, Math.min(deltaY, maxHeight - resizeStartRef.current.height));
         newHeight = resizeStartRef.current.height - clampedDelta;
         newY = resizeStartRef.current.modalY + clampedDelta;
+        
+        // Ensure top edge doesn't go past viewport top (y=0)
+        const newTop = initialTop + (newY - resizeStartRef.current.modalY);
+        if (newTop < 0) {
+          // Top would go out of view - clamp it and extend bottom instead
+          const adjustment = -newTop;
+          newY += adjustment; // Move position down to keep top at 0
+          // Height stays the same - the "lost" top expansion becomes bottom expansion
+        }
       }
       
-      // Clamp position to keep modal at least partially visible
-      const maxPositionX = viewportWidth - 100; // Keep at least 100px visible
-      const maxPositionY = viewportHeight - 100;
-      const minPositionX = -(newWidth - 100);
-      const minPositionY = -(newHeight - 100);
+      // For non-north resizing, also check if modal top is going out of view
+      // This handles the case where the modal is already positioned high
+      if (!resizeDirection.includes('n')) {
+        // Calculate where the top would be with new height (centered modal gets taller both ways)
+        const heightDelta = newHeight - resizeStartRef.current.height;
+        const topMovement = heightDelta / 2; // Centered modal grows equally up and down
+        const newTop = initialTop - topMovement + (newY - resizeStartRef.current.modalY);
+        
+        if (newTop < 0) {
+          // Top would go out of view - adjust position to compensate
+          newY -= newTop; // Push modal down by the amount it would go over
+        }
+      }
       
-      newX = Math.max(minPositionX, Math.min(maxPositionX, newX));
-      newY = Math.max(minPositionY, Math.min(maxPositionY, newY));
+      // Clamp position to keep modal bottom in view (at least 50px)
+      const actualBottom = viewportHeight - (initialTop + newHeight + (newY - resizeStartRef.current.modalY));
+      if (actualBottom < -newHeight + 50) {
+        // Bottom going too far down - this is fine for resize, just cap the height
+        newHeight = Math.min(newHeight, viewportHeight - 20);
+      }
       
       setModalSize({ width: newWidth, height: newHeight });
       
-      // Update position if resizing from top or left
-      if (resizeDirection.includes('n') || resizeDirection.includes('w')) {
-        setModalPosition({ x: newX, y: newY });
-      }
+      // Always update position during resize to handle clamping
+      setModalPosition({ x: newX, y: newY });
     }
     
     function handleMouseUp(e: MouseEvent) {
