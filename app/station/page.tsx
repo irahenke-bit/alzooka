@@ -3989,86 +3989,177 @@ export default function StationPage() {
                 padding: 40,
                 opacity: 0.6,
               }}>
-                <p style={{ fontSize: 14 }}>No albums yet. Click "+ Add Album" to get started.</p>
+                <p style={{ fontSize: 14 }}>No albums yet. Click &quot;+ Add Album&quot; to get started.</p>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "70vh", overflowY: "auto" }}>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                gap: 16,
+              }}>
                 {filteredAlbums.map(album => {
                   const isInBulkGroup = bulkAddGroup && (albumGroups[album.id] || []).includes(bulkAddGroup);
                   const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
-                  // Check if currently playing track is from this album
                   const hasCurrentTrack = currentTrack?.albumName === album.spotify_name;
+                  const isThisAlbumActive = currentlyPlayingAlbumId === album.id;
+                  const isThisAlbumPlaying = isPlaying && isThisAlbumActive;
+                  const albumGroupsList = (albumGroups[album.id] || [])
+                    .map(gid => groups.find(g => g.id === gid))
+                    .filter(Boolean);
+                  const isExpanded = expandedAlbums.has(album.id);
                   
                   return (
-                    <div key={album.id} style={{ marginBottom: 4 }}>
+                    <div key={album.id} style={{ position: "relative" }}>
+                      {/* Album Card */}
                       <div
-                        onClick={bulkAddGroup ? () => toggleAlbumInBulkGroup(album.id) : () => handleToggleAlbumExpand(album)}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          padding: 10,
-                          background: bulkAddGroup
-                            ? (isInBulkGroup ? `${bulkGroupColor}33` : "rgba(240, 235, 224, 0.03)")
-                            : hasCurrentTrack
-                              ? "rgba(30, 215, 96, 0.25)"
-                              : (album.is_selected ? "rgba(30, 215, 96, 0.1)" : "rgba(240, 235, 224, 0.03)"),
-                          borderRadius: 10,
+                          background: hasCurrentTrack
+                            ? "rgba(30, 215, 96, 0.15)"
+                            : album.is_selected
+                              ? "rgba(30, 215, 96, 0.08)"
+                              : "rgba(0, 0, 0, 0.2)",
+                          borderRadius: 12,
+                          overflow: "hidden",
                           border: bulkAddGroup
                             ? (isInBulkGroup ? `2px solid ${bulkGroupColor}` : "1px dashed rgba(240, 235, 224, 0.2)")
                             : hasCurrentTrack
-                              ? "1px solid rgba(30, 215, 96, 0.5)"
-                              : (album.is_selected ? "1px solid rgba(30, 215, 96, 0.3)" : "1px solid rgba(240, 235, 224, 0.1)"),
-                          cursor: "pointer",
+                              ? "1px solid rgba(30, 215, 96, 0.4)"
+                              : album.is_selected
+                                ? "1px solid rgba(30, 215, 96, 0.3)"
+                                : "1px solid transparent",
                         }}
                       >
-                        {/* Checkbox */}
-                        {!bulkAddGroup && (
-                          <input
-                            type="checkbox"
-                            checked={album.is_selected}
-                            onChange={() => handleToggleAlbum(album.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ width: 18, height: 18, accentColor: "#1DB954", cursor: "pointer" }}
+                        {/* Album Art with Overlay */}
+                        <div style={{ position: "relative" }}>
+                          <img
+                            src={album.spotify_image_url || ""}
+                            alt={album.spotify_name}
+                            style={{ width: "100%", aspectRatio: "1", objectFit: "cover", cursor: "pointer" }}
+                            onClick={() => handleToggleAlbumExpand(album)}
                           />
-                        )}
-                        {/* Album Art */}
-                        {album.spotify_image_url && (
-                          <img src={album.spotify_image_url} alt="" style={{ width: 44, height: 44, borderRadius: 6 }} />
-                        )}
-                        {/* Info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {/* Selection Checkbox Overlay */}
+                          <div
+                            onClick={(e) => { e.stopPropagation(); handleToggleAlbum(album.id); }}
+                            style={{
+                              position: "absolute",
+                              top: 8,
+                              left: 8,
+                              width: 24,
+                              height: 24,
+                              borderRadius: 4,
+                              background: album.is_selected ? "#1DB954" : "rgba(0,0,0,0.6)",
+                              border: album.is_selected ? "none" : "2px solid rgba(255,255,255,0.5)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              fontSize: 14,
+                              color: "#fff",
+                            }}
+                          >
+                            {album.is_selected && "✓"}
+                          </div>
+                          {/* Play Button Overlay */}
+                          {spotifyConnected && playerReady && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isThisAlbumActive) {
+                                  handleTogglePlayback();
+                                } else {
+                                  handlePlayAlbum(album);
+                                }
+                              }}
+                              style={{
+                                position: "absolute",
+                                bottom: 8,
+                                right: 8,
+                                width: 44,
+                                height: 44,
+                                borderRadius: "50%",
+                                background: "#1DB954",
+                                border: "none",
+                                color: "#fff",
+                                fontSize: 18,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                              }}
+                              title={isThisAlbumPlaying ? "Pause" : "Play album"}
+                            >
+                              {isThisAlbumPlaying ? "⏸" : "▶"}
+                            </button>
+                          )}
+                          {/* Delete Button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setAlbumPendingDelete(album); }}
+                            style={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              background: "rgba(0,0,0,0.6)",
+                              border: "none",
+                              color: "#e57373",
+                              fontSize: 14,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              opacity: 0.8,
+                            }}
+                            title="Remove album"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        {/* Album Info */}
+                        <div style={{ padding: 12 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              lineHeight: 1.3,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {album.spotify_name}
                           </p>
-                          <p style={{ margin: 0, fontSize: 11, opacity: 0.7 }}>{album.spotify_artist}</p>
-                          {/* Album Groups - with hover-to-remove X */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 3, flexWrap: "wrap" }}>
-                            {(albumGroups[album.id] || []).map(groupId => {
-                              const group = groups.find(g => g.id === groupId);
-                              if (!group) return null;
-                              return (
-                                <span 
-                                  key={groupId} 
+                          <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.7 }}>
+                            {album.spotify_artist}
+                          </p>
+
+                          {/* Group Tags */}
+                          {albumGroupsList.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
+                              {albumGroupsList.map(g => g && (
+                                <span
+                                  key={g.id}
                                   className="group-tag-removable"
-                                  style={{ 
-                                    position: "relative",
-                                    padding: "1px 6px", 
-                                    fontSize: 9, 
-                                    fontWeight: 600, 
-                                    background: group.color, 
-                                    color: "#fff", 
-                                    borderRadius: 8,
+                                  style={{
+                                    fontSize: 10,
+                                    padding: "2px 6px",
+                                    borderRadius: 4,
+                                    background: g.color,
+                                    color: "#fff",
+                                    fontWeight: 600,
                                     display: "inline-flex",
                                     alignItems: "center",
                                     gap: 2,
                                   }}
                                 >
-                                  {group.name}
+                                  {g.name}
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleToggleAlbumGroup(album.id, groupId);
+                                      handleToggleAlbumGroup(album.id, g.id);
                                     }}
                                     className="group-tag-remove-btn"
                                     style={{
@@ -4087,159 +4178,142 @@ export default function StationPage() {
                                       alignItems: "center",
                                       justifyContent: "center",
                                     }}
-                                    title={`Remove from ${group.name}`}
+                                    title={`Remove from ${g.name}`}
                                   >
                                     ✕
                                   </button>
                                 </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Add to Group Button */}
+                          {groups.length > 0 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingAlbumGroups(editingAlbumGroups === album.id ? null : album.id);
+                              }}
+                              style={{
+                                marginTop: 8,
+                                width: "100%",
+                                padding: "6px 12px",
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: "rgba(201, 162, 39, 0.2)",
+                                color: "var(--alzooka-gold)",
+                                border: "1px solid rgba(201, 162, 39, 0.4)",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            >
+                              + Add to Group
+                            </button>
+                          )}
+
+                          {/* Show Tracks Button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleToggleAlbumExpand(album); }}
+                            style={{
+                              marginTop: 6,
+                              width: "100%",
+                              padding: "5px 12px",
+                              fontSize: 10,
+                              fontWeight: 500,
+                              background: isExpanded ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                              color: isExpanded ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {isExpanded ? "▲ Hide Tracks" : "▼ Show Tracks"}
+                          </button>
+                        </div>
+
+                        {/* Group Picker Dropdown */}
+                        {editingAlbumGroups === album.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: 0,
+                              right: 0,
+                              marginTop: 4,
+                              padding: 10,
+                              background: "#1a2e2e",
+                              border: "2px solid var(--alzooka-gold)",
+                              borderRadius: 8,
+                              zIndex: 1000,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600 }}>Add to Groups:</p>
+                            {groups.map(group => {
+                              const isInGroup = (albumGroups[album.id] || []).includes(group.id);
+                              return (
+                                <label
+                                  key={group.id}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: "6px 4px",
+                                    cursor: "pointer",
+                                    fontSize: 12,
+                                    borderRadius: 4,
+                                    background: isInGroup ? `${group.color}22` : "transparent",
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isInGroup}
+                                    onChange={() => handleToggleAlbumGroup(album.id, group.id)}
+                                    style={{ width: 16, height: 16, accentColor: group.color }}
+                                  />
+                                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: group.color }} />
+                                  <span style={{ fontWeight: isInGroup ? 600 : 400 }}>{group.name}</span>
+                                </label>
                               );
                             })}
+                            <button
+                              onClick={() => setEditingAlbumGroups(null)}
+                              style={{
+                                marginTop: 8,
+                                width: "100%",
+                                padding: "6px",
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: "var(--alzooka-gold)",
+                                color: "var(--alzooka-teal-dark)",
+                                border: "none",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Done
+                            </button>
                           </div>
-                        </div>
-                        {/* Album Playback Controls */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-                          {/* Backward */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handlePreviousTrack(); }}
-                            disabled={!spotifyConnected || !playerReady}
-                            style={{
-                              padding: "3px 5px",
-                              fontSize: 10,
-                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
-                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 6,
-                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                            }}
-                            title="Previous track"
-                          >
-                            ⏮
-                          </button>
-                          {/* Stop */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleStopPlayback(); }}
-                            disabled={!spotifyConnected || !playerReady}
-                            style={{
-                              padding: "3px 5px",
-                              fontSize: 10,
-                              background: spotifyConnected && playerReady ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "#e57373" : "rgba(240, 235, 224, 0.3)",
-                              border: spotifyConnected && playerReady ? "1px solid rgba(229, 115, 115, 0.4)" : "1px solid transparent",
-                              borderRadius: 6,
-                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                            }}
-                            title="Stop"
-                          >
-                            ⏹
-                          </button>
-                          {/* Play/Pause Toggle */}
-                          {(() => {
-                            const isThisAlbumActive = currentlyPlayingAlbumId === album.id;
-                            const isThisAlbumPlaying = isPlaying && isThisAlbumActive;
-                            return (
-                              <button
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  if (isThisAlbumActive) {
-                                    // This album is the active source - just toggle play/pause
-                                    handleTogglePlayback();
-                                  } else {
-                                    // Different album - start it
-                                    handlePlayAlbum(album);
-                                  }
-                                }}
-                                disabled={!spotifyConnected || !playerReady}
-                                style={{
-                                  padding: "3px 8px",
-                                  fontSize: 10,
-                                  fontWeight: 600,
-                                  background: spotifyConnected && playerReady ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: 10,
-                                  cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                                }}
-                                title={isThisAlbumPlaying ? "Pause" : (() => {
-                                  const albumTracksList = albumTracks[album.id] || [];
-                                  const albumTrackUris = new Set(albumTracksList.map(t => t.uri));
-                                  const selectedFromThis = selectedTracks.filter(t => albumTrackUris.has(t.uri));
-                                  return selectedFromThis.length > 0 
-                                    ? `Play ${selectedFromThis.length} selected track${selectedFromThis.length > 1 ? 's' : ''}`
-                                    : 'Play full album';
-                                })()}
-                              >
-                                {isThisAlbumPlaying ? "⏸" : "▶"}
-                              </button>
-                            );
-                          })()}
-                          {/* Forward */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleNextTrack(); }}
-                            disabled={!spotifyConnected || !playerReady}
-                            style={{
-                              padding: "3px 5px",
-                              fontSize: 10,
-                              background: spotifyConnected && playerReady ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.1)",
-                              color: spotifyConnected && playerReady ? "#1DB954" : "rgba(240, 235, 224, 0.3)",
-                              border: spotifyConnected && playerReady ? "1px solid rgba(30, 215, 96, 0.4)" : "1px solid transparent",
-                              borderRadius: 6,
-                              cursor: spotifyConnected && playerReady ? "pointer" : "not-allowed",
-                            }}
-                            title="Next track"
-                          >
-                            ⏭
-                          </button>
-                        </div>
-                        {/* Tracks Button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleToggleAlbumExpand(album); }}
-                          style={{ padding: "4px 8px", fontSize: 10, background: expandedAlbums.has(album.id) ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)", color: expandedAlbums.has(album.id) ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)", border: "none", borderRadius: 4, cursor: "pointer" }}
-                        >
-                          {expandedAlbums.has(album.id) ? "▲" : "▼"}
-                        </button>
-                        {/* Tag Button */}
-                        {groups.length > 0 && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setEditingAlbumGroups(editingAlbumGroups === album.id ? null : album.id); }}
-                            style={{ padding: "4px 8px", fontSize: 10, background: "rgba(240, 235, 224, 0.1)", color: "var(--alzooka-cream)", border: "none", borderRadius: 4, cursor: "pointer" }}
-                          >
-                            🏷️
-                          </button>
                         )}
-                        {/* Remove Button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setAlbumPendingDelete(album); }}
-                          style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 14, cursor: "pointer", opacity: 0.6 }}
-                        >
-                          ×
-                        </button>
                       </div>
-                      {/* Group Picker Dropdown */}
-                      {editingAlbumGroups === album.id && (
-                        <div style={{ marginLeft: 28, marginTop: 4, padding: 10, background: "#1a2e2e", border: "2px solid var(--alzooka-gold)", borderRadius: 8, zIndex: 1000 }} onClick={(e) => e.stopPropagation()}>
-                          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600 }}>Add to Groups:</p>
-                          {groups.map(group => {
-                            const isInGroup = (albumGroups[album.id] || []).includes(group.id);
-                            return (
-                              <label key={group.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px", cursor: "pointer", fontSize: 12, borderRadius: 4, background: isInGroup ? `${group.color}22` : "transparent", marginBottom: 2 }}>
-                                <input type="checkbox" checked={isInGroup} onChange={() => handleToggleAlbumGroup(album.id, group.id)} style={{ width: 16, height: 16, accentColor: group.color }} />
-                                <span style={{ width: 10, height: 10, borderRadius: "50%", background: group.color }} />
-                                <span style={{ fontWeight: isInGroup ? 600 : 400 }}>{group.name}</span>
-                              </label>
-                            );
-                          })}
-                          <button onClick={() => setEditingAlbumGroups(null)} style={{ marginTop: 8, width: "100%", padding: "6px", fontSize: 11, fontWeight: 600, background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)", border: "none", borderRadius: 4, cursor: "pointer" }}>Done</button>
-                        </div>
-                      )}
-                      {/* Expanded Tracks */}
-                      {expandedAlbums.has(album.id) && albumTracks[album.id] && (
-                        <div style={{ marginLeft: 28, padding: 8, background: "rgba(0,0,0,0.2)", borderRadius: "0 0 8px 8px", fontSize: 12 }}>
+
+                      {/* Expanded Tracks (outside the card, full width) */}
+                      {isExpanded && albumTracks[album.id] && (
+                        <div
+                          style={{
+                            marginTop: 8,
+                            padding: 8,
+                            background: "rgba(0,0,0,0.3)",
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
+                        >
                           {albumTracks[album.id].map((track, idx) => {
                             const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
-                            const isCurrentlyPlaying = isCurrentTrack && isPlaying;
                             const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
                             const isInPlaylistSelection = selectedTrackUris.has(track.uri);
-                            
+
                             return (
                               <div
                                 key={track.uri}
@@ -4254,7 +4328,6 @@ export default function StationPage() {
                                   setDropTargetIndex(null);
                                 }}
                                 onClick={() => {
-                                  // Toggle selection as start track
                                   if (isSelectedStart) {
                                     setSelectedStartTrack(null);
                                   } else {
@@ -4267,49 +4340,49 @@ export default function StationPage() {
                                   alignItems: "center",
                                   gap: 8,
                                   cursor: "grab",
-                                  background: isCurrentTrack 
-                                    ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
-                                    : isSelectedStart 
-                                      ? "rgba(30, 215, 96, 0.3)" 
+                                  background: isCurrentTrack
+                                    ? "rgba(212, 168, 75, 0.25)"
+                                    : isSelectedStart
+                                      ? "rgba(30, 215, 96, 0.3)"
                                       : "transparent",
                                   borderRadius: 4,
-                                  borderLeft: isCurrentTrack 
-                                    ? "3px solid var(--alzooka-gold)" 
-                                    : isSelectedStart 
-                                      ? "3px solid #1DB954" 
+                                  borderLeft: isCurrentTrack
+                                    ? "3px solid var(--alzooka-gold)"
+                                    : isSelectedStart
+                                      ? "3px solid #1DB954"
                                       : "3px solid transparent",
                                   opacity: draggingAlbumTrack?.uri === track.uri ? 0.5 : 1,
                                 }}
                               >
-                                {/* Checkbox for playlist selection */}
-                                <span 
+                                <span
                                   onClick={(e) => { e.stopPropagation(); handleToggleTrackSelect(track); }}
-                                  style={{ 
-                                    width: 16, 
-                                    height: 16, 
-                                    borderRadius: 3, 
-                                    border: isInPlaylistSelection ? "none" : "1px solid rgba(255,255,255,0.3)", 
-                                    background: isInPlaylistSelection ? "#1DB954" : "transparent", 
-                                    display: "flex", 
-                                    alignItems: "center", 
-                                    justifyContent: "center", 
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    borderRadius: 3,
+                                    border: isInPlaylistSelection ? "none" : "1px solid rgba(255,255,255,0.3)",
+                                    background: isInPlaylistSelection ? "#1DB954" : "transparent",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                     fontSize: 10,
                                     flexShrink: 0,
                                     cursor: "pointer",
-                                    transition: "background 0.1s, border 0.1s",
                                   }}
                                 >
                                   {isInPlaylistSelection ? "✓" : ""}
                                 </span>
                                 <span style={{ opacity: 0.5, width: 20, flexShrink: 0 }}>{idx + 1}</span>
-                                <span style={{ 
-                                  flex: 1, 
-                                  overflow: "hidden", 
-                                  textOverflow: "ellipsis", 
-                                  whiteSpace: "nowrap",
-                                  fontWeight: isCurrentTrack ? 600 : 400,
-                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
-                                }}>
+                                <span
+                                  style={{
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    fontWeight: isCurrentTrack ? 600 : 400,
+                                    color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
+                                  }}
+                                >
                                   {track.name}
                                 </span>
                                 {isCurrentTrack && (
@@ -4327,15 +4400,15 @@ export default function StationPage() {
                                       cursor: "pointer",
                                       fontSize: 10,
                                       color: "#000",
-                                      marginLeft: 4,
                                       flexShrink: 0,
                                     }}
-                                    title={isPlaying ? "Pause" : "Play"}
                                   >
                                     {isPlaying ? "⏸" : "▶"}
                                   </button>
                                 )}
-                                {isSelectedStart && !isCurrentTrack && <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>}
+                                {isSelectedStart && !isCurrentTrack && (
+                                  <span style={{ fontSize: 9, color: "#1DB954", opacity: 0.8 }}>START</span>
+                                )}
                               </div>
                             );
                           })}
