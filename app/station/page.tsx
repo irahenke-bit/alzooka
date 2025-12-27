@@ -258,38 +258,51 @@ export default function StationPage() {
     }
   }, [miniPlayer.spotifyPlayer, miniPlayer.spotifyDeviceId, miniPlayer.playerReady, miniPlayer.spotifyToken]);
   
-  // On mount, fetch CURRENT playback state directly from Spotify player
+  // On mount/return to page, fetch CURRENT playback state directly from Spotify player
   // This ensures we show the actual playing track, not stale context state
-  const hasSyncedFromPlayer = useRef(false);
   useEffect(() => {
-    if (hasSyncedFromPlayer.current) return;
     if (!miniPlayer.spotifyPlayer) return;
     
-    hasSyncedFromPlayer.current = true;
-    
-    // Fetch current state directly from the player
-    miniPlayer.spotifyPlayer.getCurrentState().then((state) => {
-      if (state) {
-        setIsPlaying(!state.paused);
-        setTrackPosition(state.position);
-        setTrackDuration(state.duration);
-        
-        if (!state.paused) {
-          userInitiatedPlaybackRef.current = true;
+    // Sync immediately when component mounts or player becomes available
+    const syncFromPlayer = async () => {
+      try {
+        const state = await miniPlayer.spotifyPlayer!.getCurrentState();
+        if (state) {
+          setIsPlaying(!state.paused);
+          setTrackPosition(state.position);
+          setTrackDuration(state.duration);
+          
+          if (!state.paused) {
+            userInitiatedPlaybackRef.current = true;
+          }
+          
+          if (state.track_window?.current_track) {
+            const track = state.track_window.current_track;
+            setCurrentTrack({
+              name: track.name,
+              artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name,
+            });
+            setCurrentlyPlayingTrackUri(track.uri);
+          }
         }
-        
-        if (state.track_window?.current_track) {
-          const track = state.track_window.current_track;
-          setCurrentTrack({
-            name: track.name,
-            artist: track.artists.map((a: { name: string }) => a.name).join(", "),
-            image: track.album.images[0]?.url || "",
-            albumName: track.album.name,
-          });
-          setCurrentlyPlayingTrackUri(track.uri);
-        }
+      } catch (err) {
+        console.error("Error syncing from player:", err);
       }
-    });
+    };
+    
+    syncFromPlayer();
+    
+    // Also sync when the page becomes visible (user returns from another tab/page)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncFromPlayer();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [miniPlayer.spotifyPlayer]);
   
   // Register callbacks with the global context so it can update station page state
