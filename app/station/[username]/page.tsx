@@ -86,6 +86,8 @@ export default function ViewStationPage() {
   const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
   const [addingAlbum, setAddingAlbum] = useState<string | null>(null);
   const [copiedAlbums, setCopiedAlbums] = useState<Set<string>>(new Set());
+  const [copyingPlaylist, setCopyingPlaylist] = useState<string | null>(null);
+  const [copiedPlaylists, setCopiedPlaylists] = useState<Set<string>>(new Set());
 
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -335,6 +337,92 @@ export default function ViewStationPage() {
       }));
       setPlaylistTracks(prev => ({ ...prev, [playlistId]: tracks }));
     }
+  }
+
+  // Copy entire playlist to viewer's station
+  async function handleCopyPlaylistToMyStation(playlist: StationPlaylist) {
+    if (!viewerStation || copiedPlaylists.has(playlist.id)) return;
+
+    setCopyingPlaylist(playlist.id);
+
+    try {
+      // Load tracks if not already loaded
+      let tracks = playlistTracks[playlist.id];
+      if (!tracks) {
+        const { data } = await supabase
+          .from("station_playlist_tracks")
+          .select("*")
+          .eq("playlist_id", playlist.id)
+          .order("track_order", { ascending: true });
+
+        if (data) {
+          tracks = data.map(t => ({
+            uri: t.spotify_uri,
+            name: t.spotify_name,
+            artist: t.spotify_artist,
+            album: t.spotify_album,
+            image: t.spotify_image_url || "",
+            duration_ms: t.duration_ms || 0,
+          }));
+        }
+      }
+
+      if (!tracks || tracks.length === 0) {
+        setCopyingPlaylist(null);
+        return;
+      }
+
+      // Get current max display order for playlists
+      const { data: existingPlaylists } = await supabase
+        .from("station_playlists")
+        .select("display_order")
+        .eq("station_id", viewerStation.id)
+        .order("display_order", { ascending: false })
+        .limit(1);
+
+      const nextOrder = existingPlaylists && existingPlaylists.length > 0 
+        ? (existingPlaylists[0].display_order || 0) + 1 
+        : 0;
+
+      // Create the playlist in viewer's station
+      const { data: newPlaylist, error: playlistError } = await supabase
+        .from("station_playlists")
+        .insert({
+          station_id: viewerStation.id,
+          name: `${playlist.name} (from ${stationOwner?.username})`,
+          display_order: nextOrder,
+        })
+        .select()
+        .single();
+
+      if (playlistError || !newPlaylist) {
+        console.error("Failed to create playlist:", playlistError);
+        setCopyingPlaylist(null);
+        return;
+      }
+
+      // Add all tracks to the new playlist
+      const trackInserts = tracks.map((track, idx) => ({
+        playlist_id: newPlaylist.id,
+        spotify_uri: track.uri,
+        spotify_name: track.name,
+        spotify_artist: track.artist,
+        spotify_album: track.album || "",
+        spotify_image_url: track.image || "",
+        duration_ms: track.duration_ms || 0,
+        track_order: idx,
+      }));
+
+      await supabase
+        .from("station_playlist_tracks")
+        .insert(trackInserts);
+
+      setCopiedPlaylists(prev => new Set([...prev, playlist.id]));
+    } catch (err) {
+      console.error("Failed to copy playlist:", err);
+    }
+
+    setCopyingPlaylist(null);
   }
 
   // Shuffle play all albums
@@ -910,30 +998,66 @@ export default function ViewStationPage() {
                         {tracks.length === 0 ? (
                           <p style={{ opacity: 0.5, fontSize: 13 }}>Loading tracks...</p>
                         ) : (
-                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                            {tracks.map((track, idx) => (
-                              <div
-                                key={track.uri}
+                          <>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                              {tracks.map((track, idx) => (
+                                <div
+                                  key={track.uri}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: 8,
+                                    background: "rgba(255,255,255,0.03)",
+                                    borderRadius: 4,
+                                  }}
+                                >
+                                  <span style={{ opacity: 0.5, fontSize: 12, width: 20 }}>{idx + 1}</span>
+                                  {track.image && (
+                                    <img src={track.image} alt="" style={{ width: 32, height: 32, borderRadius: 4 }} />
+                                  )}
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>{track.name}</p>
+                                    <p style={{ margin: 0, fontSize: 11, opacity: 0.6 }}>{track.artist}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            {/* Copy playlist button */}
+                            {viewerStation && (
+                              <button
+                                onClick={() => handleCopyPlaylistToMyStation(playlist)}
+                                disabled={copiedPlaylists.has(playlist.id) || copyingPlaylist === playlist.id}
                                 style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  padding: 8,
-                                  background: "rgba(255,255,255,0.03)",
-                                  borderRadius: 4,
+                                  marginTop: 12,
+                                  width: "100%",
+                                  padding: "8px 12px",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  background: copiedPlaylists.has(playlist.id)
+                                    ? "rgba(30, 215, 96, 0.2)"
+                                    : "rgba(201, 162, 39, 0.2)",
+                                  color: copiedPlaylists.has(playlist.id)
+                                    ? "#1DB954"
+                                    : "var(--alzooka-gold)",
+                                  border: copiedPlaylists.has(playlist.id)
+                                    ? "1px solid rgba(30, 215, 96, 0.4)"
+                                    : "1px solid rgba(201, 162, 39, 0.4)",
+                                  borderRadius: 6,
+                                  cursor: copiedPlaylists.has(playlist.id) || copyingPlaylist === playlist.id 
+                                    ? "not-allowed" 
+                                    : "pointer",
+                                  opacity: copyingPlaylist === playlist.id ? 0.5 : 1,
                                 }}
                               >
-                                <span style={{ opacity: 0.5, fontSize: 12, width: 20 }}>{idx + 1}</span>
-                                {track.image && (
-                                  <img src={track.image} alt="" style={{ width: 32, height: 32, borderRadius: 4 }} />
-                                )}
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>{track.name}</p>
-                                  <p style={{ margin: 0, fontSize: 11, opacity: 0.6 }}>{track.artist}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                                {copyingPlaylist === playlist.id 
+                                  ? "Copying..." 
+                                  : copiedPlaylists.has(playlist.id) 
+                                    ? "✓ Copied to My Station" 
+                                    : `+ Copy Playlist (${tracks.length} songs)`}
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
