@@ -451,6 +451,9 @@ export function PostModal({
   const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; modalX: number; modalY: number } | null>(null);
+  
+  // See-through mode - makes background visible
+  const [seeThroughMode, setSeeThroughMode] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
@@ -725,13 +728,17 @@ export function PostModal({
     };
   }
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open (unless in see-through mode)
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    if (!seeThroughMode) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
     return () => {
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [seeThroughMode]);
 
   async function handleDeleteComment(commentId: string) {
     if (!confirm("Delete this comment?")) return;
@@ -1449,19 +1456,20 @@ export function PostModal({
 
   const modalContent = (
     <div
-      onClick={onClose}
+      onClick={seeThroughMode ? undefined : onClose}
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: "rgba(0, 0, 0, 0.85)",
+        background: seeThroughMode ? "transparent" : "rgba(0, 0, 0, 0.85)",
         zIndex: 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
+        pointerEvents: seeThroughMode ? "none" : "auto",
       }}
     >
       {/* Modal Content */}
@@ -1475,11 +1483,19 @@ export function PostModal({
           maxHeight: "90vh",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+          boxShadow: seeThroughMode 
+            ? "0 4px 20px rgba(0, 0, 0, 0.4)" 
+            : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
           animation: modalPosition ? "none" : "modalSlideIn 0.2s ease-out",
           // Apply position transform if dragged
           transform: modalPosition ? `translate(${modalPosition.x}px, ${modalPosition.y}px)` : undefined,
           cursor: isDragging ? "grabbing" : undefined,
+          // Re-enable pointer events for the modal itself in see-through mode
+          pointerEvents: "auto",
+          // Add border in see-through mode so modal is distinguishable
+          border: seeThroughMode 
+            ? "2px solid rgba(201, 162, 39, 0.6)" 
+            : "none",
         }}
       >
         {/* Modal Header - Draggable */}
@@ -1496,6 +1512,45 @@ export function PostModal({
             userSelect: "none",
           }}
         >
+          {/* See-through mode toggle - left side */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setSeeThroughMode(!seeThroughMode);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            title={seeThroughMode ? "Hide background" : "Show background"}
+            style={{
+              position: "absolute",
+              left: 16,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: seeThroughMode 
+                ? "rgba(201, 162, 39, 0.3)" 
+                : "rgba(240, 235, 224, 0.1)",
+              border: seeThroughMode 
+                ? "1px solid rgba(201, 162, 39, 0.5)" 
+                : "none",
+              borderRadius: "50%",
+              width: 36,
+              height: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: seeThroughMode 
+                ? "var(--alzooka-gold)" 
+                : "var(--alzooka-cream)",
+              fontSize: 16,
+            }}
+          >
+            {/* Window/layers icon */}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="14" height="14" rx="2" />
+              <rect x="7" y="7" width="14" height="14" rx="2" fill={seeThroughMode ? "currentColor" : "none"} fillOpacity="0.3" />
+            </svg>
+          </button>
+          
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--alzooka-cream)" }}>
             {post.users?.display_name || post.users?.username || "Unknown"}&apos;s Post
           </h2>
