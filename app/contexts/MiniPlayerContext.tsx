@@ -240,6 +240,15 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
   
+  // Ensure playerState stays in sync with isPlayingState
+  // This prevents the "collapsed" state from showing when music is actually playing
+  useEffect(() => {
+    if (isPlayingState && playerState !== "playing") {
+      console.log("Syncing playerState to 'playing' because isPlayingState is true");
+      setPlayerState("playing");
+    }
+  }, [isPlayingState, playerState]);
+  
   // Periodically save position to localStorage (every 5 seconds while playing)
   useEffect(() => {
     if (!isPlayingState || !currentTrackUri) return;
@@ -371,6 +380,10 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
           const playing = !state.paused;
           const currentUri = state.track_window?.current_track?.uri || "";
           
+          // Debug logging for navigation issues
+          const isOnStationPageNow = stationCallbacks !== null;
+          console.log(`[Spotify] state_changed: playing=${playing}, track=${state.track_window?.current_track?.name}, onStation=${isOnStationPageNow}`);
+          
           // Check if anything important changed
           const playStateChanged = playing !== lastPlayingState;
           const trackChanged = currentUri && currentUri !== lastTrackUri;
@@ -499,6 +512,7 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
   }, []);
   
   const unregisterStationCallbacks = useCallback(() => {
+    console.log("[MiniPlayer] Unregistering station callbacks - music should NOT stop");
     stationCallbacks = null;
   }, []);
 
