@@ -2280,6 +2280,11 @@ export function PostModal({
                 if (!videoId) return null;
                 // Clean the video ID to remove any trailing special characters
                 const cleanVideoId = videoId.replace(/[^a-zA-Z0-9_-]/g, '');
+                // Extract playlist ID if present for album/playlist auto-play
+                const playlistId = extractYouTubePlaylistId(post.video_url);
+                const embedUrl = playlistId 
+                  ? `https://www.youtube-nocookie.com/embed/${cleanVideoId}?list=${playlistId}&rel=0&modestbranding=1&autoplay=0`
+                  : `https://www.youtube-nocookie.com/embed/${cleanVideoId}?rel=0&modestbranding=1`;
                 return (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ 
@@ -2291,7 +2296,7 @@ export function PostModal({
                       background: "#000",
                     }}>
                       <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${cleanVideoId}?rel=0&modestbranding=1`}
+                        src={embedUrl}
                         title="YouTube video"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
