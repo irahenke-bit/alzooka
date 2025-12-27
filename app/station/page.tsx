@@ -185,6 +185,8 @@ export default function StationPage() {
   // Drag and drop state for dragging from album to playlist
   const [draggingAlbumTrack, setDraggingAlbumTrack] = useState<SpotifyTrack | null>(null);
   const [dropTargetPlaylistId, setDropTargetPlaylistId] = useState<string | null>(null);
+  const [sidebarExpandedPlaylist, setSidebarExpandedPlaylist] = useState<string | null>(null);
+  const [sidebarDropIndex, setSidebarDropIndex] = useState<number | null>(null);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -3771,7 +3773,7 @@ export default function StationPage() {
         </div>
 
         {/* Content based on active tab */}
-        <div style={{ display: activeTab === "albums" ? "block" : "none" }}>
+        <div style={{ display: activeTab === "albums" ? "grid" : "none", gridTemplateColumns: "1fr 280px", gap: 20 }}>
           {/* Left Column: Albums */}
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -4419,6 +4421,437 @@ export default function StationPage() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* Right Column: Playlist Sidebar (Drop Zone) */}
+          <div
+            style={{
+              background: "rgba(0, 0, 0, 0.2)",
+              borderRadius: 12,
+              padding: 12,
+              height: "fit-content",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              position: "sticky",
+              top: 80,
+            }}
+          >
+            <h4 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+              📋 Drop Zone
+            </h4>
+            <p style={{ margin: "0 0 12px", fontSize: 11, opacity: 0.6 }}>
+              Drag tracks here to add to a playlist
+            </p>
+
+            {playlists.length === 0 ? (
+              <p style={{ fontSize: 12, opacity: 0.5, textAlign: "center", padding: 20 }}>
+                No playlists yet
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {playlists.map(playlist => {
+                  const isExpanded = sidebarExpandedPlaylist === playlist.id;
+                  const tracks = playlistTracks[playlist.id] || [];
+                  const isDropTarget = dropTargetPlaylistId === playlist.id;
+
+                  return (
+                    <div key={playlist.id}>
+                      {/* Playlist Header - Drop Target */}
+                      <div
+                        onDragOver={(e) => {
+                          if (draggingAlbumTrack) {
+                            e.preventDefault();
+                            setDropTargetPlaylistId(playlist.id);
+                            setSidebarDropIndex(null); // Drop at end
+                          }
+                        }}
+                        onDragLeave={() => {
+                          if (dropTargetPlaylistId === playlist.id && !isExpanded) {
+                            setDropTargetPlaylistId(null);
+                          }
+                        }}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          if (draggingAlbumTrack && !isExpanded) {
+                            // Add to end of playlist
+                            const existingTracks = playlistTracks[playlist.id] || [];
+                            const nextOrder = existingTracks.length;
+                            
+                            await supabase.from("station_playlist_tracks").insert({
+                              playlist_id: playlist.id,
+                              spotify_uri: draggingAlbumTrack.uri,
+                              spotify_name: draggingAlbumTrack.name,
+                              spotify_artist: draggingAlbumTrack.artist,
+                              spotify_album: draggingAlbumTrack.album || "",
+                              spotify_image_url: draggingAlbumTrack.image || "",
+                              duration_ms: draggingAlbumTrack.duration_ms || 0,
+                              track_order: nextOrder,
+                            });
+
+                            // Refresh playlist tracks
+                            const { data } = await supabase
+                              .from("station_playlist_tracks")
+                              .select("*")
+                              .eq("playlist_id", playlist.id)
+                              .order("track_order", { ascending: true });
+
+                            if (data) {
+                              setPlaylistTracks(prev => ({
+                                ...prev,
+                                [playlist.id]: data.map(t => ({
+                                  uri: t.spotify_uri,
+                                  name: t.spotify_name,
+                                  artist: t.spotify_artist,
+                                  album: t.spotify_album,
+                                  image: t.spotify_image_url,
+                                  duration_ms: t.duration_ms,
+                                })),
+                              }));
+                            }
+
+                            setDropTargetPlaylistId(null);
+                            setDraggingAlbumTrack(null);
+                          }
+                        }}
+                        onClick={() => {
+                          if (isExpanded) {
+                            setSidebarExpandedPlaylist(null);
+                          } else {
+                            setSidebarExpandedPlaylist(playlist.id);
+                            // Load tracks if not loaded
+                            if (!playlistTracks[playlist.id]) {
+                              supabase
+                                .from("station_playlist_tracks")
+                                .select("*")
+                                .eq("playlist_id", playlist.id)
+                                .order("track_order", { ascending: true })
+                                .then(({ data }) => {
+                                  if (data) {
+                                    setPlaylistTracks(prev => ({
+                                      ...prev,
+                                      [playlist.id]: data.map(t => ({
+                                        uri: t.spotify_uri,
+                                        name: t.spotify_name,
+                                        artist: t.spotify_artist,
+                                        album: t.spotify_album,
+                                        image: t.spotify_image_url,
+                                        duration_ms: t.duration_ms,
+                                      })),
+                                    }));
+                                  }
+                                });
+                            }
+                          }
+                        }}
+                        style={{
+                          padding: "10px 12px",
+                          background: isDropTarget
+                            ? "rgba(30, 215, 96, 0.3)"
+                            : isExpanded
+                              ? "rgba(201, 162, 39, 0.2)"
+                              : "rgba(240, 235, 224, 0.05)",
+                          borderRadius: 8,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          border: isDropTarget
+                            ? "2px dashed #1DB954"
+                            : "1px solid transparent",
+                          transition: "background 0.15s, border 0.15s",
+                        }}
+                      >
+                        <span style={{ fontSize: 14 }}>{isExpanded ? "▼" : "▶"}</span>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{playlist.name}</span>
+                        <span style={{ fontSize: 11, opacity: 0.5 }}>
+                          {tracks.length || "..."} tracks
+                        </span>
+                      </div>
+
+                      {/* Expanded Tracks - with position-specific drop */}
+                      {isExpanded && (
+                        <div
+                          style={{
+                            marginTop: 4,
+                            marginLeft: 8,
+                            padding: 8,
+                            background: "rgba(0, 0, 0, 0.2)",
+                            borderRadius: 8,
+                            fontSize: 11,
+                          }}
+                        >
+                          {tracks.length === 0 ? (
+                            <div
+                              onDragOver={(e) => {
+                                if (draggingAlbumTrack) {
+                                  e.preventDefault();
+                                  setDropTargetPlaylistId(playlist.id);
+                                  setSidebarDropIndex(0);
+                                }
+                              }}
+                              onDragLeave={() => {
+                                setDropTargetPlaylistId(null);
+                                setSidebarDropIndex(null);
+                              }}
+                              onDrop={async (e) => {
+                                e.preventDefault();
+                                if (draggingAlbumTrack) {
+                                  await supabase.from("station_playlist_tracks").insert({
+                                    playlist_id: playlist.id,
+                                    spotify_uri: draggingAlbumTrack.uri,
+                                    spotify_name: draggingAlbumTrack.name,
+                                    spotify_artist: draggingAlbumTrack.artist,
+                                    spotify_album: draggingAlbumTrack.album || "",
+                                    spotify_image_url: draggingAlbumTrack.image || "",
+                                    duration_ms: draggingAlbumTrack.duration_ms || 0,
+                                    track_order: 0,
+                                  });
+
+                                  const { data } = await supabase
+                                    .from("station_playlist_tracks")
+                                    .select("*")
+                                    .eq("playlist_id", playlist.id)
+                                    .order("track_order", { ascending: true });
+
+                                  if (data) {
+                                    setPlaylistTracks(prev => ({
+                                      ...prev,
+                                      [playlist.id]: data.map(t => ({
+                                        uri: t.spotify_uri,
+                                        name: t.spotify_name,
+                                        artist: t.spotify_artist,
+                                        album: t.spotify_album,
+                                        image: t.spotify_image_url,
+                                        duration_ms: t.duration_ms,
+                                      })),
+                                    }));
+                                  }
+
+                                  setDropTargetPlaylistId(null);
+                                  setSidebarDropIndex(null);
+                                  setDraggingAlbumTrack(null);
+                                }
+                              }}
+                              style={{
+                                padding: 16,
+                                textAlign: "center",
+                                opacity: 0.5,
+                                border: sidebarDropIndex === 0 && dropTargetPlaylistId === playlist.id
+                                  ? "2px dashed #1DB954"
+                                  : "2px dashed transparent",
+                                borderRadius: 6,
+                                background: sidebarDropIndex === 0 && dropTargetPlaylistId === playlist.id
+                                  ? "rgba(30, 215, 96, 0.15)"
+                                  : "transparent",
+                              }}
+                            >
+                              Drop tracks here
+                            </div>
+                          ) : (
+                            <>
+                              {tracks.map((track, idx) => (
+                                <div key={track.uri}>
+                                  {/* Drop zone before this track */}
+                                  <div
+                                    onDragOver={(e) => {
+                                      if (draggingAlbumTrack) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setDropTargetPlaylistId(playlist.id);
+                                        setSidebarDropIndex(idx);
+                                      }
+                                    }}
+                                    onDragLeave={(e) => {
+                                      e.stopPropagation();
+                                      if (sidebarDropIndex === idx) {
+                                        setSidebarDropIndex(null);
+                                      }
+                                    }}
+                                    onDrop={async (e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (draggingAlbumTrack) {
+                                        // Shift existing tracks down
+                                        const tracksToUpdate = tracks.slice(idx);
+                                        for (let i = 0; i < tracksToUpdate.length; i++) {
+                                          await supabase
+                                            .from("station_playlist_tracks")
+                                            .update({ track_order: idx + i + 1 })
+                                            .eq("playlist_id", playlist.id)
+                                            .eq("spotify_uri", tracksToUpdate[i].uri);
+                                        }
+
+                                        // Insert new track at position
+                                        await supabase.from("station_playlist_tracks").insert({
+                                          playlist_id: playlist.id,
+                                          spotify_uri: draggingAlbumTrack.uri,
+                                          spotify_name: draggingAlbumTrack.name,
+                                          spotify_artist: draggingAlbumTrack.artist,
+                                          spotify_album: draggingAlbumTrack.album || "",
+                                          spotify_image_url: draggingAlbumTrack.image || "",
+                                          duration_ms: draggingAlbumTrack.duration_ms || 0,
+                                          track_order: idx,
+                                        });
+
+                                        // Refresh
+                                        const { data } = await supabase
+                                          .from("station_playlist_tracks")
+                                          .select("*")
+                                          .eq("playlist_id", playlist.id)
+                                          .order("track_order", { ascending: true });
+
+                                        if (data) {
+                                          setPlaylistTracks(prev => ({
+                                            ...prev,
+                                            [playlist.id]: data.map(t => ({
+                                              uri: t.spotify_uri,
+                                              name: t.spotify_name,
+                                              artist: t.spotify_artist,
+                                              album: t.spotify_album,
+                                              image: t.spotify_image_url,
+                                              duration_ms: t.duration_ms,
+                                            })),
+                                          }));
+                                        }
+
+                                        setDropTargetPlaylistId(null);
+                                        setSidebarDropIndex(null);
+                                        setDraggingAlbumTrack(null);
+                                      }
+                                    }}
+                                    style={{
+                                      height: sidebarDropIndex === idx && dropTargetPlaylistId === playlist.id ? 24 : 2,
+                                      background: sidebarDropIndex === idx && dropTargetPlaylistId === playlist.id
+                                        ? "rgba(30, 215, 96, 0.4)"
+                                        : "transparent",
+                                      borderRadius: 2,
+                                      margin: "2px 0",
+                                      transition: "height 0.1s, background 0.1s",
+                                    }}
+                                  />
+                                  {/* Track row */}
+                                  <div
+                                    style={{
+                                      padding: "4px 6px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    <span style={{ opacity: 0.4, width: 16, flexShrink: 0 }}>{idx + 1}</span>
+                                    <span
+                                      style={{
+                                        flex: 1,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {track.name}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                              {/* Drop zone at end */}
+                              <div
+                                onDragOver={(e) => {
+                                  if (draggingAlbumTrack) {
+                                    e.preventDefault();
+                                    setDropTargetPlaylistId(playlist.id);
+                                    setSidebarDropIndex(tracks.length);
+                                  }
+                                }}
+                                onDragLeave={() => {
+                                  if (sidebarDropIndex === tracks.length) {
+                                    setSidebarDropIndex(null);
+                                  }
+                                }}
+                                onDrop={async (e) => {
+                                  e.preventDefault();
+                                  if (draggingAlbumTrack) {
+                                    await supabase.from("station_playlist_tracks").insert({
+                                      playlist_id: playlist.id,
+                                      spotify_uri: draggingAlbumTrack.uri,
+                                      spotify_name: draggingAlbumTrack.name,
+                                      spotify_artist: draggingAlbumTrack.artist,
+                                      spotify_album: draggingAlbumTrack.album || "",
+                                      spotify_image_url: draggingAlbumTrack.image || "",
+                                      duration_ms: draggingAlbumTrack.duration_ms || 0,
+                                      track_order: tracks.length,
+                                    });
+
+                                    const { data } = await supabase
+                                      .from("station_playlist_tracks")
+                                      .select("*")
+                                      .eq("playlist_id", playlist.id)
+                                      .order("track_order", { ascending: true });
+
+                                    if (data) {
+                                      setPlaylistTracks(prev => ({
+                                        ...prev,
+                                        [playlist.id]: data.map(t => ({
+                                          uri: t.spotify_uri,
+                                          name: t.spotify_name,
+                                          artist: t.spotify_artist,
+                                          album: t.spotify_album,
+                                          image: t.spotify_image_url,
+                                          duration_ms: t.duration_ms,
+                                        })),
+                                      }));
+                                    }
+
+                                    setDropTargetPlaylistId(null);
+                                    setSidebarDropIndex(null);
+                                    setDraggingAlbumTrack(null);
+                                  }
+                                }}
+                                style={{
+                                  height: sidebarDropIndex === tracks.length && dropTargetPlaylistId === playlist.id ? 24 : 8,
+                                  background: sidebarDropIndex === tracks.length && dropTargetPlaylistId === playlist.id
+                                    ? "rgba(30, 215, 96, 0.4)"
+                                    : "transparent",
+                                  borderRadius: 4,
+                                  marginTop: 4,
+                                  textAlign: "center",
+                                  fontSize: 10,
+                                  color: "rgba(30, 215, 96, 0.7)",
+                                  transition: "height 0.1s, background 0.1s",
+                                }}
+                              >
+                                {sidebarDropIndex === tracks.length && dropTargetPlaylistId === playlist.id && "Drop here"}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Create New Playlist */}
+            <button
+              onClick={() => {
+                setShowCreatePlaylist(true);
+                setActiveTab("playlists");
+              }}
+              style={{
+                marginTop: 12,
+                width: "100%",
+                padding: "10px",
+                fontSize: 12,
+                fontWeight: 600,
+                background: "rgba(30, 215, 96, 0.2)",
+                color: "#1DB954",
+                border: "1px solid rgba(30, 215, 96, 0.4)",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            >
+              + New Playlist
+            </button>
           </div>
         </div>
 
