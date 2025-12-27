@@ -354,9 +354,28 @@ export default function GlobalModalsRenderer() {
     return () => window.removeEventListener("keydown", handleGlobalEscape);
   }, [postModals]);
   
-  // Don't render anything if no user or no modals
-  if (!user || postModals.openModals.length === 0) {
+  // Don't render anything if no modals
+  if (postModals.openModals.length === 0) {
     return null;
+  }
+  
+  // Show loading if user not loaded yet but modals are open
+  if (!user) {
+    return (
+      <div style={{
+        position: "fixed",
+        bottom: 100,
+        right: 20,
+        background: "var(--alzooka-gold)",
+        color: "var(--alzooka-teal-dark)",
+        padding: "8px 16px",
+        borderRadius: 8,
+        zIndex: 99999,
+        fontSize: 14,
+      }}>
+        Loading modal...
+      </div>
+    );
   }
   
   // Calculate max zIndex for determining top modal
@@ -367,10 +386,27 @@ export default function GlobalModalsRenderer() {
       {postModals.openModals.map((modalWindow, index) => {
         const post = postsData[modalWindow.postId];
         
-        // Skip if post data not loaded yet
+        // Show loading if post data not loaded yet
         if (!post) {
-          // Could show a loading skeleton here
-          return null;
+          return (
+            <div
+              key={modalWindow.id}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "var(--alzooka-teal-light)",
+                padding: "40px 60px",
+                borderRadius: 12,
+                zIndex: modalWindow.zIndex,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
+              <div style={{ color: "var(--alzooka-cream)" }}>Loading post...</div>
+            </div>
+          );
         }
         
         const isTopModal = modalWindow.zIndex === maxZIndex;
