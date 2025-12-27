@@ -130,8 +130,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
         onReactionsChange([...reactions, normalizedData]);
       }
     }
-
-    setIsOpen(false);
+    // Picker stays open - only closes when clicking outside
   }
 
   // Get users who reacted with a specific type
