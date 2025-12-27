@@ -135,14 +135,17 @@ let stationCallbacks: StationCallbacks | null = null;
 
 // Module-level flag to ignore stale track updates when starting new playback
 let ignoreTrackUpdatesUntil = 0;
+let ignoreTrackUri = ""; // The specific track URI to ignore (the old track)
 
 // Module-level storage for current track URI and position (for persistence)
 let currentTrackUri = "";
 let currentPosition = 0;
 
 // Function to set the ignore flag (called by station page when starting new playback)
+// Now also stores which track URI to ignore, so new tracks aren't blocked
 export function ignoreTrackUpdatesFor(ms: number) {
   ignoreTrackUpdatesUntil = Date.now() + ms;
+  ignoreTrackUri = currentTrackUri; // Remember current track to ignore stale updates for it
 }
 
 export function MiniPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -399,8 +402,11 @@ export function MiniPlayerProvider({ children }: { children: React.ReactNode }) 
             }
           }
           
-          // Only update track info if track changed AND we're not ignoring stale updates
-          if (trackChanged && now > ignoreTrackUpdatesUntil) {
+          // Only update track info if track changed AND either:
+          // 1. We're past the ignore window, OR
+          // 2. This is a NEW track (not the old track we're ignoring)
+          const shouldIgnoreThisTrack = now < ignoreTrackUpdatesUntil && currentUri === ignoreTrackUri;
+          if (trackChanged && !shouldIgnoreThisTrack) {
             lastTrackUri = currentUri;
             currentTrackUri = currentUri; // Store for persistence
             const track = state.track_window.current_track;

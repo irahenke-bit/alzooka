@@ -1363,7 +1363,8 @@ export default function StationPage() {
     // Ignore stale position and track updates
     ignorePositionUntilRef.current = Date.now() + 1000;
     ignoreTrackUpdatesFor(1000);
-    setCurrentTrack(null); // Clear immediately
+    setCurrentTrack(null); // Clear station page's track state
+    miniPlayer.setCurrentTrack(null); // Clear mini player's track state too
     
     try {
       setTrackPosition(0);
@@ -2086,15 +2087,18 @@ export default function StationPage() {
       // Wait for transfer to complete before playing
       await transferPromise;
       
-      // Pause any current playback first to clear old position state
+      // FIRST: Set ignore flags BEFORE any actions that trigger Spotify events
+      ignorePositionUntilRef.current = Date.now() + 3000; // Ignore stale position updates
+      ignoreTrackUpdatesFor(3000); // Ignore stale track updates from phone/other devices
+      
+      // Clear track info EVERYWHERE immediately
+      setTrackPosition(0);
+      setCurrentTrack(null); // Clear station page's track state
+      miniPlayer.setCurrentTrack(null); // Clear mini player's track state too
+      
+      // Now pause current playback
       console.log("Pausing current playback before starting new shuffle");
       await spotifyPlayer.pause();
-      
-      // Reset our position tracking and clear stale track info
-      setTrackPosition(0);
-      setCurrentTrack(null); // Clear immediately so we don't show stale track
-      ignorePositionUntilRef.current = Date.now() + 2000; // Ignore stale position updates
-      ignoreTrackUpdatesFor(2000); // Ignore stale track updates from phone/other devices
       
       // Start playback with shuffled tracks at position 0
       const playRes = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`, {
@@ -2522,7 +2526,8 @@ export default function StationPage() {
     // Ignore stale position and track updates for the next 1 second
     ignorePositionUntilRef.current = Date.now() + 1000;
     ignoreTrackUpdatesFor(1000);
-    setCurrentTrack(null); // Clear immediately
+    setCurrentTrack(null); // Clear station page's track state
+    miniPlayer.setCurrentTrack(null); // Clear mini player's track state too
     
     setTrackPosition(0);
     
