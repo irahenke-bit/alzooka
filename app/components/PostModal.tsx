@@ -825,13 +825,17 @@ export function PostModal({
       // Handle horizontal resizing with min/max bounds
       if (resizeDirection.includes('e')) {
         newWidth = Math.min(maxWidth, Math.max(400, resizeStartRef.current.width + deltaX));
+        
+        // Check if right edge would go past viewport
+        const newRight = initialLeft + newWidth + (newX - resizeStartRef.current.modalX);
+        if (newRight > viewportWidth) {
+          newWidth = viewportWidth - initialLeft - (newX - resizeStartRef.current.modalX);
+        }
       }
       if (resizeDirection.includes('w')) {
         // Calculate how much we can actually resize
         const maxDelta = resizeStartRef.current.width - 400;
-        // Also check left edge doesn't go past viewport
-        const maxLeftMove = initialLeft + resizeStartRef.current.modalX - newX;
-        const clampedDelta = Math.max(-maxDelta, Math.min(deltaX, Math.min(maxWidth - resizeStartRef.current.width, initialLeft)));
+        const clampedDelta = Math.max(-maxDelta, Math.min(deltaX, maxWidth - resizeStartRef.current.width));
         newWidth = resizeStartRef.current.width - clampedDelta;
         newX = resizeStartRef.current.modalX + clampedDelta;
         
@@ -840,7 +844,18 @@ export function PostModal({
         if (newLeft < 0) {
           const adjustment = -newLeft;
           newX += adjustment;
-          newWidth -= adjustment;
+          // Don't shrink width, just stop the left edge at 0
+        }
+      }
+      
+      // For non-west resizing, check if modal left is going out of view (centered modal grows both ways)
+      if (!resizeDirection.includes('w') && resizeDirection.includes('e')) {
+        const widthDelta = newWidth - resizeStartRef.current.width;
+        const leftMovement = widthDelta / 2;
+        const newLeft = initialLeft - leftMovement + (newX - resizeStartRef.current.modalX);
+        
+        if (newLeft < 0) {
+          newX -= newLeft; // Push modal right to keep left in view
         }
       }
       
@@ -885,6 +900,12 @@ export function PostModal({
         // Bottom going too far down - this is fine for resize, just cap the height
         newHeight = Math.min(newHeight, viewportHeight - 20);
       }
+      
+      // Final sanity checks - ensure values are valid numbers within reasonable bounds
+      newWidth = Math.max(400, Math.min(maxWidth, Number.isFinite(newWidth) ? newWidth : 680));
+      newHeight = Math.max(300, Math.min(maxHeight, Number.isFinite(newHeight) ? newHeight : 600));
+      newX = Number.isFinite(newX) ? Math.max(-viewportWidth, Math.min(viewportWidth, newX)) : 0;
+      newY = Number.isFinite(newY) ? Math.max(-viewportHeight, Math.min(viewportHeight, newY)) : 0;
       
       setModalSize({ width: newWidth, height: newHeight });
       
