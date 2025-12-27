@@ -17,6 +17,7 @@ import { EmojiButton } from "./EmojiButton";
 import { BannerCropModal } from "./BannerCropModal";
 import { AvatarCropModal } from "./AvatarCropModal";
 import { ReactionPicker, Reaction } from "./ReactionPicker";
+import { usePostModals } from "@/app/contexts/PostModalsContext";
 
 // Instant Tooltip Component
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -456,10 +457,14 @@ export function PostModal({
   onPositionChange,
   onSizeChange,
   hideBackdrop = false,
-  // Global see-through mode
-  seeThroughMode = false,
-  onToggleSeeThroughMode,
+  // Note: seeThroughMode props are deprecated - we use context directly now
+  seeThroughMode: _seeThroughModeProp = false,
+  onToggleSeeThroughMode: _onToggleSeeThroughModeProp,
 }: Props) {
+  // Use context directly for see-through mode - this ensures it works everywhere
+  const postModalsContext = usePostModals();
+  const seeThroughMode = postModalsContext.seeThroughMode;
+  const toggleSeeThroughMode = postModalsContext.toggleSeeThroughMode;
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
     if (!groupMembers) return false;
@@ -1926,9 +1931,7 @@ export function PostModal({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (onToggleSeeThroughMode) {
-                onToggleSeeThroughMode();
-              }
+              toggleSeeThroughMode();
             }}
             onMouseDown={(e) => e.stopPropagation()}
             title={seeThroughMode ? "Hide background" : "Show background"}
