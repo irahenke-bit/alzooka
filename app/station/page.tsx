@@ -1584,6 +1584,8 @@ export default function StationPage() {
         .eq("station_id", station?.id);
       
       setAlbums(prev => prev.map(a => ({ ...a, is_selected: true })));
+      // Also update manualSelections so "Add to Group" button appears
+      setManualSelections(new Set(albums.map(a => a.id)));
       setActiveGroups(new Set()); // Clear group selection
     } else {
       // Revert to manual selections
