@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -4013,7 +4013,7 @@ export default function StationPage() {
                   const isExpanded = expandedAlbums.has(album.id);
                   
                   return (
-                    <div key={album.id} style={{ position: "relative" }}>
+                    <React.Fragment key={album.id}>
                       {/* Album Card */}
                       <div
                         style={{
@@ -4302,13 +4302,19 @@ export default function StationPage() {
                         )}
                       </div>
 
-                      {/* Expanded Tracks with Inline Drop Zone */}
+                      {/* Expanded Tracks with Inline Drop Zone - spans full grid width */}
                       {isExpanded && albumTracks[album.id] && (
                         <div
                           style={{
-                            marginTop: 8,
+                            gridColumn: "1 / -1",
+                            marginTop: -8,
+                            marginBottom: 16,
+                            padding: 12,
+                            background: "rgba(0,0,0,0.25)",
+                            borderRadius: 12,
+                            border: "1px solid rgba(201, 162, 39, 0.2)",
                             display: "flex",
-                            gap: 12,
+                            gap: 16,
                             alignItems: "stretch",
                           }}
                         >
@@ -4317,9 +4323,6 @@ export default function StationPage() {
                             style={{
                               flex: 1,
                               minWidth: 0,
-                              padding: 8,
-                              background: "rgba(0,0,0,0.3)",
-                              borderRadius: 8,
                               fontSize: 12,
                             }}
                           >
@@ -4431,12 +4434,11 @@ export default function StationPage() {
                           {/* Right: Inline Drop Zone */}
                           <div
                             style={{
-                              width: 200,
+                              width: 220,
                               flexShrink: 0,
                               padding: 10,
-                              background: "rgba(0,0,0,0.25)",
+                              background: "rgba(0,0,0,0.2)",
                               borderRadius: 8,
-                              border: "1px solid rgba(201, 162, 39, 0.2)",
                               display: "flex",
                               flexDirection: "column",
                               overflow: "hidden",
@@ -4564,7 +4566,7 @@ export default function StationPage() {
                           </div>
                         </div>
                       )}
-                    </div>
+                    </React.Fragment>
                   );
                 })}
               </div>
