@@ -761,6 +761,9 @@ export function PostModal({
   useEffect(() => {
     if (!isResizing) return;
     
+    // Capture the resize direction for the closure
+    const resizeDirection = isResizing;
+    
     function handleMouseMove(e: MouseEvent) {
       if (!resizeStartRef.current) return;
       
@@ -773,19 +776,19 @@ export function PostModal({
       let newY = resizeStartRef.current.modalY;
       
       // Handle horizontal resizing
-      if (isResizing.includes('e')) {
+      if (resizeDirection.includes('e')) {
         newWidth = Math.max(400, resizeStartRef.current.width + deltaX);
       }
-      if (isResizing.includes('w')) {
+      if (resizeDirection.includes('w')) {
         newWidth = Math.max(400, resizeStartRef.current.width - deltaX);
         newX = resizeStartRef.current.modalX + deltaX;
       }
       
       // Handle vertical resizing
-      if (isResizing.includes('s')) {
+      if (resizeDirection.includes('s')) {
         newHeight = Math.max(300, resizeStartRef.current.height + deltaY);
       }
-      if (isResizing.includes('n')) {
+      if (resizeDirection.includes('n')) {
         newHeight = Math.max(300, resizeStartRef.current.height - deltaY);
         newY = resizeStartRef.current.modalY + deltaY;
       }
@@ -793,7 +796,7 @@ export function PostModal({
       setModalSize({ width: newWidth, height: newHeight });
       
       // Update position if resizing from top or left
-      if (isResizing.includes('n') || isResizing.includes('w')) {
+      if (resizeDirection.includes('n') || resizeDirection.includes('w')) {
         setModalPosition({ x: newX, y: newY });
       }
     }
