@@ -10,6 +10,7 @@ import { NotificationBell } from "@/app/components/NotificationBell";
 import { UserSearch } from "@/app/components/UserSearch";
 import Header from "@/app/components/Header";
 import { PostModal } from "@/app/components/PostModal";
+import { usePostModals } from "@/app/contexts/PostModalsContext";
 import { ShareModal } from "@/app/components/ShareModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { EmojiButton } from "@/app/components/EmojiButton";
@@ -192,7 +193,40 @@ function FeedContent() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  const [modalPost, setModalPost] = useState<Post | null>(null);
+  // Multi-window modal support - array of open posts with their modal IDs
+  const [openModalPosts, setOpenModalPosts] = useState<Array<{ modalId: string; post: Post }>>([]);
+  const postModals = usePostModals();
+  
+  // Helper to open a post in a modal window
+  const openPostModal = (post: Post) => {
+    // Check if already open in our local state
+    const existing = openModalPosts.find(m => m.post.id === post.id);
+    if (existing) {
+      postModals.bringToFront(existing.modalId);
+      return;
+    }
+    
+    // Try to open via context (handles max check and shows message if at limit)
+    const success = postModals.openModal(post.id);
+    if (success) {
+      // Generate a unique modal ID
+      const modalId = `modal-${Date.now()}-${post.id}`;
+      setOpenModalPosts(prev => [...prev, { modalId, post }]);
+    }
+  };
+  
+  // Helper to close a modal
+  const closePostModal = (modalId: string) => {
+    postModals.closeModal(modalId);
+    setOpenModalPosts(prev => prev.filter(m => m.modalId !== modalId));
+  };
+  
+  // Helper to update a specific modal's post data
+  const updateModalPost = (postId: string, updater: (post: Post) => Post) => {
+    setOpenModalPosts(prev => prev.map(m => 
+      m.post.id === postId ? { ...m, post: updater(m.post) } : m
+    ));
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
@@ -544,9 +578,9 @@ function FeedContent() {
                   });
                 });
 
-                // Also update modal if it's showing this post
-                setModalPost(currentModal => {
-                  if (!currentModal || currentModal.id !== postId) return currentModal;
+                // Also update any modal windows showing this post
+                setOpenModalPosts(prev => prev.map(m => {
+                  if (m.post.id !== postId) return m;
                   
                   // Check if comment already exists (prevent duplicates)
                   const commentExists = (comments: Comment[]): boolean => {
@@ -556,7 +590,7 @@ function FeedContent() {
                     }
                     return false;
                   };
-                  if (commentExists(currentModal.comments || [])) return currentModal;
+                  if (commentExists(m.post.comments || [])) return m;
                   
                   const typedComment = newComment as unknown as Comment;
                   
@@ -575,11 +609,11 @@ function FeedContent() {
                         return c;
                       });
                     };
-                    return { ...currentModal, comments: addReplyToParent(currentModal.comments || []) };
+                    return { ...m, post: { ...m.post, comments: addReplyToParent(m.post.comments || []) } };
                   } else {
-                    return { ...currentModal, comments: [...(currentModal.comments || []), typedComment] };
+                    return { ...m, post: { ...m.post, comments: [...(m.post.comments || []), typedComment] } };
                   }
-                });
+                }));
               }
             } catch (err) {
               console.error("Error in comments subscription:", err);
@@ -655,7 +689,7 @@ function FeedContent() {
           })) as unknown as Comment[];
           const commentsWithReplies = buildCommentTreeRecursive(allComments);
           
-          setModalPost({
+          openPostModal({
             ...postsData,
             comments: commentsWithReplies
           } as unknown as Post);
@@ -694,16 +728,18 @@ function FeedContent() {
     };
   }, []);
 
-  // Global escape key handler as a failsafe to close any stuck modal
+  // Global escape key handler - closes the topmost modal
   useEffect(() => {
     function handleGlobalEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setModalPost(null);
+      if (e.key === "Escape" && openModalPosts.length > 0) {
+        // Close the most recently opened modal (last in array)
+        const lastModal = openModalPosts[openModalPosts.length - 1];
+        closePostModal(lastModal.modalId);
       }
     }
     window.addEventListener("keydown", handleGlobalEscape);
     return () => window.removeEventListener("keydown", handleGlobalEscape);
-  }, []);
+  }, [openModalPosts]);
 
   // Handle URL param changes for comment highlighting (e.g., from notification clicks)
   useEffect(() => {
@@ -773,7 +809,7 @@ function FeedContent() {
           })) as unknown as Comment[];
           const commentsWithReplies = buildCommentTreeRecursive(allComments);
 
-          setModalPost({
+          openPostModal({
             ...postsData,
             comments: commentsWithReplies
           } as unknown as Post);
@@ -2152,7 +2188,7 @@ function FeedContent() {
                   voteTotals={voteTotals}
                   onVote={handleVote}
                   isHighlighted={post.id === highlightPostId}
-                  onOpenModal={() => setModalPost(post)}
+                  onOpenModal={() => openPostModal(post)}
                   onCommentAdded={async () => {
                     const refreshedPosts = await loadPosts();
                     await loadUserVotes(user!.id);
@@ -2185,91 +2221,107 @@ function FeedContent() {
         })()}
       </div>
 
-      {/* Post Modal */}
-      {modalPost && user && (
-        <PostModal
-          post={modalPost}
-          user={user}
-          supabase={supabase}
-          votes={votes}
-          voteTotals={voteTotals}
-          onVote={handleVote}
-          highlightCommentId={highlightCommentId}
-          onClose={() => setModalPost(null)}
-          onCommentAdded={(newComment, deletedCommentId) => {
-            if (newComment && modalPost) {
-              // Optimistically add the new comment to state immediately
-              setModalPost(prev => {
-                if (!prev) return prev;
-                
-                const updatedComments = [...(prev.comments || [])];
-                
-                if (newComment.parent_comment_id) {
-                  // It's a reply - find the parent and add to its replies
-                  const addReplyToParent = (comments: Comment[]): Comment[] => {
-                    return comments.map(c => {
-                      if (c.id === newComment.parent_comment_id) {
-                        return {
-                          ...c,
-                          replies: [...(c.replies || []), newComment]
-                        };
-                      }
-                      if (c.replies && c.replies.length > 0) {
-                        return {
-                          ...c,
-                          replies: addReplyToParent(c.replies)
-                        };
-                      }
-                      return c;
-                    });
+      {/* Multi-Window Post Modals */}
+      {openModalPosts.map((modalData, index) => {
+        const { modalId, post: modalPost } = modalData;
+        const modalWindow = postModals.openModals.find(m => m.postId === modalPost.id);
+        const isTopModal = index === openModalPosts.length - 1;
+        
+        return user && (
+          <PostModal
+            key={modalId}
+            post={modalPost}
+            user={user}
+            supabase={supabase}
+            votes={votes}
+            voteTotals={voteTotals}
+            onVote={handleVote}
+            highlightCommentId={isTopModal ? highlightCommentId : null}
+            onClose={() => closePostModal(modalId)}
+            // Multi-window props
+            modalId={modalId}
+            initialPosition={modalWindow?.position}
+            initialSize={modalWindow?.size}
+            zIndex={modalWindow?.zIndex ?? (10000 + index)}
+            onBringToFront={() => postModals.bringToFront(modalId)}
+            onPositionChange={(pos) => postModals.updateModalPosition(modalId, pos)}
+            onSizeChange={(size) => postModals.updateModalSize(modalId, size)}
+            hideBackdrop={!isTopModal} // Only show backdrop for topmost modal
+            onCommentAdded={(newComment, deletedCommentId) => {
+              if (newComment) {
+                // Optimistically add the new comment to this modal's post
+                setOpenModalPosts(prev => prev.map(m => {
+                  if (m.modalId !== modalId) return m;
+                  
+                  const updatedComments = [...(m.post.comments || [])];
+                  
+                  if (newComment.parent_comment_id) {
+                    // It's a reply - find the parent and add to its replies
+                    const addReplyToParent = (comments: Comment[]): Comment[] => {
+                      return comments.map(c => {
+                        if (c.id === newComment.parent_comment_id) {
+                          return {
+                            ...c,
+                            replies: [...(c.replies || []), newComment]
+                          };
+                        }
+                        if (c.replies && c.replies.length > 0) {
+                          return {
+                            ...c,
+                            replies: addReplyToParent(c.replies)
+                          };
+                        }
+                        return c;
+                      });
+                    };
+                    return {
+                      ...m,
+                      post: { ...m.post, comments: addReplyToParent(updatedComments) }
+                    };
+                  } else {
+                    // It's a top-level comment - add to the end
+                    return {
+                      ...m,
+                      post: { ...m.post, comments: [...updatedComments, newComment] }
+                    };
+                  }
+                }));
+              }
+              
+              // Handle comment deletion optimistically
+              if (deletedCommentId) {
+                setOpenModalPosts(prev => prev.map(m => {
+                  if (m.modalId !== modalId) return m;
+                  
+                  const removeComment = (comments: Comment[]): Comment[] => {
+                    return comments
+                      .filter(c => c.id !== deletedCommentId)
+                      .map(c => ({
+                        ...c,
+                        replies: c.replies ? removeComment(c.replies) : []
+                      }));
                   };
+                  
                   return {
-                    ...prev,
-                    comments: addReplyToParent(updatedComments)
+                    ...m,
+                    post: { ...m.post, comments: removeComment(m.post.comments || []) }
                   };
-                } else {
-                  // It's a top-level comment - add to the end
-                  return {
-                    ...prev,
-                    comments: [...updatedComments, newComment]
-                  };
-                }
-              });
-            }
-            
-            // Handle comment deletion optimistically
-            if (deletedCommentId && modalPost) {
-              setModalPost(prev => {
-                if (!prev) return prev;
-                
-                const removeComment = (comments: Comment[]): Comment[] => {
-                  return comments
-                    .filter(c => c.id !== deletedCommentId)
-                    .map(c => ({
-                      ...c,
-                      replies: c.replies ? removeComment(c.replies) : []
-                    }));
-                };
-                
-                return {
-                  ...prev,
-                  comments: removeComment(prev.comments || [])
-                };
-              });
-            }
+                }));
+              }
 
-            // Also update the main posts list in the background
-            loadPosts().then(async (refreshedPosts) => {
-              await loadUserVotes(user.id);
-              await loadVoteTotals(refreshedPosts);
-              await loadReactions(refreshedPosts);
-            });
-          }}
-          onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
-          postReactions={reactions[modalPost.id] || []}
-          onPostReactionsChange={(newReactions) => handleReactionsChange(modalPost.id, newReactions)}
-        />
-      )}
+              // Also update the main posts list in the background
+              loadPosts().then(async (refreshedPosts) => {
+                await loadUserVotes(user.id);
+                await loadVoteTotals(refreshedPosts);
+                await loadReactions(refreshedPosts);
+              });
+            }}
+            onUserAvatarUpdated={(newUrl) => setUserAvatarUrl(newUrl)}
+            postReactions={reactions[modalPost.id] || []}
+            onPostReactionsChange={(newReactions) => handleReactionsChange(modalPost.id, newReactions)}
+          />
+        );
+      })}
       </div>
     </>
   );

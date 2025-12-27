@@ -329,6 +329,15 @@ type Props = {
   onUserBannerUpdated?: (newBannerUrl: string) => void;
   postReactions?: Reaction[];
   onPostReactionsChange?: (reactions: Reaction[]) => void;
+  // Multi-window support
+  modalId?: string;
+  initialPosition?: { x: number; y: number } | null;
+  initialSize?: { width: number; height: number } | null;
+  zIndex?: number;
+  onBringToFront?: () => void;
+  onPositionChange?: (position: { x: number; y: number }) => void;
+  onSizeChange?: (size: { width: number; height: number }) => void;
+  hideBackdrop?: boolean;
 };
 
 // Vote Buttons Component
@@ -435,6 +444,15 @@ export function PostModal({
   onUserBannerUpdated,
   postReactions = [],
   onPostReactionsChange,
+  // Multi-window props
+  modalId,
+  initialPosition,
+  initialSize,
+  zIndex: propZIndex,
+  onBringToFront,
+  onPositionChange,
+  onSizeChange,
+  hideBackdrop = false,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -447,13 +465,29 @@ export function PostModal({
   const [showEditHistory, setShowEditHistory] = useState(false);
   const [mounted, setMounted] = useState(false);
   
-  // Draggable modal state
-  const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
+  // Draggable modal state - use initialPosition if provided (multi-window mode)
+  const [modalPosition, setModalPositionState] = useState<{ x: number; y: number } | null>(initialPosition ?? null);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; modalX: number; modalY: number } | null>(null);
   
-  // Resizable modal state
-  const [modalSize, setModalSize] = useState<{ width: number; height: number } | null>(null);
+  // Wrapper to also notify parent of position changes
+  const setModalPosition = (pos: { x: number; y: number } | null) => {
+    setModalPositionState(pos);
+    if (pos && onPositionChange) {
+      onPositionChange(pos);
+    }
+  };
+  
+  // Resizable modal state - use initialSize if provided (multi-window mode)
+  const [modalSize, setModalSizeState] = useState<{ width: number; height: number } | null>(initialSize ?? null);
+  
+  // Wrapper to also notify parent of size changes
+  const setModalSize = (size: { width: number; height: number } | null) => {
+    setModalSizeState(size);
+    if (size && onSizeChange) {
+      onSizeChange(size);
+    }
+  };
   const [isResizing, setIsResizing] = useState<string | null>(null); // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
   const resizeStartRef = useRef<{ 
     x: number; y: number; 
@@ -1675,6 +1709,8 @@ export function PostModal({
       onClick={(e) => {
         // Don't close if we were just resizing or dragging
         if (isResizing || isDragging || justFinishedResizingRef.current) return;
+        // In multi-window mode with no backdrop, don't close on background click
+        if (hideBackdrop) return;
         if (!seeThroughMode) onClose();
       }}
       style={{
@@ -1683,18 +1719,24 @@ export function PostModal({
         left: 0,
         right: 0,
         bottom: 0,
-        background: seeThroughMode ? "transparent" : "rgba(0, 0, 0, 0.85)",
-        zIndex: 9999,
+        // In multi-window mode, hide backdrop for non-front windows
+        background: hideBackdrop ? "transparent" : (seeThroughMode ? "transparent" : "rgba(0, 0, 0, 0.85)"),
+        zIndex: propZIndex ?? 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
-        pointerEvents: seeThroughMode ? "none" : "auto",
+        // In multi-window mode, let clicks pass through to windows behind
+        pointerEvents: hideBackdrop ? "none" : (seeThroughMode ? "none" : "auto"),
       }}
     >
       {/* Modal Content */}
       <div
         ref={modalRef}
+        onMouseDown={() => {
+          // Bring this modal to front when clicked (multi-window mode)
+          if (onBringToFront) onBringToFront();
+        }}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--alzooka-teal-light)",
