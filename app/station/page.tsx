@@ -4305,15 +4305,15 @@ export default function StationPage() {
               </div>
             )}
 
-            {/* Expanded Tracks Section - Rendered outside the grid */}
-            {expandedAlbums.size > 0 && (
-              <div style={{ padding: 10, background: "red", color: "white", marginTop: 16 }}>
-                DEBUG: {expandedAlbums.size} album(s) expanded: {Array.from(expandedAlbums).join(", ")}
-              </div>
-            )}
+          </div>
+
+        </div>
+
+        {/* Expanded Tracks Section - Rendered completely outside tabs structure */}
+        {expandedAlbums.size > 0 && activeTab === "albums" && (
+          <div style={{ marginTop: 16 }}>
             {Array.from(expandedAlbums).map(expandedAlbumId => {
               const album = albums.find(a => a.id === expandedAlbumId);
-              console.log("Expanded album lookup:", expandedAlbumId, "found:", !!album);
               if (!album) return null;
               
               const tracks = albumTracks[expandedAlbumId];
@@ -4323,7 +4323,7 @@ export default function StationPage() {
                 <div
                   key={`expanded-${expandedAlbumId}`}
                   style={{
-                    marginTop: 16,
+                    marginBottom: 16,
                     padding: 12,
                     background: "rgba(0,0,0,0.25)",
                     borderRadius: 12,
@@ -4603,8 +4603,7 @@ export default function StationPage() {
               );
             })}
           </div>
-
-        </div>
+        )}
 
         {/* Playlists Tab Content */}
         <div style={{ display: activeTab === "playlists" ? "block" : "none" }}>
