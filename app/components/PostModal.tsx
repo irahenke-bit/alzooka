@@ -794,8 +794,15 @@ export function PostModal({
     // Capture the resize direction for the closure
     const resizeDirection = isResizing;
     
+    // Get viewport dimensions for clamping
+    const maxWidth = window.innerWidth - 40;
+    const maxHeight = window.innerHeight - 40;
+    
     function handleMouseMove(e: MouseEvent) {
       if (!resizeStartRef.current) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
       
       const deltaX = e.clientX - resizeStartRef.current.x;
       const deltaY = e.clientY - resizeStartRef.current.y;
@@ -805,22 +812,28 @@ export function PostModal({
       let newX = resizeStartRef.current.modalX;
       let newY = resizeStartRef.current.modalY;
       
-      // Handle horizontal resizing
+      // Handle horizontal resizing with min/max bounds
       if (resizeDirection.includes('e')) {
-        newWidth = Math.max(400, resizeStartRef.current.width + deltaX);
+        newWidth = Math.min(maxWidth, Math.max(400, resizeStartRef.current.width + deltaX));
       }
       if (resizeDirection.includes('w')) {
-        newWidth = Math.max(400, resizeStartRef.current.width - deltaX);
-        newX = resizeStartRef.current.modalX + deltaX;
+        const proposedWidth = resizeStartRef.current.width - deltaX;
+        newWidth = Math.min(maxWidth, Math.max(400, proposedWidth));
+        // Only adjust position if width actually changed
+        const actualDelta = resizeStartRef.current.width - newWidth;
+        newX = resizeStartRef.current.modalX - actualDelta;
       }
       
-      // Handle vertical resizing
+      // Handle vertical resizing with min/max bounds
       if (resizeDirection.includes('s')) {
-        newHeight = Math.max(300, resizeStartRef.current.height + deltaY);
+        newHeight = Math.min(maxHeight, Math.max(300, resizeStartRef.current.height + deltaY));
       }
       if (resizeDirection.includes('n')) {
-        newHeight = Math.max(300, resizeStartRef.current.height - deltaY);
-        newY = resizeStartRef.current.modalY + deltaY;
+        const proposedHeight = resizeStartRef.current.height - deltaY;
+        newHeight = Math.min(maxHeight, Math.max(300, proposedHeight));
+        // Only adjust position if height actually changed
+        const actualDelta = resizeStartRef.current.height - newHeight;
+        newY = resizeStartRef.current.modalY - actualDelta;
       }
       
       setModalSize({ width: newWidth, height: newHeight });
@@ -831,17 +844,20 @@ export function PostModal({
       }
     }
     
-    function handleMouseUp() {
+    function handleMouseUp(e: MouseEvent) {
+      e.preventDefault();
+      e.stopPropagation();
       setIsResizing(null);
       resizeStartRef.current = null;
     }
     
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    // Use capture phase to intercept events before they reach other elements
+    document.addEventListener("mousemove", handleMouseMove, { capture: true });
+    document.addEventListener("mouseup", handleMouseUp, { capture: true });
     
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove, { capture: true });
+      document.removeEventListener("mouseup", handleMouseUp, { capture: true });
     };
   }, [isResizing]);
 
@@ -1573,7 +1589,11 @@ export function PostModal({
 
   const modalContent = (
     <div
-      onClick={seeThroughMode ? undefined : onClose}
+      onClick={(e) => {
+        // Don't close if we were just resizing or dragging
+        if (isResizing || isDragging) return;
+        if (!seeThroughMode) onClose();
+      }}
       style={{
         position: "fixed",
         top: 0,
