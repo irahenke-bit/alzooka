@@ -1545,8 +1545,8 @@ export function PostModal({
               fontWeight: "bold",
             }}
           >
-            {/* Eye emoji - changes based on mode */}
-            {seeThroughMode ? "👁️" : "🙈"}
+            {/* Monkey emoji - hands over eyes vs eyes visible */}
+            {seeThroughMode ? "🐵" : "🙈"}
           </button>
           
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--alzooka-cream)" }}>
