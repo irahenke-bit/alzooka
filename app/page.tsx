@@ -549,42 +549,7 @@ function FeedContent() {
                   });
                 });
 
-                // Also update any modal windows showing this post
-                setOpenModalPosts(prev => prev.map(m => {
-                  if (m.post.id !== postId) return m;
-                  
-                  // Check if comment already exists (prevent duplicates)
-                  const commentExists = (comments: Comment[]): boolean => {
-                    for (const c of comments) {
-                      if (c.id === commentId) return true;
-                      if (c.replies && commentExists(c.replies)) return true;
-                    }
-                    return false;
-                  };
-                  if (commentExists(m.post.comments || [])) return m;
-                  
-                  const typedComment = newComment as unknown as Comment;
-                  
-                  if (typedComment.parent_comment_id) {
-                    const addReplyToParent = (comments: Comment[]): Comment[] => {
-                      return comments.map(c => {
-                        if (c.id === typedComment.parent_comment_id) {
-                          return {
-                            ...c,
-                            replies: [...(c.replies || []), typedComment]
-                          };
-                        }
-                        if (c.replies && c.replies.length > 0) {
-                          return { ...c, replies: addReplyToParent(c.replies) };
-                        }
-                        return c;
-                      });
-                    };
-                    return { ...m, post: { ...m.post, comments: addReplyToParent(m.post.comments || []) } };
-                  } else {
-                    return { ...m, post: { ...m.post, comments: [...(m.post.comments || []), typedComment] } };
-                  }
-                }));
+                // Note: Modal windows are now updated by GlobalModalsRenderer
               }
             } catch (err) {
               console.error("Error in comments subscription:", err);

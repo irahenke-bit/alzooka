@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePostModals } from "@/app/contexts/PostModalsContext";
 import { PostModal } from "@/app/components/PostModal";
+import { Reaction } from "@/app/components/ReactionPicker";
 import { createBrowserClient } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { useSearchParams } from "next/navigation";
@@ -57,19 +58,7 @@ type Vote = {
   value: number;
 };
 
-type Reaction = {
-  id: string;
-  user_id: string;
-  post_id?: string;
-  comment_id?: string;
-  reaction_type: string;
-  created_at: string;
-  users: {
-    username: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
-};
+// Reaction type is imported from ReactionPicker
 
 // Helper function to build recursive comment tree
 function buildCommentTreeRecursive(comments: Comment[]): Comment[] {
