@@ -461,6 +461,7 @@ export function PostModal({
     modalX: number; modalY: number;
   } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const justFinishedResizingRef = useRef(false);
   
   // See-through mode - makes background visible
   const [seeThroughMode, setSeeThroughMode] = useState(false);
@@ -916,6 +917,13 @@ export function PostModal({
     function handleMouseUp(e: MouseEvent) {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Set flag to prevent modal from closing immediately after resize
+      justFinishedResizingRef.current = true;
+      setTimeout(() => {
+        justFinishedResizingRef.current = false;
+      }, 100);
+      
       setIsResizing(null);
       resizeStartRef.current = null;
     }
@@ -1656,11 +1664,17 @@ export function PostModal({
   // Don't render on server
   if (!mounted) return null;
 
+  // Compute safe position values - clamp to prevent modal from going completely off-screen
+  const safePosition = modalPosition ? {
+    x: Math.max(-window.innerWidth + 100, Math.min(window.innerWidth - 100, modalPosition.x)),
+    y: Math.max(-window.innerHeight + 100, Math.min(window.innerHeight - 100, modalPosition.y)),
+  } : null;
+
   const modalContent = (
     <div
       onClick={(e) => {
         // Don't close if we were just resizing or dragging
-        if (isResizing || isDragging) return;
+        if (isResizing || isDragging || justFinishedResizingRef.current) return;
         if (!seeThroughMode) onClose();
       }}
       style={{
@@ -1694,9 +1708,9 @@ export function PostModal({
           boxShadow: seeThroughMode 
             ? "0 4px 20px rgba(0, 0, 0, 0.4)" 
             : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          animation: modalPosition ? "none" : "modalSlideIn 0.2s ease-out",
-          // Apply position transform if dragged
-          transform: modalPosition ? `translate(${modalPosition.x}px, ${modalPosition.y}px)` : undefined,
+          animation: safePosition ? "none" : "modalSlideIn 0.2s ease-out",
+          // Apply position transform if dragged - use clamped safe position
+          transform: safePosition ? `translate(${safePosition.x}px, ${safePosition.y}px)` : undefined,
           cursor: isDragging ? "grabbing" : isResizing ? (
             isResizing === 'n' || isResizing === 's' ? 'ns-resize' :
             isResizing === 'e' || isResizing === 'w' ? 'ew-resize' :
