@@ -161,11 +161,13 @@ export default function ViewStationPage() {
       }
 
       // Get station owner by username
-      const { data: ownerData } = await supabase
+      const { data: ownerData, error: ownerError } = await supabase
         .from("users")
         .select("id, username, display_name, avatar_url")
         .ilike("username", username)
         .single();
+
+      console.log("Owner lookup:", { ownerData, ownerError, username });
 
       if (!ownerData) {
         // User not found
@@ -182,11 +184,13 @@ export default function ViewStationPage() {
       setStationOwner(ownerData);
 
       // Get their station
-      const { data: stationData } = await supabase
+      const { data: stationData, error: stationError } = await supabase
         .from("stations")
         .select("id, name, owner_id")
         .eq("owner_id", ownerData.id)
         .single();
+
+      console.log("Station lookup:", { stationData, stationError });
 
       if (!stationData) {
         // No station
@@ -197,11 +201,13 @@ export default function ViewStationPage() {
       setStation(stationData);
 
       // Load albums
-      const { data: albumsData } = await supabase
+      const { data: albumsData, error: albumsError } = await supabase
         .from("station_albums")
         .select("*")
         .eq("station_id", stationData.id)
-        .order("display_order", { ascending: true });
+        .order("created_at", { ascending: false });
+
+      console.log("Albums query result:", { albumsData, albumsError, stationId: stationData.id });
 
       if (albumsData) {
         setAlbums(albumsData);
