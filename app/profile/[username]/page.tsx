@@ -691,19 +691,30 @@ export default function ProfilePage() {
         setComments(commentsWithVotes as unknown as Comment[]);
       }
 
-      // Get vote stats - votes received on user's posts
-      const postIdsForStats = postsData?.map(p => p.id) || [];
-      const commentIds = commentsData?.map(c => c.id) || [];
+      // Get vote stats - votes received on ALL user's posts (including group posts)
+      // We need to fetch all post IDs by this user, not just the ones shown on profile
+      const { data: allUserPosts } = await supabase
+        .from("posts")
+        .select("id")
+        .eq("user_id", profileData.id);
+
+      const { data: allUserComments } = await supabase
+        .from("comments")
+        .select("id")
+        .eq("user_id", profileData.id);
+
+      const allPostIds = allUserPosts?.map(p => p.id) || [];
+      const allCommentIds = allUserComments?.map(c => c.id) || [];
 
       let upvotesReceived = 0;
       let downvotesReceived = 0;
 
-      if (postIdsForStats.length > 0) {
+      if (allPostIds.length > 0) {
         const { data: postVotes } = await supabase
           .from("votes")
           .select("value")
           .eq("target_type", "post")
-          .in("target_id", postIdsForStats);
+          .in("target_id", allPostIds);
 
         if (postVotes) {
           postVotes.forEach(v => {
@@ -713,12 +724,12 @@ export default function ProfilePage() {
         }
       }
 
-      if (commentIds.length > 0) {
+      if (allCommentIds.length > 0) {
         const { data: commentVotes } = await supabase
           .from("votes")
           .select("value")
           .eq("target_type", "comment")
-          .in("target_id", commentIds);
+          .in("target_id", allCommentIds);
 
         if (commentVotes) {
           commentVotes.forEach(v => {
