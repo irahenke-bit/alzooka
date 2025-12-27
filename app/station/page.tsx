@@ -260,14 +260,25 @@ export default function StationPage() {
   
   // On mount/return to page, fetch CURRENT playback state directly from Spotify player
   // This ensures we show the actual playing track, not stale context state
+  // Using empty deps [] ensures this runs EVERY time component mounts
   useEffect(() => {
-    if (!miniPlayer.spotifyPlayer) return;
-    
-    // Sync immediately when component mounts or player becomes available
     const syncFromPlayer = async () => {
+      const player = miniPlayer.spotifyPlayer;
+      if (!player) {
+        console.log("[Station] No player available for sync");
+        return;
+      }
+      
+      console.log("[Station] Syncing from player on mount...");
       try {
-        const state = await miniPlayer.spotifyPlayer!.getCurrentState();
+        const state = await player.getCurrentState();
         if (state) {
+          console.log("[Station] Got player state:", {
+            paused: state.paused,
+            track: state.track_window?.current_track?.name,
+            position: state.position,
+          });
+          
           setIsPlaying(!state.paused);
           setTrackPosition(state.position);
           setTrackDuration(state.duration);
@@ -278,6 +289,7 @@ export default function StationPage() {
           
           if (state.track_window?.current_track) {
             const track = state.track_window.current_track;
+            // Update current track to match what's actually playing
             setCurrentTrack({
               name: track.name,
               artist: track.artists.map((a: { name: string }) => a.name).join(", "),
@@ -285,25 +297,58 @@ export default function StationPage() {
               albumName: track.album.name,
             });
             setCurrentlyPlayingTrackUri(track.uri);
+            
+            // Also update the mini player context to keep everything in sync
+            miniPlayer.setCurrentTrack({
+              name: track.name,
+              artist: track.artists.map((a: { name: string }) => a.name).join(", "),
+              image: track.album.images[0]?.url || "",
+              albumName: track.album.name,
+            });
           }
+        } else {
+          console.log("[Station] No player state available");
         }
       } catch (err) {
-        console.error("Error syncing from player:", err);
+        console.error("[Station] Error syncing from player:", err);
       }
     };
     
+    // Sync immediately on mount
     syncFromPlayer();
     
     // Also sync when the page becomes visible (user returns from another tab/page)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
+        console.log("[Station] Page became visible, syncing...");
         syncFromPlayer();
       }
     };
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [miniPlayer.spotifyPlayer]);
+  // Run on mount and when player becomes available
+  }, [miniPlayer.spotifyPlayer, miniPlayer.setCurrentTrack]);
+  
+  // Also sync when we detect the context's track differs from local state
+  useEffect(() => {
+    if (miniPlayer.currentTrack && currentTrack) {
+      // If the context has different track info than our local state, sync from player
+      if (miniPlayer.currentTrack.name !== currentTrack.name) {
+        console.log("[Station] Track mismatch detected, syncing...", {
+          context: miniPlayer.currentTrack.name,
+          local: currentTrack.name,
+        });
+        // Update local state to match context
+        setCurrentTrack({
+          name: miniPlayer.currentTrack.name,
+          artist: miniPlayer.currentTrack.artist,
+          image: miniPlayer.currentTrack.image || "",
+          albumName: miniPlayer.currentTrack.albumName || "",
+        });
+      }
+    }
+  }, [miniPlayer.currentTrack, currentTrack]);
   
   // Register callbacks with the global context so it can update station page state
   useEffect(() => {
