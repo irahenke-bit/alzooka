@@ -728,12 +728,14 @@ export function PostModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Drag handlers for moveable modal
+  // Ref to track drag state for handlers (more reliable than depending on state in closures)
+  const isDraggingRef = useRef(false);
+  isDraggingRef.current = isDragging;
+  
+  // Drag handlers for moveable modal - attach once, check ref in handler
   useEffect(() => {
-    if (!isDragging) return;
-    
     function handleMouseMove(e: MouseEvent) {
-      if (!dragStartRef.current) return;
+      if (!isDraggingRef.current || !dragStartRef.current) return;
       
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaY = e.clientY - dragStartRef.current.y;
@@ -745,8 +747,10 @@ export function PostModal({
     }
     
     function handleMouseUp() {
-      setIsDragging(false);
-      dragStartRef.current = null;
+      if (isDraggingRef.current) {
+        setIsDragging(false);
+        dragStartRef.current = null;
+      }
     }
     
     document.addEventListener("mousemove", handleMouseMove);
@@ -756,7 +760,7 @@ export function PostModal({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging]);
+  }, []); // Empty deps - attach once, use refs for state
 
   function handleDragStart(e: React.MouseEvent) {
     // Only start drag on left click
@@ -821,29 +825,50 @@ export function PostModal({
     };
   }
 
-  // Resize mouse move/up effect
+  // Ref to track resize state for handlers
+  const isResizingRef = useRef<string | null>(null);
+  isResizingRef.current = isResizing;
+  
+  // Store resize context in a ref so we can access it from the persistent handler
+  const resizeContextRef = useRef<{
+    direction: string;
+    viewportWidth: number;
+    viewportHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+    initialTop: number;
+    initialLeft: number;
+  } | null>(null);
+  
+  // Update resize context when resizing starts
   useEffect(() => {
-    if (!isResizing) return;
-    
-    // Capture the resize direction for the closure
-    const resizeDirection = isResizing;
-    
-    // Get viewport dimensions for clamping
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const maxWidth = viewportWidth - 40;
-    const maxHeight = viewportHeight - 40;
-    
-    // Get the initial modal rect to know its actual viewport position
-    const initialRect = modalRef.current?.getBoundingClientRect();
-    const initialTop = initialRect?.top ?? 0;
-    const initialLeft = initialRect?.left ?? 0;
-    
+    if (isResizing) {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const initialRect = modalRef.current?.getBoundingClientRect();
+      resizeContextRef.current = {
+        direction: isResizing,
+        viewportWidth,
+        viewportHeight,
+        maxWidth: viewportWidth - 40,
+        maxHeight: viewportHeight - 40,
+        initialTop: initialRect?.top ?? 0,
+        initialLeft: initialRect?.left ?? 0,
+      };
+    } else {
+      resizeContextRef.current = null;
+    }
+  }, [isResizing]);
+  
+  // Resize mouse move/up effect - attach once, check ref in handler
+  useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
-      if (!resizeStartRef.current) return;
+      if (!isResizingRef.current || !resizeStartRef.current || !resizeContextRef.current) return;
       
       e.preventDefault();
       e.stopPropagation();
+      
+      const { direction: resizeDirection, viewportWidth, viewportHeight, maxWidth, maxHeight, initialTop, initialLeft } = resizeContextRef.current;
       
       // Clamp mouse position to viewport to prevent extreme values
       const clampedX = Math.max(0, Math.min(viewportWidth, e.clientX));
@@ -879,18 +904,17 @@ export function PostModal({
         if (newLeft < 0) {
           const adjustment = -newLeft;
           newX += adjustment;
-          // Don't shrink width, just stop the left edge at 0
         }
       }
       
-      // For non-west resizing, check if modal left is going out of view (centered modal grows both ways)
+      // For non-west resizing, check if modal left is going out of view
       if (!resizeDirection.includes('w') && resizeDirection.includes('e')) {
         const widthDelta = newWidth - resizeStartRef.current.width;
         const leftMovement = widthDelta / 2;
         const newLeft = initialLeft - leftMovement + (newX - resizeStartRef.current.modalX);
         
         if (newLeft < 0) {
-          newX -= newLeft; // Push modal right to keep left in view
+          newX -= newLeft;
         }
       }
       
@@ -899,67 +923,59 @@ export function PostModal({
         newHeight = Math.min(maxHeight, Math.max(300, resizeStartRef.current.height + deltaY));
       }
       if (resizeDirection.includes('n')) {
-        // Calculate how much we can actually resize
         const maxDelta = resizeStartRef.current.height - 300;
         const clampedDelta = Math.max(-maxDelta, Math.min(deltaY, maxHeight - resizeStartRef.current.height));
         newHeight = resizeStartRef.current.height - clampedDelta;
         newY = resizeStartRef.current.modalY + clampedDelta;
         
-        // Ensure top edge doesn't go past viewport top (y=0)
         const newTop = initialTop + (newY - resizeStartRef.current.modalY);
         if (newTop < 0) {
-          // Top would go out of view - clamp it and extend bottom instead
           const adjustment = -newTop;
-          newY += adjustment; // Move position down to keep top at 0
-          // Height stays the same - the "lost" top expansion becomes bottom expansion
+          newY += adjustment;
         }
       }
       
-      // For non-north resizing, also check if modal top is going out of view
-      // This handles the case where the modal is already positioned high
+      // For non-north resizing, check if modal top is going out of view
       if (!resizeDirection.includes('n')) {
-        // Calculate where the top would be with new height (centered modal gets taller both ways)
         const heightDelta = newHeight - resizeStartRef.current.height;
-        const topMovement = heightDelta / 2; // Centered modal grows equally up and down
+        const topMovement = heightDelta / 2;
         const newTop = initialTop - topMovement + (newY - resizeStartRef.current.modalY);
         
         if (newTop < 0) {
-          // Top would go out of view - adjust position to compensate
-          newY -= newTop; // Push modal down by the amount it would go over
+          newY -= newTop;
         }
       }
       
-      // Clamp position to keep modal bottom in view (at least 50px)
+      // Clamp position to keep modal bottom in view
       const actualBottom = viewportHeight - (initialTop + newHeight + (newY - resizeStartRef.current.modalY));
       if (actualBottom < -newHeight + 50) {
-        // Bottom going too far down - this is fine for resize, just cap the height
         newHeight = Math.min(newHeight, viewportHeight - 20);
       }
       
-      // Final sanity checks - ensure values are valid numbers within reasonable bounds
+      // Final sanity checks
       newWidth = Math.max(400, Math.min(maxWidth, Number.isFinite(newWidth) ? newWidth : 680));
       newHeight = Math.max(300, Math.min(maxHeight, Number.isFinite(newHeight) ? newHeight : 600));
       newX = Number.isFinite(newX) ? Math.max(-viewportWidth, Math.min(viewportWidth, newX)) : 0;
       newY = Number.isFinite(newY) ? Math.max(-viewportHeight, Math.min(viewportHeight, newY)) : 0;
       
       setModalSize({ width: newWidth, height: newHeight });
-      
-      // Always update position during resize to handle clamping
       setModalPosition({ x: newX, y: newY });
     }
     
     function handleMouseUp(e: MouseEvent) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Set flag to prevent modal from closing immediately after resize
-      justFinishedResizingRef.current = true;
-      setTimeout(() => {
-        justFinishedResizingRef.current = false;
-      }, 100);
-      
-      setIsResizing(null);
-      resizeStartRef.current = null;
+      if (isResizingRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Set flag to prevent modal from closing immediately after resize
+        justFinishedResizingRef.current = true;
+        setTimeout(() => {
+          justFinishedResizingRef.current = false;
+        }, 100);
+        
+        setIsResizing(null);
+        resizeStartRef.current = null;
+      }
     }
     
     // Use capture phase to intercept events before they reach other elements
@@ -970,7 +986,7 @@ export function PostModal({
       document.removeEventListener("mousemove", handleMouseMove, { capture: true });
       document.removeEventListener("mouseup", handleMouseUp, { capture: true });
     };
-  }, [isResizing]);
+  }, []); // Empty deps - attach once, use refs for state
 
   // Prevent body scroll when modal is open (unless in see-through mode)
   useEffect(() => {
