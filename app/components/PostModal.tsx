@@ -745,16 +745,15 @@ export function PostModal({
     
     // Check if clicked on an interactive element - don't drag from those
     const target = e.target as HTMLElement;
-    const interactiveElements = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT', 'IMG', 'IFRAME'];
     
-    // Check the element and its parents up to 3 levels for interactive elements
-    let element: HTMLElement | null = target;
-    for (let i = 0; i < 5 && element; i++) {
-      if (interactiveElements.includes(element.tagName)) return;
-      if (element.getAttribute('role') === 'button') return;
-      if (element.classList.contains('vote-button')) return;
-      if (element.onclick) return;
-      element = element.parentElement;
+    // If clicked inside an interactive element, don't start drag
+    if (target.closest('button, a, input, textarea, select, iframe, img, [role="button"]')) {
+      return;
+    }
+    
+    // If clicked on text content (p, span, h1-h6), don't drag
+    if (target.closest('p, span, h1, h2, h3, h4, h5, h6, li')) {
+      return;
     }
     
     e.preventDefault();
