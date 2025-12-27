@@ -4308,7 +4308,10 @@ export default function StationPage() {
             {/* Expanded Tracks Section - Rendered outside the grid */}
             {Array.from(expandedAlbums).map(expandedAlbumId => {
               const album = albums.find(a => a.id === expandedAlbumId);
-              if (!album || !albumTracks[expandedAlbumId]) return null;
+              if (!album) return null;
+              
+              const tracks = albumTracks[expandedAlbumId];
+              const isLoading = !tracks;
               
               return (
                 <div
@@ -4347,7 +4350,11 @@ export default function StationPage() {
                       fontSize: 12,
                     }}
                   >
-                    {albumTracks[expandedAlbumId].map((track, idx) => {
+                    {isLoading ? (
+                      <div style={{ padding: 20, textAlign: "center", opacity: 0.6 }}>
+                        Loading tracks...
+                      </div>
+                    ) : tracks.map((track, idx) => {
                       const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
                       const isSelectedStart = selectedStartTrack?.albumId === expandedAlbumId && selectedStartTrack?.trackUri === track.uri;
                       const isInPlaylistSelection = selectedTrackUris.has(track.uri);
@@ -4452,7 +4459,8 @@ export default function StationPage() {
                     })}
                   </div>
 
-                  {/* Drop Zone */}
+                  {/* Drop Zone - only show when tracks are loaded */}
+                  {!isLoading && (
                   <div
                     style={{
                       width: 220,
@@ -4584,6 +4592,7 @@ export default function StationPage() {
                       + New Playlist
                     </button>
                   </div>
+                  )}
                 </div>
               );
             })}
