@@ -452,6 +452,16 @@ export function PostModal({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; modalX: number; modalY: number } | null>(null);
   
+  // Resizable modal state
+  const [modalSize, setModalSize] = useState<{ width: number; height: number } | null>(null);
+  const [isResizing, setIsResizing] = useState<string | null>(null); // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
+  const resizeStartRef = useRef<{ 
+    x: number; y: number; 
+    width: number; height: number;
+    modalX: number; modalY: number;
+  } | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  
   // See-through mode - makes background visible
   const [seeThroughMode, setSeeThroughMode] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -727,6 +737,80 @@ export function PostModal({
       modalY: modalPosition?.y ?? 0,
     };
   }
+
+  // Resize handlers
+  function handleResizeStart(e: React.MouseEvent, direction: string) {
+    if (e.button !== 0) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(direction);
+    
+    const rect = modalRef.current?.getBoundingClientRect();
+    resizeStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: modalSize?.width ?? rect?.width ?? 680,
+      height: modalSize?.height ?? rect?.height ?? 600,
+      modalX: modalPosition?.x ?? 0,
+      modalY: modalPosition?.y ?? 0,
+    };
+  }
+
+  // Resize mouse move/up effect
+  useEffect(() => {
+    if (!isResizing) return;
+    
+    function handleMouseMove(e: MouseEvent) {
+      if (!resizeStartRef.current) return;
+      
+      const deltaX = e.clientX - resizeStartRef.current.x;
+      const deltaY = e.clientY - resizeStartRef.current.y;
+      
+      let newWidth = resizeStartRef.current.width;
+      let newHeight = resizeStartRef.current.height;
+      let newX = resizeStartRef.current.modalX;
+      let newY = resizeStartRef.current.modalY;
+      
+      // Handle horizontal resizing
+      if (isResizing.includes('e')) {
+        newWidth = Math.max(400, resizeStartRef.current.width + deltaX);
+      }
+      if (isResizing.includes('w')) {
+        newWidth = Math.max(400, resizeStartRef.current.width - deltaX);
+        newX = resizeStartRef.current.modalX + deltaX;
+      }
+      
+      // Handle vertical resizing
+      if (isResizing.includes('s')) {
+        newHeight = Math.max(300, resizeStartRef.current.height + deltaY);
+      }
+      if (isResizing.includes('n')) {
+        newHeight = Math.max(300, resizeStartRef.current.height - deltaY);
+        newY = resizeStartRef.current.modalY + deltaY;
+      }
+      
+      setModalSize({ width: newWidth, height: newHeight });
+      
+      // Update position if resizing from top or left
+      if (isResizing.includes('n') || isResizing.includes('w')) {
+        setModalPosition({ x: newX, y: newY });
+      }
+    }
+    
+    function handleMouseUp() {
+      setIsResizing(null);
+      resizeStartRef.current = null;
+    }
+    
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   // Prevent body scroll when modal is open (unless in see-through mode)
   useEffect(() => {
@@ -1474,13 +1558,15 @@ export function PostModal({
     >
       {/* Modal Content */}
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--alzooka-teal-light)",
           borderRadius: 12,
-          width: "100%",
-          maxWidth: 680,
-          maxHeight: "90vh",
+          width: modalSize?.width ?? "100%",
+          maxWidth: modalSize ? undefined : 680,
+          height: modalSize?.height,
+          maxHeight: modalSize ? undefined : "90vh",
           display: "flex",
           flexDirection: "column",
           boxShadow: seeThroughMode 
@@ -1489,15 +1575,126 @@ export function PostModal({
           animation: modalPosition ? "none" : "modalSlideIn 0.2s ease-out",
           // Apply position transform if dragged
           transform: modalPosition ? `translate(${modalPosition.x}px, ${modalPosition.y}px)` : undefined,
-          cursor: isDragging ? "grabbing" : undefined,
+          cursor: isDragging ? "grabbing" : isResizing ? (
+            isResizing === 'n' || isResizing === 's' ? 'ns-resize' :
+            isResizing === 'e' || isResizing === 'w' ? 'ew-resize' :
+            isResizing === 'ne' || isResizing === 'sw' ? 'nesw-resize' : 'nwse-resize'
+          ) : undefined,
           // Re-enable pointer events for the modal itself in see-through mode
           pointerEvents: "auto",
           // Add border in see-through mode so modal is distinguishable
           border: seeThroughMode 
             ? "2px solid rgba(201, 162, 39, 0.6)" 
             : "none",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Resize Handles */}
+        {/* Top edge */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'n')}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 12,
+            right: 12,
+            height: 6,
+            cursor: "ns-resize",
+            zIndex: 10,
+          }}
+        />
+        {/* Bottom edge */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 's')}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 12,
+            right: 12,
+            height: 6,
+            cursor: "ns-resize",
+            zIndex: 10,
+          }}
+        />
+        {/* Left edge */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'w')}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 12,
+            bottom: 12,
+            width: 6,
+            cursor: "ew-resize",
+            zIndex: 10,
+          }}
+        />
+        {/* Right edge */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'e')}
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 12,
+            bottom: 12,
+            width: 6,
+            cursor: "ew-resize",
+            zIndex: 10,
+          }}
+        />
+        {/* Top-left corner */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'nw')}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 12,
+            height: 12,
+            cursor: "nwse-resize",
+            zIndex: 11,
+          }}
+        />
+        {/* Top-right corner */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'ne')}
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: 12,
+            height: 12,
+            cursor: "nesw-resize",
+            zIndex: 11,
+          }}
+        />
+        {/* Bottom-left corner */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'sw')}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: 12,
+            height: 12,
+            cursor: "nesw-resize",
+            zIndex: 11,
+          }}
+        />
+        {/* Bottom-right corner */}
+        <div
+          onMouseDown={(e) => handleResizeStart(e, 'se')}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: 12,
+            height: 12,
+            cursor: "nwse-resize",
+            zIndex: 11,
+          }}
+        />
         {/* Modal Header - Draggable */}
         <div
           onMouseDown={handleDragStart}
