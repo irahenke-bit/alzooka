@@ -23,6 +23,9 @@ interface PostModalsContextType {
   isAtMaxModals: boolean;
   showMaxModalsMessage: boolean;
   dismissMaxModalsMessage: () => void;
+  // Global see-through mode - applies to ALL windows
+  seeThroughMode: boolean;
+  toggleSeeThroughMode: () => void;
 }
 
 const PostModalsContext = createContext<PostModalsContextType | null>(null);
@@ -31,6 +34,8 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
   const [openModals, setOpenModals] = useState<ModalWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(10000);
   const [showMaxModalsMessage, setShowMaxModalsMessage] = useState(false);
+  // Global see-through mode - when true, all modals show transparent backgrounds
+  const [seeThroughMode, setSeeThroughMode] = useState(false);
 
   const openModal = useCallback((postId: string): boolean => {
     // Check if this post is already open
@@ -96,6 +101,10 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
     setShowMaxModalsMessage(false);
   }, []);
 
+  const toggleSeeThroughMode = useCallback(() => {
+    setSeeThroughMode(prev => !prev);
+  }, []);
+
   const value = {
     openModals,
     highestZIndex,
@@ -107,6 +116,8 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
     isAtMaxModals: openModals.length >= MAX_MODALS,
     showMaxModalsMessage,
     dismissMaxModalsMessage,
+    seeThroughMode,
+    toggleSeeThroughMode,
   };
 
   return (

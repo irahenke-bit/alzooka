@@ -338,6 +338,9 @@ type Props = {
   onPositionChange?: (position: { x: number; y: number }) => void;
   onSizeChange?: (size: { width: number; height: number }) => void;
   hideBackdrop?: boolean;
+  // Global see-through mode (controlled by context)
+  seeThroughMode?: boolean;
+  onToggleSeeThroughMode?: () => void;
 };
 
 // Vote Buttons Component
@@ -453,6 +456,9 @@ export function PostModal({
   onPositionChange,
   onSizeChange,
   hideBackdrop = false,
+  // Global see-through mode
+  seeThroughMode = false,
+  onToggleSeeThroughMode,
 }: Props) {
   // Helper to check if a user is a group admin
   const isGroupAdmin = (userId: string) => {
@@ -497,8 +503,7 @@ export function PostModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const justFinishedResizingRef = useRef(false);
   
-  // See-through mode - makes background visible
-  const [seeThroughMode, setSeeThroughMode] = useState(false);
+  // Note: seeThroughMode is now a global setting passed via props
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
@@ -1907,7 +1912,9 @@ export function PostModal({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSeeThroughMode(!seeThroughMode);
+              if (onToggleSeeThroughMode) {
+                onToggleSeeThroughMode();
+              }
             }}
             onMouseDown={(e) => e.stopPropagation()}
             title={seeThroughMode ? "Hide background" : "Show background"}

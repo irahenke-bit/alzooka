@@ -2247,6 +2247,8 @@ function FeedContent() {
             onPositionChange={(pos) => postModals.updateModalPosition(modalId, pos)}
             onSizeChange={(size) => postModals.updateModalSize(modalId, size)}
             hideBackdrop={!isTopModal} // Only show backdrop for topmost modal
+            seeThroughMode={postModals.seeThroughMode}
+            onToggleSeeThroughMode={postModals.toggleSeeThroughMode}
             onCommentAdded={(newComment, deletedCommentId) => {
               if (newComment) {
                 // Optimistically add the new comment to this modal's post
