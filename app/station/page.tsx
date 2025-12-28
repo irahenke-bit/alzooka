@@ -4122,73 +4122,73 @@ export default function StationPage() {
                         </div>
                         {/* Album Info */}
                         <div style={{ padding: 12 }}>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: 13,
-                              fontWeight: 600,
-                              lineHeight: 1.3,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {album.spotify_name}
-                          </p>
+                          {/* Album Name with inline Group Tags */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 20 }}>
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: 13,
+                                fontWeight: 600,
+                                lineHeight: 1.3,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
+                              {album.spotify_name}
+                            </p>
+                            {albumGroupsList.map(g => g && (
+                              <span
+                                key={g.id}
+                                className="group-tag-removable"
+                                style={{
+                                  fontSize: 9,
+                                  padding: "2px 5px",
+                                  borderRadius: 3,
+                                  background: g.color,
+                                  color: "#fff",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 2,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {g.name}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleAlbumGroup(album.id, g.id);
+                                  }}
+                                  className="group-tag-remove-btn"
+                                  style={{
+                                    display: "none",
+                                    width: 10,
+                                    height: 10,
+                                    padding: 0,
+                                    marginLeft: 2,
+                                    background: "rgba(0,0,0,0.4)",
+                                    border: "none",
+                                    borderRadius: "50%",
+                                    color: "#fff",
+                                    fontSize: 7,
+                                    lineHeight: 1,
+                                    cursor: "pointer",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                  title={`Remove from ${g.name}`}
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            ))}
+                          </div>
                           <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.7 }}>
                             {album.spotify_artist}
                           </p>
-
-                          {/* Group Tags */}
-                          {albumGroupsList.length > 0 && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
-                              {albumGroupsList.map(g => g && (
-                                <span
-                                  key={g.id}
-                                  className="group-tag-removable"
-                                  style={{
-                                    fontSize: 10,
-                                    padding: "2px 6px",
-                                    borderRadius: 4,
-                                    background: g.color,
-                                    color: "#fff",
-                                    fontWeight: 600,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 2,
-                                  }}
-                                >
-                                  {g.name}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleAlbumGroup(album.id, g.id);
-                                    }}
-                                    className="group-tag-remove-btn"
-                                    style={{
-                                      display: "none",
-                                      width: 12,
-                                      height: 12,
-                                      padding: 0,
-                                      marginLeft: 2,
-                                      background: "rgba(0,0,0,0.4)",
-                                      border: "none",
-                                      borderRadius: "50%",
-                                      color: "#fff",
-                                      fontSize: 8,
-                                      lineHeight: 1,
-                                      cursor: "pointer",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                    }}
-                                    title={`Remove from ${g.name}`}
-                                  >
-                                    ✕
-                                  </button>
-                                </span>
-                              ))}
-                            </div>
-                          )}
 
                           {/* Add to Group Button */}
                           {groups.length > 0 && (
