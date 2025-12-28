@@ -4309,6 +4309,25 @@ export default function StationPage() {
 
         </div>
 
+        {/* SUPER DEBUG - Fixed position overlay that MUST appear */}
+        {expandedAlbums.size > 0 && (
+          <div style={{
+            position: "fixed",
+            bottom: 100,
+            left: 20,
+            right: 20,
+            padding: 20,
+            background: "red",
+            color: "white",
+            fontSize: 18,
+            fontWeight: "bold",
+            zIndex: 99999,
+            borderRadius: 12,
+          }}>
+            🔴 DEBUG: {expandedAlbums.size} album(s) expanded!
+          </div>
+        )}
+
         {/* Expanded Tracks Section - Rendered completely outside tabs structure */}
         {expandedAlbums.size > 0 && activeTab === "albums" && (
           <div style={{ marginTop: 16 }}>
