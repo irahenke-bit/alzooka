@@ -4309,21 +4309,15 @@ export default function StationPage() {
 
         </div>
 
-        {/* Expanded Tracks Section - Using fixed position since it works */}
+        {/* Expanded Tracks Section - Normal flow, below album grid */}
         {expandedAlbums.size > 0 && activeTab === "albums" && (
           <div style={{
-            position: "fixed",
-            bottom: 80,
-            left: 20,
-            right: 20,
-            maxHeight: "50vh",
-            overflowY: "auto",
+            marginTop: 24,
+            marginBottom: 24,
             padding: 16,
-            background: "var(--alzooka-teal-dark)",
+            background: "rgba(0, 0, 0, 0.3)",
             border: "2px solid var(--alzooka-gold)",
             borderRadius: 12,
-            zIndex: 9999,
-            boxShadow: "0 -4px 20px rgba(0,0,0,0.5)",
           }}>
             {Array.from(expandedAlbums).map(expandedAlbumId => {
               const album = albums.find(a => a.id === expandedAlbumId);
@@ -4618,27 +4612,6 @@ export default function StationPage() {
           </div>
         )}
 
-        {/* Close button for expanded section */}
-        {expandedAlbums.size > 0 && activeTab === "albums" && (
-          <button
-            onClick={() => setExpandedAlbums(new Set())}
-            style={{
-              position: "fixed",
-              bottom: 40,
-              right: 30,
-              padding: "8px 16px",
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 600,
-              cursor: "pointer",
-              zIndex: 10000,
-            }}
-          >
-            ✕ Close Tracks
-          </button>
-        )}
 
         {/* Playlists Tab Content */}
         <div style={{ display: activeTab === "playlists" ? "block" : "none" }}>
