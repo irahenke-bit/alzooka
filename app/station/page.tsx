@@ -4309,28 +4309,22 @@ export default function StationPage() {
 
         </div>
 
-        {/* SUPER DEBUG - Fixed position overlay that MUST appear */}
-        {expandedAlbums.size > 0 && (
+        {/* Expanded Tracks Section - Using fixed position since it works */}
+        {expandedAlbums.size > 0 && activeTab === "albums" && (
           <div style={{
             position: "fixed",
-            bottom: 100,
+            bottom: 80,
             left: 20,
             right: 20,
-            padding: 20,
-            background: "red",
-            color: "white",
-            fontSize: 18,
-            fontWeight: "bold",
-            zIndex: 99999,
+            maxHeight: "50vh",
+            overflowY: "auto",
+            padding: 16,
+            background: "var(--alzooka-teal-dark)",
+            border: "2px solid var(--alzooka-gold)",
             borderRadius: 12,
+            zIndex: 9999,
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.5)",
           }}>
-            🔴 DEBUG: {expandedAlbums.size} album(s) expanded!
-          </div>
-        )}
-
-        {/* Expanded Tracks Section - Rendered completely outside tabs structure */}
-        {expandedAlbums.size > 0 && activeTab === "albums" && (
-          <div style={{ marginTop: 16 }}>
             {Array.from(expandedAlbums).map(expandedAlbumId => {
               const album = albums.find(a => a.id === expandedAlbumId);
               if (!album) return null;
@@ -4622,6 +4616,28 @@ export default function StationPage() {
               );
             })}
           </div>
+        )}
+
+        {/* Close button for expanded section */}
+        {expandedAlbums.size > 0 && activeTab === "albums" && (
+          <button
+            onClick={() => setExpandedAlbums(new Set())}
+            style={{
+              position: "fixed",
+              bottom: 40,
+              right: 30,
+              padding: "8px 16px",
+              background: "var(--alzooka-gold)",
+              color: "var(--alzooka-teal-dark)",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: 600,
+              cursor: "pointer",
+              zIndex: 10000,
+            }}
+          >
+            ✕ Close Tracks
+          </button>
         )}
 
         {/* Playlists Tab Content */}
