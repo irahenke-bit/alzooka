@@ -3996,21 +3996,38 @@ export default function StationPage() {
                 <p style={{ fontSize: 14 }}>No albums yet. Click &quot;+ Add Album&quot; to get started.</p>
               </div>
             ) : (
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                gap: 16,
-              }}>
-                {filteredAlbums.map(album => {
-                  const isInBulkGroup = bulkAddGroup && (albumGroups[album.id] || []).includes(bulkAddGroup);
-                  const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
-                  const hasCurrentTrack = currentTrack?.albumName === album.spotify_name;
-                  const isThisAlbumActive = currentlyPlayingAlbumId === album.id;
-                  const isThisAlbumPlaying = isPlaying && isThisAlbumActive;
-                  const albumGroupsList = (albumGroups[album.id] || [])
-                    .map(gid => groups.find(g => g.id === gid))
-                    .filter(Boolean);
-                  const isExpanded = expandedAlbums.has(album.id);
+              <div>
+                {/* Render albums in rows of 4, with expanded sections after each row */}
+                {(() => {
+                  const ALBUMS_PER_ROW = 4;
+                  const rows: StationAlbum[][] = [];
+                  for (let i = 0; i < filteredAlbums.length; i += ALBUMS_PER_ROW) {
+                    rows.push(filteredAlbums.slice(i, i + ALBUMS_PER_ROW));
+                  }
+                  
+                  return rows.map((rowAlbums, rowIndex) => {
+                    // Check if any album in this row is expanded
+                    const expandedInRow = rowAlbums.filter(a => expandedAlbums.has(a.id));
+                    
+                    return (
+                      <React.Fragment key={`row-${rowIndex}`}>
+                        {/* Album row */}
+                        <div style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: 16,
+                          marginBottom: expandedInRow.length > 0 ? 0 : 16,
+                        }}>
+                          {rowAlbums.map(album => {
+                            const isInBulkGroup = bulkAddGroup && (albumGroups[album.id] || []).includes(bulkAddGroup);
+                            const bulkGroupColor = bulkAddGroup ? groups.find(g => g.id === bulkAddGroup)?.color : null;
+                            const hasCurrentTrack = currentTrack?.albumName === album.spotify_name;
+                            const isThisAlbumActive = currentlyPlayingAlbumId === album.id;
+                            const isThisAlbumPlaying = isPlaying && isThisAlbumActive;
+                            const albumGroupsList = (albumGroups[album.id] || [])
+                              .map(gid => groups.find(g => g.id === gid))
+                              .filter(Boolean);
+                            const isExpanded = expandedAlbums.has(album.id);
                   
                   return (
                     <div
@@ -4300,46 +4317,38 @@ export default function StationPage() {
                           </div>
                         )}
                       </div>
-                  );
-                })}
-              </div>
-            )}
-
-          </div>
-
-        </div>
-
-        {/* Expanded Tracks Section - Normal flow, below album grid */}
-        {expandedAlbums.size > 0 && activeTab === "albums" && (
-          <div style={{
-            marginTop: 24,
-            marginBottom: 24,
-            padding: 16,
-            background: "rgba(0, 0, 0, 0.3)",
-            border: "2px solid var(--alzooka-gold)",
-            borderRadius: 12,
-          }}>
-            {Array.from(expandedAlbums).map(expandedAlbumId => {
-              const album = albums.find(a => a.id === expandedAlbumId);
-              if (!album) return null;
-              
-              const tracks = albumTracks[expandedAlbumId];
-              const isLoading = !tracks;
-              
-              return (
-                <div
-                  key={`expanded-${expandedAlbumId}`}
-                  style={{
-                    marginBottom: 16,
-                    padding: 12,
-                    background: "rgba(0,0,0,0.25)",
-                    borderRadius: 12,
-                    border: "1px solid rgba(201, 162, 39, 0.2)",
-                    display: "flex",
-                    gap: 16,
-                    alignItems: "stretch",
-                  }}
-                >
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Expanded section for albums in this row */}
+                        {expandedInRow.length > 0 && (
+                          <div style={{
+                            marginTop: 12,
+                            marginBottom: 16,
+                            padding: 16,
+                            background: "rgba(0, 0, 0, 0.3)",
+                            border: "2px solid var(--alzooka-gold)",
+                            borderRadius: 12,
+                          }}>
+                            {expandedInRow.map(album => {
+                              const tracks = albumTracks[album.id];
+                              const isLoading = !tracks;
+                              
+                              return (
+                                <div
+                                  key={`expanded-${album.id}`}
+                                  style={{
+                                    marginBottom: expandedInRow.length > 1 ? 16 : 0,
+                                    padding: 12,
+                                    background: "rgba(0,0,0,0.25)",
+                                    borderRadius: 12,
+                                    border: "1px solid rgba(201, 162, 39, 0.2)",
+                                    display: "flex",
+                                    gap: 16,
+                                    alignItems: "stretch",
+                                  }}
+                                >
                   {/* Album Info Header */}
                   <div style={{ width: 80, flexShrink: 0 }}>
                     <img
@@ -4369,7 +4378,7 @@ export default function StationPage() {
                       </div>
                     ) : tracks.map((track, idx) => {
                       const isCurrentTrack = currentlyPlayingTrackUri === track.uri;
-                      const isSelectedStart = selectedStartTrack?.albumId === expandedAlbumId && selectedStartTrack?.trackUri === track.uri;
+                      const isSelectedStart = selectedStartTrack?.albumId === album.id && selectedStartTrack?.trackUri === track.uri;
                       const isInPlaylistSelection = selectedTrackUris.has(track.uri);
 
                       return (
@@ -4389,7 +4398,7 @@ export default function StationPage() {
                             if (isSelectedStart) {
                               setSelectedStartTrack(null);
                             } else {
-                              setSelectedStartTrack({ albumId: expandedAlbumId, trackUri: track.uri });
+                              setSelectedStartTrack({ albumId: album.id, trackUri: track.uri });
                             }
                           }}
                           style={{
@@ -4606,12 +4615,21 @@ export default function StationPage() {
                     </button>
                   </div>
                   )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  });
+                })()}
+              </div>
+            )}
 
+          </div>
+
+        </div>
 
         {/* Playlists Tab Content */}
         <div style={{ display: activeTab === "playlists" ? "block" : "none" }}>
