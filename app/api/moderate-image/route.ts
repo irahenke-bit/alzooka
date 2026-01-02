@@ -192,17 +192,19 @@ export async function POST(request: NextRequest) {
       }
 
       // Log to moderation_logs table
-      await supabase.from('moderation_logs').insert({
-        user_id: userId,
-        ip_address: clientIP,
-        action: 'blocked',
-        categories: result.categories,
-        block_reason: result.blockReason,
-        image_type: imageBase64 ? 'base64' : 'url',
-      }).catch(err => {
+      try {
+        await supabase.from('moderation_logs').insert({
+          user_id: userId,
+          ip_address: clientIP,
+          action: 'blocked',
+          categories: result.categories,
+          block_reason: result.blockReason,
+          image_type: imageBase64 ? 'base64' : 'url',
+        });
+      } catch (err) {
         // Don't fail the request if logging fails
         console.error('Failed to log moderation event:', err);
-      });
+      }
 
       console.warn(`[MODERATION] Content blocked - Reason: ${result.blockReason}, IP: ${clientIP}, User: ${userId || 'anonymous'}`);
     }
