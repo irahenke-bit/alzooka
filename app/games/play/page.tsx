@@ -77,7 +77,13 @@ export default function PlayPage() {
       }
       setUser(user);
 
-      // If this is a challenge game, load the game data
+      // Require a game ID - no solo play allowed
+      if (!gameId) {
+        router.push("/games");
+        return;
+      }
+
+      // Load the challenge game data
       if (gameId) {
         const { data: gameData } = await supabase
           .from("trivia_games")
@@ -113,329 +119,212 @@ export default function PlayPage() {
               return;
             }
           }
+
+          // Fallback: fetch random questions if game doesn't have specific ones
+          const { data: fallbackQuestions } = await supabase
+            .from("trivia_questions")
+            .select("*")
+            .eq("is_approved", true)
+            .limit(gameData.mode === "five_second" ? 10 : 50);
+
+          if (fallbackQuestions && fallbackQuestions.length > 0) {
+            setQuestions(shuffleArray(fallbackQuestions));
+          }
         }
-      }
-
-      // Fetch questions from database (for solo games or fallback)
-      const { data: questionData, error } = await supabase
-        .from("trivia_questions")
-        .select("*")
-        .eq("is_approved", true)
-        .limit(50); // Get 50 questions, we'll use what we need
-
-      if (error || !questionData || questionData.length === 0) {
-        // If no questions in DB, use sample questions
-        const sampleQuestions: Question[] = [
-          {
-            id: "1",
-            question: "Which band performed the song 'Bohemian Rhapsody'?",
-            correct_answer: "Queen",
-            incorrect_answers: ["The Beatles", "Led Zeppelin", "Pink Floyd"],
-            difficulty: "easy",
-          },
-          {
-            id: "2",
-            question: "What year was Michael Jackson's 'Thriller' released?",
-            correct_answer: "1982",
-            incorrect_answers: ["1980", "1984", "1979"],
-            difficulty: "medium",
-          },
-          {
-            id: "3",
-            question: "Who is known as the 'King of Pop'?",
-            correct_answer: "Michael Jackson",
-            incorrect_answers: ["Elvis Presley", "Prince", "James Brown"],
-            difficulty: "easy",
-          },
-          {
-            id: "4",
-            question: "Which instrument does Jimi Hendrix famously play?",
-            correct_answer: "Electric Guitar",
-            incorrect_answers: ["Piano", "Drums", "Bass"],
-            difficulty: "easy",
-          },
-          {
-            id: "5",
-            question: "What was Elvis Presley's first number-one hit?",
-            correct_answer: "Heartbreak Hotel",
-            incorrect_answers: ["Hound Dog", "Jailhouse Rock", "Love Me Tender"],
-            difficulty: "hard",
-          },
-          {
-            id: "6",
-            question: "Which artist released the album 'Purple Rain'?",
-            correct_answer: "Prince",
-            incorrect_answers: ["Michael Jackson", "David Bowie", "George Michael"],
-            difficulty: "easy",
-          },
-          {
-            id: "7",
-            question: "What is the best-selling album of all time?",
-            correct_answer: "Thriller",
-            incorrect_answers: ["Back in Black", "The Dark Side of the Moon", "Bat Out of Hell"],
-            difficulty: "medium",
-          },
-          {
-            id: "8",
-            question: "Which band was Freddie Mercury the lead singer of?",
-            correct_answer: "Queen",
-            incorrect_answers: ["The Rolling Stones", "AC/DC", "Aerosmith"],
-            difficulty: "easy",
-          },
-          {
-            id: "9",
-            question: "What year did The Beatles break up?",
-            correct_answer: "1970",
-            incorrect_answers: ["1968", "1972", "1969"],
-            difficulty: "medium",
-          },
-          {
-            id: "10",
-            question: "Who wrote the song 'Imagine'?",
-            correct_answer: "John Lennon",
-            incorrect_answers: ["Paul McCartney", "George Harrison", "Bob Dylan"],
-            difficulty: "easy",
-          },
-        ];
-        setQuestions(shuffleArray(sampleQuestions));
-      } else {
-        setQuestions(shuffleArray(questionData));
       }
 
       setLoading(false);
     }
 
     init();
-  }, [supabase, router]);
+  }, [supabase, router, gameId]);
 
-  // Shuffle answers when question changes
+  // Shuffle answers when question changes - DUMMY PLACEHOLDER to keep structure
+  const currentQuestion = questions[currentQuestionIndex];
+  
   useEffect(() => {
-    if (questions.length > 0 && currentQuestionIndex < questions.length) {
-      const q = questions[currentQuestionIndex];
-      const allAnswers = [q.correct_answer, ...q.incorrect_answers];
+    if (currentQuestion) {
+      const allAnswers = [currentQuestion.correct_answer, ...currentQuestion.incorrect_answers];
       setShuffledAnswers(shuffleArray(allAnswers));
-      questionStartTime.current = Date.now();
       setSelectedAnswer(null);
       setShowResult(false);
-      
-      if (mode === "five_second") {
-        setQuestionTimeLeft(5);
-      }
+      questionStartTime.current = Date.now();
     }
-  }, [currentQuestionIndex, questions, mode]);
+  }, [currentQuestionIndex, questions]);
 
-  // Timer for Blitz mode (2 minutes total)
+  // Timer for blitz mode
   useEffect(() => {
-    if (gameState === "playing" && mode === "blitz") {
+    if (gameState !== "playing") return;
+    
+    if (mode === "blitz") {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
+            clearInterval(timerRef.current!);
             endGame();
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
     }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [gameState, mode]);
 
-  // Timer for Five Second mode (5 seconds per question)
+  // Timer for five second mode
   useEffect(() => {
-    if (gameState === "playing" && mode === "five_second") {
-      timerRef.current = setInterval(() => {
+    if (gameState !== "playing" || mode !== "five_second") return;
+    
+    if (!showResult) {
+      setQuestionTimeLeft(5);
+      const timer = setInterval(() => {
         setQuestionTimeLeft((prev) => {
           if (prev <= 1) {
-            // Time's up for this question - count as wrong
-            handleTimeUp();
-            return 5;
+            clearInterval(timer);
+            handleTimeout();
+            return 0;
           }
           return prev - 1;
         });
       }, 1000);
 
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
+      return () => clearInterval(timer);
     }
-  }, [gameState, mode, currentQuestionIndex]);
+  }, [gameState, mode, currentQuestionIndex, showResult]);
 
-  function handleTimeUp() {
-    if (questions[currentQuestionIndex]) {
-      const q = questions[currentQuestionIndex];
-      setAnswers((prev) => [
-        ...prev,
-        { questionId: q.id, answer: "", correct: false, timeMs: 5000 },
-      ]);
-      
-      if (mode === "five_second" && currentQuestionIndex >= 9) {
-        endGame();
-      } else {
+  function handleTimeout() {
+    if (showResult) return;
+    
+    const timeMs = Date.now() - questionStartTime.current;
+    setAnswers((prev) => [
+      ...prev,
+      { questionId: currentQuestion?.id || "", answer: "", correct: false, timeMs },
+    ]);
+    setShowResult(true);
+    
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);
+      } else {
+        endGame();
       }
-    }
+    }, 1500);
   }
 
   const endGame = useCallback(async () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     setGameState("finished");
 
     if (!user) return;
 
-    // Get or create player stats
-    let { data: currentStats } = await supabase
-      .from("trivia_player_stats")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!currentStats) {
-      const { data: newStats } = await supabase
-        .from("trivia_player_stats")
-        .insert({ user_id: user.id })
-        .select()
-        .single();
-      currentStats = newStats;
-    }
-
-    if (!currentStats) return;
-
-    // Handle challenge game
-    if (challengeGame && gameId) {
+    // If this is a challenge game, save the score and check if opponent is done
+    if (challengeGame) {
       const isPlayer1 = challengeGame.player1_id === user.id;
-      
-      // Update the game with our score
-      const updateData: Record<string, unknown> = {
-        [isPlayer1 ? "player1_score" : "player2_score"]: score,
-        [isPlayer1 ? "player1_answers" : "player2_answers"]: JSON.stringify(answers),
-        [isPlayer1 ? "player1_rating_before" : "player2_rating_before"]: currentStats.rating,
-      };
+      const scoreField = isPlayer1 ? "player1_score" : "player2_score";
+      const answersField = isPlayer1 ? "player1_answers" : "player2_answers";
+      const statusValue = isPlayer1 ? "player1_done" : "player2_done";
 
-      // Check if opponent has already played
-      const opponentScore = isPlayer1 ? challengeGame.player2_score : challengeGame.player1_score;
-      
-      if (opponentScore !== null) {
-        // Both players done - complete the game
-        const player1Score = isPlayer1 ? score : opponentScore;
-        const player2Score = isPlayer1 ? opponentScore : score;
-        const player1Won = player1Score > player2Score;
-        const winnerId = player1Won ? challengeGame.player1_id : challengeGame.player2_id;
-        
-        // Get opponent's stats for ELO calculation
-        const { data: opponentStats } = await supabase
-          .from("trivia_player_stats")
-          .select("*")
-          .eq("user_id", isPlayer1 ? challengeGame.player2_id : challengeGame.player1_id)
-          .single();
+      // Update our score
+      await supabase
+        .from("trivia_games")
+        .update({
+          [scoreField]: score,
+          [answersField]: answers,
+          status: challengeGame.status === "active" || challengeGame.status === "pending" 
+            ? statusValue 
+            : "completed",
+        })
+        .eq("id", challengeGame.id);
 
-        if (opponentStats) {
-          const iWon = (isPlayer1 && player1Won) || (!isPlayer1 && !player1Won);
-          const myRating = currentStats.rating;
-          const theirRating = opponentStats.rating;
-          
+      // Check if opponent already finished
+      const { data: updatedGame } = await supabase
+        .from("trivia_games")
+        .select("*")
+        .eq("id", challengeGame.id)
+        .single();
+
+      if (updatedGame) {
+        const opponentScore = isPlayer1 ? updatedGame.player2_score : updatedGame.player1_score;
+        const opponentDone = opponentScore !== null;
+
+        if (opponentDone) {
+          // Both players done - determine winner and update ratings
+          const player1Wins = updatedGame.player1_score > updatedGame.player2_score;
+          const winnerId = player1Wins ? updatedGame.player1_id : updatedGame.player2_id;
+
+          // Get both players' current ratings
+          const { data: player1Stats } = await supabase
+            .from("trivia_player_stats")
+            .select("rating")
+            .eq("user_id", updatedGame.player1_id)
+            .single();
+
+          const { data: player2Stats } = await supabase
+            .from("trivia_player_stats")
+            .select("rating")
+            .eq("user_id", updatedGame.player2_id)
+            .single();
+
+          const p1Rating = player1Stats?.rating || 1200;
+          const p2Rating = player2Stats?.rating || 1200;
+
+          // Calculate new ratings
           const { player1NewRating, player2NewRating } = calculateMatchRatings(
-            isPlayer1 ? myRating : theirRating,
-            isPlayer1 ? theirRating : myRating,
-            player1Won
+            p1Rating,
+            p2Rating,
+            player1Wins
           );
 
-          const myNewRating = isPlayer1 ? player1NewRating : player2NewRating;
-          const theirNewRating = isPlayer1 ? player2NewRating : player1NewRating;
-          const change = myNewRating - myRating;
-          
-          setRatingChange(change);
-          setGameResult(iWon ? "win" : "loss");
-
-          // Update game record
-          updateData.status = "completed";
-          updateData.winner_id = winnerId;
-          updateData.completed_at = new Date().toISOString();
-          updateData[isPlayer1 ? "player1_rating_after" : "player2_rating_after"] = myNewRating;
-          
-          // Update opponent's rating in the game record
+          // Update game with final results
           await supabase
             .from("trivia_games")
             .update({
-              [isPlayer1 ? "player2_rating_after" : "player1_rating_after"]: theirNewRating,
+              status: "completed",
+              winner_id: winnerId,
+              player1_rating_before: p1Rating,
+              player2_rating_before: p2Rating,
+              player1_rating_after: player1NewRating,
+              player2_rating_after: player2NewRating,
+              completed_at: new Date().toISOString(),
             })
-            .eq("id", gameId);
+            .eq("id", challengeGame.id);
 
-          // Update my stats
-          await supabase
-            .from("trivia_player_stats")
-            .update({
-              rating: myNewRating,
-              wins: iWon ? currentStats.wins + 1 : currentStats.wins,
-              losses: iWon ? currentStats.losses : currentStats.losses + 1,
-              games_played: currentStats.games_played + 1,
-              current_streak: iWon ? currentStats.current_streak + 1 : 0,
-              best_streak: iWon ? Math.max(currentStats.best_streak, currentStats.current_streak + 1) : currentStats.best_streak,
-              blitz_high_score: mode === "blitz" && score > currentStats.blitz_high_score ? score : currentStats.blitz_high_score,
-            })
-            .eq("user_id", user.id);
+          // Update player stats
+          const p1Won = player1Wins;
+          await supabase.rpc("update_trivia_stats", {
+            p_user_id: updatedGame.player1_id,
+            p_won: p1Won,
+            p_new_rating: player1NewRating,
+          });
 
-          // Update opponent's stats
-          await supabase
-            .from("trivia_player_stats")
-            .update({
-              rating: theirNewRating,
-              wins: iWon ? opponentStats.wins : opponentStats.wins + 1,
-              losses: iWon ? opponentStats.losses + 1 : opponentStats.losses,
-              games_played: opponentStats.games_played + 1,
-              current_streak: iWon ? 0 : opponentStats.current_streak + 1,
-              best_streak: iWon ? opponentStats.best_streak : Math.max(opponentStats.best_streak, opponentStats.current_streak + 1),
-            })
-            .eq("user_id", isPlayer1 ? challengeGame.player2_id : challengeGame.player1_id);
+          await supabase.rpc("update_trivia_stats", {
+            p_user_id: updatedGame.player2_id,
+            p_won: !p1Won,
+            p_new_rating: player2NewRating,
+          });
+
+          // Set UI state
+          const didWin = winnerId === user.id;
+          setGameResult(didWin ? "win" : "loss");
+          setRatingChange(isPlayer1 ? player1NewRating - p1Rating : player2NewRating - p2Rating);
+        } else {
+          // Opponent hasn't played yet
+          setGameResult("waiting");
         }
-      } else {
-        // Waiting for opponent
-        updateData.status = isPlayer1 ? "player1_done" : "player2_done";
-        setGameResult("waiting");
       }
-
-      await supabase
-        .from("trivia_games")
-        .update(updateData)
-        .eq("id", gameId);
-    } else {
-      // Solo practice game - just update basic stats
-      const updates: Record<string, number> = {
-        games_played: currentStats.games_played + 1,
-      };
-
-      if (mode === "blitz" && score > currentStats.blitz_high_score) {
-        updates.blitz_high_score = score;
-      }
-
-      await supabase
-        .from("trivia_player_stats")
-        .update(updates)
-        .eq("user_id", user.id);
     }
-  }, [user, supabase, score, mode, challengeGame, gameId, answers]);
+  }, [user, score, answers, challengeGame, supabase]);
 
-  function startGame() {
-    setGameState("playing");
-    setScore(0);
-    setAnswers([]);
-    setCurrentQuestionIndex(0);
-    
-    if (mode === "blitz") {
-      setTimeLeft(120); // 2 minutes
-    } else {
-      setQuestionTimeLeft(5);
-    }
-  }
+  function handleAnswerClick(answer: string) {
+    if (showResult || selectedAnswer) return;
 
-  function handleAnswer(answer: string) {
-    if (selectedAnswer || showResult) return;
-    
-    const q = questions[currentQuestionIndex];
     const timeMs = Date.now() - questionStartTime.current;
-    const isCorrect = answer === q.correct_answer;
+    const isCorrect = answer === currentQuestion.correct_answer;
     
     setSelectedAnswer(answer);
     setShowResult(true);
@@ -446,25 +335,41 @@ export default function PlayPage() {
     
     setAnswers((prev) => [
       ...prev,
-      { questionId: q.id, answer, correct: isCorrect, timeMs },
+      { questionId: currentQuestion.id, answer, correct: isCorrect, timeMs },
     ]);
 
-    // Move to next question after brief delay
-    setTimeout(() => {
-      if (mode === "five_second" && currentQuestionIndex >= 9) {
-        endGame();
-      } else if (mode === "blitz" && currentQuestionIndex >= questions.length - 1) {
-        endGame();
-      } else {
-        setCurrentQuestionIndex((prev) => prev + 1);
-      }
-    }, mode === "blitz" ? 300 : 800);
+    // In blitz mode, auto-advance quickly
+    if (mode === "blitz") {
+      setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        } else {
+          endGame();
+        }
+      }, 300);
+    } else {
+      // In five second mode, show result then advance
+      setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        } else {
+          endGame();
+        }
+      }, 1500);
+    }
   }
 
-  function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  function startGame() {
+    setGameState("playing");
+    setScore(0);
+    setAnswers([]);
+    setCurrentQuestionIndex(0);
+    
+    if (mode === "blitz") {
+      setTimeLeft(120); // 2 minutes
+    }
+    
+    questionStartTime.current = Date.now();
   }
 
   if (loading) {
@@ -473,10 +378,10 @@ export default function PlayPage() {
         minHeight: "100vh",
         background: "var(--alzooka-teal-dark)",
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
       }}>
-        <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading questions...</p>
+        <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading game...</p>
       </div>
     );
   }
@@ -489,15 +394,22 @@ export default function PlayPage() {
         background: "var(--alzooka-teal-dark)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        padding: 20,
+        alignItems: "center",
+        padding: 24,
       }}>
-        <h1 style={{ fontSize: 32, marginBottom: 8, color: "var(--alzooka-gold)" }}>
-          {mode === "blitz" ? "⚡ Two Minute Blitz" : "⏱️ Five Second Challenge"}
+        <h1 style={{ fontSize: 36, marginBottom: 8, color: "var(--alzooka-gold)" }}>
+          {mode === "blitz" ? "⚡ Blitz Mode" : "⏱️ Five Second Mode"}
         </h1>
-        <p style={{ opacity: 0.7, marginBottom: 32, textAlign: "center" }}>
-          {mode === "blitz"
+        
+        {challengeGame && (
+          <p style={{ fontSize: 18, marginBottom: 24, opacity: 0.8 }}>
+            vs @{challengeGame.opponent_username}
+          </p>
+        )}
+        
+        <p style={{ marginBottom: 32, opacity: 0.7, textAlign: "center", maxWidth: 400 }}>
+          {mode === "blitz" 
             ? "Answer as many questions as you can in 2 minutes!"
             : "10 questions, 5 seconds each. No time to think!"}
         </p>
@@ -518,282 +430,175 @@ export default function PlayPage() {
           Start Game
         </button>
         
-        <Link
-          href="/games"
-          style={{
-            marginTop: 24,
-            color: "var(--alzooka-cream)",
-            opacity: 0.6,
-            textDecoration: "none",
-          }}
-        >
+        <Link href="/games" style={{ marginTop: 24, color: "var(--alzooka-cream)", opacity: 0.6 }}>
           ← Back to Games
         </Link>
       </div>
     );
   }
 
-  // Game finished screen
-  if (gameState === "finished") {
-    const correctAnswers = answers.filter((a) => a.correct).length;
-    const accuracy = answers.length > 0 ? Math.round((correctAnswers / answers.length) * 100) : 0;
-    
+  // Playing screen
+  if (gameState === "playing" && currentQuestion) {
     return (
       <div style={{
         minHeight: "100vh",
         background: "var(--alzooka-teal-dark)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
+        padding: 24,
       }}>
-        {/* Challenge result */}
-        {challengeGame && gameResult && (
-          <div style={{ marginBottom: 16, textAlign: "center" }}>
-            {gameResult === "win" && (
-              <p style={{ fontSize: 24, color: "#1DB954", margin: 0 }}>🎉 Victory!</p>
-            )}
-            {gameResult === "loss" && (
-              <p style={{ fontSize: 24, color: "#e57373", margin: 0 }}>😔 Defeat</p>
-            )}
-            {gameResult === "waiting" && (
-              <p style={{ fontSize: 18, opacity: 0.8, margin: 0 }}>
-                Waiting for @{challengeGame.opponent_username} to play...
-              </p>
-            )}
-          </div>
-        )}
-
-        <h1 style={{ fontSize: 32, marginBottom: 8, color: "var(--alzooka-gold)" }}>
-          {challengeGame ? (gameResult === "waiting" ? "Score Submitted!" : "Game Over!") : "Game Over!"}
-        </h1>
-        
+        {/* Top bar */}
         <div style={{
-          background: "rgba(240, 235, 224, 0.1)",
-          borderRadius: 16,
-          padding: 32,
-          marginTop: 24,
-          textAlign: "center",
-          minWidth: 280,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          maxWidth: 600,
+          margin: "0 auto 24px",
         }}>
-          {/* Challenge vs score display */}
-          {challengeGame && gameResult !== "waiting" && challengeGame.opponent_score !== null ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, marginBottom: 24 }}>
-              <div>
-                <p style={{ fontSize: 36, fontWeight: 700, margin: 0, color: gameResult === "win" ? "#1DB954" : "#e57373" }}>
-                  {score}
-                </p>
-                <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>You</p>
-              </div>
-              <span style={{ fontSize: 24, opacity: 0.5 }}>vs</span>
-              <div>
-                <p style={{ fontSize: 36, fontWeight: 700, margin: 0, color: gameResult === "loss" ? "#1DB954" : "#e57373" }}>
-                  {challengeGame.opponent_score}
-                </p>
-                <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>@{challengeGame.opponent_username}</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p style={{ fontSize: 48, fontWeight: 700, margin: 0, color: "var(--alzooka-gold)" }}>
-                {score}
-              </p>
-              <p style={{ opacity: 0.7, margin: "8px 0 24px" }}>
-                {mode === "blitz" ? "questions correct" : `out of 10 correct`}
-              </p>
-            </>
-          )}
-
-          {/* Rating change */}
-          {ratingChange !== null && (
-            <div style={{
-              padding: "12px 16px",
-              background: ratingChange > 0 ? "rgba(29, 185, 84, 0.2)" : "rgba(229, 115, 115, 0.2)",
-              borderRadius: 8,
-              marginBottom: 24,
+          <span style={{ fontSize: 18, fontWeight: 600 }}>Score: {score}</span>
+          
+          {mode === "blitz" && (
+            <span style={{ 
+              fontSize: 24, 
+              fontWeight: 700,
+              color: timeLeft < 30 ? "#e57373" : "var(--alzooka-gold)",
             }}>
-              <p style={{ margin: 0, fontSize: 18, fontWeight: 600, color: ratingChange > 0 ? "#1DB954" : "#e57373" }}>
-                {ratingChange > 0 ? "+" : ""}{ratingChange} Rating
-              </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.8 }}>
-                {getRatingChangeDescription(ratingChange)}
-              </p>
-            </div>
+              {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
+            </span>
           )}
           
-          <div style={{ display: "flex", justifyContent: "center", gap: 32 }}>
-            <div>
-              <p style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>{accuracy}%</p>
-              <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>Accuracy</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>{answers.length}</p>
-              <p style={{ fontSize: 12, opacity: 0.6, margin: 0 }}>Attempted</p>
-            </div>
-          </div>
-        </div>
-        
-        <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
-          {!challengeGame && (
-            <button
-              onClick={() => {
-                setGameState("ready");
-                setQuestions(shuffleArray(questions));
-              }}
-              style={{
-                padding: "12px 24px",
-                fontSize: 16,
-                fontWeight: 600,
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-              }}
-            >
-              Play Again
-            </button>
+          {mode === "five_second" && (
+            <span style={{ 
+              fontSize: 24, 
+              fontWeight: 700,
+              color: questionTimeLeft <= 2 ? "#e57373" : "var(--alzooka-gold)",
+            }}>
+              {questionTimeLeft}s
+            </span>
           )}
-          <Link
-            href="/games"
-            style={{
-              padding: "12px 24px",
-              fontSize: 16,
-              fontWeight: 600,
-              background: challengeGame ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
-              color: challengeGame ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
-              border: challengeGame ? "none" : "1px solid rgba(240, 235, 224, 0.3)",
-              borderRadius: 8,
-              textDecoration: "none",
-              display: "inline-block",
-            }}
-          >
-            Back to Games
-          </Link>
+          
+          <span style={{ opacity: 0.6 }}>
+            {currentQuestionIndex + 1}/{mode === "five_second" ? 10 : "∞"}
+          </span>
+        </div>
+
+        {/* Question card */}
+        <div style={{
+          maxWidth: 600,
+          margin: "0 auto",
+          background: "rgba(240, 235, 224, 0.05)",
+          borderRadius: 16,
+          padding: 24,
+        }}>
+          <p style={{ fontSize: 20, marginBottom: 24, lineHeight: 1.4 }}>
+            {currentQuestion.question}
+          </p>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {shuffledAnswers.map((answer, index) => {
+              let buttonStyle: React.CSSProperties = {
+                padding: 16,
+                fontSize: 16,
+                background: "rgba(240, 235, 224, 0.1)",
+                border: "2px solid rgba(240, 235, 224, 0.2)",
+                borderRadius: 12,
+                cursor: showResult ? "default" : "pointer",
+                color: "var(--alzooka-cream)",
+                textAlign: "left",
+              };
+
+              if (showResult) {
+                if (answer === currentQuestion.correct_answer) {
+                  buttonStyle = {
+                    ...buttonStyle,
+                    background: "rgba(29, 185, 84, 0.3)",
+                    borderColor: "#1DB954",
+                  };
+                } else if (answer === selectedAnswer && answer !== currentQuestion.correct_answer) {
+                  buttonStyle = {
+                    ...buttonStyle,
+                    background: "rgba(229, 115, 115, 0.3)",
+                    borderColor: "#e57373",
+                  };
+                }
+              }
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerClick(answer)}
+                  style={buttonStyle}
+                  disabled={showResult}
+                >
+                  {answer}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
   }
 
-  // Playing state
-  const currentQuestion = questions[currentQuestionIndex];
-
+  // Finished screen
   return (
     <div style={{
       minHeight: "100vh",
       background: "var(--alzooka-teal-dark)",
       display: "flex",
       flexDirection: "column",
-      padding: 20,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+      textAlign: "center",
     }}>
-      {/* Header with timer and score */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 24,
-      }}>
-        <div style={{ fontSize: 24, fontWeight: 700 }}>
-          Score: {score}
-        </div>
-        
-        <div style={{
-          fontSize: 32,
-          fontWeight: 700,
-          color: mode === "five_second" && questionTimeLeft <= 2 ? "#e57373" : "var(--alzooka-gold)",
-        }}>
-          {mode === "blitz" ? formatTime(timeLeft) : `${questionTimeLeft}s`}
-        </div>
-        
-        {mode === "five_second" && (
-          <div style={{ fontSize: 14, opacity: 0.6 }}>
-            {currentQuestionIndex + 1} / 10
-          </div>
-        )}
-      </div>
-
-      {/* Progress bar for five second mode */}
-      {mode === "five_second" && (
-        <div style={{
-          width: "100%",
-          height: 6,
-          background: "rgba(240, 235, 224, 0.2)",
-          borderRadius: 3,
-          marginBottom: 24,
-          overflow: "hidden",
-        }}>
-          <div style={{
-            width: `${(questionTimeLeft / 5) * 100}%`,
-            height: "100%",
-            background: questionTimeLeft <= 2 ? "#e57373" : "var(--alzooka-gold)",
-            transition: "width 1s linear",
-          }} />
-        </div>
+      <h1 style={{ fontSize: 48, marginBottom: 8 }}>
+        {gameResult === "win" ? "🎉" : gameResult === "loss" ? "😔" : "✅"}
+      </h1>
+      
+      <h2 style={{ fontSize: 32, marginBottom: 16, color: "var(--alzooka-gold)" }}>
+        {gameResult === "win" ? "You Won!" : gameResult === "loss" ? "You Lost" : "Game Complete!"}
+      </h2>
+      
+      <p style={{ fontSize: 24, marginBottom: 8 }}>
+        Your Score: <strong>{score}</strong>
+      </p>
+      
+      {challengeGame && gameResult === "waiting" && (
+        <p style={{ marginBottom: 24, opacity: 0.7 }}>
+          Waiting for @{challengeGame.opponent_username} to play...
+        </p>
       )}
-
-      {/* Question */}
-      <div style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        maxWidth: 600,
-        margin: "0 auto",
-        width: "100%",
-      }}>
-        <h2 style={{
-          fontSize: 24,
-          textAlign: "center",
-          marginBottom: 32,
-          lineHeight: 1.4,
+      
+      {challengeGame && gameResult !== "waiting" && challengeGame.opponent_score !== undefined && (
+        <p style={{ marginBottom: 8, opacity: 0.8 }}>
+          @{challengeGame.opponent_username}&apos;s Score: {challengeGame.opponent_score}
+        </p>
+      )}
+      
+      {ratingChange !== null && (
+        <p style={{ 
+          marginBottom: 24, 
+          fontSize: 18,
+          color: ratingChange >= 0 ? "#1DB954" : "#e57373",
         }}>
-          {currentQuestion?.question}
-        </h2>
-
-        {/* Answers */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {shuffledAnswers.map((answer, index) => {
-            const isSelected = selectedAnswer === answer;
-            const isCorrect = answer === currentQuestion?.correct_answer;
-            const showCorrect = showResult && isCorrect;
-            const showWrong = showResult && isSelected && !isCorrect;
-            
-            return (
-              <button
-                key={index}
-                onClick={() => handleAnswer(answer)}
-                disabled={showResult}
-                style={{
-                  padding: "16px 20px",
-                  fontSize: 16,
-                  fontWeight: 500,
-                  background: showCorrect
-                    ? "#1DB954"
-                    : showWrong
-                    ? "#e57373"
-                    : isSelected
-                    ? "rgba(240, 235, 224, 0.2)"
-                    : "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
-                  border: showCorrect
-                    ? "2px solid #1DB954"
-                    : showWrong
-                    ? "2px solid #e57373"
-                    : "2px solid rgba(240, 235, 224, 0.2)",
-                  borderRadius: 12,
-                  cursor: showResult ? "default" : "pointer",
-                  textAlign: "left",
-                  transition: "all 0.15s",
-                }}
-              >
-                {answer}
-              </button>
-            );
-          })}
-        </div>
+          {getRatingChangeDescription(ratingChange)}
+        </p>
+      )}
+      
+      <div style={{ display: "flex", gap: 16, marginTop: 24 }}>
+        <Link
+          href="/games"
+          style={{
+            padding: "12px 24px",
+            background: "var(--alzooka-gold)",
+            color: "var(--alzooka-teal-dark)",
+            borderRadius: 8,
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
+        >
+          Back to Games
+        </Link>
       </div>
     </div>
   );
 }
-

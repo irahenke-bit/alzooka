@@ -52,7 +52,7 @@ export default function GamesPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"play" | "challenges" | "leaderboard">("play");
+  const [activeTab, setActiveTab] = useState<"challenges" | "leaderboard">("challenges");
   
   const supabase = createBrowserClient();
   const router = useRouter();
@@ -274,9 +274,32 @@ export default function GamesPage() {
           </div>
         )}
 
+        {/* Challenge Button */}
+        <button
+          onClick={() => router.push("/games/challenge")}
+          style={{
+            width: "100%",
+            padding: "18px 24px",
+            fontSize: 18,
+            fontWeight: 700,
+            background: "linear-gradient(135deg, #1DB954 0%, #1a8f44 100%)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 12,
+            cursor: "pointer",
+            marginBottom: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+          }}
+        >
+          🎯 Challenge Someone to Trivia
+        </button>
+
         {/* Tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          {(["play", "challenges", "leaderboard"] as const).map((tab) => (
+          {(["challenges", "leaderboard"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -293,7 +316,7 @@ export default function GamesPage() {
                 textTransform: "capitalize",
               }}
             >
-              {tab === "challenges" && challenges.length > 0 && (
+              {tab === "challenges" && challenges.filter(c => c.challenged_id === user?.id).length > 0 && (
                 <span style={{
                   background: "#e57373",
                   color: "#fff",
@@ -305,76 +328,10 @@ export default function GamesPage() {
                   {challenges.filter(c => c.challenged_id === user?.id).length}
                 </span>
               )}
-              {tab}
+              {tab === "challenges" ? "Your Challenges" : "Leaderboard"}
             </button>
           ))}
         </div>
-
-        {/* Play Tab */}
-        {activeTab === "play" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Blitz Mode */}
-            <div
-              onClick={() => router.push("/games/play?mode=blitz")}
-              style={{
-                background: "linear-gradient(135deg, #1DB954 0%, #1a8f44 100%)",
-                borderRadius: 16,
-                padding: 24,
-                cursor: "pointer",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-            >
-              <h3 style={{ margin: "0 0 8px", fontSize: 22 }}>⚡ Two Minute Blitz</h3>
-              <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>
-                Answer as many questions as you can in 2 minutes. Speed matters!
-              </p>
-              {stats && stats.blitz_high_score > 0 && (
-                <p style={{ margin: "12px 0 0", fontSize: 13, opacity: 0.8 }}>
-                  Your best: {stats.blitz_high_score} correct
-                </p>
-              )}
-            </div>
-
-            {/* Five Second Mode */}
-            <div
-              onClick={() => router.push("/games/play?mode=five_second")}
-              style={{
-                background: "linear-gradient(135deg, #e57373 0%, #c62828 100%)",
-                borderRadius: 16,
-                padding: 24,
-                cursor: "pointer",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-            >
-              <h3 style={{ margin: "0 0 8px", fontSize: 22 }}>⏱️ Five Second Challenge</h3>
-              <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>
-                10 questions, 5 seconds each. No time to think!
-              </p>
-            </div>
-
-            {/* Challenge a Friend */}
-            <div
-              onClick={() => router.push("/games/challenge")}
-              style={{
-                background: "rgba(240, 235, 224, 0.1)",
-                borderRadius: 16,
-                padding: 24,
-                cursor: "pointer",
-                border: "2px dashed rgba(240, 235, 224, 0.3)",
-                textAlign: "center",
-              }}
-            >
-              <h3 style={{ margin: "0 0 8px", fontSize: 18 }}>🎯 Challenge a Friend</h3>
-              <p style={{ margin: 0, opacity: 0.7, fontSize: 14 }}>
-                Pick an opponent and prove who knows music better
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Challenges Tab */}
         {activeTab === "challenges" && (
