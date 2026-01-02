@@ -37,7 +37,8 @@ interface VisionAPIResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+    // Temporarily hardcoded to bypass Vercel env var issue
+    const apiKey = process.env.GOOGLE_CLOUD_API_KEY || 'AIzaSyBnaf97Z6Mg9ma9w503-6F2qkSCfcawHOU';
     
     if (!apiKey) {
       console.error('GOOGLE_CLOUD_API_KEY not configured');

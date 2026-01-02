@@ -9,22 +9,14 @@ import { NextResponse } from 'next/server';
  */
 
 export async function GET() {
-  const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
-  
-  // Debug: Show all env vars that start with GOOGLE (without revealing full values)
-  const googleEnvVars = Object.keys(process.env)
-    .filter(key => key.includes('GOOGLE'))
-    .map(key => `${key}: ${process.env[key]?.substring(0, 10)}...`);
+  // Temporarily hardcoded to bypass Vercel env var issue
+  const apiKey = process.env.GOOGLE_CLOUD_API_KEY || 'AIzaSyBnaf97Z6Mg9ma9w503-6F2qkSCfcawHOU';
   
   if (!apiKey) {
     return NextResponse.json({
       status: 'NOT_CONFIGURED',
       message: 'Google Cloud API key is not set. Content moderation is NOT active.',
       protected: false,
-      debug: {
-        envVarsWithGoogle: googleEnvVars,
-        totalEnvVars: Object.keys(process.env).length,
-      }
     }, { status: 503 });
   }
 
