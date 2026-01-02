@@ -9,6 +9,7 @@ import Link from "next/link";
 type User = {
   id: string;
   username: string;
+  display_name?: string | null;
   avatar_url: string | null;
 };
 
@@ -58,25 +59,26 @@ export default function ChallengePage() {
       const { data: friendships } = await supabase
         .from("friendships")
         .select(`
-          user_id,
-          friend_id,
-          friend:users!friendships_friend_id_fkey(id, username, avatar_url),
-          user:users!friendships_user_id_fkey(id, username, avatar_url)
+          requester_id,
+          addressee_id,
+          requester:users!friendships_requester_id_fkey(id, username, display_name, avatar_url),
+          addressee:users!friendships_addressee_id_fkey(id, username, display_name, avatar_url)
         `)
-        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
         .eq("status", "accepted")
         .limit(10);
 
       if (friendships) {
         const friendList: User[] = [];
         for (const f of friendships) {
-          const friendData = f.user_id === user.id ? f.friend : f.user;
+          const friendData = f.requester_id === user.id ? f.addressee : f.requester;
           if (friendData && typeof friendData === "object") {
-            const fd = friendData as unknown as { id: string; username: string; avatar_url: string | null };
+            const fd = friendData as unknown as { id: string; username: string; display_name?: string | null; avatar_url: string | null };
             if (fd.id && fd.username) {
               friendList.push({
                 id: fd.id,
                 username: fd.username,
+                display_name: fd.display_name,
                 avatar_url: fd.avatar_url || null,
               });
             }
@@ -97,9 +99,10 @@ export default function ChallengePage() {
     setSearching(true);
     const { data } = await supabase
       .from("users")
-      .select("id, username, avatar_url")
-      .ilike("username", `%${searchQuery}%`)
+      .select("id, username, display_name, avatar_url")
+      .or(`username.ilike.%${searchQuery}%,display_name.ilike.%${searchQuery}%`)
       .neq("id", currentUser.id)
+      .neq("is_active", false)
       .limit(10);
 
     if (data) {
@@ -242,7 +245,10 @@ export default function ChallengePage() {
                           👤
                         </div>
                       )}
-                      <span style={{ fontWeight: 600 }}>@{user.username}</span>
+                      <div>
+                        {user.display_name && <span style={{ fontWeight: 600 }}>{user.display_name}</span>}
+                        <span style={{ fontWeight: user.display_name ? 400 : 600, opacity: user.display_name ? 0.7 : 1, marginLeft: user.display_name ? 6 : 0 }}>@{user.username}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -286,7 +292,10 @@ export default function ChallengePage() {
                           👤
                         </div>
                       )}
-                      <span style={{ fontWeight: 600 }}>@{friend.username}</span>
+                      <div>
+                        {friend.display_name && <span style={{ fontWeight: 600 }}>{friend.display_name}</span>}
+                        <span style={{ fontWeight: friend.display_name ? 400 : 600, opacity: friend.display_name ? 0.7 : 1, marginLeft: friend.display_name ? 6 : 0 }}>@{friend.username}</span>
+                      </div>
                     </button>
                   ))}
                 </div>

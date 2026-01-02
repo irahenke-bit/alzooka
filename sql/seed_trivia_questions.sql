@@ -92,5 +92,28 @@ INSERT INTO trivia_questions (category, difficulty, question, correct_answer, in
 ('music', 'hard', 'Which artist has the most Billboard Music Awards of all time?', 'Taylor Swift', ARRAY['Michael Jackson', 'Adele', 'Bruno Mars']),
 ('music', 'hard', 'What was the original name of the band that became The Doors?', 'The Psychedelic Rangers', ARRAY['The Wild Ones', 'The Crystal Ship', 'Break on Through']),
 ('music', 'hard', 'Who has won the most Grammys out of these four artists?', 'Weird Al Yankovic', ARRAY['Freddie Mercury', 'Diana Ross', 'Jimi Hendrix']),
-('music', 'easy', 'Steven Van Zandt, who played Silvio Dante in The Sopranos, was originally known for his guitar work with…', 'Bruce Springsteen', ARRAY['Warren Zevon', 'Cat Stevens', 'Tom Petty']);
+('music', 'easy', 'Steven Van Zandt, who played Silvio Dante in The Sopranos, was originally known for his guitar work with…', 'Bruce Springsteen', ARRAY['Warren Zevon', 'Cat Stevens', 'Tom Petty']),
+
+-- New batch of questions
+('music', 'medium', 'What was Johnny Cash''s name at birth?', 'J.R. Cash', ARRAY['John Cash', 'Jack Cash', 'Johnathon Cash']),
+('music', 'medium', 'What was Jerry Garcia''s birth name?', 'Jerome Garcia', ARRAY['Gerald Garcia', 'Jerry Garcia', 'Jerry Mackerman']),
+('music', 'hard', 'Kid Congo Powers was known for being a member of what bands?', 'All of the above', ARRAY['The Gun Club', 'The Cramps', 'Nick Cave and the Bad Seeds']),
+('music', 'hard', 'In 1947, Ahmet Ertegun and Herb Abramson co-founded which record label?', 'Atlantic Records', ARRAY['Motown', 'Sun Records', 'Stax Records']),
+('music', 'easy', 'Aretha Franklin was the queen of what genre?', 'Soul', ARRAY['Rock and Roll', 'The Blues', 'Jazz']),
+('music', 'medium', 'What artist was known as "Brother Ray"?', 'Ray Charles', ARRAY['Stevie Ray Vaughan', 'Ray LaMontagne', 'Billy Ray Cyrus']),
+('music', 'hard', 'What year was Wilson Pickett inducted into the Rock and Roll Hall of Fame?', '1991', ARRAY['1983', '1998', '2005']),
+('music', 'hard', 'Who was known as "The Sultans of Sweat"?', 'Sam and Dave', ARRAY['Ike and Tina Turner', 'Captain and Tennille', 'Simon and Garfunkel']),
+('music', 'medium', 'Who wrote "(Sittin'' On) The Dock of the Bay"?', 'Steve Cropper and Otis Redding', ARRAY['Captain and Tennille', 'Steve Cropper and Sam Cooke', 'Otis Redding and Donald "Duck" Dunn']),
+('music', 'hard', 'Who is most widely recognized for coining the term "rock and roll"?', 'Alan Freed', ARRAY['Chuck Berry', 'Sam Phillips', 'Ahmet Ertegun']),
+('music', 'medium', 'What rock and roll pioneer is best known for his recording of "Rock Around the Clock"?', 'Bill Haley', ARRAY['Chuck Berry', 'Little Richard', 'Jerry Lee Lewis']),
+('music', 'medium', 'David Robert Jones gained fame with what stage name?', 'David Bowie', ARRAY['Davy Jones', 'Robert Johnson', 'Eazy-E']),
+('music', 'medium', 'The Who had a long list of hit songs in the 60s and 70s, mostly written by whom?', 'Pete Townshend', ARRAY['Roger Daltrey', 'Bernie Taupin', 'Harry Nilsson']),
+('music', 'medium', '"Maybellene" and "Rock and Roll Music" were big hits in the 50s for which artist?', 'Chuck Berry', ARRAY['Little Richard', 'Muddy Waters', 'Jerry Lee Lewis']),
+('music', 'medium', 'Which artist had a huge hit album with The Stranger (1977)?', 'Billy Joel', ARRAY['Elton John', 'Randy Newman', 'Jim Croce']),
+('music', 'hard', 'Yoko Ono was born in what year?', '1933', ARRAY['1920', '1942', '1943']),
+('music', 'medium', 'Richard Wayne Penniman was best known as whom?', 'Little Richard', ARRAY['Richard Thompson', 'Slick Rick', 'Richard Marx']),
+('music', 'hard', 'Who was the bass player for The Band?', 'Rick Danko', ARRAY['Robbie Robertson', 'Levon Helm', 'Leland Sklar']),
+('music', 'medium', 'What was Bob Dylan''s birth name?', 'Robert Zimmerman', ARRAY['Dylan Zimmerman', 'Robert Ritchie', 'Robert Dylan']),
+('music', 'hard', 'The Talking Heads hit "Take Me to the River" was originally written by whom?', 'Al Green', ARRAY['Shel Silverstein', 'Bob Dylan', 'Harry Chapin']),
+('music', 'hard', 'Country singer Mickey Gilley and televangelist Jimmy Swaggart were both cousins with which rock and roll legend?', 'Jerry Lee Lewis', ARRAY['Elvis Presley', 'Buddy Holly', 'Jimi Hendrix']);
 
