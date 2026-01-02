@@ -116,29 +116,34 @@ export default function AcceptChallengePage() {
     
     setResponding(true);
 
-    // Update challenge status
-    const { error: updateError } = await supabase
-      .from("trivia_challenges")
-      .update({ status: "accepted" })
-      .eq("id", challenge.id);
+    // Fetch questions for the game
+    const { data: questions } = await supabase
+      .from("trivia_questions")
+      .select("id")
+      .eq("is_approved", true)
+      .limit(challenge.mode === "five_second" ? 10 : 50);
 
-    if (updateError) {
-      console.error("Failed to accept challenge:", updateError);
-      alert("Failed to accept challenge. Please try again.");
+    if (!questions || questions.length === 0) {
+      alert("No questions available. Please try again later.");
       setResponding(false);
       return;
     }
 
-    // Create the game
+    const questionIds = questions.map(q => q.id);
+
+    // Create the game - current user (accepter) is player1 for RLS purposes
+    // The challenger info is preserved in the challenge record
     const { data: game, error: gameError } = await supabase
       .from("trivia_games")
       .insert({
         mode: challenge.mode,
-        player1_id: challenge.challenger_id,
-        player2_id: currentUser.id,
-        player1_allow_sharing: challenge.challenger_allow_sharing,
-        player2_allow_sharing: allowSharing,
-        status: "pending",
+        player1_id: currentUser.id,  // Accepter is player1 (RLS requires this)
+        player2_id: challenge.challenger_id,  // Challenger is player2
+        player1_allow_sharing: allowSharing,
+        player2_allow_sharing: challenge.challenger_allow_sharing,
+        question_ids: questionIds,
+        status: "active",
+        started_at: new Date().toISOString(),
       })
       .select("id")
       .single();
@@ -150,14 +155,14 @@ export default function AcceptChallengePage() {
       return;
     }
 
-    // Link game to challenge
+    // Update challenge status and link game
     await supabase
       .from("trivia_challenges")
-      .update({ game_id: game.id })
+      .update({ status: "accepted", game_id: game.id })
       .eq("id", challenge.id);
 
     // Navigate to play the game
-    router.push(`/games/play?game=${game.id}`);
+    router.push(`/games/play?gameId=${game.id}`);
   }
 
   async function declineChallenge() {

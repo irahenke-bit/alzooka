@@ -165,15 +165,15 @@ export default function GamesPage() {
 
     const questionIds = questions.map(q => q.id);
 
-    // Create the game record
+    // Create the game record - current user (accepter) is player1 for RLS
     const { data: game, error } = await supabase
       .from("trivia_games")
       .insert({
         mode: challenge.mode,
-        player1_id: challenge.challenger_id,
-        player2_id: challenge.challenged_id,
-        player1_allow_sharing: challenge.challenger_allow_sharing,
-        player2_allow_sharing: false, // Will be set when accepting
+        player1_id: user.id,  // Accepter is player1 (RLS requires this)
+        player2_id: challenge.challenger_id,  // Challenger is player2
+        player1_allow_sharing: true,  // Default to allowing
+        player2_allow_sharing: challenge.challenger_allow_sharing,
         question_ids: questionIds,
         status: "active",
         started_at: new Date().toISOString(),
@@ -194,7 +194,7 @@ export default function GamesPage() {
       .eq("id", challenge.id);
 
     // Navigate to play the game
-    router.push(`/games/play?mode=${challenge.mode}&gameId=${game.id}`);
+    router.push(`/games/play?gameId=${game.id}`);
   }
 
   async function declineChallenge(challengeId: string) {
