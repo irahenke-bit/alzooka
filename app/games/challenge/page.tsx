@@ -26,7 +26,7 @@ export default function ChallengePage() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedMode, setSelectedMode] = useState<"blitz" | "five_second">("blitz");
-  const [allowSharing, setAllowSharing] = useState(false);
+  const [allowSharing, setAllowSharing] = useState(true);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [sending, setSending] = useState(false);
