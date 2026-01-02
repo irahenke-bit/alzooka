@@ -243,6 +243,27 @@ export async function notifyGroupInvite(
   });
 }
 
+// Notify when someone sends a trivia challenge
+export async function notifyTriviaChallenge(
+  supabase: SupabaseClient,
+  challengedUserId: string,
+  challengerUsername: string,
+  challengerId: string,
+  challengeId: string,
+  mode: string
+) {
+  const modeDisplay = mode === "blitz" ? "⚡ Blitz" : "⏱️ Five Second";
+  await createNotification({
+    supabase,
+    userId: challengedUserId,
+    type: "trivia_challenge",
+    title: `🎯 @${challengerUsername} challenged you to trivia!`,
+    content: `${modeDisplay} mode - Click to accept or decline`,
+    link: `/games/challenge/${challengeId}`,
+    relatedUserId: challengerId,
+  });
+}
+
 // Parse @mentions from text
 export function parseMentions(text: string): string[] {
   const mentionRegex = /@(\w+)/g;

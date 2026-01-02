@@ -5,6 +5,7 @@ import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Link from "next/link";
+import { notifyTriviaChallenge } from "@/lib/notifications";
 
 type User = {
   id: string;
@@ -112,28 +113,38 @@ export default function ChallengePage() {
   }
 
   async function sendChallenge() {
-    if (!selectedUser || !currentUser) return;
+    if (!selectedUser || !currentUser || !userData) return;
     
     setSending(true);
 
     // Create the challenge
-    const { error } = await supabase
+    const { data: challenge, error } = await supabase
       .from("trivia_challenges")
       .insert({
         challenger_id: currentUser.id,
         challenged_id: selectedUser.id,
         mode: selectedMode,
         challenger_allow_sharing: allowSharing,
-      });
+      })
+      .select("id")
+      .single();
 
-    if (error) {
+    if (error || !challenge) {
       console.error("Failed to send challenge:", error);
       alert("Failed to send challenge. Please try again.");
       setSending(false);
       return;
     }
 
-    // TODO: Send notification to challenged user
+    // Send notification to challenged user
+    await notifyTriviaChallenge(
+      supabase,
+      selectedUser.id,
+      userData.username,
+      currentUser.id,
+      challenge.id,
+      selectedMode
+    );
 
     alert(`Challenge sent to @${selectedUser.username}!`);
     router.push("/games");
