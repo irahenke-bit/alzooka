@@ -23,6 +23,7 @@ import { ContentFilterModal } from "@/app/components/ContentFilterModal";
 import { FeedControlModal } from "@/app/components/FeedControlModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
 import { notifyWallPost } from "@/lib/notifications";
+import { imageToBase64, moderateImageBase64, getBlockedMessage } from "@/lib/imageModeration";
 
 type UserProfile = {
   id: string;
@@ -1386,7 +1387,28 @@ export default function ProfilePage() {
 
     setPosting(true);
 
-    // Upload ALL images
+    // STEP 1: Moderate ALL images BEFORE uploading to storage
+    // This ensures illegal content is NEVER stored on our servers
+    for (const file of selectedImages) {
+      try {
+        const base64 = await imageToBase64(file);
+        const moderationResult = await moderateImageBase64(base64);
+        
+        if (moderationResult.blocked) {
+          const message = getBlockedMessage(moderationResult);
+          alert(message);
+          setPosting(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Moderation check failed:", error);
+        alert("Unable to verify image safety. Please try again.");
+        setPosting(false);
+        return;
+      }
+    }
+
+    // STEP 2: Upload ALL images (only reached if moderation passed)
     const uploadedUrls: string[] = [];
     for (const file of selectedImages) {
       const fileExt = file.name.split(".").pop();

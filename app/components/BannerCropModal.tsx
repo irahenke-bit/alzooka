@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { moderateImageBase64, getBlockedMessage } from "@/lib/imageModeration";
 
 // Banner aspect ratio (width:height) - 2:1 allows using ~50% of a square image
 // Much more generous while still looking like a banner
@@ -12,6 +13,7 @@ type Props = {
   imageSrc: string;
   onCancel: () => void;
   onSave: (croppedBlob: Blob) => void;
+  skipModeration?: boolean; // Optional: skip moderation if already done (e.g., for post images)
 };
 
 // Create a centered crop with the banner aspect ratio
@@ -31,11 +33,12 @@ function createInitialCrop(mediaWidth: number, mediaHeight: number): Crop {
   );
 }
 
-export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
+export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = false }: Props) {
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const [saving, setSaving] = useState(false);
+  const [moderationError, setModerationError] = useState<string | null>(null);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
@@ -47,6 +50,8 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
     if (!completedCrop || !imgRef.current) return;
 
     setSaving(true);
+    setModerationError(null);
+    
     try {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -83,18 +88,41 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
         sourceHeight
       );
 
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            onSave(blob);
-          } else {
-            alert("Failed to crop image");
-            setSaving(false);
-          }
-        },
-        "image/jpeg",
-        0.95
-      );
+      // Convert to blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, "image/jpeg", 0.95);
+      });
+
+      if (!blob) {
+        alert("Failed to crop image");
+        setSaving(false);
+        return;
+      }
+
+      // STEP 1: Moderate image BEFORE passing to parent (unless skipped)
+      if (!skipModeration) {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]); // Remove data URL prefix
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+
+        const moderationResult = await moderateImageBase64(base64);
+        
+        if (moderationResult.blocked) {
+          const message = getBlockedMessage(moderationResult);
+          setModerationError(message);
+          setSaving(false);
+          return;
+        }
+      }
+
+      // STEP 2: Pass to parent (only if moderation passed)
+      onSave(blob);
     } catch (error) {
       console.error("Error cropping image:", error);
       alert("Failed to crop image");
@@ -188,6 +216,20 @@ export function BannerCropModal({ imageSrc, onCancel, onSave }: Props) {
           />
         </ReactCrop>
       </div>
+
+      {/* Moderation Error */}
+      {moderationError && (
+        <p style={{ 
+          textAlign: "center", 
+          color: "#e57373", 
+          fontSize: 14, 
+          margin: 0,
+          padding: "8px 16px",
+          background: "rgba(229, 115, 115, 0.1)",
+        }}>
+          {moderationError}
+        </p>
+      )}
 
       {/* Instructions */}
       <p style={{ 

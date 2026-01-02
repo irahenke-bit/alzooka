@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 import { AvatarCropModal } from "./AvatarCropModal";
+import { moderateImageBase64, getBlockedMessage } from "@/lib/imageModeration";
 
 type AvatarUploadProps = {
   currentAvatarUrl: string | null;
@@ -63,7 +64,31 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
     setUploading(true);
 
     try {
-      // Create unique filename
+      // STEP 1: Moderate image BEFORE uploading
+      // Convert blob to base64 for moderation
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // Remove data URL prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+
+      const moderationResult = await moderateImageBase64(base64);
+      
+      if (moderationResult.blocked) {
+        const message = getBlockedMessage(moderationResult);
+        setError(message);
+        setUploading(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      // STEP 2: Upload cropped image (only if moderation passed)
       const fileName = `${userId}-${Date.now()}.jpg`;
       const filePath = `avatars/${fileName}`;
 
