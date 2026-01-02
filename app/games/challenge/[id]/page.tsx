@@ -116,20 +116,23 @@ export default function AcceptChallengePage() {
     
     setResponding(true);
 
-    // Fetch questions for the game
-    const { data: questions } = await supabase
+    // Fetch all available questions and randomly select
+    const { data: allQuestions } = await supabase
       .from("trivia_questions")
       .select("id")
-      .eq("is_approved", true)
-      .limit(challenge.mode === "five_second" ? 10 : 50);
+      .eq("is_approved", true);
 
-    if (!questions || questions.length === 0) {
+    if (!allQuestions || allQuestions.length === 0) {
       alert("No questions available. Please try again later.");
       setResponding(false);
       return;
     }
 
-    const questionIds = questions.map(q => q.id);
+    // Shuffle and pick the needed amount
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    const needed = challenge.mode === "five_second" ? 10 : 50;
+    const selected = shuffled.slice(0, Math.min(needed, shuffled.length));
+    const questionIds = selected.map(q => q.id);
 
     // Create the game - current user (accepter) is player1 for RLS purposes
     // The challenger info is preserved in the challenge record

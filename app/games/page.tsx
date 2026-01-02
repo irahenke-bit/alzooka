@@ -151,19 +151,22 @@ export default function GamesPage() {
   async function acceptChallenge(challenge: Challenge) {
     if (!user) return;
 
-    // Get random questions for the game
-    const { data: questions } = await supabase
+    // Fetch all questions and randomly select
+    const { data: allQuestions } = await supabase
       .from("trivia_questions")
       .select("id")
-      .eq("is_approved", true)
-      .limit(challenge.mode === "five_second" ? 10 : 50);
+      .eq("is_approved", true);
 
-    if (!questions || questions.length === 0) {
+    if (!allQuestions || allQuestions.length === 0) {
       alert("No questions available. Please try again later.");
       return;
     }
 
-    const questionIds = questions.map(q => q.id);
+    // Shuffle and pick the needed amount
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    const needed = challenge.mode === "five_second" ? 10 : 50;
+    const selected = shuffled.slice(0, Math.min(needed, shuffled.length));
+    const questionIds = selected.map(q => q.id);
 
     // Create the game record - current user (accepter) is player1 for RLS
     const { data: game, error } = await supabase
