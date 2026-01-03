@@ -208,6 +208,16 @@ export default function GamesPage() {
     return Math.round((stats.wins / stats.games_played) * 100);
   }
 
+  // Fisher-Yates shuffle for truly random results
+  function shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   async function acceptChallenge(challenge: Challenge) {
     if (!user) return;
 
@@ -222,8 +232,8 @@ export default function GamesPage() {
       return;
     }
 
-    // Shuffle and pick the needed amount
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle for truly random selection
+    const shuffled = shuffleArray(allQuestions);
     const needed = challenge.mode === "five_second" ? 10 : 50;
     const selected = shuffled.slice(0, Math.min(needed, shuffled.length));
     const questionIds = selected.map(q => q.id);
