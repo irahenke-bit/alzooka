@@ -3790,26 +3790,34 @@ export default function StationPage() {
               </h3>
             </div>
             
-            {/* Floating Action Toolbar - appears when albums are selected */}
+            {/* Floating Bottom Action Bar - appears when albums are selected */}
             {manualSelections.size > 0 && (
               <div
                 style={{
                   position: "fixed",
-                  left: 20,
-                  top: "50%",
-                  transform: "translateY(-50%)",
+                  bottom: 24,
+                  left: "50%",
+                  transform: "translateX(-50%)",
                   zIndex: 1000,
                   display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  background: "rgba(26, 46, 46, 0.95)",
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid rgba(201, 162, 39, 0.3)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  background: "rgba(26, 46, 46, 0.98)",
+                  padding: "12px 20px",
+                  borderRadius: 50,
+                  border: "1px solid rgba(201, 162, 39, 0.4)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
                 }}
               >
-                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--alzooka-gold)", textAlign: "center", marginBottom: 4 }}>
+                {/* Selection count */}
+                <div style={{ 
+                  fontSize: 13, 
+                  fontWeight: 600, 
+                  color: "var(--alzooka-gold)",
+                  paddingRight: 12,
+                  borderRight: "1px solid rgba(201, 162, 39, 0.3)",
+                }}>
                   {manualSelections.size} Selected
                 </div>
                 
@@ -3840,18 +3848,16 @@ export default function StationPage() {
                         setShowRemoveFromGroupDropdown(false);
                       }}
                       style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        fontSize: 11,
+                        padding: "8px 16px",
+                        fontSize: 13,
                         fontWeight: 600,
                         background: "rgba(201, 162, 39, 0.2)",
                         color: "var(--alzooka-gold)",
                         border: "1px solid rgba(201, 162, 39, 0.4)",
-                        borderRadius: 8,
+                        borderRadius: 20,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
                         gap: 6,
                         whiteSpace: "nowrap",
                       }}
@@ -3862,16 +3868,17 @@ export default function StationPage() {
                       <div
                         style={{
                           position: "absolute",
-                          left: "100%",
-                          top: 0,
-                          marginLeft: 8,
+                          bottom: "100%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          marginBottom: 8,
                           background: "var(--alzooka-teal-dark)",
                           border: "1px solid rgba(201, 162, 39, 0.3)",
-                          borderRadius: 8,
+                          borderRadius: 12,
                           padding: 8,
                           zIndex: 100,
-                          minWidth: 160,
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                          minWidth: 180,
+                          boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
                         }}
                       >
                         <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
@@ -3889,7 +3896,7 @@ export default function StationPage() {
                               padding: "8px 10px",
                               background: "transparent",
                               border: "none",
-                              borderRadius: 4,
+                              borderRadius: 6,
                               color: "var(--alzooka-cream)",
                               fontSize: 13,
                               cursor: "pointer",
@@ -3916,38 +3923,37 @@ export default function StationPage() {
                         setShowAddToGroupDropdown(false);
                       }}
                       style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        fontSize: 11,
+                        padding: "8px 16px",
+                        fontSize: 13,
                         fontWeight: 600,
                         background: "rgba(229, 115, 115, 0.15)",
                         color: "#e57373",
                         border: "1px solid rgba(229, 115, 115, 0.3)",
-                        borderRadius: 8,
+                        borderRadius: 20,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
                         gap: 6,
                         whiteSpace: "nowrap",
                       }}
                     >
-                      📁 Remove from Group
+                      📁 Remove
                     </button>
                     {showRemoveFromGroupDropdown && (
                       <div
                         style={{
                           position: "absolute",
-                          left: "100%",
-                          top: 0,
-                          marginLeft: 8,
+                          bottom: "100%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          marginBottom: 8,
                           background: "var(--alzooka-teal-dark)",
                           border: "1px solid rgba(229, 115, 115, 0.3)",
-                          borderRadius: 8,
+                          borderRadius: 12,
                           padding: 8,
                           zIndex: 100,
-                          minWidth: 180,
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                          minWidth: 200,
+                          boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
                         }}
                       >
                         <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
@@ -3972,7 +3978,7 @@ export default function StationPage() {
                                 padding: "8px 10px",
                                 background: "transparent",
                                 border: "none",
-                                borderRadius: 4,
+                                borderRadius: 6,
                                 color: selectedInGroup > 0 ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
                                 fontSize: 13,
                                 cursor: selectedInGroup > 0 ? "pointer" : "default",
@@ -4003,23 +4009,39 @@ export default function StationPage() {
                 <button
                   onClick={() => setConfirmBulkDelete(true)}
                   style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    fontSize: 11,
+                    padding: "8px 16px",
+                    fontSize: 13,
                     fontWeight: 600,
                     background: "#e57373",
                     color: "#fff",
                     border: "none",
-                    borderRadius: 8,
+                    borderRadius: 20,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
                     gap: 6,
                     whiteSpace: "nowrap",
                   }}
                 >
-                  🗑️ Delete ({manualSelections.size})
+                  🗑️ Delete
+                </button>
+                
+                {/* Clear Selection Button */}
+                <button
+                  onClick={() => setManualSelections(new Set())}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    background: "transparent",
+                    color: "var(--alzooka-cream)",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    borderRadius: 20,
+                    cursor: "pointer",
+                    opacity: 0.8,
+                  }}
+                >
+                  ✕ Clear
                 </button>
               </div>
             )}
