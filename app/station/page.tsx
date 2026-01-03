@@ -137,6 +137,7 @@ export default function StationPage() {
   const [activeTab, setActiveTab] = useState<"albums" | "playlists">("albums");
   const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
+  const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false); // Modal for creating playlist from album view
   const [showAddToPlaylistDropdown, setShowAddToPlaylistDropdown] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [albumPendingDelete, setAlbumPendingDelete] = useState<StationAlbum | null>(null);
@@ -1094,6 +1095,7 @@ export default function StationPage() {
     setSelectedTracks([]);
     setNewPlaylistName("");
     setShowCreatePlaylist(false);
+    setShowCreatePlaylistModal(false);
   }
 
   // Add selected tracks to an existing playlist
@@ -4596,8 +4598,7 @@ export default function StationPage() {
                     </div>
                     <button
                       onClick={() => {
-                        setShowCreatePlaylist(true);
-                        setActiveTab("playlists");
+                        setShowCreatePlaylistModal(true);
                       }}
                       style={{
                         marginTop: 8,
@@ -5404,6 +5405,140 @@ export default function StationPage() {
                 }}
               >
                 Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Playlist Modal - appears when clicking + New Playlist from album view */}
+      {showCreatePlaylistModal && selectedTracks.length > 0 && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.8)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#1a2e2e",
+            border: "2px solid #1DB954",
+            borderRadius: 16,
+            padding: 28,
+            maxWidth: 420,
+            width: "90%",
+          }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+              Create New Playlist
+            </h3>
+            <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.7 }}>
+              {selectedTracks.length} {selectedTracks.length === 1 ? "song" : "songs"} selected
+            </p>
+            
+            {/* Show selected tracks preview */}
+            <div style={{
+              maxHeight: 150,
+              overflowY: "auto",
+              background: "rgba(0, 0, 0, 0.2)",
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 20,
+            }}>
+              {selectedTracks.slice(0, 5).map((track, idx) => (
+                <div key={track.uri} style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  fontSize: 12,
+                  marginBottom: idx < 4 ? 8 : 0,
+                }}>
+                  {track.image && (
+                    <img
+                      src={track.image}
+                      alt=""
+                      style={{ width: 32, height: 32, borderRadius: 4 }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontWeight: 500,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}>
+                      {track.name}
+                    </div>
+                    <div style={{ opacity: 0.6, fontSize: 11 }}>{track.artist}</div>
+                  </div>
+                </div>
+              ))}
+              {selectedTracks.length > 5 && (
+                <div style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}>
+                  ...and {selectedTracks.length - 5} more
+                </div>
+              )}
+            </div>
+
+            <input
+              type="text"
+              value={newPlaylistName}
+              onChange={(e) => setNewPlaylistName(e.target.value)}
+              placeholder="Enter playlist name..."
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newPlaylistName.trim()) {
+                  handleCreatePlaylist();
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                fontSize: 15,
+                background: "rgba(0, 0, 0, 0.3)",
+                border: "1px solid rgba(240, 235, 224, 0.3)",
+                borderRadius: 8,
+                color: "var(--alzooka-cream)",
+                marginBottom: 20,
+                boxSizing: "border-box",
+              }}
+            />
+
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => {
+                  setShowCreatePlaylistModal(false);
+                  setNewPlaylistName("");
+                }}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  background: "rgba(240, 235, 224, 0.1)",
+                  color: "var(--alzooka-cream)",
+                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreatePlaylist}
+                disabled={!newPlaylistName.trim()}
+                style={{
+                  padding: "10px 24px",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: newPlaylistName.trim() ? "#1DB954" : "rgba(30, 215, 96, 0.3)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: newPlaylistName.trim() ? "pointer" : "not-allowed",
+                }}
+              >
+                Create Playlist
               </button>
             </div>
           </div>
