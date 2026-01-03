@@ -4364,6 +4364,30 @@ export default function StationPage() {
                     <p style={{ margin: 0, fontSize: 10, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {album.spotify_artist}
                     </p>
+                    {/* Unselect All button - only shows when tracks from this album are selected */}
+                    {tracks && tracks.some(t => selectedTrackUris.has(t.uri)) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const albumTrackUris = new Set(tracks.map(t => t.uri));
+                          setSelectedTracks(prev => prev.filter(t => !albumTrackUris.has(t.uri)));
+                        }}
+                        style={{
+                          marginTop: 8,
+                          padding: "4px 8px",
+                          fontSize: 9,
+                          fontWeight: 600,
+                          background: "rgba(229, 115, 115, 0.2)",
+                          color: "#e57373",
+                          border: "1px solid rgba(229, 115, 115, 0.4)",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          width: "100%",
+                        }}
+                      >
+                        Unselect All
+                      </button>
+                    )}
                   </div>
 
                   {/* Track List */}
