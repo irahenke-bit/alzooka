@@ -5437,22 +5437,22 @@ export default function StationPage() {
               {selectedTracks.length} {selectedTracks.length === 1 ? "song" : "songs"} selected
             </p>
             
-            {/* Show selected tracks preview */}
+            {/* Show all selected tracks - scrollable */}
             <div style={{
-              maxHeight: 150,
+              maxHeight: 250,
               overflowY: "auto",
               background: "rgba(0, 0, 0, 0.2)",
               borderRadius: 8,
               padding: 12,
               marginBottom: 20,
             }}>
-              {selectedTracks.slice(0, 5).map((track, idx) => (
+              {selectedTracks.map((track, idx) => (
                 <div key={track.uri} style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
                   fontSize: 12,
-                  marginBottom: idx < 4 ? 8 : 0,
+                  marginBottom: idx < selectedTracks.length - 1 ? 8 : 0,
                 }}>
                   {track.image && (
                     <img
@@ -5474,11 +5474,6 @@ export default function StationPage() {
                   </div>
                 </div>
               ))}
-              {selectedTracks.length > 5 && (
-                <div style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}>
-                  ...and {selectedTracks.length - 5} more
-                </div>
-              )}
             </div>
 
             <input
