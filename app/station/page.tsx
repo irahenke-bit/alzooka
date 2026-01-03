@@ -4045,6 +4045,180 @@ export default function StationPage() {
                 </button>
               </div>
             )}
+            
+            {/* Floating Bottom Bar for Track Selections - appears when songs are selected */}
+            {selectedTracks.length > 0 && (
+              <div
+                style={{
+                  position: "fixed",
+                  bottom: manualSelections.size > 0 ? 90 : 24, // Stack above album bar if both showing
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  zIndex: 1000,
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  background: "rgba(26, 46, 46, 0.98)",
+                  padding: "12px 20px",
+                  borderRadius: 50,
+                  border: "1px solid rgba(30, 215, 96, 0.4)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                }}
+              >
+                {/* Selection count */}
+                <div style={{ 
+                  fontSize: 13, 
+                  fontWeight: 600, 
+                  color: "#1DB954",
+                  paddingRight: 12,
+                  borderRight: "1px solid rgba(30, 215, 96, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}>
+                  🎵 {selectedTracks.length} {selectedTracks.length === 1 ? "Song" : "Songs"}
+                </div>
+                
+                {/* Create Playlist Button */}
+                <button
+                  onClick={() => setShowCreatePlaylistModal(true)}
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: "#1DB954",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 20,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  📝 New Playlist
+                </button>
+                
+                {/* Add to Existing Playlist Dropdown */}
+                {playlists.length > 0 && (
+                  <div style={{ position: "relative" }}>
+                    <button
+                      onClick={() => setShowAddToPlaylistDropdown(!showAddToPlaylistDropdown)}
+                      style={{
+                        padding: "8px 16px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        background: "rgba(30, 215, 96, 0.2)",
+                        color: "#1DB954",
+                        border: "1px solid rgba(30, 215, 96, 0.4)",
+                        borderRadius: 20,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ➕ Add to Playlist
+                    </button>
+                    {showAddToPlaylistDropdown && (
+                      <>
+                        <div
+                          onClick={() => setShowAddToPlaylistDropdown(false)}
+                          style={{
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: -1,
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "100%",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            marginBottom: 8,
+                            background: "var(--alzooka-teal-dark)",
+                            border: "1px solid rgba(30, 215, 96, 0.3)",
+                            borderRadius: 12,
+                            padding: 8,
+                            zIndex: 100,
+                            minWidth: 200,
+                            maxHeight: 250,
+                            overflowY: "auto",
+                            boxShadow: "0 -4px 20px rgba(0,0,0,0.4)",
+                          }}
+                        >
+                          <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
+                            Add {selectedTracks.length} {selectedTracks.length === 1 ? "song" : "songs"} to:
+                          </div>
+                          {playlists.map(playlist => (
+                            <button
+                              key={playlist.id}
+                              onClick={() => {
+                                handleAddToExistingPlaylist(playlist.id);
+                                setShowAddToPlaylistDropdown(false);
+                              }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                width: "100%",
+                                padding: "8px 10px",
+                                background: "transparent",
+                                border: "none",
+                                borderRadius: 6,
+                                color: "var(--alzooka-cream)",
+                                fontSize: 13,
+                                cursor: "pointer",
+                                textAlign: "left",
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(30, 215, 96, 0.15)"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                            >
+                              {playlist.cover_image_url && (
+                                <img 
+                                  src={playlist.cover_image_url} 
+                                  alt="" 
+                                  style={{ width: 24, height: 24, borderRadius: 4, objectFit: "cover" }}
+                                />
+                              )}
+                              {playlist.name}
+                              <span style={{ marginLeft: "auto", fontSize: 11, opacity: 0.5 }}>
+                                ({playlistTracks[playlist.id]?.length || 0})
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                
+                {/* Clear Selection Button */}
+                <button
+                  onClick={() => setSelectedTracks([])}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    background: "transparent",
+                    color: "var(--alzooka-cream)",
+                    border: "1px solid rgba(240, 235, 224, 0.3)",
+                    borderRadius: 20,
+                    cursor: "pointer",
+                    opacity: 0.8,
+                  }}
+                >
+                  ✕ Clear
+                </button>
+              </div>
+            )}
             {filteredAlbums.length === 0 ? (
               <div style={{
                 textAlign: "center",
