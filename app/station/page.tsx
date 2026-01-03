@@ -4595,6 +4595,7 @@ export default function StationPage() {
                             background: "rgba(0, 0, 0, 0.3)",
                             border: "2px solid var(--alzooka-gold)",
                             borderRadius: 12,
+                            overflowAnchor: "none", // Prevent scroll jump when selecting tracks
                           }}>
                             {expandedInRow.map(album => {
                               const tracks = albumTracks[album.id];
@@ -4611,7 +4612,8 @@ export default function StationPage() {
                                     border: "1px solid rgba(201, 162, 39, 0.2)",
                                     display: "flex",
                                     gap: 16,
-                                    alignItems: "stretch",
+                                    alignItems: "flex-start", // Prevent layout shifts when button appears
+                                    overflowAnchor: "none", // Prevent scroll jump when selecting tracks
                                   }}
                                 >
                   {/* Album Info Header */}
@@ -4711,7 +4713,11 @@ export default function StationPage() {
                           }}
                         >
                           <span
-                            onClick={(e) => { e.stopPropagation(); handleToggleTrackSelect(track); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              e.preventDefault();
+                              handleToggleTrackSelect(track); 
+                            }}
                             style={{
                               width: 16,
                               height: 16,
