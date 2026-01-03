@@ -3788,74 +3788,182 @@ export default function StationPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
                 💿 Albums ({albums.length})
               </h3>
-              {/* Action buttons for selected albums - shows when any albums are selected */}
-              {manualSelections.size > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {/* Click-outside overlay to close dropdowns */}
-                  {(showAddToGroupDropdown || showRemoveFromGroupDropdown) && (
-                    <div
+            </div>
+            
+            {/* Floating Action Toolbar - appears when albums are selected */}
+            {manualSelections.size > 0 && (
+              <div
+                style={{
+                  position: "fixed",
+                  left: 20,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 1000,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  background: "rgba(26, 46, 46, 0.95)",
+                  padding: 12,
+                  borderRadius: 12,
+                  border: "1px solid rgba(201, 162, 39, 0.3)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--alzooka-gold)", textAlign: "center", marginBottom: 4 }}>
+                  {manualSelections.size} Selected
+                </div>
+                
+                {/* Click-outside overlay to close dropdowns */}
+                {(showAddToGroupDropdown || showRemoveFromGroupDropdown) && (
+                  <div
+                    onClick={() => {
+                      setShowAddToGroupDropdown(false);
+                      setShowRemoveFromGroupDropdown(false);
+                    }}
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: -1,
+                    }}
+                  />
+                )}
+                
+                {/* Add to Group Button */}
+                {groups.length > 0 && (
+                  <div style={{ position: "relative" }}>
+                    <button
                       onClick={() => {
-                        setShowAddToGroupDropdown(false);
+                        setShowAddToGroupDropdown(!showAddToGroupDropdown);
                         setShowRemoveFromGroupDropdown(false);
                       }}
                       style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        zIndex: 99,
+                        width: "100%",
+                        padding: "10px 14px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        background: "rgba(201, 162, 39, 0.2)",
+                        color: "var(--alzooka-gold)",
+                        border: "1px solid rgba(201, 162, 39, 0.4)",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
                       }}
-                    />
-                  )}
-                  
-                  {/* Add to Group Dropdown */}
-                  {groups.length > 0 && (
-                    <div style={{ position: "relative" }}>
-                      <button
-                        onClick={() => {
-                          setShowAddToGroupDropdown(!showAddToGroupDropdown);
-                          setShowRemoveFromGroupDropdown(false);
-                        }}
+                    >
+                      📁 Add to Group
+                    </button>
+                    {showAddToGroupDropdown && (
+                      <div
                         style={{
-                          padding: "6px 12px",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          background: "rgba(201, 162, 39, 0.2)",
-                          color: "var(--alzooka-gold)",
-                          border: "1px solid rgba(201, 162, 39, 0.4)",
-                          borderRadius: 6,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
+                          position: "absolute",
+                          left: "100%",
+                          top: 0,
+                          marginLeft: 8,
+                          background: "var(--alzooka-teal-dark)",
+                          border: "1px solid rgba(201, 162, 39, 0.3)",
+                          borderRadius: 8,
+                          padding: 8,
+                          zIndex: 100,
+                          minWidth: 160,
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
                         }}
                       >
-                        📁 Add to Group
-                      </button>
-                      {showAddToGroupDropdown && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "100%",
-                            right: 0,
-                            marginTop: 4,
-                            background: "var(--alzooka-teal-dark)",
-                            border: "1px solid rgba(201, 162, 39, 0.3)",
-                            borderRadius: 8,
-                            padding: 8,
-                            zIndex: 100,
-                            minWidth: 160,
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-                          }}
-                        >
-                          <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
-                            Add {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} to:
-                          </div>
-                          {groups.map(group => (
+                        <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
+                          Add {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} to:
+                        </div>
+                        {groups.map(group => (
+                          <button
+                            key={group.id}
+                            onClick={() => handleAddSelectedAlbumsToGroup(group.id)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              width: "100%",
+                              padding: "8px 10px",
+                              background: "transparent",
+                              border: "none",
+                              borderRadius: 4,
+                              color: "var(--alzooka-cream)",
+                              fontSize: 13,
+                              cursor: "pointer",
+                              textAlign: "left",
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                          >
+                            <span style={{ width: 12, height: 12, borderRadius: "50%", background: group.color, flexShrink: 0 }} />
+                            {group.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Remove from Group Button */}
+                {groups.length > 0 && (
+                  <div style={{ position: "relative" }}>
+                    <button
+                      onClick={() => {
+                        setShowRemoveFromGroupDropdown(!showRemoveFromGroupDropdown);
+                        setShowAddToGroupDropdown(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        background: "rgba(229, 115, 115, 0.15)",
+                        color: "#e57373",
+                        border: "1px solid rgba(229, 115, 115, 0.3)",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      📁 Remove from Group
+                    </button>
+                    {showRemoveFromGroupDropdown && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: "100%",
+                          top: 0,
+                          marginLeft: 8,
+                          background: "var(--alzooka-teal-dark)",
+                          border: "1px solid rgba(229, 115, 115, 0.3)",
+                          borderRadius: 8,
+                          padding: 8,
+                          zIndex: 100,
+                          minWidth: 180,
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
+                          Remove {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} from:
+                        </div>
+                        {groups.map(group => {
+                          // Count how many selected albums are in this group
+                          const selectedInGroup = Array.from(manualSelections).filter(albumId => 
+                            (albumGroups[albumId] || []).includes(group.id)
+                          ).length;
+                          
+                          return (
                             <button
                               key={group.id}
-                              onClick={() => handleAddSelectedAlbumsToGroup(group.id)}
+                              onClick={() => handleRemoveSelectedAlbumsFromGroup(group.id)}
+                              disabled={selectedInGroup === 0}
                               style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -3865,134 +3973,56 @@ export default function StationPage() {
                                 background: "transparent",
                                 border: "none",
                                 borderRadius: 4,
-                                color: "var(--alzooka-cream)",
+                                color: selectedInGroup > 0 ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
                                 fontSize: 13,
-                                cursor: "pointer",
+                                cursor: selectedInGroup > 0 ? "pointer" : "default",
                                 textAlign: "left",
+                                opacity: selectedInGroup > 0 ? 1 : 0.5,
                               }}
-                              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+                              onMouseEnter={(e) => {
+                                if (selectedInGroup > 0) e.currentTarget.style.background = "rgba(229, 115, 115, 0.2)";
+                              }}
                               onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                             >
                               <span style={{ width: 12, height: 12, borderRadius: "50%", background: group.color, flexShrink: 0 }} />
                               {group.name}
+                              {selectedInGroup > 0 && (
+                                <span style={{ marginLeft: "auto", fontSize: 11, color: "#e57373" }}>
+                                  ({selectedInGroup})
+                                </span>
+                              )}
                             </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Remove from Group Dropdown */}
-                  {groups.length > 0 && (
-                    <div style={{ position: "relative" }}>
-                      <button
-                        onClick={() => {
-                          setShowRemoveFromGroupDropdown(!showRemoveFromGroupDropdown);
-                          setShowAddToGroupDropdown(false);
-                        }}
-                        style={{
-                          padding: "6px 12px",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          background: "rgba(229, 115, 115, 0.2)",
-                          color: "#e57373",
-                          border: "1px solid rgba(229, 115, 115, 0.4)",
-                          borderRadius: 6,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        📁 Remove from Group
-                      </button>
-                      {showRemoveFromGroupDropdown && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "100%",
-                            right: 0,
-                            marginTop: 4,
-                            background: "var(--alzooka-teal-dark)",
-                            border: "1px solid rgba(229, 115, 115, 0.3)",
-                            borderRadius: 8,
-                            padding: 8,
-                            zIndex: 100,
-                            minWidth: 180,
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-                          }}
-                        >
-                          <div style={{ fontSize: 11, color: "rgba(240, 235, 224, 0.6)", marginBottom: 6, padding: "0 4px" }}>
-                            Remove {manualSelections.size} album{manualSelections.size > 1 ? "s" : ""} from:
-                          </div>
-                          {groups.map(group => {
-                            // Count how many selected albums are in this group
-                            const selectedInGroup = Array.from(manualSelections).filter(albumId => 
-                              (albumGroups[albumId] || []).includes(group.id)
-                            ).length;
-                            
-                            return (
-                              <button
-                                key={group.id}
-                                onClick={() => handleRemoveSelectedAlbumsFromGroup(group.id)}
-                                disabled={selectedInGroup === 0}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  width: "100%",
-                                  padding: "8px 10px",
-                                  background: "transparent",
-                                  border: "none",
-                                  borderRadius: 4,
-                                  color: selectedInGroup > 0 ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.3)",
-                                  fontSize: 13,
-                                  cursor: selectedInGroup > 0 ? "pointer" : "default",
-                                  textAlign: "left",
-                                  opacity: selectedInGroup > 0 ? 1 : 0.5,
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (selectedInGroup > 0) e.currentTarget.style.background = "rgba(229, 115, 115, 0.2)";
-                                }}
-                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                              >
-                                <span style={{ width: 12, height: 12, borderRadius: "50%", background: group.color, flexShrink: 0 }} />
-                                {group.name}
-                                {selectedInGroup > 0 && (
-                                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#e57373" }}>
-                                    ({selectedInGroup})
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => setConfirmBulkDelete(true)}
-                    style={{
-                      padding: "6px 12px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      background: "#e57373",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    🗑️ Delete ({manualSelections.size})
-                  </button>
-                </div>
-              )}
-            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Delete Button */}
+                <button
+                  onClick={() => setConfirmBulkDelete(true)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    background: "#e57373",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  🗑️ Delete ({manualSelections.size})
+                </button>
+              </div>
+            )}
             {filteredAlbums.length === 0 ? (
               <div style={{
                 textAlign: "center",
