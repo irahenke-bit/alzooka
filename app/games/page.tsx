@@ -208,35 +208,40 @@ export default function GamesPage() {
     return Math.round((stats.wins / stats.games_played) * 100);
   }
 
-  // Fisher-Yates shuffle for truly random results
-  function shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
-
   async function acceptChallenge(challenge: Challenge) {
     if (!user) return;
 
-    // Fetch all questions and randomly select
-    const { data: allQuestions } = await supabase
-      .from("trivia_questions")
-      .select("id")
-      .eq("is_approved", true);
-
-    if (!allQuestions || allQuestions.length === 0) {
-      alert("No questions available. Please try again later.");
-      return;
-    }
-
-    // Fisher-Yates shuffle for truly random selection
-    const shuffled = shuffleArray(allQuestions);
+    // Use database-level randomization for better results
     const needed = challenge.mode === "five_second" ? 10 : 50;
-    const selected = shuffled.slice(0, Math.min(needed, shuffled.length));
-    const questionIds = selected.map(q => q.id);
+    
+    // Fetch random questions directly from database
+    const { data: randomQuestions } = await supabase
+      .rpc("get_random_questions", { num_questions: needed });
+
+    // Fallback: if RPC doesn't exist, fetch all and shuffle client-side
+    let questionIds: string[];
+    if (randomQuestions && randomQuestions.length > 0) {
+      questionIds = randomQuestions.map((q: { id: string }) => q.id);
+    } else {
+      // Fallback to client-side shuffle
+      const { data: allQuestions } = await supabase
+        .from("trivia_questions")
+        .select("id")
+        .eq("is_approved", true);
+
+      if (!allQuestions || allQuestions.length === 0) {
+        alert("No questions available. Please try again later.");
+        return;
+      }
+
+      // Fisher-Yates shuffle
+      const shuffled = [...allQuestions];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      questionIds = shuffled.slice(0, Math.min(needed, shuffled.length)).map(q => q.id);
+    }
 
     // Create the game record - current user (accepter) is player1 for RLS
     const { data: game, error } = await supabase
