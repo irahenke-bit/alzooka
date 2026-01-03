@@ -494,42 +494,49 @@ export default function PlayPage() {
           
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {shuffledAnswers.map((answer, index) => {
-              let buttonStyle: React.CSSProperties = {
-                padding: 16,
-                fontSize: 16,
-                background: "rgba(240, 235, 224, 0.1)",
-                border: "2px solid rgba(240, 235, 224, 0.2)",
-                borderRadius: 12,
-                cursor: showResult ? "default" : "pointer",
-                color: "var(--alzooka-cream)",
-                textAlign: "left",
-              };
-
+              const isCorrect = answer === currentQuestion.correct_answer;
+              const isSelected = answer === selectedAnswer;
+              
+              // Determine background and border colors based on state
+              let bgColor = "rgba(240, 235, 224, 0.1)";
+              let borderColor = "rgba(240, 235, 224, 0.2)";
+              
+              // Only change colors AFTER user has answered (showResult is true)
               if (showResult) {
-                if (answer === currentQuestion.correct_answer) {
-                  buttonStyle = {
-                    ...buttonStyle,
-                    background: "rgba(29, 185, 84, 0.3)",
-                    borderColor: "#1DB954",
-                  };
-                } else if (answer === selectedAnswer && answer !== currentQuestion.correct_answer) {
-                  buttonStyle = {
-                    ...buttonStyle,
-                    background: "rgba(229, 115, 115, 0.3)",
-                    borderColor: "#e57373",
-                  };
+                if (isCorrect) {
+                  bgColor = "rgba(29, 185, 84, 0.3)";
+                  borderColor = "#1DB954";
+                } else if (isSelected) {
+                  bgColor = "rgba(229, 115, 115, 0.3)";
+                  borderColor = "#e57373";
                 }
               }
 
               return (
-                <button
+                <div
                   key={index}
-                  onClick={() => handleAnswerClick(answer)}
-                  style={buttonStyle}
-                  disabled={showResult}
+                  onClick={() => !showResult && handleAnswerClick(answer)}
+                  role="button"
+                  tabIndex={showResult ? -1 : 0}
+                  onKeyDown={(e) => {
+                    if (!showResult && (e.key === "Enter" || e.key === " ")) {
+                      handleAnswerClick(answer);
+                    }
+                  }}
+                  style={{
+                    padding: 16,
+                    fontSize: 16,
+                    background: bgColor,
+                    border: `2px solid ${borderColor}`,
+                    borderRadius: 12,
+                    cursor: showResult ? "default" : "pointer",
+                    color: "var(--alzooka-cream)",
+                    textAlign: "left",
+                    userSelect: "none",
+                  }}
                 >
                   {answer}
-                </button>
+                </div>
               );
             })}
           </div>

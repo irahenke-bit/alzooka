@@ -5,6 +5,7 @@ import { createBrowserClient } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import Link from "next/link";
+import { notifyTriviaChallengeAccepted } from "@/lib/notifications";
 
 type Challenge = {
   id: string;
@@ -164,8 +165,18 @@ export default function AcceptChallengePage() {
       .update({ status: "accepted", game_id: game.id })
       .eq("id", challenge.id);
 
+    // Notify the challenger that their challenge was accepted and they need to play
+    await notifyTriviaChallengeAccepted(
+      supabase,
+      challenge.challenger_id,
+      userData?.username || "Someone",
+      currentUser.id,
+      game.id,
+      challenge.mode
+    );
+
     // Navigate to play the game
-    router.push(`/games/play?gameId=${game.id}`);
+    router.push(`/games/play?gameId=${game.id}&mode=${challenge.mode}`);
   }
 
   async function declineChallenge() {

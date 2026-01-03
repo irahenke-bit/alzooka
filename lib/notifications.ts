@@ -264,6 +264,27 @@ export async function notifyTriviaChallenge(
   });
 }
 
+// Notify challenger when their challenge is accepted - tells them to play their turn
+export async function notifyTriviaChallengeAccepted(
+  supabase: SupabaseClient,
+  challengerId: string,
+  accepterUsername: string,
+  accepterId: string,
+  gameId: string,
+  mode: string
+) {
+  const modeDisplay = mode === "blitz" ? "⚡ Blitz" : "⏱️ Five Second";
+  await createNotification({
+    supabase,
+    userId: challengerId,
+    type: "trivia_challenge_accepted",
+    title: `🎮 @${accepterUsername} accepted your challenge!`,
+    content: `${modeDisplay} mode - Click to play your turn now!`,
+    link: `/games/play?gameId=${gameId}&mode=${mode}`,
+    relatedUserId: accepterId,
+  });
+}
+
 // Parse @mentions from text
 export function parseMentions(text: string): string[] {
   const mentionRegex = /@(\w+)/g;

@@ -5,6 +5,7 @@ import { createBrowserClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Link from "next/link";
+import { notifyTriviaChallengeAccepted } from "@/lib/notifications";
 
 type UserData = {
   id: string;
@@ -45,11 +46,25 @@ type LeaderboardEntry = {
   avatar_url: string | null;
 };
 
+type PendingGame = {
+  id: string;
+  mode: string;
+  player1_id: string;
+  player2_id: string;
+  player1_score: number | null;
+  player2_score: number | null;
+  status: string;
+  opponent_username: string;
+  opponent_avatar_url: string | null;
+  is_your_turn: boolean;
+};
+
 export default function GamesPage() {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [pendingGames, setPendingGames] = useState<PendingGame[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"challenges" | "leaderboard">("challenges");
@@ -109,6 +124,51 @@ export default function GamesPage() {
 
       if (challengeData) {
         setChallenges(challengeData);
+      }
+
+      // Get games where it's your turn to play (game is active but you haven't played yet)
+      const { data: gamesData } = await supabase
+        .from("trivia_games")
+        .select("*")
+        .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+        .in("status", ["active", "player1_done", "player2_done"])
+        .order("started_at", { ascending: false });
+
+      if (gamesData) {
+        const pendingGamesWithOpponents: PendingGame[] = [];
+        
+        for (const game of gamesData) {
+          const isPlayer1 = game.player1_id === user.id;
+          const myScore = isPlayer1 ? game.player1_score : game.player2_score;
+          const opponentId = isPlayer1 ? game.player2_id : game.player1_id;
+          
+          // If I haven't played yet (my score is null), it's my turn
+          const isMyTurn = myScore === null;
+          
+          if (isMyTurn) {
+            // Get opponent info
+            const { data: opponentData } = await supabase
+              .from("users")
+              .select("username, avatar_url")
+              .eq("id", opponentId)
+              .single();
+            
+            pendingGamesWithOpponents.push({
+              id: game.id,
+              mode: game.mode,
+              player1_id: game.player1_id,
+              player2_id: game.player2_id,
+              player1_score: game.player1_score,
+              player2_score: game.player2_score,
+              status: game.status,
+              opponent_username: opponentData?.username || "Unknown",
+              opponent_avatar_url: opponentData?.avatar_url || null,
+              is_your_turn: true,
+            });
+          }
+        }
+        
+        setPendingGames(pendingGamesWithOpponents);
       }
 
       // Get leaderboard (top 20 by rating, only players with 10+ games)
@@ -196,8 +256,18 @@ export default function GamesPage() {
       .update({ status: "accepted", game_id: game.id })
       .eq("id", challenge.id);
 
+    // Notify the challenger that their challenge was accepted
+    await notifyTriviaChallengeAccepted(
+      supabase,
+      challenge.challenger_id,
+      userData?.username || "Someone",
+      user.id,
+      game.id,
+      challenge.mode
+    );
+
     // Navigate to play the game
-    router.push(`/games/play?gameId=${game.id}`);
+    router.push(`/games/play?gameId=${game.id}&mode=${challenge.mode}`);
   }
 
   async function declineChallenge(challengeId: string) {
@@ -299,6 +369,82 @@ export default function GamesPage() {
         >
           🎯 Challenge Someone to Trivia
         </button>
+
+        {/* Your Turn - Games waiting for you to play */}
+        {pendingGames.length > 0 && (
+          <div style={{
+            background: "rgba(29, 185, 84, 0.1)",
+            border: "2px solid rgba(29, 185, 84, 0.4)",
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 24,
+          }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 16, color: "#1DB954", display: "flex", alignItems: "center", gap: 8 }}>
+              🎮 Your Turn to Play!
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {pendingGames.map((game) => (
+                <div
+                  key={game.id}
+                  style={{
+                    background: "rgba(240, 235, 224, 0.05)",
+                    borderRadius: 8,
+                    padding: 12,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    {game.opponent_avatar_url ? (
+                      <img
+                        src={game.opponent_avatar_url}
+                        alt=""
+                        style={{ width: 36, height: 36, borderRadius: "50%" }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: "rgba(240, 235, 224, 0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                        👤
+                      </div>
+                    )}
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
+                        vs @{game.opponent_username}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, opacity: 0.7 }}>
+                        {game.mode === "blitz" ? "⚡ Blitz" : "⏱️ Five Second"}
+                        {(game.player1_score !== null || game.player2_score !== null) && " • Opponent already played"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/games/play?gameId=${game.id}&mode=${game.mode}`)}
+                    style={{
+                      padding: "8px 16px",
+                      background: "#1DB954",
+                      border: "none",
+                      borderRadius: 6,
+                      color: "#fff",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}
+                  >
+                    Play Now
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>

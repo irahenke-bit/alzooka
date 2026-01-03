@@ -146,7 +146,7 @@ export default function ChallengePage() {
       selectedMode
     );
 
-    alert(`Challenge sent to @${selectedUser.username}!`);
+    alert(`Challenge sent to @${selectedUser.username}! You'll be notified when they accept so you can play your turn.`);
     router.push("/games");
   }
 
@@ -428,6 +428,20 @@ export default function ChallengePage() {
                   </p>
                 </div>
               </label>
+            </div>
+
+            {/* How it works note */}
+            <div style={{
+              padding: 14,
+              background: "rgba(29, 185, 84, 0.1)",
+              border: "1px solid rgba(29, 185, 84, 0.3)",
+              borderRadius: 10,
+              marginBottom: 16,
+            }}>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>
+                <strong>How it works:</strong> @{selectedUser.username} will play first after accepting your challenge. 
+                You&apos;ll get a notification when it&apos;s your turn to play!
+              </p>
             </div>
 
             {/* Send challenge button */}
