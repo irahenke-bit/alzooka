@@ -2598,6 +2598,10 @@ export default function StationPage() {
     setCurrentlyPlayingAlbumId(album.id);
     setCurrentlyPlayingPlaylistId(null);
     
+    // Set up the queue for next/previous track navigation
+    setCurrentPlaylistQueue(tracksToPlay.map(t => t.uri));
+    setCurrentQueueIndex(0);
+    
     // Build source map for these tracks (album only, no playlist)
     const newSourceMap: Record<string, { albumName: string; playlistName?: string }> = {};
     tracksToPlay.forEach(t => {
