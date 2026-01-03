@@ -4030,6 +4030,11 @@ export default function StationPage() {
                               .map(gid => groups.find(g => g.id === gid))
                               .filter(Boolean);
                             const isExpanded = expandedAlbums.has(album.id);
+                            
+                            // Count how many tracks from this album are selected
+                            const thisAlbumTracks = albumTracks[album.id] || [];
+                            const selectedFromThisAlbum = thisAlbumTracks.filter(t => selectedTrackUris.has(t.uri)).length;
+                            const hasSelectedTracks = selectedFromThisAlbum > 0;
                   
                   return (
                     <div
@@ -4049,6 +4054,14 @@ export default function StationPage() {
                               : album.is_selected
                                 ? "1px solid rgba(30, 215, 96, 0.3)"
                                 : "1px solid transparent",
+                          // Add glow effect for selected tracks and/or playing
+                          boxShadow: hasSelectedTracks && hasCurrentTrack
+                            ? "0 0 20px rgba(229, 115, 115, 0.5), 0 0 20px rgba(30, 215, 96, 0.5)" // Mixed red and green
+                            : hasSelectedTracks
+                              ? "0 0 20px rgba(229, 115, 115, 0.5)" // Red glow for selections
+                              : hasCurrentTrack
+                                ? "0 0 15px rgba(30, 215, 96, 0.4)" // Green glow for playing
+                                : "none",
                         }}
                       >
                         {/* Album Art with Overlay */}
@@ -4138,6 +4151,26 @@ export default function StationPage() {
                           >
                             ×
                           </button>
+                          {/* Selected Tracks Badge */}
+                          {hasSelectedTracks && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                padding: "6px 8px",
+                                background: "rgba(229, 115, 115, 0.9)",
+                                color: "#fff",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                textAlign: "center",
+                                textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                              }}
+                            >
+                              {selectedFromThisAlbum} {selectedFromThisAlbum === 1 ? "Song" : "Songs"} Selected
+                            </div>
+                          )}
                         </div>
                         {/* Album Info */}
                         <div style={{ padding: 12 }}>
