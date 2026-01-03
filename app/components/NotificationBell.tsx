@@ -75,12 +75,19 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        // Mark all as read when closing (except friend requests)
+        const nonFriendRequestUnread = notifications.filter(
+          n => !n.is_read && n.type !== "friend_request"
+        );
+        if (nonFriendRequestUnread.length > 0) {
+          nonFriendRequestUnread.forEach(n => markAsRead(n.id));
+        }
         setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [notifications]);
 
   async function markAsRead(notificationId: string) {
     await supabase
@@ -218,20 +225,19 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
     }
     if (!isOpen) {
       setIsOpen(true);
-      // Mark all as read when opening the dropdown (except friend requests)
-      if (unreadCount > 0) {
-        const nonFriendRequestUnread = notifications.filter(
-          n => !n.is_read && n.type !== "friend_request"
-        );
-        if (nonFriendRequestUnread.length > 0) {
-          nonFriendRequestUnread.forEach(n => markAsRead(n.id));
-        }
-      }
+      // Don't auto-mark as read - wait for user to click or close
     }
   }
 
   function handleMouseLeave() {
     closeTimeoutRef.current = setTimeout(() => {
+      // Mark all as read when closing the panel (except friend requests)
+      const nonFriendRequestUnread = notifications.filter(
+        n => !n.is_read && n.type !== "friend_request"
+      );
+      if (nonFriendRequestUnread.length > 0) {
+        nonFriendRequestUnread.forEach(n => markAsRead(n.id));
+      }
       setIsOpen(false);
     }, 150);
   }
