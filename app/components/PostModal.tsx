@@ -368,7 +368,11 @@ function VoteButtons({
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
       <button
-        onClick={() => onVote(targetType, targetId, 1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onVote(targetType, targetId, 1);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
         style={{
           background: "transparent",
           border: "none",
@@ -394,7 +398,11 @@ function VoteButtons({
         {score}
       </span>
       <button
-        onClick={() => onVote(targetType, targetId, -1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onVote(targetType, targetId, -1);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
         style={{
           background: "transparent",
           border: "none",
