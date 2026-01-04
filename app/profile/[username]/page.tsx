@@ -336,8 +336,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function init() {
-      // Get current logged in user
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get current logged in user from session (consistent with main page)
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       setCurrentUser(user);
 
       // PARALLEL FETCH: Get current user data and profile data at once

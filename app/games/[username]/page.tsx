@@ -53,7 +53,8 @@ export default function GamingProfilePage() {
 
   useEffect(() => {
     async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       setCurrentUser(user);
 
       // Get current user data for header
