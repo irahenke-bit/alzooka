@@ -2148,6 +2148,7 @@ export default function ProfilePage() {
                       currentUserId={currentUser.id}
                       currentUsername={currentUserUsername}
                       targetUserId={profile.id}
+                      targetDisplayName={profile.display_name || profile.username}
                     />
                     <Link
                       href={`/station/${profile.username}`}

@@ -10,15 +10,18 @@ export function FriendButton({
   currentUserId,
   currentUsername,
   targetUserId,
+  targetDisplayName,
   onStatusChange
 }: { 
   currentUserId: string;
   currentUsername?: string;
   targetUserId: string;
+  targetDisplayName?: string;
   onStatusChange?: () => void;
 }) {
   const [status, setStatus] = useState<FriendshipStatus>("none");
   const [loading, setLoading] = useState(true);
+  const [showUnfriendConfirm, setShowUnfriendConfirm] = useState(false);
   const supabase = createBrowserClient();
 
   async function loadFriendshipStatus() {
@@ -215,20 +218,91 @@ export function FriendButton({
 
     case "friends":
       return (
-        <button
-          onClick={unfriend}
-          style={{
-            background: "transparent",
-            color: "var(--alzooka-cream)",
-            padding: "8px 16px",
-            fontSize: 14,
-            border: "1px solid rgba(240, 235, 224, 0.3)",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          ✓ Friends
-        </button>
+        <>
+          <button
+            onClick={() => setShowUnfriendConfirm(true)}
+            style={{
+              background: "transparent",
+              color: "var(--alzooka-cream)",
+              padding: "8px 16px",
+              fontSize: 14,
+              border: "1px solid rgba(240, 235, 224, 0.3)",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            ✓ Friends
+          </button>
+
+          {/* Unfriend Confirmation Modal */}
+          {showUnfriendConfirm && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+              }}
+              onClick={() => setShowUnfriendConfirm(false)}
+            >
+              <div
+                style={{
+                  backgroundColor: "var(--alzooka-teal-dark)",
+                  border: "1px solid rgba(212, 175, 55, 0.3)",
+                  borderRadius: 12,
+                  padding: 24,
+                  maxWidth: 400,
+                  textAlign: "center",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p style={{ color: "var(--alzooka-cream)", fontSize: 16, marginBottom: 20 }}>
+                  Are you sure you want to unfriend <strong>{targetDisplayName || "this user"}</strong>?
+                </p>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                  <button
+                    onClick={() => setShowUnfriendConfirm(false)}
+                    style={{
+                      background: "transparent",
+                      color: "var(--alzooka-cream)",
+                      padding: "10px 24px",
+                      fontSize: 14,
+                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUnfriendConfirm(false);
+                      unfriend();
+                    }}
+                    style={{
+                      background: "#e57373",
+                      color: "#fff",
+                      padding: "10px 24px",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Yes, Unfriend
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       );
   }
 }
