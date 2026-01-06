@@ -645,15 +645,15 @@ export default function ProfilePage() {
         setVoteTotals(prev => ({ ...prev, ...postVoteTotals }));
 
         // Fetch reactions for all posts
-        const postIds = postsWithCounts.map(p => p.id);
-        if (postIds.length > 0) {
+        const reactionPostIds = postsWithCounts.map(p => p.id);
+        if (reactionPostIds.length > 0) {
           const { data: reactionsData } = await supabase
             .from("reactions")
             .select(`
               id, user_id, post_id, reaction_type, created_at,
               users (username, display_name, avatar_url)
             `)
-            .in("post_id", postIds);
+            .in("post_id", reactionPostIds);
           
           if (reactionsData) {
             const reactionsMap: Record<string, Reaction[]> = {};
