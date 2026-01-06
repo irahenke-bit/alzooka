@@ -22,6 +22,7 @@ import { PasswordModal } from "@/app/components/PasswordModal";
 import { ContentFilterModal } from "@/app/components/ContentFilterModal";
 import { FeedControlModal } from "@/app/components/FeedControlModal";
 import { LinkPreview } from "@/app/components/LinkPreview";
+import { ReactionPicker, Reaction } from "@/app/components/ReactionPicker";
 import { notifyWallPost } from "@/lib/notifications";
 import { imageToBase64, moderateImageBase64, getBlockedMessage } from "@/lib/imageModeration";
 
@@ -295,6 +296,7 @@ export default function ProfilePage() {
   const [sharePost, setSharePost] = useState<any>(null);
   const [votes, setVotes] = useState<Record<string, { id: string; user_id: string; value: number }>>({});
   const [voteTotals, setVoteTotals] = useState<Record<string, number>>({});
+  const [postReactions, setPostReactions] = useState<Record<string, Reaction[]>>({});
   const [posting, setPosting] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [showBannerCrop, setShowBannerCrop] = useState(false);
@@ -641,6 +643,33 @@ export default function ProfilePage() {
           postVoteTotals[`post-${p.id}`] = p.voteScore;
         });
         setVoteTotals(prev => ({ ...prev, ...postVoteTotals }));
+
+        // Fetch reactions for all posts
+        const postIds = postsWithCounts.map(p => p.id);
+        if (postIds.length > 0) {
+          const { data: reactionsData } = await supabase
+            .from("reactions")
+            .select(`
+              id, user_id, post_id, reaction_type, created_at,
+              users (username, display_name, avatar_url)
+            `)
+            .in("post_id", postIds);
+          
+          if (reactionsData) {
+            const reactionsMap: Record<string, Reaction[]> = {};
+            reactionsData.forEach((r: any) => {
+              const postId = r.post_id;
+              if (!reactionsMap[postId]) {
+                reactionsMap[postId] = [];
+              }
+              reactionsMap[postId].push({
+                ...r,
+                users: Array.isArray(r.users) ? r.users[0] : r.users,
+              });
+            });
+            setPostReactions(reactionsMap);
+          }
+        }
       }
 
       // Get comments by this user
@@ -3526,6 +3555,22 @@ export default function ProfilePage() {
                                   : `${post.commentCount ?? 0} comment${(post.commentCount ?? 0) !== 1 ? "s" : ""}`}
                               </span>
                             </button>
+                            
+                            {/* Reaction Picker */}
+                            <ReactionPicker
+                              targetType="post"
+                              targetId={post.id}
+                              userId={currentUser?.id || null}
+                              ownerId={post.user_id}
+                              supabase={supabase}
+                              reactions={postReactions[post.id] || []}
+                              onReactionsChange={(newReactions) => {
+                                setPostReactions(prev => ({
+                                  ...prev,
+                                  [post.id]: newReactions,
+                                }));
+                              }}
+                            />
                           </div>
                         </>
                       )}

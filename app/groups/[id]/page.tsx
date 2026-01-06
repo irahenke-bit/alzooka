@@ -20,6 +20,7 @@ import { LinkPreview } from "@/app/components/LinkPreview";
 import { YouTubeSearchModal } from "@/app/components/YouTubeSearchModal";
 import { SpotifySearchModal } from "@/app/components/SpotifySearchModal";
 import { EmojiButton } from "@/app/components/EmojiButton";
+import { ReactionPicker, Reaction } from "@/app/components/ReactionPicker";
 import { notifyGroupInvite } from "@/lib/notifications";
 import { imageToBase64, moderateImageBase64, getBlockedMessage } from "@/lib/imageModeration";
 
@@ -297,6 +298,7 @@ export default function GroupPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [postReactions, setPostReactions] = useState<Record<string, Reaction[]>>({});
   const [totalPostCount, setTotalPostCount] = useState(0);
   const [currentlyPlayingVideo, setCurrentlyPlayingVideo] = useState<string | null>(null);
   const [hasMorePosts, setHasMorePosts] = useState(true);
@@ -1037,6 +1039,33 @@ export default function GroupPage() {
         setPosts(postsWithNestedComments as unknown as Post[]);
       } else {
         setPosts(prev => [...prev, ...(postsWithNestedComments as unknown as Post[])]);
+      }
+      
+      // Fetch reactions for loaded posts
+      const loadedPostIds = postsWithNestedComments.map((p: any) => p.id);
+      if (loadedPostIds.length > 0) {
+        const { data: reactionsData } = await supabase
+          .from("reactions")
+          .select(`
+            id, user_id, post_id, reaction_type, created_at,
+            users (username, display_name, avatar_url)
+          `)
+          .in("post_id", loadedPostIds);
+        
+        if (reactionsData) {
+          const newReactionsMap: Record<string, Reaction[]> = {};
+          reactionsData.forEach((r: any) => {
+            const postId = r.post_id;
+            if (!newReactionsMap[postId]) {
+              newReactionsMap[postId] = [];
+            }
+            newReactionsMap[postId].push({
+              ...r,
+              users: Array.isArray(r.users) ? r.users[0] : r.users,
+            });
+          });
+          setPostReactions(prev => reset ? newReactionsMap : { ...prev, ...newReactionsMap });
+        }
       }
       
       setLoadingMorePosts(false);
@@ -3511,6 +3540,13 @@ export default function GroupPage() {
           currentlyPlayingVideo={currentlyPlayingVideo}
           onPlayVideo={setCurrentlyPlayingVideo}
           filteredWords={filteredWords}
+          postReactions={postReactions}
+          onPostReactionsChange={(postId, reactions) => {
+            setPostReactions(prev => ({
+              ...prev,
+              [postId]: reactions,
+            }));
+          }}
         />
       )}
 
@@ -3727,6 +3763,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
   onBanUser,
   currentlyPlayingVideo,
   onPlayVideo,
+  reactions,
+  onReactionsChange,
 }: {
   post: Post;
   user: User;
@@ -3742,6 +3780,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
   onBanUser?: (userId: string) => void;
   currentlyPlayingVideo: string | null;
   onPlayVideo: (videoId: string) => void;
+  reactions: Reaction[];
+  onReactionsChange: (reactions: Reaction[]) => void;
 }) {
   const handleOpen = useCallback(() => {
     onOpenModal(post);
@@ -3763,6 +3803,8 @@ const MemoizedPostWrapper = memo(function MemoizedPostWrapper({
       onBanUser={onBanUser}
       currentlyPlayingVideo={currentlyPlayingVideo}
       onPlayVideo={onPlayVideo}
+      reactions={reactions}
+      onReactionsChange={onReactionsChange}
     />
   );
 });
@@ -3787,6 +3829,8 @@ function PaginatedPostsList({
   currentlyPlayingVideo,
   onPlayVideo,
   filteredWords = [],
+  postReactions,
+  onPostReactionsChange,
 }: {
   posts: Post[];
   user: User;
@@ -3806,6 +3850,8 @@ function PaginatedPostsList({
   currentlyPlayingVideo: string | null;
   onPlayVideo: (videoId: string) => void;
   filteredWords?: string[];
+  postReactions: Record<string, Reaction[]>;
+  onPostReactionsChange: (postId: string, reactions: Reaction[]) => void;
 }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -3870,6 +3916,8 @@ function PaginatedPostsList({
           onBanUser={onBanUser}
           currentlyPlayingVideo={currentlyPlayingVideo}
           onPlayVideo={onPlayVideo}
+          reactions={postReactions[post.id] || []}
+          onReactionsChange={(reactions) => onPostReactionsChange(post.id, reactions)}
         />
       ))}
       
@@ -4020,6 +4068,8 @@ const GroupPostCard = memo(function GroupPostCard({
   onBanUser,
   currentlyPlayingVideo,
   onPlayVideo,
+  reactions,
+  onReactionsChange,
 }: {
   post: Post;
   user: User;
@@ -4035,6 +4085,8 @@ const GroupPostCard = memo(function GroupPostCard({
   onBanUser?: (userId: string) => void;
   currentlyPlayingVideo: string | null;
   onPlayVideo: (videoId: string) => void;
+  reactions: Reaction[];
+  onReactionsChange: (reactions: Reaction[]) => void;
 }) {
   // Check if the post author is an admin
   const isPostAuthorAdmin = members.some(m => m.user_id === post.user_id && m.role === "admin");
@@ -4503,6 +4555,17 @@ const GroupPostCard = memo(function GroupPostCard({
                 : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
             </span>
           </button>
+          
+          {/* Reaction Picker */}
+          <ReactionPicker
+            targetType="post"
+            targetId={post.id}
+            userId={user.id}
+            ownerId={post.user_id}
+            supabase={supabase}
+            reactions={reactions}
+            onReactionsChange={onReactionsChange}
+          />
         </div>
       </div>
 
