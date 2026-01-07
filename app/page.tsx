@@ -2860,43 +2860,46 @@ function PostCard({
             return previewUrl ? <LinkPreview url={previewUrl} /> : null;
           })()}
 
-          {/* Reaction Picker */}
-          <ReactionPicker
-            targetType="post"
-            targetId={post.id}
-            userId={user.id}
-            ownerId={post.user_id}
-            supabase={supabase}
-            reactions={reactions}
-            onReactionsChange={onReactionsChange}
-          />
+          {/* Comment and React buttons in a row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {/* Comment Button - Opens Modal */}
+            <button
+              onClick={onOpenModal}
+              style={{
+                background: "transparent",
+                color: "var(--alzooka-cream)",
+                padding: "4px 0",
+                fontSize: 14,
+                border: "none",
+                opacity: 0.7,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
+            >
+              {/* Chat bubble outline icon */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              {commentCount === 0
+                ? "Comment"
+                : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
+            </button>
 
-          {/* Comment Button - Opens Modal */}
-          <button
-            onClick={onOpenModal}
-            style={{
-              background: "transparent",
-              color: "var(--alzooka-cream)",
-              padding: "4px 0",
-              fontSize: 14,
-              border: "none",
-              opacity: 0.7,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
-          >
-            {/* Chat bubble outline icon */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            {commentCount === 0
-              ? "Comment"
-              : `${commentCount} comment${commentCount !== 1 ? "s" : ""}`}
-          </button>
+            {/* Reaction Picker */}
+            <ReactionPicker
+              targetType="post"
+              targetId={post.id}
+              userId={user.id}
+              ownerId={post.user_id}
+              supabase={supabase}
+              reactions={reactions}
+              onReactionsChange={onReactionsChange}
+            />
+          </div>
         </div>
       </div>
 
