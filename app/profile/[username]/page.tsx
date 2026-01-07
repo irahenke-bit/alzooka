@@ -1688,26 +1688,6 @@ export default function ProfilePage() {
           zIndex: -1,
         }} />
 
-        {/* Post Count - Upper Left */}
-        <div
-          style={{
-            position: "absolute",
-            top: 16,
-            left: 16,
-            textAlign: "center",
-            background: "rgba(0, 0, 0, 0.5)",
-            padding: "8px 14px",
-            borderRadius: 8,
-          }}
-        >
-          <div style={{ fontSize: 11, color: "var(--alzooka-gold)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            Total Posts
-          </div>
-          <div style={{ fontSize: 20, color: "var(--alzooka-gold)", fontWeight: 700 }}>
-            {posts.length}
-          </div>
-        </div>
-
         {/* Edit menu button */}
         {isOwnProfile && (
           <>
