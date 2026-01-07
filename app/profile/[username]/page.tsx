@@ -1155,12 +1155,17 @@ export default function ProfilePage() {
 
     if (!error && newPost) {
       // Auto-upvote own post (like Reddit)
-      await supabase.from("votes").insert({
+      const { data: voteData } = await supabase.from("votes").insert({
         user_id: currentUser.id,
         target_type: "post",
         target_id: newPost.id,
         value: 1,
-      });
+      }).select().single();
+      
+      // Update votes state so arrow appears filled
+      if (voteData) {
+        setVotes(prev => ({ ...prev, [`post-${newPost.id}`]: voteData }));
+      }
       
       if (profile.id !== currentUser.id) {
         notifyWallPost(supabase, profile.id, currentUserUsername, newPost.id, wallPostContent.trim());
@@ -1479,12 +1484,17 @@ export default function ProfilePage() {
 
     if (!error && newPost) {
       // Auto-upvote own post (like Reddit)
-      await supabase.from("votes").insert({
+      const { data: voteData } = await supabase.from("votes").insert({
         user_id: currentUser.id,
         target_type: "post",
         target_id: newPost.id,
         value: 1,
-      });
+      }).select().single();
+      
+      // Update votes state so arrow appears filled
+      if (voteData) {
+        setVotes(prev => ({ ...prev, [`post-${newPost.id}`]: voteData }));
+      }
       
       // Add the new post to the top of the list
       setPosts([
