@@ -235,8 +235,8 @@ export default function CoinCollectorPage() {
         user_id: user.id,
         coins: Math.floor(coins),
         total_coins_earned: Math.floor(totalCoinsEarned),
-        clicks,
-        coins_per_click: coinsPerClick,
+        clicks: Math.floor(clicks),
+        coins_per_click: Math.floor(coinsPerClick),
         coins_per_second: coinsPerSecond,
         rebirth_count: rebirthCount,
         rebirth_bonus: rebirthBonus,
@@ -244,7 +244,7 @@ export default function CoinCollectorPage() {
         collectors,
         current_president: currentPresident,
         highest_coins: Math.floor(highestCoins),
-        play_time_seconds: playTimeSeconds,
+        play_time_seconds: Math.floor(playTimeSeconds),
       }, { onConflict: "user_id" });
     
     if (error) {
@@ -290,8 +290,8 @@ export default function CoinCollectorPage() {
           user_id: user.id,
           coins: Math.floor(state.coins),
           total_coins_earned: Math.floor(state.totalCoinsEarned),
-          clicks: state.clicks,
-          coins_per_click: state.coinsPerClick,
+          clicks: Math.floor(state.clicks),
+          coins_per_click: Math.floor(state.coinsPerClick),
           coins_per_second: state.coinsPerSecond,
           rebirth_count: state.rebirthCount,
           rebirth_bonus: state.rebirthBonus,
@@ -299,7 +299,7 @@ export default function CoinCollectorPage() {
           collectors: state.collectors,
           current_president: state.currentPresident,
           highest_coins: Math.floor(state.highestCoins),
-          play_time_seconds: state.playTimeSeconds,
+          play_time_seconds: Math.floor(state.playTimeSeconds),
         }, { onConflict: "user_id" });
       
       if (error) {

@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         coins: Math.floor(body.coins || 0),
         total_coins_earned: Math.floor(body.totalCoinsEarned || 0),
-        clicks: body.clicks || 0,
-        coins_per_click: body.coinsPerClick || 1,
+        clicks: Math.floor(body.clicks || 0),
+        coins_per_click: Math.floor(body.coinsPerClick || 1),
         coins_per_second: body.coinsPerSecond || 0,
         rebirth_count: body.rebirthCount || 0,
         rebirth_bonus: body.rebirthBonus || 1,
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         collectors: body.collectors || {},
         current_president: body.currentPresident || 1,
         highest_coins: Math.floor(body.highestCoins || 0),
-        play_time_seconds: body.playTimeSeconds || 0,
+        play_time_seconds: Math.floor(body.playTimeSeconds || 0),
       }, { onConflict: "user_id" });
 
     if (error) {
