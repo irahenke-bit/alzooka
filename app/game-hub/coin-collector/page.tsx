@@ -237,12 +237,12 @@ export default function CoinCollectorPage() {
         total_coins_earned: Math.floor(totalCoinsEarned),
         clicks: Math.floor(clicks),
         coins_per_click: Math.floor(coinsPerClick),
-        coins_per_second: coinsPerSecond,
-        rebirth_count: rebirthCount,
-        rebirth_bonus: rebirthBonus,
+        coins_per_second: Math.round(coinsPerSecond * 100) / 100,
+        rebirth_count: Math.floor(rebirthCount),
+        rebirth_bonus: Math.round(rebirthBonus * 100) / 100,
         upgrades,
         collectors,
-        current_president: currentPresident,
+        current_president: Math.floor(currentPresident),
         highest_coins: Math.floor(highestCoins),
         play_time_seconds: Math.floor(playTimeSeconds),
       }, { onConflict: "user_id" });
@@ -250,7 +250,7 @@ export default function CoinCollectorPage() {
     if (error) {
       console.error("Save error:", error);
       setSaveStatus("error");
-      alert(`Save failed: ${error.message}`);
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } else {
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
@@ -292,12 +292,12 @@ export default function CoinCollectorPage() {
           total_coins_earned: Math.floor(state.totalCoinsEarned),
           clicks: Math.floor(state.clicks),
           coins_per_click: Math.floor(state.coinsPerClick),
-          coins_per_second: state.coinsPerSecond,
-          rebirth_count: state.rebirthCount,
-          rebirth_bonus: state.rebirthBonus,
+          coins_per_second: Math.round(state.coinsPerSecond * 100) / 100,
+          rebirth_count: Math.floor(state.rebirthCount),
+          rebirth_bonus: Math.round(state.rebirthBonus * 100) / 100,
           upgrades: state.upgrades,
           collectors: state.collectors,
-          current_president: state.currentPresident,
+          current_president: Math.floor(state.currentPresident),
           highest_coins: Math.floor(state.highestCoins),
           play_time_seconds: Math.floor(state.playTimeSeconds),
         }, { onConflict: "user_id" });
@@ -540,23 +540,17 @@ export default function CoinCollectorPage() {
           >
             ← Back to Game Hub
           </Link>
-          <button
-            onClick={() => {
-              console.log("Manual save triggered, user:", user?.id);
-              saveGame();
-            }}
-            style={{
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "1px solid var(--alzooka-gold)",
-              background: saveStatus === "saving" ? "rgba(201, 162, 39, 0.3)" : "transparent",
-              color: "var(--alzooka-gold)",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "✓ Saved!" : saveStatus === "error" ? "⚠ Error" : "💾 Save Game"}
-          </button>
+          <div style={{ 
+            fontSize: 12, 
+            color: saveStatus === "saved" ? "#4ade80" : 
+                   saveStatus === "saving" ? "#fbbf24" : 
+                   saveStatus === "error" ? "#f87171" : "rgba(255,255,255,0.4)"
+          }}>
+            {saveStatus === "saved" && "✓ Saved"}
+            {saveStatus === "saving" && "Saving..."}
+            {saveStatus === "error" && "⚠ Save error"}
+            {saveStatus === "idle" && "Auto-save on"}
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: 24 }}>
@@ -586,17 +580,6 @@ export default function CoinCollectorPage() {
                 </div>
                 <div style={{ fontSize: 13, color: "var(--alzooka-gold)" }}>
                   {rebirthBonus.toFixed(2)}x bonus
-                </div>
-                <div style={{ 
-                  fontSize: 11, 
-                  marginTop: 4,
-                  color: saveStatus === "saved" ? "#4ade80" : 
-                         saveStatus === "saving" ? "#fbbf24" : 
-                         saveStatus === "error" ? "#f87171" : "transparent"
-                }}>
-                  {saveStatus === "saved" && "✓ Saved"}
-                  {saveStatus === "saving" && "Saving..."}
-                  {saveStatus === "error" && "⚠ Save failed"}
                 </div>
               </div>
             </div>
