@@ -80,12 +80,12 @@ export default function GameHubPage() {
 
   const games = [
     {
-      id: "coin-collector",
-      name: "Coin Collector",
-      description: "Click to collect gold coins, buy upgrades, and become the ultimate coin tycoon!",
-      icon: "🪙",
+      id: "bass-clicker",
+      name: "Bass Clicker",
+      description: "Click the speaker to drop the bass, buy upgrades, and become the ultimate bass master!",
+      icon: "🔊",
       href: "/game-hub/coin-collector",
-      color: "#c9a227",
+      color: "#8a8a8a",
       available: true,
     },
     {
