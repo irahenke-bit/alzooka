@@ -103,6 +103,7 @@ export default function CoinCollectorPage() {
   const [activeTab, setActiveTab] = useState<"collectors" | "upgrades">("collectors");
   const [clickEffect, setClickEffect] = useState<{ x: number; y: number; id: number } | null>(null);
   const [showRebirthModal, setShowRebirthModal] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const clickEffectId = useRef(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const gameStateRef = useRef<{
@@ -226,6 +227,8 @@ export default function CoinCollectorPage() {
     if (!user || saving) return;
     
     setSaving(true);
+    setSaveStatus("saving");
+    
     const { error } = await supabase
       .from("coin_collector_saves")
       .upsert({
@@ -246,6 +249,11 @@ export default function CoinCollectorPage() {
     
     if (error) {
       console.error("Save error:", error);
+      setSaveStatus("error");
+      alert(`Save failed: ${error.message}`);
+    } else {
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
     }
     setSaving(false);
   }, [user, saving, coins, totalCoinsEarned, clicks, coinsPerClick, coinsPerSecond, rebirthCount, rebirthBonus, upgrades, collectors, currentPresident, highestCoins, playTimeSeconds, supabase]);
@@ -560,6 +568,17 @@ export default function CoinCollectorPage() {
                 </div>
                 <div style={{ fontSize: 13, color: "var(--alzooka-gold)" }}>
                   {rebirthBonus.toFixed(2)}x bonus
+                </div>
+                <div style={{ 
+                  fontSize: 11, 
+                  marginTop: 4,
+                  color: saveStatus === "saved" ? "#4ade80" : 
+                         saveStatus === "saving" ? "#fbbf24" : 
+                         saveStatus === "error" ? "#f87171" : "transparent"
+                }}>
+                  {saveStatus === "saved" && "✓ Saved"}
+                  {saveStatus === "saving" && "Saving..."}
+                  {saveStatus === "error" && "⚠ Save failed"}
                 </div>
               </div>
             </div>
