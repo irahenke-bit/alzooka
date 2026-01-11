@@ -6,27 +6,36 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
-// Custom gamepad icon with colored buttons
+// Custom gamepad icon matching emoji style with colored buttons
 const GamepadIcon = ({ size = 48, color = "#9333ea" }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
-    {/* Controller body */}
-    <path 
-      d="M6 9h12a4 4 0 0 1 4 4v1a4 4 0 0 1-4 4h-1.5l-1.5 2h-6l-1.5-2H6a4 4 0 0 1-4-4v-1a4 4 0 0 1 4-4Z" 
-      fill="#2d2d2d"
-      stroke="#444"
-      strokeWidth="0.5"
-    />
+  <svg width={size} height={size} viewBox="0 0 128 128" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
+    {/* Controller body - matches emoji style */}
+    <path d="M103.9 55.1c-5.2-17.7-10.5-28.2-20.7-29.6-6.9-.9-11.4 2.2-19.2 2.2-7.8 0-11.8-3.2-19.2-2.2-10.2 1.4-15.5 11.9-20.7 29.6-6.5 22.1-9.5 47.7 3.1 54.4 8.2 4.4 14.5-2.1 21.5-6.3 5.3-3.2 14.8-3.2 20.1 0 7 4.2 13.3 10.7 21.5 6.3 12.7-6.7 9.6-32.3 3.1-54.4z" fill="#4a4a4a"/>
+    <path d="M103.9 55.1c-5.2-17.7-10.5-28.2-20.7-29.6-6.9-.9-11.4 2.2-19.2 2.2-7.8 0-11.8-3.2-19.2-2.2-10.2 1.4-15.5 11.9-20.7 29.6-6.5 22.1-9.5 47.7 3.1 54.4 8.2 4.4 14.5-2.1 21.5-6.3 5.3-3.2 14.8-3.2 20.1 0 7 4.2 13.3 10.7 21.5 6.3 12.7-6.7 9.6-32.3 3.1-54.4z" fill="url(#gamepadGrad)"/>
+    <defs>
+      <linearGradient id="gamepadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#5a5a5a"/>
+        <stop offset="100%" stopColor="#3a3a3a"/>
+      </linearGradient>
+    </defs>
     {/* D-pad */}
-    <rect x="5" y="11.5" width="4" height="1.5" rx="0.3" fill="#444" />
-    <rect x="6.25" y="10.25" width="1.5" height="4" rx="0.3" fill="#444" />
-    {/* Face buttons - Red, Green, Purple, Yellow */}
-    <circle cx="16" cy="11" r="1.2" fill="#ef4444" /> {/* Top - Red */}
-    <circle cx="14.5" cy="12.5" r="1.2" fill="#a855f7" /> {/* Left - Purple */}
-    <circle cx="17.5" cy="12.5" r="1.2" fill="#22c55e" /> {/* Right - Green */}
-    <circle cx="16" cy="14" r="1.2" fill="#eab308" /> {/* Bottom - Yellow */}
+    <rect x="24" y="52" width="24" height="10" rx="2" fill="#2d2d2d"/>
+    <rect x="31" y="45" width="10" height="24" rx="2" fill="#2d2d2d"/>
+    {/* Face buttons - Red, Yellow, Green, Purple in diamond pattern */}
+    <circle cx="92" cy="48" r="7" fill="#ef4444"/> {/* Top - Red */}
+    <circle cx="80" cy="60" r="7" fill="#a855f7"/> {/* Left - Purple */}
+    <circle cx="104" cy="60" r="7" fill="#22c55e"/> {/* Right - Green */}
+    <circle cx="92" cy="72" r="7" fill="#eab308"/> {/* Bottom - Yellow */}
+    {/* Button highlights */}
+    <circle cx="90" cy="46" r="2" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="78" cy="58" r="2" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="102" cy="58" r="2" fill="rgba(255,255,255,0.3)"/>
+    <circle cx="90" cy="70" r="2" fill="rgba(255,255,255,0.3)"/>
     {/* Analog sticks */}
-    <circle cx="9" cy="14.5" r="1.5" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
-    <circle cx="13" cy="14.5" r="1.5" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
+    <circle cx="48" cy="80" r="10" fill="#2d2d2d"/>
+    <circle cx="48" cy="80" r="7" fill="#1a1a1a"/>
+    <circle cx="72" cy="80" r="10" fill="#2d2d2d"/>
+    <circle cx="72" cy="80" r="7" fill="#1a1a1a"/>
   </svg>
 );
 
