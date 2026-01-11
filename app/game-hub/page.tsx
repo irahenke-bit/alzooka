@@ -6,6 +6,30 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
+// Custom gamepad icon with colored buttons
+const GamepadIcon = ({ size = 48, color = "#9333ea" }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
+    {/* Controller body */}
+    <path 
+      d="M6 9h12a4 4 0 0 1 4 4v1a4 4 0 0 1-4 4h-1.5l-1.5 2h-6l-1.5-2H6a4 4 0 0 1-4-4v-1a4 4 0 0 1 4-4Z" 
+      fill="#2d2d2d"
+      stroke="#444"
+      strokeWidth="0.5"
+    />
+    {/* D-pad */}
+    <rect x="5" y="11.5" width="4" height="1.5" rx="0.3" fill="#444" />
+    <rect x="6.25" y="10.25" width="1.5" height="4" rx="0.3" fill="#444" />
+    {/* Face buttons - Red, Green, Purple, Yellow */}
+    <circle cx="16" cy="11" r="1.2" fill="#ef4444" /> {/* Top - Red */}
+    <circle cx="14.5" cy="12.5" r="1.2" fill="#a855f7" /> {/* Left - Purple */}
+    <circle cx="17.5" cy="12.5" r="1.2" fill="#22c55e" /> {/* Right - Green */}
+    <circle cx="16" cy="14" r="1.2" fill="#eab308" /> {/* Bottom - Yellow */}
+    {/* Analog sticks */}
+    <circle cx="9" cy="14.5" r="1.5" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
+    <circle cx="13" cy="14.5" r="1.5" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
+  </svg>
+);
+
 type UserData = {
   id: string;
   username: string;
@@ -101,7 +125,7 @@ export default function GameHubPage() {
       id: "coming-soon-1",
       name: "Coming Soon",
       description: "More games are on the way...",
-      icon: "🎮",
+      icon: "gamepad",
       href: "#",
       color: "#9333ea",
       available: false,
@@ -184,9 +208,9 @@ export default function GameHubPage() {
                 <div style={{ 
                   fontSize: 48, 
                   marginBottom: 16,
-                  filter: `drop-shadow(0 4px 8px ${game.color}40)`,
+                  filter: game.icon !== "gamepad" ? `drop-shadow(0 4px 8px ${game.color}40)` : "none",
                 }}>
-                  {game.icon}
+                  {game.icon === "gamepad" ? <GamepadIcon size={48} color={game.color} /> : game.icon}
                 </div>
                 <h2 style={{ 
                   fontSize: 22, 
