@@ -15,8 +15,8 @@ type UserData = {
 // Game constants
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
-const INITIAL_DROP_SPEED = 1000;
-const SPEED_INCREASE_PER_LEVEL = 100;
+const INITIAL_DROP_SPEED = 800;
+const SPEED_INCREASE_PER_LEVEL = 150;
 const LINES_PER_LEVEL = 10;
 
 // Custom piece shapes (avoiding Tetris's exact 7 tetrominoes)
