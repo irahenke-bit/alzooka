@@ -526,20 +526,38 @@ export default function CoinCollectorPage() {
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px" }}>
         {/* Back to Hub */}
-        <Link 
-          href="/game-hub" 
-          style={{ 
-            display: "inline-flex", 
-            alignItems: "center", 
-            gap: 8, 
-            color: "var(--alzooka-gold)", 
-            textDecoration: "none",
-            fontSize: 14,
-            marginBottom: 20,
-          }}
-        >
-          ← Back to Game Hub
-        </Link>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <Link 
+            href="/game-hub" 
+            style={{ 
+              display: "inline-flex", 
+              alignItems: "center", 
+              gap: 8, 
+              color: "var(--alzooka-gold)", 
+              textDecoration: "none",
+              fontSize: 14,
+            }}
+          >
+            ← Back to Game Hub
+          </Link>
+          <button
+            onClick={() => {
+              console.log("Manual save triggered, user:", user?.id);
+              saveGame();
+            }}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 8,
+              border: "1px solid var(--alzooka-gold)",
+              background: saveStatus === "saving" ? "rgba(201, 162, 39, 0.3)" : "transparent",
+              color: "var(--alzooka-gold)",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "✓ Saved!" : saveStatus === "error" ? "⚠ Error" : "💾 Save Game"}
+          </button>
+        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: 24 }}>
           {/* Main Game Area */}
