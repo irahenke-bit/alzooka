@@ -134,7 +134,7 @@ export default function GameHubPage() {
       id: "sound-wave",
       name: "Sound Wave",
       description: "Ride the wave, collect amps, and smash through obstacles! Don't let your signal die!",
-      icon: "🔊",
+      icon: "〰️",
       href: "/game-hub/sound-wave",
       color: "#06b6d4",
       available: true,
