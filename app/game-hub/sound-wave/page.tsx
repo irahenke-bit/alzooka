@@ -33,11 +33,11 @@ interface GameItem {
 }
 
 const ITEM_CONFIGS: Record<ItemType, { emoji: string; color: string; isGood: boolean }> = {
-  obstacle: { emoji: "🧱", color: "#6b7280", isGood: false },
-  amp: { emoji: "🔊", color: "#06b6d4", isGood: true },
-  speaker: { emoji: "📻", color: "#8b5cf6", isGood: true },
-  mic: { emoji: "🎤", color: "#ec4899", isGood: true },
-  guitar: { emoji: "🎸", color: "#f97316", isGood: true },
+  obstacle: { emoji: "⛔", color: "#ef4444", isGood: false },
+  amp: { emoji: "🔊", color: "#22c55e", isGood: true },
+  speaker: { emoji: "📻", color: "#22c55e", isGood: true },
+  mic: { emoji: "🎤", color: "#22c55e", isGood: true },
+  guitar: { emoji: "🎸", color: "#22c55e", isGood: true },
   boost: { emoji: "⚡", color: "#eab308", isGood: true },
 };
 
@@ -416,32 +416,41 @@ export default function SoundWavePage() {
             {/* Items */}
             {items.map(item => {
               const config = ITEM_CONFIGS[item.type];
+              const isObstacle = !config.isGood;
               return (
                 <div
                   key={item.id}
                   style={{
                     position: "absolute",
-                    left: item.lane * LANE_WIDTH + LANE_WIDTH / 2 - 25,
+                    left: item.lane * LANE_WIDTH + LANE_WIDTH / 2 - 30,
                     top: item.y,
-                    width: 50,
-                    height: 50,
+                    width: 60,
+                    height: 55,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 28,
-                    borderRadius: 8,
-                    background: config.isGood 
-                      ? `radial-gradient(circle, ${config.color}40 0%, transparent 70%)`
-                      : "rgba(0,0,0,0.5)",
-                    border: config.isGood ? `2px solid ${config.color}60` : "2px solid #444",
+                    borderRadius: isObstacle ? 4 : 12,
+                    background: isObstacle 
+                      ? "linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%)"
+                      : `radial-gradient(circle, ${config.color}30 0%, rgba(0,50,0,0.8) 100%)`,
+                    border: isObstacle 
+                      ? "3px solid #ef4444" 
+                      : `2px solid ${config.color}`,
+                    boxShadow: isObstacle
+                      ? "0 0 15px rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(0,0,0,0.5)"
+                      : `0 0 15px ${config.color}60, inset 0 0 10px rgba(0,0,0,0.3)`,
                   }}
                 >
-                  {config.emoji}
+                  <span style={{ filter: isObstacle ? "none" : "drop-shadow(0 0 4px #22c55e)" }}>
+                    {config.emoji}
+                  </span>
                   <span style={{ 
-                    fontSize: 10, 
-                    color: config.isGood ? config.color : "#fff",
+                    fontSize: 11, 
+                    color: isObstacle ? "#fca5a5" : "#86efac",
                     fontWeight: 700,
+                    textShadow: isObstacle ? "0 0 4px #ef4444" : "0 0 4px #22c55e",
                   }}>
                     {config.isGood ? `+${item.value}` : `-${item.value}`}
                   </span>
@@ -552,13 +561,15 @@ export default function SoundWavePage() {
                   </>
                 ) : (
                   <>
-                    <div style={{ fontSize: 24, fontWeight: 600, color: "#fff", marginBottom: 8 }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: "#fff", marginBottom: 12 }}>
                       Ready to Ride the Wave?
                     </div>
-                    <div style={{ color: "#888", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
-                      Collect 🔊 amps to power up<br/>
-                      Avoid 🧱 obstacles<br/>
-                      Don&apos;t let your signal die!
+                    <div style={{ fontSize: 14, marginBottom: 16, textAlign: "center" }}>
+                      <span style={{ color: "#22c55e", fontWeight: 600 }}>GREEN = COLLECT</span>
+                      <span style={{ color: "#888" }}> (🔊 🎸 🎤)</span><br/>
+                      <span style={{ color: "#ef4444", fontWeight: 600 }}>RED = AVOID</span>
+                      <span style={{ color: "#888" }}> (⛔)</span><br/>
+                      <span style={{ color: "#888", fontSize: 12 }}>Don&apos;t let your power hit 0!</span>
                     </div>
                   </>
                 )}
@@ -671,13 +682,15 @@ export default function SoundWavePage() {
               background: "rgba(0,0,0,0.3)",
               borderRadius: 8,
               fontSize: 11,
-              color: "#666",
             }}>
-              <div style={{ marginBottom: 4 }}>🔊 Amp +power</div>
-              <div style={{ marginBottom: 4 }}>🎸 Guitar +power</div>
-              <div style={{ marginBottom: 4 }}>🎤 Mic +power</div>
-              <div style={{ marginBottom: 4 }}>⚡ Boost x2</div>
-              <div>🧱 Obstacle -power</div>
+              <div style={{ color: "#22c55e", marginBottom: 6, fontWeight: 600 }}>✓ COLLECT (Green)</div>
+              <div style={{ color: "#86efac", marginBottom: 2 }}>🔊 🎸 🎤 📻</div>
+              <div style={{ color: "#888", marginBottom: 8, fontSize: 10 }}>Adds power</div>
+              
+              <div style={{ color: "#eab308", marginBottom: 4 }}>⚡ Boost = 2x pts</div>
+              
+              <div style={{ color: "#ef4444", marginBottom: 6, fontWeight: 600, marginTop: 8 }}>✗ AVOID (Red)</div>
+              <div style={{ color: "#fca5a5" }}>⛔ Drains power!</div>
             </div>
           </div>
         </div>
