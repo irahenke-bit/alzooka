@@ -234,10 +234,17 @@ type Vote = {
   value: number;
 };
 
+type CommentEditHistoryEntry = {
+  content: string;
+  edited_at: string;
+};
+
 type Comment = {
   id: string;
   content: string;
   created_at: string;
+  edited_at?: string | null;
+  edit_history?: CommentEditHistoryEntry[];
   user_id: string;
   parent_comment_id: string | null;
   users: {
@@ -320,7 +327,7 @@ type Props = {
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   onClose: () => void;
-  onCommentAdded: (newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string }) => void;
+  onCommentAdded: (newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string; edited_at?: string; edit_history?: CommentEditHistoryEntry[] }) => void;
   highlightCommentId?: string | null;
   groupMembers?: GroupMember[];
   isUserGroupAdmin?: boolean;
@@ -519,6 +526,7 @@ export function PostModal({
   // Note: seeThroughMode is now a global setting passed via props
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [editingCommentOriginal, setEditingCommentOriginal] = useState<{ content: string; edit_history?: CommentEditHistoryEntry[] } | null>(null);
   const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightCommentId || null);
   const [commentLinkPreview, setCommentLinkPreview] = useState<{url: string; type: 'youtube' | 'spotify' | 'link'; videoId?: string; playlistId?: string} | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
@@ -534,6 +542,9 @@ export function PostModal({
   
   // Comment reactions state - keyed by comment ID
   const [commentReactions, setCommentReactions] = useState<Record<string, Reaction[]>>({});
+  
+  // Track which comments have edit history expanded
+  const [expandedCommentEditHistory, setExpandedCommentEditHistory] = useState<Set<string>>(new Set());
   
   // Fetch current user's avatar
   useEffect(() => {
@@ -1025,20 +1036,38 @@ export function PostModal({
     onCommentAdded(undefined, commentId);
   }
 
-  async function handleEditComment(commentId: string) {
+  async function handleEditComment(commentId: string, originalContent: string, existingEditHistory?: CommentEditHistoryEntry[]) {
     if (!editingCommentText.trim()) return;
 
     const trimmedContent = editingCommentText.trim();
     
+    // Add current content to edit history (like posts do)
+    const newHistoryEntry: CommentEditHistoryEntry = {
+      content: originalContent,
+      edited_at: new Date().toISOString(),
+    };
+    
+    const updatedHistory = [...(existingEditHistory || []), newHistoryEntry];
+    
     await supabase
       .from("comments")
-      .update({ content: trimmedContent })
+      .update({ 
+        content: trimmedContent,
+        edited_at: new Date().toISOString(),
+        edit_history: updatedHistory,
+      })
       .eq("id", commentId);
 
     setEditingCommentId(null);
     setEditingCommentText("");
+    setEditingCommentOriginal(null);
     // Pass the edited comment info so UI updates immediately
-    onCommentAdded(undefined, undefined, { id: commentId, content: trimmedContent });
+    onCommentAdded(undefined, undefined, { 
+      id: commentId, 
+      content: trimmedContent, 
+      edited_at: new Date().toISOString(),
+      edit_history: updatedHistory,
+    });
   }
 
   // Handle setting post image as banner
@@ -1482,6 +1511,7 @@ export function PostModal({
                     onClick={() => {
                       setEditingCommentId(comment.id);
                       setEditingCommentText(comment.content);
+                      setEditingCommentOriginal({ content: comment.content, edit_history: comment.edit_history });
                     }}
                     style={{
                       background: "transparent",
@@ -1572,7 +1602,7 @@ export function PostModal({
                 />
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
-                    onClick={() => handleEditComment(comment.id)}
+                    onClick={() => handleEditComment(comment.id, editingCommentOriginal?.content || comment.content, editingCommentOriginal?.edit_history)}
                     style={{
                       padding: "6px 12px",
                       fontSize: 13,
@@ -1589,6 +1619,7 @@ export function PostModal({
                     onClick={() => {
                       setEditingCommentId(null);
                       setEditingCommentText("");
+                      setEditingCommentOriginal(null);
                     }}
                     style={{
                       padding: "6px 12px",
@@ -1710,6 +1741,68 @@ export function PostModal({
                   }
                   return null;
                 })()}
+                
+                {/* Comment Edit History */}
+                {comment.edited_at && (
+                  <div style={{ marginTop: 8, fontSize: 12, opacity: 0.6 }}>
+                    <span>Edited {formatTime(comment.edited_at)}</span>
+                    {comment.edit_history && comment.edit_history.length > 0 && (
+                      <button
+                        onClick={() => {
+                          setExpandedCommentEditHistory(prev => {
+                            const next = new Set(prev);
+                            if (next.has(comment.id)) {
+                              next.delete(comment.id);
+                            } else {
+                              next.add(comment.id);
+                            }
+                            return next;
+                          });
+                        }}
+                        style={{
+                          marginLeft: 8,
+                          background: "transparent",
+                          border: "none",
+                          color: "var(--alzooka-gold)",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          padding: 0,
+                        }}
+                      >
+                        {expandedCommentEditHistory.has(comment.id) ? "Hide edits" : "See edits"}
+                      </button>
+                    )}
+                  </div>
+                )}
+                
+                {/* Comment Edit History Content */}
+                {expandedCommentEditHistory.has(comment.id) && comment.edit_history && comment.edit_history.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      padding: 12,
+                      background: "rgba(0, 0, 0, 0.2)",
+                      borderRadius: 8,
+                      fontSize: 13,
+                    }}
+                  >
+                    <p style={{ margin: "0 0 8px 0", fontWeight: 600, fontSize: 12, opacity: 0.7 }}>Edit History</p>
+                    {comment.edit_history.map((entry, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          marginBottom: index < comment.edit_history!.length - 1 ? 12 : 0,
+                          paddingBottom: index < comment.edit_history!.length - 1 ? 12 : 0,
+                          borderBottom:
+                            index < comment.edit_history!.length - 1 ? "1px solid rgba(240, 235, 224, 0.1)" : "none",
+                        }}
+                      >
+                        <span style={{ fontSize: 11, opacity: 0.5 }}>{formatTime(entry.edited_at)}</span>
+                        <p style={{ margin: "4px 0 0 0", fontStyle: "italic", opacity: 0.8 }}>{entry.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 
                 {/* Comment Reactions */}
                 <div style={{ marginTop: 8 }}>

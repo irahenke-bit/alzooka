@@ -9,10 +9,17 @@ import type { User } from "@supabase/supabase-js";
 import { useSearchParams } from "next/navigation";
 
 // Types
+type CommentEditHistoryEntry = {
+  content: string;
+  edited_at: string;
+};
+
 type Comment = {
   id: string;
   content: string;
   created_at: string;
+  edited_at?: string | null;
+  edit_history?: CommentEditHistoryEntry[];
   user_id: string;
   parent_comment_id: string | null;
   users: {
@@ -158,6 +165,8 @@ export default function GlobalModalsRenderer() {
             id,
             content,
             created_at,
+            edited_at,
+            edit_history,
             user_id,
             parent_comment_id,
             users (
@@ -316,7 +325,7 @@ export default function GlobalModalsRenderer() {
   }, []);
   
   // Handle comment added/deleted/edited
-  const handleCommentChange = useCallback((postId: string, newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string }) => {
+  const handleCommentChange = useCallback((postId: string, newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string; edited_at?: string; edit_history?: CommentEditHistoryEntry[] }) => {
     setPostsData(prev => {
       const post = prev[postId];
       if (!post) return prev;
@@ -369,12 +378,17 @@ export default function GlobalModalsRenderer() {
         updatedComments = removeComment(updatedComments);
       }
       
-      // Handle edited comment - update the content in place
+      // Handle edited comment - update the content, edited_at, and edit_history in place
       if (editedComment) {
         const updateCommentContent = (comments: Comment[]): Comment[] => {
           return comments.map(c => {
             if (c.id === editedComment.id) {
-              return { ...c, content: editedComment.content };
+              return { 
+                ...c, 
+                content: editedComment.content,
+                edited_at: editedComment.edited_at,
+                edit_history: editedComment.edit_history,
+              };
             }
             if (c.replies && c.replies.length > 0) {
               return { ...c, replies: updateCommentContent(c.replies) };
