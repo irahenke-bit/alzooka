@@ -191,10 +191,10 @@ export default function SoundWavePage() {
             // Hit obstacle
             if (boosted) {
               // Boosted = smash through obstacles for bonus points!
-              const points = item.value * 50; // Big bonus for smashing!
-              setScore(s => s + points);
+              const smashPoints = 100 + (item.value * 20); // 100+ points per smash!
+              setScore(s => s + smashPoints);
               setCombo(c => c + 1);
-              setPower(p => p + 1); // Also gain 1 power for smashing!
+              setPower(p => p + 2); // Gain 2 power for smashing!
             } else {
               // Not boosted = take damage
               setPower(p => {
@@ -716,7 +716,7 @@ export default function SoundWavePage() {
               <div style={{ color: "#888", marginBottom: 8, fontSize: 10 }}>Adds power</div>
               
               <div style={{ color: "#eab308", marginBottom: 4 }}>⚡ Boost = SMASH!</div>
-              <div style={{ color: "#a3a3a3", fontSize: 10, marginBottom: 4 }}>Hit ⛔ for +50 pts!</div>
+              <div style={{ color: "#a3a3a3", fontSize: 10, marginBottom: 4 }}>Hit ⛔ = +100 pts +2 pwr</div>
               
               <div style={{ color: "#ef4444", marginBottom: 6, fontWeight: 600, marginTop: 8 }}>✗ AVOID (Red)</div>
               <div style={{ color: "#fca5a5" }}>⛔ Drains power!</div>
