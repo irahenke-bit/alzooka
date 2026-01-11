@@ -105,6 +105,20 @@ export default function CoinCollectorPage() {
   const [showRebirthModal, setShowRebirthModal] = useState(false);
   const clickEffectId = useRef(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const gameStateRef = useRef<{
+    coins: number;
+    totalCoinsEarned: number;
+    clicks: number;
+    coinsPerClick: number;
+    coinsPerSecond: number;
+    rebirthCount: number;
+    rebirthBonus: number;
+    upgrades: Record<string, number>;
+    collectors: Record<string, number>;
+    currentPresident: number;
+    highestCoins: number;
+    playTimeSeconds: number;
+  } | null>(null);
   
   const supabase = createBrowserClient();
   const router = useRouter();
@@ -209,6 +223,79 @@ export default function CoinCollectorPage() {
       .eq("user_id", user.id);
     setSaving(false);
   }, [user, saving, coins, totalCoinsEarned, clicks, coinsPerClick, coinsPerSecond, rebirthCount, rebirthBonus, upgrades, collectors, currentPresident, highestCoins, playTimeSeconds, supabase]);
+
+  // Keep game state ref updated for save on exit
+  useEffect(() => {
+    gameStateRef.current = {
+      coins,
+      totalCoinsEarned,
+      clicks,
+      coinsPerClick,
+      coinsPerSecond,
+      rebirthCount,
+      rebirthBonus,
+      upgrades,
+      collectors,
+      currentPresident,
+      highestCoins,
+      playTimeSeconds,
+    };
+  }, [coins, totalCoinsEarned, clicks, coinsPerClick, coinsPerSecond, rebirthCount, rebirthBonus, upgrades, collectors, currentPresident, highestCoins, playTimeSeconds]);
+
+  // Save on page leave/visibility change
+  useEffect(() => {
+    if (!user) return;
+
+    const saveImmediately = async () => {
+      const state = gameStateRef.current;
+      if (!state) return;
+      
+      await supabase
+        .from("coin_collector_saves")
+        .update({
+          coins: Math.floor(state.coins),
+          total_coins_earned: Math.floor(state.totalCoinsEarned),
+          clicks: state.clicks,
+          coins_per_click: state.coinsPerClick,
+          coins_per_second: state.coinsPerSecond,
+          rebirth_count: state.rebirthCount,
+          rebirth_bonus: state.rebirthBonus,
+          upgrades: state.upgrades,
+          collectors: state.collectors,
+          current_president: state.currentPresident,
+          highest_coins: Math.floor(state.highestCoins),
+          play_time_seconds: state.playTimeSeconds,
+        })
+        .eq("user_id", user.id);
+    };
+
+    const handleBeforeUnload = () => {
+      // Use sendBeacon for reliable save on page close
+      const state = gameStateRef.current;
+      if (!state) return;
+      
+      navigator.sendBeacon(
+        `/api/game-save?user_id=${user.id}`,
+        JSON.stringify(state)
+      );
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        saveImmediately();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Save when component unmounts
+      saveImmediately();
+    };
+  }, [user, supabase]);
 
   // Debounced save
   useEffect(() => {
