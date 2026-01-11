@@ -172,11 +172,11 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           </InstantTooltip>
         )}
 
-        {/* Trivia Games */}
+        {/* Game Hub */}
         {user && (
-          <InstantTooltip text="Music Trivia">
+          <InstantTooltip text="Game Hub">
             <Link
-              href="/games"
+              href="/game-hub"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -195,7 +195,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                <path d="M21.58 16.09l-1.09-7.66A3.996 3.996 0 0016.53 5H7.47a3.996 3.996 0 00-3.96 3.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19h.06c.83 0 1.58-.34 2.12-.88L8 17h8l.88 1.12c.54.54 1.29.88 2.12.88h.06c1.55 0 2.74-1.37 2.52-2.91zM11 11H9v2H8v-2H6v-1h2V8h1v2h2v1zm4-1c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2 3c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
               </svg>
             </Link>
           </InstantTooltip>
