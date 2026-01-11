@@ -612,16 +612,6 @@ export default function CoinCollectorPage() {
                   {/* Dust cap highlight */}
                   <ellipse cx="92" cy="92" rx="12" ry="8" fill="white" opacity="0.08" />
                   
-                  {/* Chrome frame highlight arc */}
-                  <path 
-                    d="M 30 70 Q 100 20 170 70" 
-                    fill="none" 
-                    stroke="white" 
-                    strokeWidth="3" 
-                    opacity="0.15"
-                    strokeLinecap="round"
-                  />
-                  
                   {/* Accent color ring on frame */}
                   <circle 
                     cx="100" 
