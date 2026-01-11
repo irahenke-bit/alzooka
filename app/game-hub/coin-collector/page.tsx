@@ -164,33 +164,55 @@ export default function CoinCollectorPage() {
         setUserData(userInfo);
       }
 
-      // Load or create game save
-      const { data: save } = await supabase
+      // Load or create game save using upsert
+      const { data: existingSave, error: loadError } = await supabase
         .from("coin_collector_saves")
         .select("*")
         .eq("user_id", currentUser.id)
         .single();
 
-      if (save) {
-        setCoins(save.coins || 0);
-        setTotalCoinsEarned(save.total_coins_earned || 0);
-        setClicks(save.clicks || 0);
-        setRebirthCount(save.rebirth_count || 0);
-        setRebirthBonus(save.rebirth_bonus || 1);
-        setUpgrades(save.upgrades || {});
-        setCollectors(save.collectors || {});
-        setCurrentPresident(save.current_president || 1);
-        setHighestCoins(save.highest_coins || 0);
-        setPlayTimeSeconds(save.play_time_seconds || 0);
+      if (loadError && loadError.code !== "PGRST116") {
+        console.error("Error loading save:", loadError);
+      }
+
+      if (existingSave) {
+        setCoins(existingSave.coins || 0);
+        setTotalCoinsEarned(existingSave.total_coins_earned || 0);
+        setClicks(existingSave.clicks || 0);
+        setRebirthCount(existingSave.rebirth_count || 0);
+        setRebirthBonus(existingSave.rebirth_bonus || 1);
+        setUpgrades(existingSave.upgrades || {});
+        setCollectors(existingSave.collectors || {});
+        setCurrentPresident(existingSave.current_president || 1);
+        setHighestCoins(existingSave.highest_coins || 0);
+        setPlayTimeSeconds(existingSave.play_time_seconds || 0);
         
         // Calculate derived values
-        setCoinsPerClick(calculateCoinsPerClick(save.upgrades || {}, save.rebirth_bonus || 1));
-        setCoinsPerSecond(calculateCoinsPerSecond(save.collectors || {}, save.rebirth_bonus || 1));
+        setCoinsPerClick(calculateCoinsPerClick(existingSave.upgrades || {}, existingSave.rebirth_bonus || 1));
+        setCoinsPerSecond(calculateCoinsPerSecond(existingSave.collectors || {}, existingSave.rebirth_bonus || 1));
       } else {
-        // Create new save
-        await supabase.from("coin_collector_saves").insert({
-          user_id: currentUser.id,
-        });
+        // Create new save using upsert to avoid conflicts
+        const { error: insertError } = await supabase
+          .from("coin_collector_saves")
+          .upsert({
+            user_id: currentUser.id,
+            coins: 0,
+            total_coins_earned: 0,
+            clicks: 0,
+            coins_per_click: 1,
+            coins_per_second: 0,
+            rebirth_count: 0,
+            rebirth_bonus: 1,
+            upgrades: {},
+            collectors: {},
+            current_president: 1,
+            highest_coins: 0,
+            play_time_seconds: 0,
+          }, { onConflict: "user_id" });
+        
+        if (insertError) {
+          console.error("Error creating save:", insertError);
+        }
       }
 
       setLoading(false);
@@ -204,9 +226,10 @@ export default function CoinCollectorPage() {
     if (!user || saving) return;
     
     setSaving(true);
-    await supabase
+    const { error } = await supabase
       .from("coin_collector_saves")
-      .update({
+      .upsert({
+        user_id: user.id,
         coins: Math.floor(coins),
         total_coins_earned: Math.floor(totalCoinsEarned),
         clicks,
@@ -219,8 +242,11 @@ export default function CoinCollectorPage() {
         current_president: currentPresident,
         highest_coins: Math.floor(highestCoins),
         play_time_seconds: playTimeSeconds,
-      })
-      .eq("user_id", user.id);
+      }, { onConflict: "user_id" });
+    
+    if (error) {
+      console.error("Save error:", error);
+    }
     setSaving(false);
   }, [user, saving, coins, totalCoinsEarned, clicks, coinsPerClick, coinsPerSecond, rebirthCount, rebirthBonus, upgrades, collectors, currentPresident, highestCoins, playTimeSeconds, supabase]);
 
@@ -250,9 +276,10 @@ export default function CoinCollectorPage() {
       const state = gameStateRef.current;
       if (!state) return;
       
-      await supabase
+      const { error } = await supabase
         .from("coin_collector_saves")
-        .update({
+        .upsert({
+          user_id: user.id,
           coins: Math.floor(state.coins),
           total_coins_earned: Math.floor(state.totalCoinsEarned),
           clicks: state.clicks,
@@ -265,8 +292,11 @@ export default function CoinCollectorPage() {
           current_president: state.currentPresident,
           highest_coins: Math.floor(state.highestCoins),
           play_time_seconds: state.playTimeSeconds,
-        })
-        .eq("user_id", user.id);
+        }, { onConflict: "user_id" });
+      
+      if (error) {
+        console.error("Immediate save error:", error);
+      }
     };
 
     const handleBeforeUnload = () => {

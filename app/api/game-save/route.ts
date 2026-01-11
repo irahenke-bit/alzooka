@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
 
     const { error } = await supabase
       .from("coin_collector_saves")
-      .update({
+      .upsert({
+        user_id: userId,
         coins: Math.floor(body.coins || 0),
         total_coins_earned: Math.floor(body.totalCoinsEarned || 0),
         clicks: body.clicks || 0,
@@ -31,8 +32,7 @@ export async function POST(request: NextRequest) {
         current_president: body.currentPresident || 1,
         highest_coins: Math.floor(body.highestCoins || 0),
         play_time_seconds: body.playTimeSeconds || 0,
-      })
-      .eq("user_id", userId);
+      }, { onConflict: "user_id" });
 
     if (error) {
       console.error("Game save error:", error);
