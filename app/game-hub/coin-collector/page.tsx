@@ -28,18 +28,18 @@ type GameSave = {
   play_time_seconds: number;
 };
 
-// President designs for rebirth levels
-const PRESIDENTS = [
-  { id: 1, name: "Lincoln", color: "#CD7F32", bgColor: "#8B4513" },
-  { id: 2, name: "Jefferson", color: "#C0C0C0", bgColor: "#708090" },
-  { id: 3, name: "Washington", color: "#FFD700", bgColor: "#DAA520" },
-  { id: 4, name: "Franklin", color: "#50C878", bgColor: "#228B22" },
-  { id: 5, name: "Hamilton", color: "#E6E6FA", bgColor: "#9370DB" },
-  { id: 6, name: "Jackson", color: "#FF6B6B", bgColor: "#DC143C" },
-  { id: 7, name: "Grant", color: "#87CEEB", bgColor: "#4169E1" },
-  { id: 8, name: "McKinley", color: "#FFB347", bgColor: "#FF8C00" },
-  { id: 9, name: "Cleveland", color: "#DDA0DD", bgColor: "#BA55D3" },
-  { id: 10, name: "Wilson", color: "#98FB98", bgColor: "#32CD32" },
+// Steampunk speaker designs for rebirth levels
+const SPEAKER_DESIGNS = [
+  { id: 1, name: "Bronze Age", rimColor: "#CD7F32", coneColor: "#2D1B0E", glowColor: "#FFB347" },
+  { id: 2, name: "Copper Core", rimColor: "#B87333", coneColor: "#1A1A2E", glowColor: "#FF6B35" },
+  { id: 3, name: "Brass Beast", rimColor: "#D4AF37", coneColor: "#0D0D0D", glowColor: "#FFD700" },
+  { id: 4, name: "Iron Heart", rimColor: "#434343", coneColor: "#1C1C1C", glowColor: "#87CEEB" },
+  { id: 5, name: "Gold Standard", rimColor: "#FFD700", coneColor: "#14213D", glowColor: "#FCA311" },
+  { id: 6, name: "Ruby Resonance", rimColor: "#9B2335", coneColor: "#1A0A0A", glowColor: "#FF4D6D" },
+  { id: 7, name: "Sapphire Sound", rimColor: "#0F52BA", coneColor: "#0A0A1A", glowColor: "#4FC3F7" },
+  { id: 8, name: "Emerald Echo", rimColor: "#046307", coneColor: "#0A1A0A", glowColor: "#00E676" },
+  { id: 9, name: "Amethyst Amp", rimColor: "#9966CC", coneColor: "#1A0A1A", glowColor: "#E040FB" },
+  { id: 10, name: "Obsidian Opus", rimColor: "#0D0D0D", coneColor: "#000000", glowColor: "#C9A227" },
 ];
 
 // Collectors (auto-clickers)
@@ -318,7 +318,7 @@ export default function CoinCollectorPage() {
 
     const newRebirthCount = rebirthCount + 1;
     const newBonus = 1 + (newRebirthCount * 0.25); // 25% bonus per rebirth
-    const newPresident = ((currentPresident) % PRESIDENTS.length) + 1;
+    const newPresident = ((currentPresident) % SPEAKER_DESIGNS.length) + 1;
 
     // Reset progress but keep rebirth bonuses
     setCoins(0);
@@ -354,7 +354,7 @@ export default function CoinCollectorPage() {
     }
   };
 
-  const president = PRESIDENTS[(currentPresident - 1) % PRESIDENTS.length];
+  const speakerDesign = SPEAKER_DESIGNS[(currentPresident - 1) % SPEAKER_DESIGNS.length];
 
   if (loading) {
     return (
@@ -389,7 +389,10 @@ export default function CoinCollectorPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--alzooka-dark)" }}>
+    <div style={{ 
+      minHeight: "100vh", 
+      background: `linear-gradient(180deg, #0a0612 0%, #12081a 50%, #0d0618 100%)`,
+    }}>
       <Header 
         user={user} 
         userUsername={userData?.username || null} 
@@ -444,19 +447,31 @@ export default function CoinCollectorPage() {
               </div>
             </div>
 
-            {/* Coin Click Area */}
+            {/* Speaker Click Area */}
             <div style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: `linear-gradient(135deg, ${president.bgColor}40 0%, rgba(0,0,0,0.3) 100%)`,
+              background: `radial-gradient(ellipse at center, ${speakerDesign.glowColor}15 0%, #0a0612 50%, #06030a 100%)`,
               borderRadius: 24,
               padding: "60px 40px",
               marginBottom: 24,
               position: "relative",
               overflow: "hidden",
+              border: `1px solid ${speakerDesign.rimColor}30`,
             }}>
+              {/* Ambient glow effect */}
+              <div style={{
+                position: "absolute",
+                width: 300,
+                height: 300,
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${speakerDesign.glowColor}20 0%, transparent 70%)`,
+                filter: "blur(40px)",
+                pointerEvents: "none",
+              }} />
+
               {/* Click Effect */}
               {clickEffect && (
                 <div
@@ -465,35 +480,34 @@ export default function CoinCollectorPage() {
                     position: "absolute",
                     left: clickEffect.x,
                     top: clickEffect.y,
-                    color: "var(--alzooka-gold)",
+                    color: speakerDesign.glowColor,
                     fontWeight: 700,
                     fontSize: 24,
                     pointerEvents: "none",
                     animation: "floatUp 0.5s ease-out forwards",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                    textShadow: `0 2px 8px ${speakerDesign.glowColor}`,
                   }}
                 >
                   +{formatNumber(coinsPerClick)}
                 </div>
               )}
 
-              {/* The Coin */}
+              {/* The Steampunk Speaker */}
               <button
                 onClick={handleClick}
                 style={{
-                  width: 200,
-                  height: 200,
+                  width: 220,
+                  height: 220,
                   borderRadius: "50%",
-                  border: `8px solid ${president.color}`,
-                  background: `radial-gradient(circle at 30% 30%, ${president.color}, ${president.bgColor})`,
+                  border: "none",
+                  background: "transparent",
                   cursor: "pointer",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: `0 8px 32px ${president.color}60, inset 0 -4px 12px rgba(0,0,0,0.3)`,
                   transition: "transform 0.1s",
                   position: "relative",
+                  padding: 0,
                 }}
                 onMouseDown={(e) => {
                   e.currentTarget.style.transform = "scale(0.95)";
@@ -505,30 +519,125 @@ export default function CoinCollectorPage() {
                   e.currentTarget.style.transform = "scale(1)";
                 }}
               >
-                <div style={{ fontSize: 14, fontWeight: 600, color: "rgba(0,0,0,0.6)", marginBottom: 4 }}>
-                  {president.name}
-                </div>
-                <div style={{ fontSize: 48 }}>🪙</div>
-                {rebirthCount > 0 && (
-                  <div style={{ 
-                    position: "absolute", 
-                    bottom: 20, 
-                    fontSize: 12, 
-                    color: "rgba(0,0,0,0.5)",
-                    fontWeight: 600,
-                  }}>
-                    ★ {rebirthCount}
-                  </div>
-                )}
+                {/* Speaker SVG */}
+                <svg viewBox="0 0 200 200" width="220" height="220" style={{ filter: `drop-shadow(0 0 20px ${speakerDesign.glowColor}40)` }}>
+                  {/* Outer metal rim with rivets */}
+                  <defs>
+                    <linearGradient id={`rimGrad-${speakerDesign.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor={speakerDesign.rimColor} />
+                      <stop offset="50%" stopColor={`${speakerDesign.rimColor}80`} />
+                      <stop offset="100%" stopColor={speakerDesign.rimColor} />
+                    </linearGradient>
+                    <radialGradient id={`coneGrad-${speakerDesign.id}`} cx="35%" cy="35%">
+                      <stop offset="0%" stopColor="#3a3a3a" />
+                      <stop offset="60%" stopColor={speakerDesign.coneColor} />
+                      <stop offset="100%" stopColor="#000" />
+                    </radialGradient>
+                    <radialGradient id={`dustCapGrad-${speakerDesign.id}`} cx="40%" cy="35%">
+                      <stop offset="0%" stopColor={speakerDesign.rimColor} />
+                      <stop offset="100%" stopColor={`${speakerDesign.rimColor}60`} />
+                    </radialGradient>
+                  </defs>
+
+                  {/* Outer rim */}
+                  <circle cx="100" cy="100" r="96" fill={`url(#rimGrad-${speakerDesign.id})`} />
+                  <circle cx="100" cy="100" r="88" fill={speakerDesign.coneColor} />
+                  
+                  {/* Rivets around the rim */}
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                    const rad = (angle * Math.PI) / 180;
+                    const x = 100 + 92 * Math.cos(rad);
+                    const y = 100 + 92 * Math.sin(rad);
+                    return (
+                      <g key={angle}>
+                        <circle cx={x} cy={y} r="4" fill="#2a2a2a" />
+                        <circle cx={x - 0.5} cy={y - 0.5} r="3" fill={speakerDesign.rimColor} />
+                        <circle cx={x - 1} cy={y - 1} r="1.5" fill="#fff" opacity="0.3" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Speaker cone with ridges */}
+                  <circle cx="100" cy="100" r="75" fill={`url(#coneGrad-${speakerDesign.id})`} />
+                  
+                  {/* Concentric cone ridges */}
+                  {[70, 60, 50, 40].map((r) => (
+                    <circle 
+                      key={r} 
+                      cx="100" 
+                      cy="100" 
+                      r={r} 
+                      fill="none" 
+                      stroke={`${speakerDesign.rimColor}30`} 
+                      strokeWidth="1"
+                    />
+                  ))}
+
+                  {/* Surround ring */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#1a1a1a" strokeWidth="6" />
+                  <circle cx="100" cy="100" r="80" fill="none" stroke={`${speakerDesign.rimColor}20`} strokeWidth="2" />
+
+                  {/* Dust cap (center dome) */}
+                  <circle cx="100" cy="100" r="28" fill={`url(#dustCapGrad-${speakerDesign.id})`} />
+                  <circle cx="100" cy="100" r="28" fill="none" stroke={speakerDesign.rimColor} strokeWidth="2" />
+                  
+                  {/* Gear decoration on dust cap */}
+                  <circle cx="100" cy="100" r="18" fill="none" stroke={`${speakerDesign.coneColor}`} strokeWidth="3" />
+                  {[0, 60, 120, 180, 240, 300].map((angle) => {
+                    const rad = (angle * Math.PI) / 180;
+                    const x1 = 100 + 15 * Math.cos(rad);
+                    const y1 = 100 + 15 * Math.sin(rad);
+                    const x2 = 100 + 22 * Math.cos(rad);
+                    const y2 = 100 + 22 * Math.sin(rad);
+                    return (
+                      <line 
+                        key={angle}
+                        x1={x1} y1={y1} x2={x2} y2={y2} 
+                        stroke={speakerDesign.rimColor} 
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                      />
+                    );
+                  })}
+
+                  {/* Center bolt */}
+                  <circle cx="100" cy="100" r="6" fill="#1a1a1a" />
+                  <circle cx="100" cy="100" r="4" fill={speakerDesign.rimColor} />
+                  <circle cx="98" cy="98" r="2" fill="#fff" opacity="0.4" />
+
+                  {/* Rebirth stars indicator */}
+                  {rebirthCount > 0 && (
+                    <text 
+                      x="100" 
+                      y="170" 
+                      textAnchor="middle" 
+                      fill={speakerDesign.glowColor}
+                      fontSize="14"
+                      fontWeight="bold"
+                    >
+                      {"★".repeat(Math.min(rebirthCount, 5))} {rebirthCount > 5 ? `+${rebirthCount - 5}` : ""}
+                    </text>
+                  )}
+                </svg>
               </button>
 
-              <p style={{ 
-                marginTop: 24, 
-                color: "var(--alzooka-cream)", 
-                opacity: 0.7,
-                fontSize: 14,
+              <div style={{ 
+                marginTop: 16, 
+                color: speakerDesign.glowColor, 
+                fontSize: 16,
+                fontWeight: 600,
+                textShadow: `0 0 10px ${speakerDesign.glowColor}60`,
               }}>
-                Click the coin to collect!
+                {speakerDesign.name}
+              </div>
+
+              <p style={{ 
+                marginTop: 8, 
+                color: "var(--alzooka-cream)", 
+                opacity: 0.6,
+                fontSize: 13,
+              }}>
+                Click the speaker to collect!
               </p>
             </div>
 
@@ -808,7 +917,7 @@ export default function CoinCollectorPage() {
                 New total: {((rebirthBonus + 0.25) * 100).toFixed(0)}% production
               </div>
               <div style={{ color: "var(--alzooka-cream)", opacity: 0.7, fontSize: 14, marginTop: 8 }}>
-                New coin design: {PRESIDENTS[currentPresident % PRESIDENTS.length].name}
+                New speaker design: {SPEAKER_DESIGNS[currentPresident % SPEAKER_DESIGNS.length].name}
               </div>
             </div>
             <div style={{ display: "flex", gap: 12 }}>
