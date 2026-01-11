@@ -18,8 +18,10 @@ const GAME_HEIGHT = 600;
 const LANE_COUNT = 5;
 const LANE_WIDTH = GAME_WIDTH / LANE_COUNT;
 const WAVE_SIZE = 50;
-const SCROLL_SPEED = 3;
+const BASE_SCROLL_SPEED = 3;
 const SPAWN_INTERVAL = 60; // frames between spawns
+const SPEED_INCREASE_DISTANCE = 1000; // Every 1000m
+const SPEED_INCREASE_PERCENT = 0.05; // 5% faster
 
 // Item types
 type ItemType = "obstacle" | "amp" | "speaker" | "mic" | "guitar" | "boost";
@@ -112,11 +114,20 @@ export default function SoundWavePage() {
     setItems(prev => [...prev, newItem]);
   }, [distance]);
 
+  // Calculate current speed based on distance
+  const getCurrentSpeed = useCallback((dist: number) => {
+    const speedMultiplier = 1 + Math.floor(dist / SPEED_INCREASE_DISTANCE) * SPEED_INCREASE_PERCENT;
+    return BASE_SCROLL_SPEED * speedMultiplier;
+  }, []);
+
   // Game loop
   const gameLoop = useCallback(() => {
     if (gameOver || !gameStarted) return;
     
     frameRef.current++;
+    
+    // Calculate current speed
+    const currentSpeed = getCurrentSpeed(distance);
     
     // Handle continuous movement
     if (keysRef.current.has("ArrowLeft") || keysRef.current.has("KeyA")) {
@@ -127,7 +138,7 @@ export default function SoundWavePage() {
     }
     
     // Update distance
-    setDistance(prev => prev + SCROLL_SPEED);
+    setDistance(prev => prev + currentSpeed);
     
     // Update boost timer
     if (boosted) {
@@ -152,7 +163,7 @@ export default function SoundWavePage() {
       const waveY = GAME_HEIGHT - 100;
       
       for (const item of prev) {
-        const newY = item.y + SCROLL_SPEED + (boosted ? 2 : 0);
+        const newY = item.y + currentSpeed + (boosted ? 2 : 0);
         
         // Check collision
         const itemX = item.lane * LANE_WIDTH + LANE_WIDTH / 2;
@@ -656,7 +667,7 @@ export default function SoundWavePage() {
               </div>
             </div>
 
-            {/* Distance */}
+            {/* Distance & Speed */}
             <div style={{
               background: "rgba(0,0,0,0.4)",
               borderRadius: 8,
@@ -667,6 +678,14 @@ export default function SoundWavePage() {
               <div style={{ color: "#888", fontSize: 12, marginBottom: 4 }}>DISTANCE</div>
               <div style={{ color: "#fff", fontSize: 18, fontWeight: 600 }}>
                 {Math.floor(distance)}m
+              </div>
+              <div style={{ 
+                color: "#f97316", 
+                fontSize: 11, 
+                marginTop: 6,
+                fontWeight: 600,
+              }}>
+                ⚡ {Math.round((1 + Math.floor(distance / SPEED_INCREASE_DISTANCE) * SPEED_INCREASE_PERCENT) * 100)}% speed
               </div>
             </div>
 
