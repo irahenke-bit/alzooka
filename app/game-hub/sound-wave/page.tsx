@@ -178,17 +178,25 @@ export default function SoundWavePage() {
             }
           } else {
             // Hit obstacle
-            setPower(p => {
-              const newPower = p - item.value;
-              if (newPower <= 0) {
-                setGameOver(true);
-                if (score > highScore) {
-                  setHighScore(score);
+            if (boosted) {
+              // Boosted = smash through obstacles for bonus points!
+              const points = item.value * 25;
+              setScore(s => s + points);
+              setCombo(c => c + 1);
+            } else {
+              // Not boosted = take damage
+              setPower(p => {
+                const newPower = p - item.value;
+                if (newPower <= 0) {
+                  setGameOver(true);
+                  if (score > highScore) {
+                    setHighScore(score);
+                  }
                 }
-              }
-              return Math.max(0, newPower);
-            });
-            setCombo(0);
+                return Math.max(0, newPower);
+              });
+              setCombo(0);
+            }
           }
           continue; // Don't add to new items
         }
@@ -687,7 +695,8 @@ export default function SoundWavePage() {
               <div style={{ color: "#86efac", marginBottom: 2 }}>🔊 🎸 🎤 📻</div>
               <div style={{ color: "#888", marginBottom: 8, fontSize: 10 }}>Adds power</div>
               
-              <div style={{ color: "#eab308", marginBottom: 4 }}>⚡ Boost = 2x pts</div>
+              <div style={{ color: "#eab308", marginBottom: 4 }}>⚡ Boost = SMASH!</div>
+              <div style={{ color: "#a3a3a3", fontSize: 10, marginBottom: 4 }}>Immune to obstacles</div>
               
               <div style={{ color: "#ef4444", marginBottom: 6, fontWeight: 600, marginTop: 8 }}>✗ AVOID (Red)</div>
               <div style={{ color: "#fca5a5" }}>⛔ Drains power!</div>
