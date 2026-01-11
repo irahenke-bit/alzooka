@@ -131,6 +131,15 @@ export default function GameHubPage() {
       available: true,
     },
     {
+      id: "sound-wave",
+      name: "Sound Wave",
+      description: "Ride the wave, collect amps, and smash through obstacles! Don't let your signal die!",
+      icon: "🔊",
+      href: "/game-hub/sound-wave",
+      color: "#06b6d4",
+      available: true,
+    },
+    {
       id: "coming-soon-1",
       name: "Coming Soon",
       description: "More games are on the way...",
