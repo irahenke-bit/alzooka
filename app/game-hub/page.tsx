@@ -85,7 +85,7 @@ export default function GameHubPage() {
       description: "Click the speaker to drop the bass, buy upgrades, and become the ultimate bass master!",
       icon: "🔊",
       href: "/game-hub/coin-collector",
-      color: "#8a8a8a",
+      color: "#c9a227",
       available: true,
     },
     {
