@@ -418,12 +418,22 @@ export default function StationPage() {
       
       setUser(session.user);
       
-      // Get user's profile data
-      const { data: userData } = await supabase
-        .from("users")
-        .select("display_name, username, avatar_url")
-        .eq("id", session.user.id)
-        .single();
+      // PARALLEL FETCH: Get user data and station data at the same time
+      const [userResult, stationResult] = await Promise.all([
+        supabase
+          .from("users")
+          .select("display_name, username, avatar_url")
+          .eq("id", session.user.id)
+          .single(),
+        supabase
+          .from("stations")
+          .select("*")
+          .eq("owner_id", session.user.id)
+          .single()
+      ]);
+      
+      const userData = userResult.data;
+      const stationData = stationResult.data;
       
       if (userData) {
         const firstName = (userData.display_name || userData.username || "").split(" ")[0];
@@ -433,23 +443,76 @@ export default function StationPage() {
         setStationName(`${firstName}'s Radio Station`);
       }
       
-      // Check if user has a station
-      const { data: stationData } = await supabase
-        .from("stations")
-        .select("*")
-        .eq("owner_id", session.user.id)
-        .single();
-      
       if (stationData) {
         setStation(stationData);
         
-        // Load albums
-        const { data: albumsData } = await supabase
-          .from("station_albums")
-          .select("*")
-          .eq("station_id", stationData.id)
-          .order("created_at", { ascending: false });
+        // PARALLEL FETCH: Load albums, groups, and playlists all at once
+        const [albumsResult, groupsResult, playlistsResult] = await Promise.all([
+          supabase
+            .from("station_albums")
+            .select("*")
+            .eq("station_id", stationData.id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("station_groups")
+            .select("*")
+            .eq("station_id", stationData.id)
+            .order("created_at", { ascending: true }),
+          supabase
+            .from("station_playlists")
+            .select("*")
+            .eq("station_id", stationData.id)
+            .order("created_at", { ascending: false })
+        ]);
         
+        const albumsData = albumsResult.data;
+        const groupsData = groupsResult.data;
+        const playlistsData = playlistsResult.data;
+        
+        if (groupsData) {
+          setGroups(groupsData);
+        }
+        
+        // PARALLEL FETCH: Load album-group and playlist-group relationships
+        const albumIds = albumsData ? albumsData.map(a => a.id) : [];
+        const playlistIds = playlistsData ? playlistsData.map(p => p.id) : [];
+        
+        const [albumGroupsResult, playlistGroupsResult] = await Promise.all([
+          albumIds.length > 0 
+            ? supabase
+                .from("station_album_groups")
+                .select("album_id, group_id")
+                .in("album_id", albumIds)
+            : Promise.resolve({ data: null }),
+          playlistIds.length > 0
+            ? supabase
+                .from("station_playlist_groups")
+                .select("playlist_id, group_id")
+                .in("playlist_id", playlistIds)
+            : Promise.resolve({ data: null })
+        ]);
+        
+        // Process album-group relationships
+        const albumGroupMapping: Record<string, string[]> = {};
+        if (albumGroupsResult.data) {
+          for (const ag of albumGroupsResult.data) {
+            if (!albumGroupMapping[ag.album_id]) albumGroupMapping[ag.album_id] = [];
+            albumGroupMapping[ag.album_id].push(ag.group_id);
+          }
+          setAlbumGroups(albumGroupMapping);
+        }
+        
+        // Process playlist-group relationships
+        const playlistGroupMapping: Record<string, string[]> = {};
+        if (playlistGroupsResult.data) {
+          for (const pg of playlistGroupsResult.data) {
+            if (!playlistGroupMapping[pg.playlist_id]) playlistGroupMapping[pg.playlist_id] = [];
+            playlistGroupMapping[pg.playlist_id].push(pg.group_id);
+          }
+          setPlaylistGroups(playlistGroupMapping);
+        }
+        
+        // Process albums
         if (albumsData) {
           setAlbums(albumsData);
           
@@ -459,64 +522,11 @@ export default function StationPage() {
           
           // Check if all are selected
           setSelectAll(albumsData.length > 0 && albumsData.every(a => a.is_selected));
-          
-          // Load album-group relationships
-          const albumIds = albumsData.map(a => a.id);
-          if (albumIds.length > 0) {
-            const { data: albumGroupsData } = await supabase
-              .from("station_album_groups")
-              .select("album_id, group_id")
-              .in("album_id", albumIds);
-            
-            if (albumGroupsData) {
-              const mapping: Record<string, string[]> = {};
-              for (const ag of albumGroupsData) {
-                if (!mapping[ag.album_id]) mapping[ag.album_id] = [];
-                mapping[ag.album_id].push(ag.group_id);
-              }
-              setAlbumGroups(mapping);
-            }
-          }
         }
         
-        // Load groups
-        const { data: groupsData } = await supabase
-          .from("station_groups")
-          .select("*")
-          .eq("station_id", stationData.id)
-          .order("created_at", { ascending: true });
-        
-        if (groupsData) {
-          setGroups(groupsData);
-        }
-        
-        // Load playlists
-        const { data: playlistsData } = await supabase
-          .from("station_playlists")
-          .select("*")
-          .eq("station_id", stationData.id)
-          .order("created_at", { ascending: false });
-        
+        // Process playlists
         if (playlistsData) {
           setPlaylists(playlistsData);
-          
-          // Load playlist-group relationships
-          const playlistIds = playlistsData.map(p => p.id);
-          if (playlistIds.length > 0) {
-            const { data: playlistGroupsData } = await supabase
-              .from("station_playlist_groups")
-              .select("playlist_id, group_id")
-              .in("playlist_id", playlistIds);
-            
-            if (playlistGroupsData) {
-              const mapping: Record<string, string[]> = {};
-              for (const pg of playlistGroupsData) {
-                if (!mapping[pg.playlist_id]) mapping[pg.playlist_id] = [];
-                mapping[pg.playlist_id].push(pg.group_id);
-              }
-              setPlaylistGroups(mapping);
-            }
-          }
           
           // Restore saved playlist selections
           if (stationData.selected_playlist_ids && Array.isArray(stationData.selected_playlist_ids)) {
@@ -581,24 +591,7 @@ export default function StationPage() {
           const restoredActiveGroups = new Set<string>(stationData.active_group_ids as string[]);
           setActiveGroups(restoredActiveGroups);
           
-          // Build album groups mapping for lookup (we already loaded this above)
-          const albumGroupMapping: Record<string, string[]> = {};
-          const restoredAlbumIds = albumsData ? albumsData.map(a => a.id) : [];
-          if (restoredAlbumIds.length > 0) {
-            const { data: albumGroupsData } = await supabase
-              .from("station_album_groups")
-              .select("album_id, group_id")
-              .in("album_id", restoredAlbumIds);
-            
-            if (albumGroupsData) {
-              for (const ag of albumGroupsData) {
-                if (!albumGroupMapping[ag.album_id]) albumGroupMapping[ag.album_id] = [];
-                albumGroupMapping[ag.album_id].push(ag.group_id);
-              }
-            }
-          }
-          
-          // Select albums that belong to ANY restored active group
+          // Select albums that belong to ANY restored active group (reuse albumGroupMapping from above)
           const albumsToSelect = new Set<string>();
           for (const [albumId, groupIds] of Object.entries(albumGroupMapping)) {
             if (groupIds.some(gid => restoredActiveGroups.has(gid))) {
@@ -612,24 +605,7 @@ export default function StationPage() {
             setSelectAll(albumsData.length > 0 && albumsData.every(a => albumsToSelect.has(a.id)));
           }
           
-          // Build playlist groups mapping for lookup
-          const playlistGroupMapping: Record<string, string[]> = {};
-          if (playlistsData && playlistsData.length > 0) {
-            const playlistIds = playlistsData.map(p => p.id);
-            const { data: playlistGroupsData } = await supabase
-              .from("station_playlist_groups")
-              .select("playlist_id, group_id")
-              .in("playlist_id", playlistIds);
-            
-            if (playlistGroupsData) {
-              for (const pg of playlistGroupsData) {
-                if (!playlistGroupMapping[pg.playlist_id]) playlistGroupMapping[pg.playlist_id] = [];
-                playlistGroupMapping[pg.playlist_id].push(pg.group_id);
-              }
-            }
-          }
-          
-          // Select playlists that belong to ANY restored active group
+          // Select playlists that belong to ANY restored active group (reuse playlistGroupMapping from above)
           const playlistsToSelect = new Set<string>();
           for (const [playlistId, groupIds] of Object.entries(playlistGroupMapping)) {
             if (groupIds.some(gid => restoredActiveGroups.has(gid))) {
@@ -2691,8 +2667,76 @@ export default function StationPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p>Loading...</p>
+      <div style={{ minHeight: "100vh" }}>
+        {/* Skeleton Header */}
+        <div style={{ 
+          height: 60, 
+          background: "rgba(0,0,0,0.3)", 
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 16
+        }}>
+          <div style={{ width: 100, height: 24, background: "rgba(255,255,255,0.1)", borderRadius: 4 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+        </div>
+        
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
+          {/* Skeleton Station Header */}
+          <div style={{ 
+            background: "linear-gradient(135deg, rgba(30, 215, 96, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
+            borderRadius: 16,
+            padding: 24,
+            marginBottom: 24
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+              <div style={{ width: 64, height: 64, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+              <div>
+                <div style={{ width: 200, height: 28, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ width: 120, height: 16, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+              </div>
+            </div>
+            <div style={{ width: 180, height: 44, background: "rgba(30, 215, 96, 0.2)", borderRadius: 24 }} />
+          </div>
+          
+          {/* Skeleton Tabs */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+            <div style={{ width: 100, height: 36, background: "rgba(255,255,255,0.1)", borderRadius: 8 }} />
+            <div style={{ width: 100, height: 36, background: "rgba(255,255,255,0.05)", borderRadius: 8 }} />
+          </div>
+          
+          {/* Skeleton Album Grid */}
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", 
+            gap: 16 
+          }}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} style={{ 
+                background: "rgba(0,0,0,0.2)", 
+                borderRadius: 12, 
+                overflow: "hidden",
+                animation: "pulse 1.5s ease-in-out infinite",
+                animationDelay: `${i * 0.1}s`
+              }}>
+                <div style={{ width: "100%", aspectRatio: "1", background: "rgba(255,255,255,0.05)" }} />
+                <div style={{ padding: 12 }}>
+                  <div style={{ width: "80%", height: 14, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
+                  <div style={{ width: "60%", height: 12, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}</style>
       </div>
     );
   }

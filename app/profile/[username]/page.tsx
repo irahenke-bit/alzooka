@@ -388,114 +388,41 @@ export default function ProfilePage() {
       setAllowWallPosts(profileData.allow_wall_posts ?? true);
       setWallFriendsOnly(profileData.wall_friends_only ?? true);
 
-      // Fetch trivia stats for badge display
-      const { data: triviaData } = await supabase
-        .from("trivia_player_stats")
-        .select("rating, games_played")
-        .eq("user_id", profileData.id)
-        .single();
-
-      if (triviaData && triviaData.games_played > 0) {
-        setTriviaStats(triviaData);
-      }
-
       // Check if user has a password by examining their auth identities (for own profile)
       // This syncs the has_password field if it's out of date
       if (user && user.id === profileData.id) {
-        // Check if user has email identity with password (not just magic link)
-        // A user has a password if they have an "email" provider identity
         const hasEmailIdentity = user.identities?.some(
           (identity) => identity.provider === "email"
         );
         
-        // If the auth system says they have password but DB says no, update DB
         if (hasEmailIdentity && !profileData.has_password) {
-          await supabase
+          // Fire and forget - don't await this
+          supabase
             .from("users")
             .update({ has_password: true })
             .eq("id", user.id);
-          // Update local profile data
           profileData.has_password = true;
         }
       }
 
-      // Calculate karma stats for privacy eligibility (only for own profile)
-      if (user && user.id === profileData.id) {
-        // Get all posts and comments by this user
-        const { data: userPosts } = await supabase
-          .from("posts")
-          .select("id, group_id, groups:groups!posts_group_id_fkey(privacy)")
-          .eq("user_id", profileData.id);
-        
-        const { data: userComments } = await supabase
-          .from("comments")
-          .select("id, post_id, posts:posts!comments_post_id_fkey(group_id, groups:groups!posts_group_id_fkey(privacy))")
-          .eq("user_id", profileData.id);
-
-        // Get post IDs that are in public groups or no group (main feed)
-        const publicPostIds = (userPosts || [])
-          .filter(p => !p.group_id || (p.groups as any)?.privacy === "public")
-          .map(p => p.id);
-
-        // Get comment IDs that are on posts in public groups or no group
-        const publicCommentIds = (userComments || [])
-          .filter(c => {
-            const post = c.posts as any;
-            return !post?.group_id || post?.groups?.privacy === "public";
-          })
-          .map(c => c.id);
-
-        // Get votes on public posts
-        const { data: postVotes } = publicPostIds.length > 0 
-          ? await supabase
-              .from("votes")
-              .select("user_id, value")
-              .eq("target_type", "post")
-              .in("target_id", publicPostIds)
-          : { data: [] };
-
-        // Get votes on public comments
-        const { data: commentVotes } = publicCommentIds.length > 0
-          ? await supabase
-              .from("votes")
-              .select("user_id, value")
-              .eq("target_type", "comment")
-              .in("target_id", publicCommentIds)
-          : { data: [] };
-
-        // Combine all votes
-        const allVotes = [...(postVotes || []), ...(commentVotes || [])];
-        
-        // Calculate stats
-        const upvotes = allVotes.filter(v => v.value > 0);
-        const downvotes = allVotes.filter(v => v.value < 0);
-        const uniqueUpvoterIds = new Set(upvotes.map(v => v.user_id));
-        
-        const totalVotes = upvotes.length + downvotes.length;
-        const downvoteRatio = totalVotes > 0 ? downvotes.length / totalVotes : 0;
-        
-        // Check account age (must be at least 30 days old)
-        const accountCreated = new Date(profileData.created_at);
-        const now = new Date();
-        const daysSinceCreation = Math.floor((now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24));
-        const isOldEnough = daysSinceCreation >= 30;
-        
-        // Qualifies if: 30+ days old AND 20+ unique upvoters AND downvote ratio <= 15%
-        const qualifies = isOldEnough && uniqueUpvoterIds.size >= 20 && downvoteRatio <= 0.15;
-
-        setKarmaStats({
-          uniqueUpvoters: uniqueUpvoterIds.size,
-          totalUpvotes: upvotes.length,
-          totalDownvotes: downvotes.length,
-          downvoteRatio,
-          qualifiesForPrivacy: qualifies,
-        });
-      }
-
-      // Get posts by this user with comment counts (only feed posts, not group posts)
-      const { data: postsData } = await supabase
-        .from("posts")
-        .select(`
+      // PARALLEL FETCH: Load trivia stats, posts, comments, all user posts/comments for vote stats, and friends count at once
+      const isOwnProfile = user && user.id === profileData.id;
+      
+      const [
+        triviaResult,
+        postsResult,
+        commentsResult,
+        allUserPostsResult,
+        allUserCommentsResult,
+        friendsCountResult,
+        friendshipResult,
+        karmaPostsResult,
+        karmaCommentsResult
+      ] = await Promise.all([
+        // Trivia stats
+        supabase.from("trivia_player_stats").select("rating, games_played").eq("user_id", profileData.id).single(),
+        // Posts on profile
+        supabase.from("posts").select(`
           id, 
           user_id,
           content,
@@ -525,7 +452,110 @@ export default function ProfilePage() {
         `)
         .or(`wall_user_id.eq.${profileData.id},and(user_id.eq.${profileData.id},group_id.is.null,wall_user_id.is.null)`)
         .is("group_id", null)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }),
+        // Comments by user
+        supabase.from("comments").select(`
+          id,
+          content,
+          created_at,
+          post_id,
+          posts (
+            content,
+            group_id,
+            wall_user_id,
+            wall_user:users!posts_wall_user_id_fkey (
+              username
+            )
+          )
+        `)
+        .eq("user_id", profileData.id)
+        .order("created_at", { ascending: false }),
+        // All user posts for vote stats
+        supabase.from("posts").select("id").eq("user_id", profileData.id),
+        // All user comments for vote stats
+        supabase.from("comments").select("id").eq("user_id", profileData.id),
+        // Friends count
+        supabase.from("friendships").select("*", { count: "exact", head: true }).eq("status", "accepted").or(`requester_id.eq.${profileData.id},addressee_id.eq.${profileData.id}`),
+        // Friendship status (between viewer and profile)
+        user ? supabase.from("friendships").select("id").eq("status", "accepted").or(`and(requester_id.eq.${user.id},addressee_id.eq.${profileData.id}),and(requester_id.eq.${profileData.id},addressee_id.eq.${user.id}))`).maybeSingle() : Promise.resolve({ data: null }),
+        // Karma posts (only for own profile)
+        isOwnProfile ? supabase.from("posts").select("id, group_id, groups:groups!posts_group_id_fkey(privacy)").eq("user_id", profileData.id) : Promise.resolve({ data: null }),
+        // Karma comments (only for own profile)
+        isOwnProfile ? supabase.from("comments").select("id, post_id, posts:posts!comments_post_id_fkey(group_id, groups:groups!posts_group_id_fkey(privacy))").eq("user_id", profileData.id) : Promise.resolve({ data: null })
+      ]);
+
+      // Process trivia stats
+      if (triviaResult.data && triviaResult.data.games_played > 0) {
+        setTriviaStats(triviaResult.data);
+      }
+
+      // Process friends count
+      setFriendsCount(friendsCountResult.count || 0);
+
+      // Process friendship status
+      if (user) {
+        setIsFriend(!!friendshipResult.data);
+      }
+
+      // Calculate karma stats for privacy eligibility (only for own profile)
+      if (isOwnProfile && karmaPostsResult.data && karmaCommentsResult.data) {
+        const userPosts = karmaPostsResult.data;
+        const userComments = karmaCommentsResult.data;
+
+        // Get post IDs that are in public groups or no group (main feed)
+        const publicPostIds = (userPosts || [])
+          .filter(p => !p.group_id || (p.groups as any)?.privacy === "public")
+          .map(p => p.id);
+
+        // Get comment IDs that are on posts in public groups or no group
+        const publicCommentIds = (userComments || [])
+          .filter(c => {
+            const post = c.posts as any;
+            return !post?.group_id || post?.groups?.privacy === "public";
+          })
+          .map(c => c.id);
+
+        // PARALLEL: Get votes on public posts and comments
+        const [postVotesResult, commentVotesResult] = await Promise.all([
+          publicPostIds.length > 0 
+            ? supabase.from("votes").select("user_id, value").eq("target_type", "post").in("target_id", publicPostIds)
+            : Promise.resolve({ data: [] }),
+          publicCommentIds.length > 0
+            ? supabase.from("votes").select("user_id, value").eq("target_type", "comment").in("target_id", publicCommentIds)
+            : Promise.resolve({ data: [] })
+        ]);
+
+        // Combine all votes
+        const allVotes = [...(postVotesResult.data || []), ...(commentVotesResult.data || [])];
+        
+        // Calculate stats
+        const upvotes = allVotes.filter(v => v.value > 0);
+        const downvotes = allVotes.filter(v => v.value < 0);
+        const uniqueUpvoterIds = new Set(upvotes.map(v => v.user_id));
+        
+        const totalVotes = upvotes.length + downvotes.length;
+        const downvoteRatio = totalVotes > 0 ? downvotes.length / totalVotes : 0;
+        
+        // Check account age (must be at least 30 days old)
+        const accountCreated = new Date(profileData.created_at);
+        const now = new Date();
+        const daysSinceCreation = Math.floor((now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24));
+        const isOldEnough = daysSinceCreation >= 30;
+        
+        // Qualifies if: 30+ days old AND 20+ unique upvoters AND downvote ratio <= 15%
+        const qualifies = isOldEnough && uniqueUpvoterIds.size >= 20 && downvoteRatio <= 0.15;
+
+        setKarmaStats({
+          uniqueUpvoters: uniqueUpvoterIds.size,
+          totalUpvotes: upvotes.length,
+          totalDownvotes: downvotes.length,
+          downvoteRatio,
+          qualifiesForPrivacy: qualifies,
+        });
+      }
+
+      // Process posts
+      const postsData = postsResult.data;
 
       if (postsData) {
         // Get vote scores for all posts
@@ -672,34 +702,18 @@ export default function ProfilePage() {
         }
       }
 
-      // Get comments by this user
-      const { data: commentsData } = await supabase
-        .from("comments")
-        .select(`
-          id,
-          content,
-          created_at,
-          post_id,
-          posts (
-            content,
-            group_id,
-            wall_user_id,
-            wall_user:users!posts_wall_user_id_fkey (
-              username
-            )
-          )
-        `)
-        .eq("user_id", profileData.id)
-        .order("created_at", { ascending: false });
-
+      // Process comments (already fetched in parallel)
+      const commentsData = commentsResult.data;
       if (commentsData) {
         // Get vote scores for all comments
         const commentIdsForVotes = commentsData.map(c => c.id);
-        const { data: commentVotesData } = await supabase
-          .from("votes")
-          .select("target_id, value")
-          .eq("target_type", "comment")
-          .in("target_id", commentIdsForVotes);
+        const { data: commentVotesData } = commentIdsForVotes.length > 0 
+          ? await supabase
+              .from("votes")
+              .select("target_id, value")
+              .eq("target_type", "comment")
+              .in("target_id", commentIdsForVotes)
+          : { data: [] };
 
         // Calculate vote totals per comment
         const votesByComment: Record<string, number> = {};
@@ -722,52 +736,35 @@ export default function ProfilePage() {
         setComments(commentsWithVotes as unknown as Comment[]);
       }
 
-      // Get vote stats - votes received on ALL user's posts (including group posts)
-      // We need to fetch all post IDs by this user, not just the ones shown on profile
-      const { data: allUserPosts } = await supabase
-        .from("posts")
-        .select("id")
-        .eq("user_id", profileData.id);
+      // Get vote stats - use already-fetched allUserPosts and allUserComments
+      const allPostIds = allUserPostsResult.data?.map(p => p.id) || [];
+      const allCommentIds = allUserCommentsResult.data?.map(c => c.id) || [];
 
-      const { data: allUserComments } = await supabase
-        .from("comments")
-        .select("id")
-        .eq("user_id", profileData.id);
-
-      const allPostIds = allUserPosts?.map(p => p.id) || [];
-      const allCommentIds = allUserComments?.map(c => c.id) || [];
+      // PARALLEL: Fetch post and comment votes at the same time
+      const [postVotesForStats, commentVotesForStats] = await Promise.all([
+        allPostIds.length > 0
+          ? supabase.from("votes").select("value").eq("target_type", "post").in("target_id", allPostIds)
+          : Promise.resolve({ data: [] }),
+        allCommentIds.length > 0
+          ? supabase.from("votes").select("value").eq("target_type", "comment").in("target_id", allCommentIds)
+          : Promise.resolve({ data: [] })
+      ]);
 
       let upvotesReceived = 0;
       let downvotesReceived = 0;
 
-      if (allPostIds.length > 0) {
-        const { data: postVotes } = await supabase
-          .from("votes")
-          .select("value")
-          .eq("target_type", "post")
-          .in("target_id", allPostIds);
-
-        if (postVotes) {
-          postVotes.forEach(v => {
-            if (v.value > 0) upvotesReceived += v.value;
-            else downvotesReceived += Math.abs(v.value);
-          });
-        }
+      if (postVotesForStats.data) {
+        postVotesForStats.data.forEach(v => {
+          if (v.value > 0) upvotesReceived += v.value;
+          else downvotesReceived += Math.abs(v.value);
+        });
       }
 
-      if (allCommentIds.length > 0) {
-        const { data: commentVotes } = await supabase
-          .from("votes")
-          .select("value")
-          .eq("target_type", "comment")
-          .in("target_id", allCommentIds);
-
-        if (commentVotes) {
-          commentVotes.forEach(v => {
-            if (v.value > 0) upvotesReceived += v.value;
-            else downvotesReceived += Math.abs(v.value);
-          });
-        }
+      if (commentVotesForStats.data) {
+        commentVotesForStats.data.forEach(v => {
+          if (v.value > 0) upvotesReceived += v.value;
+          else downvotesReceived += Math.abs(v.value);
+        });
       }
 
       setVoteStats({
@@ -775,29 +772,9 @@ export default function ProfilePage() {
         downvotesReceived,
       });
 
-      // Get friends count
-      const { count: friendsCountData } = await supabase
-        .from("friendships")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "accepted")
-        .or(`requester_id.eq.${profileData.id},addressee_id.eq.${profileData.id}`);
-      
-      setFriendsCount(friendsCountData || 0);
-
       // Load user's votes so upvote/downvote arrows are colored correctly
       if (user) {
         await loadUserVotes(user.id);
-      }
-
-      // Determine friendship status (between viewer and profile)
-      if (user) {
-        const { data: friendRow } = await supabase
-          .from("friendships")
-          .select("id")
-          .eq("status", "accepted")
-          .or(`and(requester_id.eq.${user.id},addressee_id.eq.${profileData.id}),and(requester_id.eq.${profileData.id},addressee_id.eq.${user.id}))`)
-          .maybeSingle();
-        setIsFriend(!!friendRow);
       }
 
       setLoading(false);
@@ -1632,13 +1609,101 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center" 
-      }}>
-        <p>Loading...</p>
+      <div style={{ minHeight: "100vh" }}>
+        {/* Skeleton Header */}
+        <div style={{ 
+          height: 60, 
+          background: "rgba(0,0,0,0.3)", 
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 16
+        }}>
+          <div style={{ width: 100, height: 24, background: "rgba(255,255,255,0.1)", borderRadius: 4 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+        </div>
+        
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {/* Skeleton Banner */}
+          <div style={{ 
+            width: "100%", 
+            height: 200, 
+            background: "linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
+            position: "relative"
+          }}>
+            {/* Skeleton Avatar */}
+            <div style={{ 
+              position: "absolute", 
+              bottom: -50, 
+              left: 24, 
+              width: 120, 
+              height: 120, 
+              background: "rgba(255,255,255,0.1)", 
+              borderRadius: "50%",
+              border: "4px solid var(--alzooka-dark)"
+            }} />
+          </div>
+          
+          {/* Skeleton Profile Info */}
+          <div style={{ padding: "60px 24px 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+              <div>
+                <div style={{ width: 180, height: 28, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ width: 100, height: 16, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+              </div>
+              <div style={{ width: 100, height: 36, background: "rgba(201, 162, 39, 0.2)", borderRadius: 8 }} />
+            </div>
+            
+            {/* Skeleton Bio */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ width: "100%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4, marginBottom: 8 }} />
+              <div style={{ width: "80%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4 }} />
+            </div>
+            
+            {/* Skeleton Stats */}
+            <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
+              {[1, 2, 3].map(i => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ width: 40, height: 20, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 4, margin: "0 auto" }} />
+                  <div style={{ width: 50, height: 12, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Skeleton Posts */}
+          <div style={{ padding: "0 24px 24px" }}>
+            {[1, 2].map(i => (
+              <div key={i} style={{ 
+                background: "rgba(0,0,0,0.2)", 
+                borderRadius: 12, 
+                padding: 16, 
+                marginBottom: 16,
+                animation: "pulse 1.5s ease-in-out infinite",
+                animationDelay: `${i * 0.15}s`
+              }}>
+                <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                  <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+                  <div>
+                    <div style={{ width: 120, height: 14, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 6 }} />
+                    <div style={{ width: 80, height: 12, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                  </div>
+                </div>
+                <div style={{ width: "100%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ width: "85%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}</style>
       </div>
     );
   }

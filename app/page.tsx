@@ -317,9 +317,12 @@ function FeedContent() {
           
           const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[], user.id);
           if (refreshedPosts && refreshedPosts.length > 0) {
-            await loadUserVotes(user.id);
-            await loadVoteTotals(refreshedPosts);
-            await loadReactions(refreshedPosts);
+            // PARALLEL: Load votes, totals, and reactions at the same time
+            await Promise.all([
+              loadUserVotes(user.id),
+              loadVoteTotals(refreshedPosts),
+              loadReactions(refreshedPosts),
+            ]);
           }
         } catch (err) {
           console.error("Error in poll interval:", err);
@@ -339,9 +342,12 @@ function FeedContent() {
             
             const refreshedPosts = await loadPosts(friendIds, (freshPrefs || []) as GroupPreference[], user.id);
             if (refreshedPosts && refreshedPosts.length > 0) {
-              await loadUserVotes(user.id);
-              await loadVoteTotals(refreshedPosts);
-              await loadReactions(refreshedPosts);
+              // PARALLEL: Load votes, totals, and reactions at the same time
+              await Promise.all([
+                loadUserVotes(user.id),
+                loadVoteTotals(refreshedPosts),
+                loadReactions(refreshedPosts),
+              ]);
             }
           }
         } catch (err) {
@@ -787,14 +793,11 @@ function FeedContent() {
     // Calculate offset for pagination
     const offset = reset ? 0 : posts.length;
     
-    // 1. Load regular feed posts (non-group posts)
-    // If showAllProfiles is true, load from everyone; otherwise, only from friends + self
     const userId = currentUserId || user?.id;
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let feedPosts: any[] | null = [];
-    
-    const feedQuery = supabase
+    // Build the feed posts query
+    const feedQueryBuilder = () => {
+      const query = supabase
         .from("posts")
         .select(`
           id,
@@ -836,18 +839,28 @@ function FeedContent() {
         .order("created_at", { ascending: false })
         .range(offset, offset + POSTS_PER_PAGE - 1);
       
-    if (showAllProfiles) {
-      // World view: show all posts (but filter wall posts by show_in_feed later)
-      const { data } = await feedQuery;
-      feedPosts = data;
-    } else {
-      // Friends only view: filter by allowed user IDs
-      const allowedUserIds = userId ? [userId, ...friends] : friends;
-      if (allowedUserIds.length > 0) {
-        const { data } = await feedQuery.in("user_id", allowedUserIds);
-      feedPosts = data;
-    }
-    }
+      if (showAllProfiles) {
+        return query;
+      } else {
+        const allowedUserIds = userId ? [userId, ...friends] : friends;
+        if (allowedUserIds.length > 0) {
+          return query.in("user_id", allowedUserIds);
+        }
+        return null;
+      }
+    };
+    
+    // PARALLEL FETCH: Load feed posts AND group memberships at the same time
+    const feedQuery = feedQueryBuilder();
+    const [feedResult, membershipsResult] = await Promise.all([
+      feedQuery ? feedQuery : Promise.resolve({ data: [] }),
+      showAllGroups 
+        ? supabase.from("group_members").select("group_id").eq("user_id", userId)
+        : Promise.resolve({ data: null })
+    ]);
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let feedPosts: any[] | null = feedResult.data || [];
     
     // Filter out wall posts that have show_in_feed = false (unless it's on our wall or we made it)
     if (feedPosts) {
@@ -870,13 +883,8 @@ function FeedContent() {
     let groupPosts: any[] = [];
     
     if (showAllGroups) {
-      // Load posts from all groups the user is a member of
-      const { data: userMemberships } = await supabase
-        .from("group_members")
-        .select("group_id")
-        .eq("user_id", userId);
-      
-      const memberGroupIds = (userMemberships || []).map(m => m.group_id);
+      // Use the memberships we already fetched in parallel
+      const memberGroupIds = (membershipsResult.data || []).map(m => m.group_id);
       
       if (memberGroupIds.length > 0) {
         const { data: allGroupPostsData } = await supabase
@@ -1014,20 +1022,8 @@ function FeedContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let allRawPosts = [...(feedPosts || []), ...(groupPosts || [])] as any[];
     
-    // 3.25 Filter out posts from deactivated users
+    // Collect all user IDs and shared post IDs for parallel fetching
     const postUserIds = [...new Set(allRawPosts.map((p: { user_id: string }) => p.user_id))];
-    if (postUserIds.length > 0) {
-      const { data: activeUsers } = await supabase
-        .from("users")
-        .select("id")
-        .in("id", postUserIds)
-        .neq("is_active", false);
-      
-      const activeUserIds = new Set((activeUsers || []).map(u => u.id));
-      allRawPosts = allRawPosts.filter((p: { user_id: string }) => activeUserIds.has(p.user_id));
-    }
-    
-    // 3.5 Fetch user data for all comment authors
     const allCommentUserIds = new Set<string>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     allRawPosts.forEach((post: any) => {
@@ -1036,20 +1032,50 @@ function FeedContent() {
         if (c.user_id) allCommentUserIds.add(c.user_id);
       });
     });
+    const sharedPostIds = allRawPosts
+      .filter((p: { shared_from_post_id?: string | null }) => p.shared_from_post_id)
+      .map((p: { shared_from_post_id: string }) => p.shared_from_post_id);
     
+    // PARALLEL FETCH: Get active users, comment users, and shared posts all at once
+    const [activeUsersResult, commentUsersResult, sharedPostsResult] = await Promise.all([
+      postUserIds.length > 0
+        ? supabase.from("users").select("id").in("id", postUserIds).neq("is_active", false)
+        : Promise.resolve({ data: [] }),
+      allCommentUserIds.size > 0
+        ? supabase.from("users").select("id, username, display_name, avatar_url, is_active").in("id", Array.from(allCommentUserIds))
+        : Promise.resolve({ data: [] }),
+      sharedPostIds.length > 0
+        ? supabase.from("posts").select(`
+            id,
+            user_id,
+            group_id,
+            users:users!posts_user_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            ),
+            groups:groups!posts_group_id_fkey (
+              id,
+              name
+            )
+          `).in("id", sharedPostIds)
+        : Promise.resolve({ data: [] })
+    ]);
+    
+    // Filter out posts from deactivated users
+    const activeUserIds = new Set((activeUsersResult.data || []).map(u => u.id));
+    if (postUserIds.length > 0) {
+      allRawPosts = allRawPosts.filter((p: { user_id: string }) => activeUserIds.has(p.user_id));
+    }
+    
+    // Build comment user map
     const commentUserMap = new Map<string, { username: string; display_name: string | null; avatar_url: string | null }>();
-    if (allCommentUserIds.size > 0) {
-      const { data: commentUsers } = await supabase
-        .from("users")
-        .select("id, username, display_name, avatar_url, is_active")
-        .in("id", Array.from(allCommentUserIds));
-      if (commentUsers) {
-        commentUsers.forEach(u => {
-          if (u.is_active !== false) {
-            commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
-          }
-        });
-      }
+    if (commentUsersResult.data) {
+      commentUsersResult.data.forEach(u => {
+        if (u.is_active !== false) {
+          commentUserMap.set(u.id, { username: u.username, display_name: u.display_name, avatar_url: u.avatar_url });
+        }
+      });
     }
     
     // Add users to comments (null for deleted users)
@@ -1062,44 +1088,19 @@ function FeedContent() {
       }));
     });
 
-    // Fetch original posts for shared posts
-    const sharedPostIds = allRawPosts
-      .filter((p: { shared_from_post_id?: string | null }) => p.shared_from_post_id)
-      .map((p: { shared_from_post_id: string }) => p.shared_from_post_id);
-    
+    // Build shared posts map
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let sharedPostsMap: Record<string, any> = {};
-    
-    if (sharedPostIds.length > 0) {
-      const { data: sharedPostsData } = await supabase
-        .from("posts")
-        .select(`
-          id,
-          user_id,
-          group_id,
-          users:users!posts_user_id_fkey (
-            username,
-            display_name,
-            avatar_url
-          ),
-          groups:groups!posts_group_id_fkey (
-            id,
-            name
-          )
-        `)
-        .in("id", sharedPostIds);
-      
-      if (sharedPostsData) {
-        sharedPostsData.forEach((sp: { id: string; user_id: string; group_id?: string | null; users: unknown; groups: unknown }) => {
-          sharedPostsMap[sp.id] = {
-            id: sp.id,
-            user_id: sp.user_id,
-            users: Array.isArray(sp.users) ? sp.users[0] : sp.users,
-            group_id: sp.group_id,
-            groups: Array.isArray(sp.groups) ? sp.groups[0] : sp.groups,
-          };
-        });
-      }
+    const sharedPostsMap: Record<string, any> = {};
+    if (sharedPostsResult.data) {
+      sharedPostsResult.data.forEach((sp: { id: string; user_id: string; group_id?: string | null; users: unknown; groups: unknown }) => {
+        sharedPostsMap[sp.id] = {
+          id: sp.id,
+          user_id: sp.user_id,
+          users: Array.isArray(sp.users) ? sp.users[0] : sp.users,
+          group_id: sp.group_id,
+          groups: Array.isArray(sp.groups) ? sp.groups[0] : sp.groups,
+        };
+      });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1167,8 +1168,11 @@ function FeedContent() {
       );
       
       if (newPosts.length > 0) {
-        await loadVoteTotals(newPosts);
-        await loadReactions(newPosts);
+        // PARALLEL: Load vote totals and reactions at the same time
+        await Promise.all([
+          loadVoteTotals(newPosts),
+          loadReactions(newPosts),
+        ]);
       }
     } finally {
       setLoadingMorePosts(false);
@@ -1657,13 +1661,78 @@ function FeedContent() {
 
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center" 
-      }}>
-        <p>Loading...</p>
+      <div style={{ minHeight: "100vh" }}>
+        {/* Skeleton Header */}
+        <div style={{ 
+          height: 60, 
+          background: "rgba(0,0,0,0.3)", 
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 16
+        }}>
+          <div style={{ width: 100, height: 24, background: "rgba(255,255,255,0.1)", borderRadius: 4 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+        </div>
+        
+        <div style={{ maxWidth: 700, margin: "0 auto", padding: "20px 16px" }}>
+          {/* Skeleton Post Composer */}
+          <div style={{ 
+            background: "rgba(0,0,0,0.2)", 
+            borderRadius: 12, 
+            padding: 16, 
+            marginBottom: 24 
+          }}>
+            <div style={{ display: "flex", gap: 12 }}>
+              <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+              <div style={{ flex: 1, height: 60, background: "rgba(255,255,255,0.05)", borderRadius: 8 }} />
+            </div>
+          </div>
+          
+          {/* Skeleton Posts */}
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ 
+              background: "rgba(0,0,0,0.2)", 
+              borderRadius: 12, 
+              padding: 16, 
+              marginBottom: 16,
+              animation: "pulse 1.5s ease-in-out infinite",
+              animationDelay: `${i * 0.15}s`
+            }}>
+              {/* Post Header */}
+              <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+                <div>
+                  <div style={{ width: 120, height: 14, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 6 }} />
+                  <div style={{ width: 80, height: 12, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                </div>
+              </div>
+              
+              {/* Post Content */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ width: "100%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ width: "90%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ width: "75%", height: 14, background: "rgba(255,255,255,0.08)", borderRadius: 4 }} />
+              </div>
+              
+              {/* Post Actions */}
+              <div style={{ display: "flex", gap: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ width: 60, height: 24, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                <div style={{ width: 60, height: 24, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+                <div style={{ width: 60, height: 24, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}</style>
       </div>
     );
   }
