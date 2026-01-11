@@ -103,7 +103,7 @@ export default function GameHubPage() {
       description: "More games are on the way...",
       icon: "🎮",
       href: "#",
-      color: "#666",
+      color: "#9333ea",
       available: false,
     },
   ];
@@ -156,7 +156,7 @@ export default function GameHubPage() {
               href={game.available ? game.href : "#"}
               style={{
                 textDecoration: "none",
-                cursor: game.available ? "pointer" : "not-allowed",
+                cursor: game.available ? "pointer" : "default",
               }}
               onClick={(e) => !game.available && e.preventDefault()}
             >
@@ -165,9 +165,8 @@ export default function GameHubPage() {
                   background: "linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%)",
                   borderRadius: 16,
                   padding: 24,
-                  border: `2px solid ${game.available ? game.color + "40" : "rgba(255,255,255,0.1)"}`,
+                  border: `2px solid ${game.color}40`,
                   transition: "all 0.3s ease",
-                  opacity: game.available ? 1 : 0.5,
                 }}
                 onMouseEnter={(e) => {
                   if (game.available) {
@@ -178,21 +177,21 @@ export default function GameHubPage() {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.borderColor = game.available ? game.color + "40" : "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.borderColor = game.color + "40";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               >
                 <div style={{ 
                   fontSize: 48, 
                   marginBottom: 16,
-                  filter: game.available ? `drop-shadow(0 4px 8px ${game.color}40)` : "grayscale(1)",
+                  filter: `drop-shadow(0 4px 8px ${game.color}40)`,
                 }}>
                   {game.icon}
                 </div>
                 <h2 style={{ 
                   fontSize: 22, 
                   fontWeight: 600, 
-                  color: game.available ? game.color : "var(--alzooka-cream)",
+                  color: game.color,
                   margin: "0 0 8px 0",
                 }}>
                   {game.name}
@@ -200,7 +199,7 @@ export default function GameHubPage() {
                 <p style={{ 
                   fontSize: 14, 
                   color: "var(--alzooka-cream)", 
-                  opacity: 0.7,
+                  opacity: 0.85,
                   margin: 0,
                   lineHeight: 1.5,
                 }}>
