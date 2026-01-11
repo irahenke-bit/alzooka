@@ -28,18 +28,18 @@ type GameSave = {
   play_time_seconds: number;
 };
 
-// Steampunk speaker designs for rebirth levels
+// Speaker designs for rebirth levels - chrome/silver base with accent colors
 const SPEAKER_DESIGNS = [
-  { id: 1, name: "Bronze Age", rimColor: "#CD7F32", coneColor: "#2D1B0E", glowColor: "#FFB347" },
-  { id: 2, name: "Copper Core", rimColor: "#B87333", coneColor: "#1A1A2E", glowColor: "#FF6B35" },
-  { id: 3, name: "Brass Beast", rimColor: "#D4AF37", coneColor: "#0D0D0D", glowColor: "#FFD700" },
-  { id: 4, name: "Iron Heart", rimColor: "#434343", coneColor: "#1C1C1C", glowColor: "#87CEEB" },
-  { id: 5, name: "Gold Standard", rimColor: "#FFD700", coneColor: "#14213D", glowColor: "#FCA311" },
-  { id: 6, name: "Ruby Resonance", rimColor: "#9B2335", coneColor: "#1A0A0A", glowColor: "#FF4D6D" },
-  { id: 7, name: "Sapphire Sound", rimColor: "#0F52BA", coneColor: "#0A0A1A", glowColor: "#4FC3F7" },
-  { id: 8, name: "Emerald Echo", rimColor: "#046307", coneColor: "#0A1A0A", glowColor: "#00E676" },
-  { id: 9, name: "Amethyst Amp", rimColor: "#9966CC", coneColor: "#1A0A1A", glowColor: "#E040FB" },
-  { id: 10, name: "Obsidian Opus", rimColor: "#0D0D0D", coneColor: "#000000", glowColor: "#C9A227" },
+  { id: 1, name: "Chrome Classic", rimColor: "#C0C0C0", coneColor: "#1a1a1a", glowColor: "#E8E8E8", accentColor: "#888888" },
+  { id: 2, name: "Midnight Silver", rimColor: "#A8A8A8", coneColor: "#0d0d0d", glowColor: "#D4D4D4", accentColor: "#4A90D9" },
+  { id: 3, name: "Platinum Bass", rimColor: "#E5E4E2", coneColor: "#141414", glowColor: "#FFFFFF", accentColor: "#9B59B6" },
+  { id: 4, name: "Gunmetal Gray", rimColor: "#5A5A5A", coneColor: "#0a0a0a", glowColor: "#8A8A8A", accentColor: "#E74C3C" },
+  { id: 5, name: "Titanium Drop", rimColor: "#B8B8B8", coneColor: "#121212", glowColor: "#DCDCDC", accentColor: "#F39C12" },
+  { id: 6, name: "Steel Pulse", rimColor: "#71797E", coneColor: "#0f0f0f", glowColor: "#A9A9A9", accentColor: "#1ABC9C" },
+  { id: 7, name: "Mercury Wave", rimColor: "#D3D3D3", coneColor: "#161616", glowColor: "#F5F5F5", accentColor: "#3498DB" },
+  { id: 8, name: "Nickel Thunder", rimColor: "#727472", coneColor: "#0b0b0b", glowColor: "#9E9E9E", accentColor: "#E91E63" },
+  { id: 9, name: "Pewter Boom", rimColor: "#8F8F8F", coneColor: "#131313", glowColor: "#C4C4C4", accentColor: "#00BCD4" },
+  { id: 10, name: "Diamond Edition", rimColor: "#F0F0F0", coneColor: "#080808", glowColor: "#FFFFFF", accentColor: "#FFD700" },
 ];
 
 // Collectors (auto-clickers)
@@ -453,13 +453,13 @@ export default function CoinCollectorPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: `radial-gradient(ellipse at center, ${speakerDesign.glowColor}15 0%, #0a0612 50%, #06030a 100%)`,
+              background: `radial-gradient(ellipse at center, ${speakerDesign.accentColor}08 0%, #0a0612 50%, #06030a 100%)`,
               borderRadius: 24,
               padding: "60px 40px",
               marginBottom: 24,
               position: "relative",
               overflow: "hidden",
-              border: `1px solid ${speakerDesign.rimColor}30`,
+              border: `1px solid ${speakerDesign.rimColor}15`,
             }}>
               {/* Ambient glow effect */}
               <div style={{
@@ -467,7 +467,7 @@ export default function CoinCollectorPage() {
                 width: 300,
                 height: 300,
                 borderRadius: "50%",
-                background: `radial-gradient(circle, ${speakerDesign.glowColor}20 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${speakerDesign.accentColor}15 0%, transparent 70%)`,
                 filter: "blur(40px)",
                 pointerEvents: "none",
               }} />
@@ -480,24 +480,24 @@ export default function CoinCollectorPage() {
                     position: "absolute",
                     left: clickEffect.x,
                     top: clickEffect.y,
-                    color: speakerDesign.glowColor,
+                    color: speakerDesign.accentColor,
                     fontWeight: 700,
                     fontSize: 24,
                     pointerEvents: "none",
                     animation: "floatUp 0.5s ease-out forwards",
-                    textShadow: `0 2px 8px ${speakerDesign.glowColor}`,
+                    textShadow: `0 2px 8px ${speakerDesign.accentColor}`,
                   }}
                 >
                   +{formatNumber(coinsPerClick)}
                 </div>
               )}
 
-              {/* The Steampunk Speaker */}
+              {/* The Speaker */}
               <button
                 onClick={handleClick}
                 style={{
-                  width: 220,
-                  height: 220,
+                  width: 240,
+                  height: 240,
                   borderRadius: "50%",
                   border: "none",
                   background: "transparent",
@@ -519,114 +519,146 @@ export default function CoinCollectorPage() {
                   e.currentTarget.style.transform = "scale(1)";
                 }}
               >
-                {/* Speaker SVG */}
-                <svg viewBox="0 0 200 200" width="220" height="220" style={{ filter: `drop-shadow(0 0 20px ${speakerDesign.glowColor}40)` }}>
-                  {/* Outer metal rim with rivets */}
+                {/* Speaker SVG - Realistic Subwoofer */}
+                <svg viewBox="0 0 200 200" width="240" height="240" style={{ filter: `drop-shadow(0 0 30px ${speakerDesign.accentColor}30)` }}>
                   <defs>
-                    <linearGradient id={`rimGrad-${speakerDesign.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor={speakerDesign.rimColor} />
-                      <stop offset="50%" stopColor={`${speakerDesign.rimColor}80`} />
-                      <stop offset="100%" stopColor={speakerDesign.rimColor} />
+                    {/* Chrome frame gradient */}
+                    <linearGradient id={`frameGrad-${speakerDesign.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f0f0f0" />
+                      <stop offset="25%" stopColor={speakerDesign.rimColor} />
+                      <stop offset="50%" stopColor="#666666" />
+                      <stop offset="75%" stopColor={speakerDesign.rimColor} />
+                      <stop offset="100%" stopColor="#e0e0e0" />
                     </linearGradient>
-                    <radialGradient id={`coneGrad-${speakerDesign.id}`} cx="35%" cy="35%">
-                      <stop offset="0%" stopColor="#3a3a3a" />
-                      <stop offset="60%" stopColor={speakerDesign.coneColor} />
-                      <stop offset="100%" stopColor="#000" />
+                    
+                    {/* Rubber surround gradient */}
+                    <radialGradient id={`surroundGrad-${speakerDesign.id}`} cx="50%" cy="50%">
+                      <stop offset="0%" stopColor="#2a2a2a" />
+                      <stop offset="50%" stopColor="#1a1a1a" />
+                      <stop offset="100%" stopColor="#0d0d0d" />
                     </radialGradient>
-                    <radialGradient id={`dustCapGrad-${speakerDesign.id}`} cx="40%" cy="35%">
-                      <stop offset="0%" stopColor={speakerDesign.rimColor} />
-                      <stop offset="100%" stopColor={`${speakerDesign.rimColor}60`} />
+                    
+                    {/* Cone gradient - realistic paper/poly cone */}
+                    <radialGradient id={`coneGrad-${speakerDesign.id}`} cx="40%" cy="40%">
+                      <stop offset="0%" stopColor="#2d2d2d" />
+                      <stop offset="40%" stopColor={speakerDesign.coneColor} />
+                      <stop offset="100%" stopColor="#050505" />
+                    </radialGradient>
+                    
+                    {/* Dust cap gradient */}
+                    <radialGradient id={`dustCapGrad-${speakerDesign.id}`} cx="35%" cy="35%">
+                      <stop offset="0%" stopColor="#4a4a4a" />
+                      <stop offset="50%" stopColor="#252525" />
+                      <stop offset="100%" stopColor="#0a0a0a" />
                     </radialGradient>
                   </defs>
 
-                  {/* Outer rim */}
-                  <circle cx="100" cy="100" r="96" fill={`url(#rimGrad-${speakerDesign.id})`} />
-                  <circle cx="100" cy="100" r="88" fill={speakerDesign.coneColor} />
+                  {/* Outer chrome frame */}
+                  <circle cx="100" cy="100" r="98" fill={`url(#frameGrad-${speakerDesign.id})`} />
                   
-                  {/* Rivets around the rim */}
-                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
-                    const rad = (angle * Math.PI) / 180;
-                    const x = 100 + 92 * Math.cos(rad);
-                    const y = 100 + 92 * Math.sin(rad);
-                    return (
-                      <g key={angle}>
-                        <circle cx={x} cy={y} r="4" fill="#2a2a2a" />
-                        <circle cx={x - 0.5} cy={y - 0.5} r="3" fill={speakerDesign.rimColor} />
-                        <circle cx={x - 1} cy={y - 1} r="1.5" fill="#fff" opacity="0.3" />
-                      </g>
-                    );
-                  })}
-
-                  {/* Speaker cone with ridges */}
-                  <circle cx="100" cy="100" r="75" fill={`url(#coneGrad-${speakerDesign.id})`} />
+                  {/* Frame inner edge */}
+                  <circle cx="100" cy="100" r="92" fill="#1a1a1a" />
                   
-                  {/* Concentric cone ridges */}
-                  {[70, 60, 50, 40].map((r) => (
+                  {/* Rubber surround - the flexible ring */}
+                  <circle cx="100" cy="100" r="88" fill={`url(#surroundGrad-${speakerDesign.id})`} />
+                  
+                  {/* Surround ridges (rubber texture) */}
+                  {[85, 82, 79].map((r) => (
                     <circle 
                       key={r} 
                       cx="100" 
                       cy="100" 
                       r={r} 
                       fill="none" 
-                      stroke={`${speakerDesign.rimColor}30`} 
-                      strokeWidth="1"
+                      stroke="#0a0a0a" 
+                      strokeWidth="1.5"
+                      opacity="0.6"
                     />
                   ))}
-
-                  {/* Surround ring */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#1a1a1a" strokeWidth="6" />
-                  <circle cx="100" cy="100" r="80" fill="none" stroke={`${speakerDesign.rimColor}20`} strokeWidth="2" />
-
-                  {/* Dust cap (center dome) */}
-                  <circle cx="100" cy="100" r="28" fill={`url(#dustCapGrad-${speakerDesign.id})`} />
-                  <circle cx="100" cy="100" r="28" fill="none" stroke={speakerDesign.rimColor} strokeWidth="2" />
                   
-                  {/* Gear decoration on dust cap */}
-                  <circle cx="100" cy="100" r="18" fill="none" stroke={`${speakerDesign.coneColor}`} strokeWidth="3" />
-                  {[0, 60, 120, 180, 240, 300].map((angle) => {
+                  {/* Cone attachment ring */}
+                  <circle cx="100" cy="100" r="75" fill="#1d1d1d" />
+                  
+                  {/* Main speaker cone */}
+                  <circle cx="100" cy="100" r="72" fill={`url(#coneGrad-${speakerDesign.id})`} />
+                  
+                  {/* Cone texture lines - radiating from center */}
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => {
                     const rad = (angle * Math.PI) / 180;
-                    const x1 = 100 + 15 * Math.cos(rad);
-                    const y1 = 100 + 15 * Math.sin(rad);
-                    const x2 = 100 + 22 * Math.cos(rad);
-                    const y2 = 100 + 22 * Math.sin(rad);
+                    const x1 = 100 + 28 * Math.cos(rad);
+                    const y1 = 100 + 28 * Math.sin(rad);
+                    const x2 = 100 + 70 * Math.cos(rad);
+                    const y2 = 100 + 70 * Math.sin(rad);
                     return (
                       <line 
                         key={angle}
                         x1={x1} y1={y1} x2={x2} y2={y2} 
-                        stroke={speakerDesign.rimColor} 
-                        strokeWidth="4"
-                        strokeLinecap="round"
+                        stroke="#0a0a0a" 
+                        strokeWidth="0.5"
+                        opacity="0.3"
                       />
                     );
                   })}
+                  
+                  {/* Cone ring highlights */}
+                  <circle cx="100" cy="100" r="65" fill="none" stroke="#2a2a2a" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="55" fill="none" stroke="#1f1f1f" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="45" fill="none" stroke="#2a2a2a" strokeWidth="0.5" />
+                  
+                  {/* Dust cap (center dome) */}
+                  <circle cx="100" cy="100" r="26" fill={`url(#dustCapGrad-${speakerDesign.id})`} />
+                  <circle cx="100" cy="100" r="26" fill="none" stroke="#333" strokeWidth="1" />
+                  
+                  {/* Dust cap highlight */}
+                  <ellipse cx="92" cy="92" rx="12" ry="8" fill="white" opacity="0.08" />
+                  
+                  {/* Chrome frame highlight arc */}
+                  <path 
+                    d="M 30 70 Q 100 20 170 70" 
+                    fill="none" 
+                    stroke="white" 
+                    strokeWidth="3" 
+                    opacity="0.15"
+                    strokeLinecap="round"
+                  />
+                  
+                  {/* Accent color ring on frame */}
+                  <circle 
+                    cx="100" 
+                    cy="100" 
+                    r="95" 
+                    fill="none" 
+                    stroke={speakerDesign.accentColor} 
+                    strokeWidth="1.5"
+                    opacity="0.6"
+                  />
 
-                  {/* Center bolt */}
-                  <circle cx="100" cy="100" r="6" fill="#1a1a1a" />
-                  <circle cx="100" cy="100" r="4" fill={speakerDesign.rimColor} />
-                  <circle cx="98" cy="98" r="2" fill="#fff" opacity="0.4" />
-
-                  {/* Rebirth stars indicator */}
+                  {/* Rebirth indicator */}
                   {rebirthCount > 0 && (
-                    <text 
-                      x="100" 
-                      y="170" 
-                      textAnchor="middle" 
-                      fill={speakerDesign.glowColor}
-                      fontSize="14"
-                      fontWeight="bold"
-                    >
-                      {"★".repeat(Math.min(rebirthCount, 5))} {rebirthCount > 5 ? `+${rebirthCount - 5}` : ""}
-                    </text>
+                    <g>
+                      <circle cx="100" cy="100" r="26" fill="none" stroke={speakerDesign.accentColor} strokeWidth="2" opacity="0.8" />
+                      <text 
+                        x="100" 
+                        y="105" 
+                        textAnchor="middle" 
+                        fill={speakerDesign.accentColor}
+                        fontSize="16"
+                        fontWeight="bold"
+                        style={{ textShadow: `0 0 10px ${speakerDesign.accentColor}` } as React.CSSProperties}
+                      >
+                        {rebirthCount}
+                      </text>
+                    </g>
                   )}
                 </svg>
               </button>
 
               <div style={{ 
                 marginTop: 16, 
-                color: speakerDesign.glowColor, 
+                color: speakerDesign.accentColor, 
                 fontSize: 16,
                 fontWeight: 600,
-                textShadow: `0 0 10px ${speakerDesign.glowColor}60`,
+                textShadow: `0 0 10px ${speakerDesign.accentColor}60`,
               }}>
                 {speakerDesign.name}
               </div>
