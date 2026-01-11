@@ -315,8 +315,8 @@ export default function GlobalModalsRenderer() {
     }));
   }, []);
   
-  // Handle comment added/deleted
-  const handleCommentChange = useCallback((postId: string, newComment?: Comment, deletedCommentId?: string) => {
+  // Handle comment added/deleted/edited
+  const handleCommentChange = useCallback((postId: string, newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string }) => {
     setPostsData(prev => {
       const post = prev[postId];
       if (!post) return prev;
@@ -367,6 +367,22 @@ export default function GlobalModalsRenderer() {
             }));
         };
         updatedComments = removeComment(updatedComments);
+      }
+      
+      // Handle edited comment - update the content in place
+      if (editedComment) {
+        const updateCommentContent = (comments: Comment[]): Comment[] => {
+          return comments.map(c => {
+            if (c.id === editedComment.id) {
+              return { ...c, content: editedComment.content };
+            }
+            if (c.replies && c.replies.length > 0) {
+              return { ...c, replies: updateCommentContent(c.replies) };
+            }
+            return c;
+          });
+        };
+        updatedComments = updateCommentContent(updatedComments);
       }
       
       return {
@@ -475,8 +491,8 @@ export default function GlobalModalsRenderer() {
             hideBackdrop={!isTopModal}
             seeThroughMode={postModals.seeThroughMode}
             onToggleSeeThroughMode={postModals.toggleSeeThroughMode}
-            onCommentAdded={(newComment, deletedCommentId) => {
-              handleCommentChange(post.id, newComment, deletedCommentId);
+            onCommentAdded={(newComment, deletedCommentId, editedComment) => {
+              handleCommentChange(post.id, newComment, deletedCommentId, editedComment);
             }}
             postReactions={reactions[post.id] || []}
             onPostReactionsChange={(newReactions) => handleReactionsChange(post.id, newReactions)}

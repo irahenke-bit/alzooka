@@ -320,7 +320,7 @@ type Props = {
   voteTotals: Record<string, number>;
   onVote: (type: "post" | "comment", id: string, value: number) => void;
   onClose: () => void;
-  onCommentAdded: (newComment?: Comment, deletedCommentId?: string) => void;
+  onCommentAdded: (newComment?: Comment, deletedCommentId?: string, editedComment?: { id: string; content: string }) => void;
   highlightCommentId?: string | null;
   groupMembers?: GroupMember[];
   isUserGroupAdmin?: boolean;
@@ -1028,14 +1028,17 @@ export function PostModal({
   async function handleEditComment(commentId: string) {
     if (!editingCommentText.trim()) return;
 
+    const trimmedContent = editingCommentText.trim();
+    
     await supabase
       .from("comments")
-      .update({ content: editingCommentText.trim() })
+      .update({ content: trimmedContent })
       .eq("id", commentId);
 
     setEditingCommentId(null);
     setEditingCommentText("");
-    onCommentAdded();
+    // Pass the edited comment info so UI updates immediately
+    onCommentAdded(undefined, undefined, { id: commentId, content: trimmedContent });
   }
 
   // Handle setting post image as banner
