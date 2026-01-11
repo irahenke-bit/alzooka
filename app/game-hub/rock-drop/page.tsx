@@ -20,22 +20,23 @@ const SPEED_INCREASE_PER_LEVEL = 100;
 const LINES_PER_LEVEL = 10;
 
 // Custom piece shapes (avoiding Tetris's exact 7 tetrominoes)
-// Using different configurations and some pentominoes
+// All pieces can be meaningfully rotated
 const PIECES = [
   // 3-block pieces
   { name: "tri", blocks: [[0, 0], [1, 0], [2, 0]], color: "#dc2626" }, // Straight 3
   { name: "corner", blocks: [[0, 0], [1, 0], [0, 1]], color: "#f97316" }, // L-3
   
-  // 4-block pieces (different from standard tetrominoes)
-  { name: "square", blocks: [[0, 0], [1, 0], [0, 1], [1, 1]], color: "#eab308" }, // Square
+  // 4-block pieces
   { name: "line", blocks: [[0, 0], [1, 0], [2, 0], [3, 0]], color: "#22c55e" }, // Line
   { name: "tee", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]], color: "#06b6d4" }, // T-shape
   { name: "snake", blocks: [[0, 0], [1, 0], [1, 1], [2, 1]], color: "#8b5cf6" }, // S-shape
   { name: "bolt", blocks: [[1, 0], [2, 0], [0, 1], [1, 1]], color: "#ec4899" }, // Z-shape
+  { name: "elbow", blocks: [[0, 0], [0, 1], [1, 1], [2, 1]], color: "#eab308" }, // J-like
+  { name: "hook", blocks: [[2, 0], [0, 1], [1, 1], [2, 1]], color: "#84cc16" }, // L-like
   
   // 5-block pieces (pentominoes - unique to Rock Drop)
-  { name: "plus", blocks: [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]], color: "#f43f5e" }, // Plus
-  { name: "utah", blocks: [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]], color: "#14b8a6" }, // Utah shape
+  { name: "utah", blocks: [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]], color: "#14b8a6" }, // L-pentomino
+  { name: "stairs", blocks: [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2]], color: "#f43f5e" }, // Staircase
 ];
 
 // Rock-themed level names
