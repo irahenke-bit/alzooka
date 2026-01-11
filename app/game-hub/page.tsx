@@ -122,6 +122,15 @@ export default function GameHubPage() {
       available: true,
     },
     {
+      id: "rock-drop",
+      name: "Rock Drop",
+      description: "Stack falling blocks to the beat! Clear lines, rack up combos, and rock out!",
+      icon: "🎸",
+      href: "/game-hub/rock-drop",
+      color: "#dc2626",
+      available: true,
+    },
+    {
       id: "coming-soon-1",
       name: "Coming Soon",
       description: "More games are on the way...",
