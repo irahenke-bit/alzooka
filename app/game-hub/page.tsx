@@ -173,6 +173,7 @@ export default function GameHubPage() {
             fontWeight: 700, 
             color: "var(--alzooka-cream)",
             margin: "0 0 12px 0",
+            textShadow: "0 0 20px rgba(201, 162, 39, 0.5), 0 0 40px rgba(201, 162, 39, 0.3)",
           }}>
             Game Hub
           </h1>
@@ -204,29 +205,30 @@ export default function GameHubPage() {
             >
               <div
                 style={{
-                  background: "linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%)",
+                  background: "linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 100%)",
                   borderRadius: 16,
                   padding: 24,
-                  border: `2px solid ${game.color}40`,
+                  border: `2px solid ${game.color}60`,
                   transition: "all 0.3s ease",
+                  boxShadow: `0 0 20px ${game.color}15, inset 0 1px 0 rgba(255,255,255,0.05)`,
                 }}
                 onMouseEnter={(e) => {
                   if (game.available) {
-                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.transform = "translateY(-6px) scale(1.02)";
                     e.currentTarget.style.borderColor = game.color;
-                    e.currentTarget.style.boxShadow = `0 8px 32px ${game.color}30`;
+                    e.currentTarget.style.boxShadow = `0 0 40px ${game.color}50, 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)`;
                   }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.borderColor = game.color + "40";
-                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.borderColor = game.color + "60";
+                  e.currentTarget.style.boxShadow = `0 0 20px ${game.color}15, inset 0 1px 0 rgba(255,255,255,0.05)`;
                 }}
               >
                 <div style={{ 
                   fontSize: 48, 
                   marginBottom: 16,
-                  filter: game.icon !== "gamepad" ? `drop-shadow(0 4px 8px ${game.color}40)` : "none",
+                  filter: game.icon !== "gamepad" ? `drop-shadow(0 0 15px ${game.color}80) drop-shadow(0 0 30px ${game.color}40)` : `drop-shadow(0 0 15px ${game.color}60)`,
                 }}>
                   {game.icon === "gamepad" ? <GamepadIcon size={48} color={game.color} /> : game.icon}
                 </div>

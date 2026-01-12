@@ -78,13 +78,14 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         position: "sticky",
         top: 0,
         zIndex: 1000,
-        background: "var(--alzooka-teal)",
+        background: "linear-gradient(180deg, var(--alzooka-teal) 0%, rgba(18, 35, 34, 0.98) 100%)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         gap: 20,
         padding: "16px 40px",
-        borderBottom: "1px solid rgba(240, 235, 224, 0.15)",
+        borderBottom: "1px solid rgba(201, 162, 39, 0.3)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(201, 162, 39, 0.15)",
       }}
     >
       {/* Logo - always links home */}
@@ -97,18 +98,35 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           gap: 10,
           textDecoration: "none",
         }}
+        className="logo-glow"
       >
         <Logo size={32} />
         <span
           style={{
             fontSize: 24,
-            fontWeight: 400,
+            fontWeight: 500,
             color: "var(--alzooka-cream)",
+            textShadow: "0 0 10px rgba(201, 162, 39, 0.4), 0 0 20px rgba(201, 162, 39, 0.2)",
+            transition: "text-shadow 0.3s ease",
           }}
         >
           Alzooka
         </span>
       </Link>
+      <style>{`
+        .logo-glow:hover span {
+          text-shadow: 0 0 15px rgba(201, 162, 39, 0.7), 0 0 30px rgba(201, 162, 39, 0.4), 0 0 45px rgba(201, 162, 39, 0.2) !important;
+        }
+        .nav-icon-glow {
+          transition: all 0.2s ease !important;
+        }
+        .nav-icon-glow:hover {
+          box-shadow: 0 0 15px rgba(201, 162, 39, 0.5), 0 0 30px rgba(201, 162, 39, 0.3) !important;
+        }
+        .nav-icon-glow:hover svg {
+          filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.8));
+        }
+      `}</style>
 
       {/* Search - custom or default */}
       {searchComponent || <UserSearch />}
@@ -120,6 +138,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <Link
             href="/groups"
             prefetch={true}
+            className="nav-icon-glow"
             style={{
               display: "flex",
               alignItems: "center",
@@ -148,6 +167,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="My Station">
             <Link
               href="/station"
+              className="nav-icon-glow"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -177,6 +197,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="Game Hub">
             <Link
               href="/game-hub"
+              className="nav-icon-glow"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -206,6 +227,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="Friends">
             <Link
               href={`/profile/${userUsername}?showFriends=true`}
+              className="nav-icon-glow"
               style={{
                 display: "flex",
                 alignItems: "center",
