@@ -14,7 +14,7 @@
   
   /* Typography */
   --font-display: 'Syne', system-ui, sans-serif;
-  --font-body: 'Newsreader', Georgia, serif;
+  --font-body: Georgia, 'Times New Roman', serif;
 }
 
 @theme inline {
