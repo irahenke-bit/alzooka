@@ -51,18 +51,30 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background: 
-    /* Sharp top-left specular highlight */
-    radial-gradient(ellipse 15% 8% at 5% 8%, rgba(255, 255, 255, 0.18) 0%, rgba(201, 162, 39, 0.12) 30%, transparent 70%),
-    /* Sharp top-right specular highlight */
-    radial-gradient(ellipse 12% 6% at 95% 5%, rgba(255, 255, 255, 0.15) 0%, rgba(201, 162, 39, 0.1) 30%, transparent 70%),
-    /* Thin edge highlight - left */
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(201, 162, 39, 0.04) 1%, transparent 3%),
-    /* Thin edge highlight - right */
-    linear-gradient(270deg, rgba(255, 255, 255, 0.08) 0%, rgba(201, 162, 39, 0.04) 1%, transparent 3%),
-    /* Deep darkness overlay */
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.4) 100%),
-    /* Base darker gradient */
-    linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.2) 100%);
+    /* Bright left edge shine streak */
+    linear-gradient(90deg, 
+      rgba(201, 162, 39, 0.35) 0%, 
+      rgba(255, 220, 120, 0.2) 0.5%,
+      rgba(201, 162, 39, 0.15) 1.5%,
+      transparent 4%
+    ),
+    /* Bright right edge shine streak */
+    linear-gradient(270deg, 
+      rgba(201, 162, 39, 0.35) 0%, 
+      rgba(255, 220, 120, 0.2) 0.5%,
+      rgba(201, 162, 39, 0.15) 1.5%,
+      transparent 4%
+    ),
+    /* Top-left corner hotspot */
+    radial-gradient(ellipse 20% 15% at 2% 3%, rgba(255, 230, 150, 0.4) 0%, rgba(201, 162, 39, 0.2) 40%, transparent 70%),
+    /* Top-right corner hotspot */
+    radial-gradient(ellipse 18% 12% at 98% 2%, rgba(255, 230, 150, 0.35) 0%, rgba(201, 162, 39, 0.18) 40%, transparent 70%),
+    /* Bottom-left subtle reflection */
+    radial-gradient(ellipse 15% 10% at 3% 97%, rgba(201, 162, 39, 0.25) 0%, transparent 60%),
+    /* Bottom-right subtle reflection */
+    radial-gradient(ellipse 12% 8% at 97% 98%, rgba(201, 162, 39, 0.2) 0%, transparent 60%),
+    /* Deep center darkness */
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 body > * {
