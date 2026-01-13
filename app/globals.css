@@ -111,50 +111,160 @@ input:focus, textarea:focus {
 }
 
 button {
-  background: var(--alzooka-gold);
+  background: linear-gradient(135deg, #d4af5a 0%, #c9a55c 50%, #b8944d 100%);
   color: var(--alzooka-teal-dark);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 12px 24px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-family: var(--font-display);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 0 10px rgba(201, 162, 39, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 15px rgba(201, 162, 39, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+button:hover::before {
+  left: 100%;
 }
 
 button:hover {
-  opacity: 0.95;
-  box-shadow: 0 0 20px rgba(201, 162, 39, 0.5), 0 0 40px rgba(201, 162, 39, 0.25);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #e0bd68 0%, #d4af5a 50%, #c9a55c 100%);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 0 30px rgba(201, 162, 39, 0.5),
+    0 0 60px rgba(201, 162, 39, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px) scale(1.02);
 }
 
 button:focus {
   outline: none !important;
-  box-shadow: none !important;
-  ring: none !important;
-  --tw-ring-shadow: none !important;
-  --tw-ring-offset-shadow: none !important;
 }
 
 button:focus-visible {
   outline: none !important;
-  box-shadow: none !important;
-  --tw-ring-shadow: none !important;
-  --tw-ring-offset-shadow: none !important;
+  box-shadow: 
+    0 0 0 3px rgba(201, 162, 39, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 0 30px rgba(201, 162, 39, 0.4);
 }
 
 button:active {
-  outline: none !important;
-  box-shadow: none !important;
+  transform: translateY(0) scale(0.98);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 10px rgba(201, 162, 39, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+}
+
+button:disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 15px rgba(201, 162, 39, 0.25);
+}
+
+button:disabled::before {
+  display: none;
+}
+
+/* Button Variants */
+button.btn-outline {
+  background: transparent;
+  border: 2px solid var(--alzooka-gold);
+  color: var(--alzooka-gold);
+  box-shadow: 0 0 15px rgba(201, 162, 39, 0.15);
+}
+
+button.btn-outline::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 162, 39, 0.1),
+    transparent
+  );
+}
+
+button.btn-outline:hover {
+  background: rgba(201, 162, 39, 0.1);
+  border-color: #d4af5a;
+  box-shadow: 
+    0 0 25px rgba(201, 162, 39, 0.4),
+    0 0 50px rgba(201, 162, 39, 0.2),
+    inset 0 0 20px rgba(201, 162, 39, 0.1);
+}
+
+button.btn-ghost {
+  background: transparent;
+  color: var(--alzooka-cream);
+  box-shadow: none;
+}
+
+button.btn-ghost::before {
+  display: none;
+}
+
+button.btn-ghost:hover {
+  background: rgba(240, 235, 224, 0.1);
+  box-shadow: 0 0 20px rgba(240, 235, 224, 0.1);
+}
+
+button.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 15px rgba(220, 53, 69, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+button.btn-danger:hover {
+  background: linear-gradient(135deg, #e74c5c 0%, #dc3545 100%);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 0 30px rgba(220, 53, 69, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+button.btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+button.btn-lg {
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 8px;
 }
 
 /* Utility classes */
