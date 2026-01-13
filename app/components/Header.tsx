@@ -128,6 +128,15 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         .nav-icon-glow:hover svg {
           filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.8));
         }
+        .profile-avatar-wrapper {
+          position: relative;
+        }
+        .profile-avatar-wrapper:hover {
+          box-shadow: 0 0 15px rgba(201, 162, 39, 0.5), 0 0 30px rgba(201, 162, 39, 0.3);
+        }
+        .profile-avatar-wrapper:hover img {
+          box-shadow: 0 0 12px rgba(201, 162, 39, 0.6);
+        }
       `}</style>
 
       {/* Search - custom or default */}
@@ -321,16 +330,17 @@ function ProfileDropdown({
       onMouseLeave={handleMouseLeave}
     >
       <div
+        className="profile-avatar-wrapper"
         style={{
           background: showUserMenu ? "rgba(240, 235, 224, 0.1)" : "transparent",
           border: "none",
           padding: 4,
-          borderRadius: 20,
+          borderRadius: "50%",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
-          gap: 4,
-          transition: "background 0.2s",
+          justifyContent: "center",
+          transition: "all 0.2s ease",
         }}
       >
         {userAvatarUrl ? (
@@ -343,6 +353,7 @@ function ProfileDropdown({
               borderRadius: "50%",
               objectFit: "cover",
               border: "2px solid var(--alzooka-gold)",
+              display: "block",
             }}
           />
         ) : (
