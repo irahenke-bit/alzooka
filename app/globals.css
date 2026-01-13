@@ -40,41 +40,41 @@ body {
   position: relative;
 }
 
-/* Glossy reflective background effect - dramatic high-contrast shine */
+/* Glossy reflective background effect */
 body::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 200px;
+  height: 100%;
   pointer-events: none;
   z-index: 0;
-  background: 
-    /* Bright left edge shine streak */
-    linear-gradient(90deg, 
-      rgba(201, 162, 39, 0.35) 0%, 
-      rgba(255, 220, 120, 0.2) 0.5%,
-      rgba(201, 162, 39, 0.15) 1.5%,
-      transparent 4%
-    ),
-    /* Bright right edge shine streak */
-    linear-gradient(270deg, 
-      rgba(201, 162, 39, 0.35) 0%, 
-      rgba(255, 220, 120, 0.2) 0.5%,
-      rgba(201, 162, 39, 0.15) 1.5%,
-      transparent 4%
-    ),
-    /* Top-left corner hotspot */
-    radial-gradient(ellipse 20% 15% at 2% 3%, rgba(255, 230, 150, 0.4) 0%, rgba(201, 162, 39, 0.2) 40%, transparent 70%),
-    /* Top-right corner hotspot */
-    radial-gradient(ellipse 18% 12% at 98% 2%, rgba(255, 230, 150, 0.35) 0%, rgba(201, 162, 39, 0.18) 40%, transparent 70%),
-    /* Bottom-left subtle reflection */
-    radial-gradient(ellipse 15% 10% at 3% 97%, rgba(201, 162, 39, 0.25) 0%, transparent 60%),
-    /* Bottom-right subtle reflection */
-    radial-gradient(ellipse 12% 8% at 97% 98%, rgba(201, 162, 39, 0.2) 0%, transparent 60%),
-    /* Deep center darkness */
-    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
+  background: linear-gradient(90deg, 
+    rgba(201, 162, 39, 0.5) 0px,
+    rgba(255, 220, 120, 0.3) 3px,
+    rgba(201, 162, 39, 0.25) 10px,
+    rgba(201, 162, 39, 0.1) 40px,
+    transparent 150px
+  );
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(270deg, 
+    rgba(201, 162, 39, 0.5) 0px,
+    rgba(255, 220, 120, 0.3) 3px,
+    rgba(201, 162, 39, 0.25) 10px,
+    rgba(201, 162, 39, 0.1) 40px,
+    transparent 150px
+  );
 }
 
 body > * {
