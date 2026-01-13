@@ -169,8 +169,10 @@ export default function GameHubPage() {
             🎮
           </div>
           <h1 style={{ 
-            fontSize: 36, 
-            fontWeight: 700, 
+            fontSize: 42, 
+            fontWeight: 800, 
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-0.02em",
             color: "var(--alzooka-cream)",
             margin: "0 0 12px 0",
             textShadow: "0 0 20px rgba(201, 162, 39, 0.5), 0 0 40px rgba(201, 162, 39, 0.3)",
@@ -233,19 +235,23 @@ export default function GameHubPage() {
                   {game.icon === "gamepad" ? <GamepadIcon size={48} color={game.color} /> : game.icon}
                 </div>
                 <h2 style={{ 
-                  fontSize: 22, 
-                  fontWeight: 600, 
+                  fontSize: 24, 
+                  fontWeight: 700, 
+                  fontFamily: "var(--font-display)",
+                  letterSpacing: "-0.01em",
                   color: game.color,
                   margin: "0 0 8px 0",
+                  textShadow: `0 0 20px ${game.color}40`,
                 }}>
                   {game.name}
                 </h2>
                 <p style={{ 
                   fontSize: 14, 
+                  fontFamily: "var(--font-body)",
                   color: "var(--alzooka-cream)", 
                   opacity: 0.85,
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                 }}>
                   {game.description}
                 </p>
@@ -258,8 +264,11 @@ export default function GameHubPage() {
                     padding: "8px 16px",
                     background: game.color + "20",
                     borderRadius: 20,
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: 600,
+                    fontFamily: "var(--font-display)",
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
                     color: game.color,
                   }}>
                     Play Now →

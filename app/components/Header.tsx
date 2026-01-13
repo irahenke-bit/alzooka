@@ -103,8 +103,10 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         <Logo size={32} />
         <span
           style={{
-            fontSize: 24,
-            fontWeight: 500,
+            fontSize: 26,
+            fontWeight: 700,
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-0.02em",
             color: "var(--alzooka-cream)",
             textShadow: "0 0 10px rgba(201, 162, 39, 0.4), 0 0 20px rgba(201, 162, 39, 0.2)",
             transition: "text-shadow 0.3s ease",
