@@ -12,84 +12,542 @@ type UserData = {
   avatar_url: string | null;
 };
 
-// Upgrade types
-type Upgrade = {
+// Venue/Scene definitions
+const VENUES = [
+  { 
+    id: "street", 
+    name: "Street Corner", 
+    unlockCost: 0,
+    background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, #1a1a2e 100%)",
+    groundColor: "#2d2d44",
+    description: "Where every legend begins",
+    crowdSize: 2,
+  },
+  { 
+    id: "subway", 
+    name: "Subway Station", 
+    unlockCost: 5000,
+    background: "linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 40%, #1a1a1a 100%)",
+    groundColor: "#3d3d3d",
+    description: "Underground vibes",
+    crowdSize: 5,
+  },
+  { 
+    id: "cafe", 
+    name: "Coffee Shop", 
+    unlockCost: 50000,
+    background: "linear-gradient(180deg, #2d1b0e 0%, #4a2c17 40%, #2d1b0e 100%)",
+    groundColor: "#5c3d2e",
+    description: "Cozy acoustics",
+    crowdSize: 8,
+  },
+  { 
+    id: "club", 
+    name: "Night Club", 
+    unlockCost: 500000,
+    background: "linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 40%, #0a0a1a 100%)",
+    groundColor: "#1a1a2e",
+    description: "Neon dreams",
+    crowdSize: 15,
+  },
+  { 
+    id: "arena", 
+    name: "Arena", 
+    unlockCost: 5000000,
+    background: "linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 40%, #0a0a0a 100%)",
+    groundColor: "#2a2a2a",
+    description: "The big time",
+    crowdSize: 30,
+  },
+];
+
+// Upgrade categories
+type UpgradeType = {
   id: string;
   name: string;
   description: string;
-  icon: string;
   baseCost: number;
   costMultiplier: number;
-  zpsBonus: number; // Zooka coins per second
-  zpcBonus: number; // Zooka coins per click
-  category: "instrument" | "gear" | "band" | "venue" | "skill";
+  zpsBonus: number;
+  zpcBonus: number;
   maxLevel: number;
-  unlockAt: number; // Total ZC earned to unlock
+  category: "instrument" | "gear" | "band" | "skill";
 };
 
-// Fame levels
-const FAME_LEVELS = [
-  { name: "Street Performer", minEarnings: 0, icon: "🎸" },
-  { name: "Subway Star", minEarnings: 1000, icon: "🚇" },
-  { name: "Coffee Shop Regular", minEarnings: 10000, icon: "☕" },
-  { name: "Local Favorite", minEarnings: 50000, icon: "⭐" },
-  { name: "Club Headliner", minEarnings: 200000, icon: "🎤" },
-  { name: "Festival Act", minEarnings: 1000000, icon: "🎪" },
-  { name: "Arena Rocker", minEarnings: 5000000, icon: "🏟️" },
-  { name: "Platinum Artist", minEarnings: 25000000, icon: "💿" },
-  { name: "Music Legend", minEarnings: 100000000, icon: "👑" },
-  { name: "Hall of Fame", minEarnings: 500000000, icon: "🏆" },
+const UPGRADES: UpgradeType[] = [
+  // Instruments - visually change what musician holds
+  { id: "acoustic", name: "Acoustic Guitar", description: "Your trusty six-string", baseCost: 50, costMultiplier: 1.15, zpsBonus: 1, zpcBonus: 0, maxLevel: 25, category: "instrument" },
+  { id: "electric", name: "Electric Guitar", description: "Time to plug in", baseCost: 2000, costMultiplier: 1.15, zpsBonus: 10, zpcBonus: 0, maxLevel: 25, category: "instrument" },
+  { id: "keyboard", name: "Keyboard", description: "Ivory keys", baseCost: 10000, costMultiplier: 1.15, zpsBonus: 50, zpcBonus: 0, maxLevel: 25, category: "instrument" },
+  { id: "drums", name: "Drum Kit", description: "Keep the beat", baseCost: 75000, costMultiplier: 1.15, zpsBonus: 200, zpcBonus: 0, maxLevel: 25, category: "instrument" },
+  
+  // Gear - appears around musician
+  { id: "amp", name: "Amplifier", description: "Get loud", baseCost: 100, costMultiplier: 1.12, zpsBonus: 2, zpcBonus: 0, maxLevel: 30, category: "gear" },
+  { id: "mic", name: "Microphone", description: "Sing it out", baseCost: 500, costMultiplier: 1.12, zpsBonus: 5, zpcBonus: 0, maxLevel: 30, category: "gear" },
+  { id: "speakers", name: "Speakers", description: "Full sound", baseCost: 5000, costMultiplier: 1.12, zpsBonus: 30, zpcBonus: 0, maxLevel: 30, category: "gear" },
+  { id: "lights", name: "Stage Lights", description: "Spotlight on you", baseCost: 50000, costMultiplier: 1.12, zpsBonus: 150, zpcBonus: 0, maxLevel: 30, category: "gear" },
+  
+  // Band members - appear on stage
+  { id: "drummer", name: "Drummer", description: "Rhythm section", baseCost: 3000, costMultiplier: 1.2, zpsBonus: 20, zpcBonus: 0, maxLevel: 15, category: "band" },
+  { id: "bassist", name: "Bassist", description: "Low end power", baseCost: 15000, costMultiplier: 1.2, zpsBonus: 80, zpcBonus: 0, maxLevel: 15, category: "band" },
+  { id: "keyboardist", name: "Keyboardist", description: "Keys player", baseCost: 100000, costMultiplier: 1.2, zpsBonus: 400, zpcBonus: 0, maxLevel: 15, category: "band" },
+  { id: "backup", name: "Backup Singers", description: "Harmonies", baseCost: 500000, costMultiplier: 1.2, zpsBonus: 1500, zpcBonus: 0, maxLevel: 15, category: "band" },
+  
+  // Skills - boost click power
+  { id: "practice", name: "Practice", description: "Better technique", baseCost: 25, costMultiplier: 1.08, zpsBonus: 0, zpcBonus: 1, maxLevel: 100, category: "skill" },
+  { id: "showmanship", name: "Showmanship", description: "Work the crowd", baseCost: 500, costMultiplier: 1.1, zpsBonus: 0, zpcBonus: 5, maxLevel: 50, category: "skill" },
+  { id: "charisma", name: "Charisma", description: "Natural charm", baseCost: 10000, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 25, maxLevel: 50, category: "skill" },
+  { id: "viral", name: "Go Viral", description: "Internet fame", baseCost: 250000, costMultiplier: 1.15, zpsBonus: 0, zpcBonus: 200, maxLevel: 25, category: "skill" },
 ];
 
-// All upgrades
-const UPGRADES: Upgrade[] = [
-  // Instruments
-  { id: "guitar", name: "Acoustic Guitar", description: "A basic guitar to strum some tunes", icon: "🎸", baseCost: 50, costMultiplier: 1.15, zpsBonus: 1, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 0 },
-  { id: "keyboard", name: "Keyboard", description: "Add some keys to your sound", icon: "🎹", baseCost: 300, costMultiplier: 1.15, zpsBonus: 5, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 500 },
-  { id: "electric", name: "Electric Guitar", description: "Time to plug in and rock out", icon: "🎸", baseCost: 2000, costMultiplier: 1.15, zpsBonus: 25, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 5000 },
-  { id: "drums", name: "Drum Kit", description: "Keep the beat going strong", icon: "🥁", baseCost: 10000, costMultiplier: 1.15, zpsBonus: 100, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 25000 },
-  { id: "bass", name: "Bass Guitar", description: "Drop that bass line", icon: "🎸", baseCost: 50000, costMultiplier: 1.15, zpsBonus: 400, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 100000 },
-  { id: "synth", name: "Synthesizer", description: "Electronic sounds for the modern musician", icon: "🎛️", baseCost: 250000, costMultiplier: 1.15, zpsBonus: 1500, zpcBonus: 0, category: "instrument", maxLevel: 50, unlockAt: 500000 },
-  
-  // Gear
-  { id: "amp", name: "Amplifier", description: "Make yourself heard", icon: "🔊", baseCost: 100, costMultiplier: 1.15, zpsBonus: 2, zpcBonus: 0, category: "gear", maxLevel: 50, unlockAt: 100 },
-  { id: "mic", name: "Microphone", description: "Sing your heart out", icon: "🎤", baseCost: 500, costMultiplier: 1.15, zpsBonus: 8, zpcBonus: 0, category: "gear", maxLevel: 50, unlockAt: 1000 },
-  { id: "pedals", name: "Effects Pedals", description: "Add some flair to your sound", icon: "🎚️", baseCost: 5000, costMultiplier: 1.15, zpsBonus: 50, zpcBonus: 0, category: "gear", maxLevel: 50, unlockAt: 15000 },
-  { id: "mixer", name: "Mixing Board", description: "Professional sound mixing", icon: "🎛️", baseCost: 75000, costMultiplier: 1.15, zpsBonus: 500, zpcBonus: 0, category: "gear", maxLevel: 50, unlockAt: 150000 },
-  
-  // Band Members
-  { id: "drummer", name: "Hire Drummer", description: "A drummer to keep the rhythm", icon: "🧑‍🎤", baseCost: 1500, costMultiplier: 1.2, zpsBonus: 15, zpcBonus: 0, category: "band", maxLevel: 25, unlockAt: 3000 },
-  { id: "bassist", name: "Hire Bassist", description: "Someone to hold down the low end", icon: "🧑‍🎤", baseCost: 8000, costMultiplier: 1.2, zpsBonus: 75, zpcBonus: 0, category: "band", maxLevel: 25, unlockAt: 20000 },
-  { id: "keyboardist", name: "Hire Keyboardist", description: "Ivory tickler for hire", icon: "🧑‍🎤", baseCost: 40000, costMultiplier: 1.2, zpsBonus: 300, zpcBonus: 0, category: "band", maxLevel: 25, unlockAt: 80000 },
-  { id: "backup", name: "Backup Singers", description: "Harmonies that wow the crowd", icon: "👯", baseCost: 200000, costMultiplier: 1.2, zpsBonus: 1200, zpcBonus: 0, category: "band", maxLevel: 25, unlockAt: 400000 },
-  
-  // Venues
-  { id: "corner", name: "Better Corner", description: "A busier street corner", icon: "🏙️", baseCost: 200, costMultiplier: 1.25, zpsBonus: 3, zpcBonus: 0, category: "venue", maxLevel: 20, unlockAt: 200 },
-  { id: "subway", name: "Subway Station", description: "More foot traffic underground", icon: "🚇", baseCost: 2500, costMultiplier: 1.25, zpsBonus: 30, zpcBonus: 0, category: "venue", maxLevel: 20, unlockAt: 7500 },
-  { id: "cafe", name: "Coffee Shop Gig", description: "A cozy venue with loyal fans", icon: "☕", baseCost: 25000, costMultiplier: 1.25, zpsBonus: 200, zpcBonus: 0, category: "venue", maxLevel: 20, unlockAt: 60000 },
-  { id: "club", name: "Club Residency", description: "Regular gigs at a local club", icon: "🎵", baseCost: 150000, costMultiplier: 1.25, zpsBonus: 1000, zpcBonus: 0, category: "venue", maxLevel: 20, unlockAt: 300000 },
-  { id: "arena", name: "Arena Shows", description: "The big time!", icon: "🏟️", baseCost: 1000000, costMultiplier: 1.25, zpsBonus: 5000, zpcBonus: 0, category: "venue", maxLevel: 20, unlockAt: 2000000 },
-  
-  // Skills (boost click earnings)
-  { id: "strumming", name: "Strumming Practice", description: "Faster fingers, more tips", icon: "✋", baseCost: 25, costMultiplier: 1.1, zpsBonus: 0, zpcBonus: 1, category: "skill", maxLevel: 100, unlockAt: 0 },
-  { id: "showmanship", name: "Showmanship", description: "Wow the crowd with your moves", icon: "💃", baseCost: 750, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 5, category: "skill", maxLevel: 100, unlockAt: 2000 },
-  { id: "vocals", name: "Vocal Training", description: "Sing better, earn more", icon: "🗣️", baseCost: 5000, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 20, category: "skill", maxLevel: 100, unlockAt: 12000 },
-  { id: "charisma", name: "Crowd Charisma", description: "Make them fall in love with you", icon: "💖", baseCost: 35000, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 75, category: "skill", maxLevel: 100, unlockAt: 75000 },
-  { id: "fame", name: "Social Media Fame", description: "Go viral, get tips from fans worldwide", icon: "📱", baseCost: 500000, costMultiplier: 1.15, zpsBonus: 0, zpcBonus: 500, category: "skill", maxLevel: 50, unlockAt: 1000000 },
-];
-
-// Format large numbers
 function formatNumber(num: number): string {
-  if (num >= 1e12) return (num / 1e12).toFixed(2) + "T";
-  if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-  if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-  if (num >= 1e3) return (num / 1e3).toFixed(2) + "K";
+  if (num >= 1e12) return (num / 1e12).toFixed(1) + "T";
+  if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
   return Math.floor(num).toString();
 }
 
-// Calculate upgrade cost at level
-function getUpgradeCost(upgrade: Upgrade, level: number): number {
+function getUpgradeCost(upgrade: UpgradeType, level: number): number {
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, level));
+}
+
+// Musician Character Component
+function Musician({ 
+  isPlaying, 
+  hasElectric, 
+  hasMic,
+  outfit,
+}: { 
+  isPlaying: boolean;
+  hasElectric: boolean;
+  hasMic: boolean;
+  outfit: number;
+}) {
+  const bodyColor = outfit >= 3 ? "#1a1a1a" : outfit >= 2 ? "#2d4a6d" : outfit >= 1 ? "#4a3728" : "#3d3d5c";
+  const pantsColor = outfit >= 2 ? "#1a1a1a" : "#2d2d44";
+  
+  return (
+    <div style={{
+      position: "relative",
+      width: 120,
+      height: 200,
+      transform: isPlaying ? "scale(1.02)" : "scale(1)",
+      transition: "transform 0.1s",
+    }}>
+      {/* Head */}
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: 40,
+        height: 45,
+        background: "#e8c4a0",
+        borderRadius: "50% 50% 45% 45%",
+      }}>
+        {/* Hair */}
+        <div style={{
+          position: "absolute",
+          top: -5,
+          left: -3,
+          right: -3,
+          height: 25,
+          background: outfit >= 2 ? "#1a1a1a" : "#4a3728",
+          borderRadius: "50% 50% 30% 30%",
+        }} />
+        {/* Eyes */}
+        <div style={{ position: "absolute", top: 18, left: 8, width: 6, height: 6, background: "#2d2d2d", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", top: 18, right: 8, width: 6, height: 6, background: "#2d2d2d", borderRadius: "50%" }} />
+        {/* Smile */}
+        <div style={{
+          position: "absolute",
+          bottom: 10,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 12,
+          height: 6,
+          borderBottom: "2px solid #c4846a",
+          borderRadius: "0 0 50% 50%",
+        }} />
+      </div>
+      
+      {/* Body/Torso */}
+      <div style={{
+        position: "absolute",
+        top: 45,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: 50,
+        height: 60,
+        background: bodyColor,
+        borderRadius: "10px 10px 5px 5px",
+      }}>
+        {/* Shirt detail */}
+        {outfit >= 1 && (
+          <div style={{
+            position: "absolute",
+            top: 10,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 20,
+            height: 2,
+            background: outfit >= 3 ? "#eab308" : "#888",
+          }} />
+        )}
+      </div>
+      
+      {/* Arms */}
+      <div style={{
+        position: "absolute",
+        top: 55,
+        left: 10,
+        width: 15,
+        height: 45,
+        background: bodyColor,
+        borderRadius: 8,
+        transform: isPlaying ? "rotate(-10deg)" : "rotate(-5deg)",
+        transformOrigin: "top center",
+        transition: "transform 0.1s",
+      }} />
+      <div style={{
+        position: "absolute",
+        top: 55,
+        right: 10,
+        width: 15,
+        height: 45,
+        background: bodyColor,
+        borderRadius: 8,
+        transform: isPlaying ? "rotate(15deg)" : "rotate(5deg)",
+        transformOrigin: "top center",
+        transition: "transform 0.1s",
+      }} />
+      
+      {/* Hands */}
+      <div style={{
+        position: "absolute",
+        top: 95,
+        left: 5,
+        width: 12,
+        height: 12,
+        background: "#e8c4a0",
+        borderRadius: "50%",
+        transform: isPlaying ? "rotate(-10deg)" : "rotate(-5deg)",
+      }} />
+      <div style={{
+        position: "absolute",
+        top: 95,
+        right: 5,
+        width: 12,
+        height: 12,
+        background: "#e8c4a0",
+        borderRadius: "50%",
+      }} />
+      
+      {/* Legs */}
+      <div style={{
+        position: "absolute",
+        top: 105,
+        left: 30,
+        width: 20,
+        height: 55,
+        background: pantsColor,
+        borderRadius: "5px 5px 8px 8px",
+      }} />
+      <div style={{
+        position: "absolute",
+        top: 105,
+        right: 30,
+        width: 20,
+        height: 55,
+        background: pantsColor,
+        borderRadius: "5px 5px 8px 8px",
+      }} />
+      
+      {/* Shoes */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 25,
+        width: 25,
+        height: 12,
+        background: outfit >= 2 ? "#8b4513" : "#2d2d2d",
+        borderRadius: "5px 8px 5px 5px",
+      }} />
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        right: 25,
+        width: 25,
+        height: 12,
+        background: outfit >= 2 ? "#8b4513" : "#2d2d2d",
+        borderRadius: "8px 5px 5px 5px",
+      }} />
+      
+      {/* Guitar */}
+      <div style={{
+        position: "absolute",
+        top: 60,
+        left: "50%",
+        transform: `translateX(-50%) rotate(${isPlaying ? -5 : 0}deg)`,
+        transition: "transform 0.1s",
+      }}>
+        {/* Guitar body */}
+        <div style={{
+          width: 35,
+          height: 45,
+          background: hasElectric 
+            ? "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)" 
+            : "linear-gradient(180deg, #d4a574 0%, #8b6914 100%)",
+          borderRadius: hasElectric ? "5px 5px 15px 15px" : "50%",
+          border: hasElectric ? "2px solid #7f1d1d" : "2px solid #6b4f1d",
+          position: "relative",
+        }}>
+          {/* Sound hole */}
+          {!hasElectric && (
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 12,
+              height: 12,
+              background: "#3d2810",
+              borderRadius: "50%",
+            }} />
+          )}
+          {/* Pickups for electric */}
+          {hasElectric && (
+            <>
+              <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", width: 20, height: 4, background: "#fbbf24", borderRadius: 2 }} />
+              <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", width: 20, height: 4, background: "#fbbf24", borderRadius: 2 }} />
+            </>
+          )}
+        </div>
+        {/* Guitar neck */}
+        <div style={{
+          position: "absolute",
+          bottom: 40,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 8,
+          height: 50,
+          background: hasElectric ? "#1a1a1a" : "#5c4033",
+          borderRadius: "3px 3px 0 0",
+        }}>
+          {/* Frets */}
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{
+              position: "absolute",
+              top: 8 + i * 10,
+              left: 0,
+              right: 0,
+              height: 1,
+              background: "#888",
+            }} />
+          ))}
+        </div>
+        {/* Headstock */}
+        <div style={{
+          position: "absolute",
+          bottom: 85,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 12,
+          height: 15,
+          background: hasElectric ? "#1a1a1a" : "#5c4033",
+          borderRadius: "3px 3px 0 0",
+        }} />
+      </div>
+      
+      {/* Microphone (if owned) */}
+      {hasMic && (
+        <div style={{
+          position: "absolute",
+          top: 30,
+          right: -20,
+          transform: "rotate(-15deg)",
+        }}>
+          <div style={{ width: 8, height: 40, background: "#666", borderRadius: 2 }} />
+          <div style={{ 
+            width: 16, 
+            height: 20, 
+            background: "linear-gradient(180deg, #444 0%, #222 100%)", 
+            borderRadius: "8px 8px 4px 4px",
+            position: "absolute",
+            top: -18,
+            left: -4,
+            border: "2px solid #555",
+          }}>
+            <div style={{
+              position: "absolute",
+              top: 2,
+              left: 2,
+              right: 2,
+              bottom: 6,
+              background: "repeating-linear-gradient(0deg, #333 0px, #333 2px, #444 2px, #444 4px)",
+              borderRadius: "6px 6px 2px 2px",
+            }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Crowd member component
+function CrowdMember({ x, delay, isHappy }: { x: number; delay: number; isHappy: boolean }) {
+  const colors = ["#3d5a80", "#5c4033", "#2d4a3e", "#4a3050", "#503020"];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  
+  return (
+    <div style={{
+      position: "absolute",
+      bottom: 0,
+      left: x,
+      animation: isHappy ? `bounce 0.5s ease-in-out ${delay}s infinite` : undefined,
+    }}>
+      {/* Head */}
+      <div style={{
+        width: 16,
+        height: 18,
+        background: "#dbb896",
+        borderRadius: "50% 50% 40% 40%",
+        marginBottom: 2,
+      }} />
+      {/* Body */}
+      <div style={{
+        width: 20,
+        height: 25,
+        background: color,
+        borderRadius: "5px 5px 0 0",
+        marginLeft: -2,
+      }} />
+    </div>
+  );
+}
+
+// Amp component
+function Amp({ level }: { level: number }) {
+  const size = Math.min(40 + level * 3, 70);
+  return (
+    <div style={{
+      width: size,
+      height: size * 0.9,
+      background: "linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%)",
+      borderRadius: 4,
+      border: "2px solid #3d3d3d",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+    }}>
+      <div style={{
+        width: size * 0.7,
+        height: size * 0.4,
+        background: "#1a1a1a",
+        borderRadius: 2,
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gridTemplateRows: "repeat(3, 1fr)",
+        gap: 1,
+        padding: 2,
+      }}>
+        {Array(12).fill(0).map((_, i) => (
+          <div key={i} style={{ background: "#333", borderRadius: 1 }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 3 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{
+            width: 6,
+            height: 6,
+            background: i === 0 ? "#22c55e" : "#444",
+            borderRadius: "50%",
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Tip Jar component
+function TipJar({ fillPercent, onClick }: { fillPercent: number; onClick: () => void }) {
+  return (
+    <div 
+      onClick={onClick}
+      style={{
+        width: 50,
+        height: 60,
+        background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+        borderRadius: "5px 5px 10px 10px",
+        border: "2px solid rgba(255,255,255,0.2)",
+        position: "relative",
+        overflow: "hidden",
+        cursor: "pointer",
+      }}
+    >
+      {/* Coins fill */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: `${Math.min(fillPercent, 100)}%`,
+        background: "linear-gradient(180deg, #fbbf24 0%, #eab308 50%, #ca8a04 100%)",
+        transition: "height 0.3s",
+      }} />
+      {/* Coins texture */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: `${Math.min(fillPercent, 100)}%`,
+        background: "repeating-linear-gradient(90deg, transparent 0px, transparent 8px, rgba(0,0,0,0.1) 8px, rgba(0,0,0,0.1) 10px)",
+      }} />
+      {/* Label */}
+      <div style={{
+        position: "absolute",
+        top: 5,
+        left: "50%",
+        transform: "translateX(-50%)",
+        fontSize: 8,
+        color: "rgba(255,255,255,0.5)",
+        fontWeight: 600,
+      }}>
+        TIPS
+      </div>
+    </div>
+  );
+}
+
+// Flying coin effect
+function FlyingCoin({ x, y, amount }: { x: number; y: number; amount: number }) {
+  return (
+    <div style={{
+      position: "absolute",
+      left: x,
+      top: y,
+      pointerEvents: "none",
+      animation: "coinFly 1s ease-out forwards",
+      zIndex: 100,
+    }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        color: "#fbbf24",
+        fontWeight: 700,
+        fontSize: 16,
+        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+      }}>
+        <span style={{ fontSize: 20 }}>🪙</span>
+        +{formatNumber(amount)}
+      </div>
+    </div>
+  );
 }
 
 export default function MusicianBeggarPage() {
@@ -98,44 +556,27 @@ export default function MusicianBeggarPage() {
   const [loading, setLoading] = useState(true);
   
   // Game state
-  const [zc, setZc] = useState(0); // Current Zooka Coins
-  const [totalEarned, setTotalEarned] = useState(0); // Lifetime earnings
-  const [zps, setZps] = useState(0); // Zooka coins per second
-  const [zpc, setZpc] = useState(1); // Zooka coins per click
+  const [zc, setZc] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [zps, setZps] = useState(0);
+  const [zpc, setZpc] = useState(1);
   const [upgradeLevels, setUpgradeLevels] = useState<Record<string, number>>({});
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [clickEffects, setClickEffects] = useState<Array<{ id: number; x: number; y: number; amount: number }>>([]);
+  const [currentVenue, setCurrentVenue] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [flyingCoins, setFlyingCoins] = useState<Array<{ id: number; x: number; y: number; amount: number }>>([]);
+  const [showUpgrades, setShowUpgrades] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<"instrument" | "gear" | "band" | "skill" | "venue">("skill");
+  const [crowdHappy, setCrowdHappy] = useState(false);
   
-  const effectIdRef = useRef(0);
+  const coinIdRef = useRef(0);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
-  const saveLoopRef = useRef<NodeJS.Timeout | null>(null);
   const supabase = createBrowserClient();
   const router = useRouter();
 
-  // Calculate current fame level
-  const getCurrentFameLevel = useCallback(() => {
-    for (let i = FAME_LEVELS.length - 1; i >= 0; i--) {
-      if (totalEarned >= FAME_LEVELS[i].minEarnings) {
-        return FAME_LEVELS[i];
-      }
-    }
-    return FAME_LEVELS[0];
-  }, [totalEarned]);
-
-  // Get next fame level
-  const getNextFameLevel = useCallback(() => {
-    const currentIndex = FAME_LEVELS.findIndex(f => f.name === getCurrentFameLevel().name);
-    if (currentIndex < FAME_LEVELS.length - 1) {
-      return FAME_LEVELS[currentIndex + 1];
-    }
-    return null;
-  }, [getCurrentFameLevel]);
-
-  // Recalculate ZPS and ZPC from upgrades
+  // Calculate stats from upgrades
   const recalculateStats = useCallback((levels: Record<string, number>) => {
     let newZps = 0;
-    let newZpc = 1; // Base click value
+    let newZpc = 1;
     
     for (const upgrade of UPGRADES) {
       const level = levels[upgrade.id] || 0;
@@ -147,26 +588,22 @@ export default function MusicianBeggarPage() {
     setZpc(newZpc);
   }, []);
 
-  // Load game state
+  // Load game
   const loadGame = useCallback(() => {
     try {
-      const saved = localStorage.getItem("musician-beggar-save");
+      const saved = localStorage.getItem("musician-beggar-v2");
       if (saved) {
         const data = JSON.parse(saved);
         setZc(data.zc || 0);
         setTotalEarned(data.totalEarned || 0);
         setUpgradeLevels(data.upgradeLevels || {});
+        setCurrentVenue(data.currentVenue || 0);
         recalculateStats(data.upgradeLevels || {});
         
-        // Calculate offline earnings (max 8 hours)
-        if (data.lastSave) {
+        // Offline earnings
+        if (data.lastSave && data.zps) {
           const offlineSeconds = Math.min((Date.now() - data.lastSave) / 1000, 8 * 60 * 60);
-          let offlineZps = 0;
-          for (const upgrade of UPGRADES) {
-            const level = data.upgradeLevels?.[upgrade.id] || 0;
-            offlineZps += upgrade.zpsBonus * level;
-          }
-          const offlineEarnings = Math.floor(offlineSeconds * offlineZps * 0.5); // 50% efficiency while offline
+          const offlineEarnings = Math.floor(offlineSeconds * data.zps * 0.5);
           if (offlineEarnings > 0) {
             setZc(prev => prev + offlineEarnings);
             setTotalEarned(prev => prev + offlineEarnings);
@@ -174,27 +611,23 @@ export default function MusicianBeggarPage() {
         }
       }
     } catch (e) {
-      console.error("Failed to load game:", e);
+      console.error("Failed to load:", e);
     }
   }, [recalculateStats]);
 
-  // Save game state
+  // Save game
   const saveGame = useCallback(() => {
     try {
-      const data = {
-        zc,
-        totalEarned,
-        upgradeLevels,
-        lastSave: Date.now(),
-      };
-      localStorage.setItem("musician-beggar-save", JSON.stringify(data));
+      localStorage.setItem("musician-beggar-v2", JSON.stringify({
+        zc, totalEarned, upgradeLevels, currentVenue, zps, lastSave: Date.now(),
+      }));
     } catch (e) {
-      console.error("Failed to save game:", e);
+      console.error("Failed to save:", e);
     }
-  }, [zc, totalEarned, upgradeLevels]);
+  }, [zc, totalEarned, upgradeLevels, currentVenue, zps]);
 
-  // Handle click
-  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+  // Handle click on musician
+  const handleMusicianClick = useCallback((e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -202,18 +635,15 @@ export default function MusicianBeggarPage() {
     setZc(prev => prev + zpc);
     setTotalEarned(prev => prev + zpc);
     setIsPlaying(true);
+    setCrowdHappy(true);
     
-    // Add click effect
-    const effectId = effectIdRef.current++;
-    setClickEffects(prev => [...prev, { id: effectId, x, y, amount: zpc }]);
+    // Flying coin effect
+    const coinId = coinIdRef.current++;
+    setFlyingCoins(prev => [...prev, { id: coinId, x, y, amount: zpc }]);
+    setTimeout(() => setFlyingCoins(prev => prev.filter(c => c.id !== coinId)), 1000);
     
-    // Remove effect after animation
-    setTimeout(() => {
-      setClickEffects(prev => prev.filter(e => e.id !== effectId));
-    }, 1000);
-    
-    // Reset playing animation
     setTimeout(() => setIsPlaying(false), 150);
+    setTimeout(() => setCrowdHappy(false), 500);
   }, [zpc]);
 
   // Buy upgrade
@@ -221,19 +651,29 @@ export default function MusicianBeggarPage() {
     const upgrade = UPGRADES.find(u => u.id === upgradeId);
     if (!upgrade) return;
     
-    const currentLevel = upgradeLevels[upgradeId] || 0;
-    if (currentLevel >= upgrade.maxLevel) return;
+    const level = upgradeLevels[upgradeId] || 0;
+    if (level >= upgrade.maxLevel) return;
     
-    const cost = getUpgradeCost(upgrade, currentLevel);
+    const cost = getUpgradeCost(upgrade, level);
     if (zc < cost) return;
     
     setZc(prev => prev - cost);
     setUpgradeLevels(prev => {
-      const newLevels = { ...prev, [upgradeId]: currentLevel + 1 };
+      const newLevels = { ...prev, [upgradeId]: level + 1 };
       recalculateStats(newLevels);
       return newLevels;
     });
   }, [zc, upgradeLevels, recalculateStats]);
+
+  // Unlock venue
+  const unlockVenue = useCallback((venueIndex: number) => {
+    const venue = VENUES[venueIndex];
+    if (!venue || zc < venue.unlockCost) return;
+    if (venueIndex <= currentVenue) return;
+    
+    setZc(prev => prev - venue.unlockCost);
+    setCurrentVenue(venueIndex);
+  }, [zc, currentVenue]);
 
   // Initialize
   useEffect(() => {
@@ -252,386 +692,388 @@ export default function MusicianBeggarPage() {
         .eq("id", currentUser.id)
         .single();
       
-      if (userInfo) {
-        setUserData(userInfo);
-      }
-
+      if (userInfo) setUserData(userInfo);
       loadGame();
       setLoading(false);
     }
-
     init();
   }, [supabase, router, loadGame]);
 
-  // Game loop for passive income
+  // Game loop
   useEffect(() => {
     if (loading) return;
     
     gameLoopRef.current = setInterval(() => {
       if (zps > 0) {
-        const earned = zps / 10; // Update 10 times per second
+        const earned = zps / 10;
         setZc(prev => prev + earned);
         setTotalEarned(prev => prev + earned);
       }
     }, 100);
     
-    return () => {
-      if (gameLoopRef.current) clearInterval(gameLoopRef.current);
-    };
+    return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current); };
   }, [loading, zps]);
 
-  // Auto-save every 30 seconds
+  // Auto-save
   useEffect(() => {
     if (loading) return;
-    
-    saveLoopRef.current = setInterval(saveGame, 30000);
-    
-    // Save on unmount
-    return () => {
-      if (saveLoopRef.current) clearInterval(saveLoopRef.current);
-      saveGame();
-    };
+    const interval = setInterval(saveGame, 30000);
+    return () => { clearInterval(interval); saveGame(); };
   }, [loading, saveGame]);
 
-  // Save before leaving
+  // Save on leave
   useEffect(() => {
-    const handleBeforeUnload = () => saveGame();
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("beforeunload", saveGame);
+    return () => window.removeEventListener("beforeunload", saveGame);
   }, [saveGame]);
 
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
-        <div style={{ 
-          height: 60, 
-          background: "rgba(0,0,0,0.3)", 
-          borderBottom: "1px solid rgba(255,255,255,0.1)"
-        }} />
-        <div style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          justifyContent: "center", 
-          minHeight: "60vh" 
-        }}>
+        <div style={{ height: 60, background: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(255,255,255,0.1)" }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
           <div style={{
-            width: 48,
-            height: 48,
+            width: 48, height: 48,
             border: "3px solid rgba(234, 179, 8, 0.2)",
             borderTopColor: "#eab308",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
           }} />
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
         </div>
       </div>
     );
   }
 
-  const fameLevel = getCurrentFameLevel();
-  const nextFame = getNextFameLevel();
-  const fameProgress = nextFame 
-    ? ((totalEarned - fameLevel.minEarnings) / (nextFame.minEarnings - fameLevel.minEarnings)) * 100
-    : 100;
+  const venue = VENUES[currentVenue];
+  const hasElectric = (upgradeLevels["electric"] || 0) > 0;
+  const hasMic = (upgradeLevels["mic"] || 0) > 0;
+  const hasAmp = (upgradeLevels["amp"] || 0) > 0;
+  const ampLevel = upgradeLevels["amp"] || 0;
+  const outfit = Math.min(3, Math.floor(totalEarned / 100000));
+  const tipJarFill = Math.min(100, (zc % 1000) / 10);
 
-  const categories = [
-    { id: "all", name: "All", icon: "🎵" },
-    { id: "skill", name: "Skills", icon: "✋" },
-    { id: "instrument", name: "Instruments", icon: "🎸" },
-    { id: "gear", name: "Gear", icon: "🔊" },
-    { id: "band", name: "Band", icon: "🧑‍🎤" },
-    { id: "venue", name: "Venues", icon: "🏙️" },
-  ];
-
-  const filteredUpgrades = UPGRADES.filter(u => 
-    (selectedCategory === "all" || u.category === selectedCategory) &&
-    totalEarned >= u.unlockAt * 0.5 // Show when at 50% of unlock requirement
-  );
+  // Generate crowd
+  const crowdMembers = [];
+  for (let i = 0; i < venue.crowdSize; i++) {
+    crowdMembers.push({
+      x: 20 + (i * 25) + (Math.random() * 10 - 5),
+      delay: Math.random() * 0.3,
+    });
+  }
 
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      background: "linear-gradient(180deg, #0f0a1a 0%, #1a0f2e 50%, #0f0a1a 100%)",
-    }}>
-      <Header 
-        user={user} 
-        userUsername={userData?.username || null} 
-        userAvatarUrl={userData?.avatar_url || null} 
-      />
+    <div style={{ minHeight: "100vh", background: venue.background }}>
+      <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px" }}>
-        {/* Back link */}
-        <Link 
-          href="/game-hub" 
-          style={{ 
-            display: "inline-flex", 
-            alignItems: "center", 
-            gap: 8, 
-            color: "#eab308", 
-            textDecoration: "none",
-            fontSize: 14,
-            marginBottom: 20,
-          }}
-        >
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px" }}>
+        <Link href="/game-hub" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#eab308", textDecoration: "none", fontSize: 14, marginBottom: 16 }}>
           ← Back to Game Hub
         </Link>
 
-        {/* Title */}
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <h1 style={{ 
-            fontSize: 36, 
-            fontWeight: 800, 
-            color: "#eab308",
-            margin: 0,
-            textShadow: "0 0 20px rgba(234, 179, 8, 0.5)",
-            fontFamily: "system-ui",
-            letterSpacing: 2,
-          }}>
-            🎸 MUSICIAN BEGGAR 🎸
-          </h1>
-          <p style={{ color: "#888", fontSize: 14, margin: "8px 0 0 0" }}>
-            {fameLevel.icon} {fameLevel.name}
-          </p>
+        {/* ZC Display */}
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <div style={{ color: "#fbbf24", fontSize: 42, fontWeight: 800, textShadow: "0 0 30px rgba(234, 179, 8, 0.5)" }}>
+            🪙 {formatNumber(zc)} ZC
+          </div>
+          <div style={{ color: "#888", fontSize: 14 }}>
+            {formatNumber(zpc)}/click • {formatNumber(zps)}/sec
+          </div>
         </div>
 
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "center" }}>
-          {/* Left Panel - Click Area */}
-          <div style={{ flex: "0 0 320px" }}>
-            {/* ZC Display */}
-            <div style={{
-              background: "rgba(0,0,0,0.6)",
-              borderRadius: 16,
-              padding: 20,
-              marginBottom: 16,
-              border: "2px solid #eab30840",
-              textAlign: "center",
-            }}>
-              <div style={{ color: "#888", fontSize: 12, marginBottom: 4, letterSpacing: 1 }}>ZOOKA COINS</div>
-              <div style={{ 
-                color: "#eab308", 
-                fontSize: 36, 
-                fontWeight: 800,
-                textShadow: "0 0 20px rgba(234, 179, 8, 0.5)",
-              }}>
-                {formatNumber(zc)} ZC
+        {/* Stage/Scene */}
+        <div 
+          onClick={handleMusicianClick}
+          style={{
+            position: "relative",
+            height: 350,
+            background: venue.groundColor,
+            borderRadius: 16,
+            overflow: "hidden",
+            cursor: "pointer",
+            border: "2px solid rgba(255,255,255,0.1)",
+            marginBottom: 16,
+          }}
+        >
+          {/* Background elements based on venue */}
+          {currentVenue === 0 && (
+            <>
+              {/* Street buildings */}
+              <div style={{ position: "absolute", top: 0, left: 20, width: 60, height: 150, background: "#1a1a2e", borderRadius: "0 0 4px 4px" }} />
+              <div style={{ position: "absolute", top: 0, left: 100, width: 80, height: 180, background: "#16213e", borderRadius: "0 0 4px 4px" }} />
+              <div style={{ position: "absolute", top: 0, right: 50, width: 70, height: 160, background: "#1a1a2e", borderRadius: "0 0 4px 4px" }} />
+              {/* Windows */}
+              {[30, 60, 90].map((top, i) => (
+                <div key={i} style={{ position: "absolute", top, left: 30, width: 15, height: 20, background: "#fbbf2440", borderRadius: 2 }} />
+              ))}
+              {/* Street lamp */}
+              <div style={{ position: "absolute", bottom: 100, right: 30, width: 8, height: 100, background: "#3d3d3d" }} />
+              <div style={{ position: "absolute", bottom: 190, right: 20, width: 30, height: 15, background: "#fbbf24", borderRadius: "50%", boxShadow: "0 0 30px #fbbf24" }} />
+            </>
+          )}
+          
+          {currentVenue === 1 && (
+            <>
+              {/* Subway tiles */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 100, background: "repeating-linear-gradient(90deg, #3d3d3d 0px, #3d3d3d 48px, #2d2d2d 48px, #2d2d2d 50px)" }} />
+              {/* Subway sign */}
+              <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", padding: "8px 24px", background: "#1a1a1a", border: "2px solid #fbbf24", borderRadius: 4 }}>
+                <span style={{ color: "#fbbf24", fontWeight: 700, fontSize: 14 }}>🚇 SUBWAY</span>
               </div>
-              <div style={{ color: "#666", fontSize: 12, marginTop: 8 }}>
-                {formatNumber(zpc)} per click • {formatNumber(zps)}/sec
-              </div>
-            </div>
+            </>
+          )}
+          
+          {currentVenue === 2 && (
+            <>
+              {/* Cafe interior */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 80, background: "#5c3d2e" }} />
+              {/* Shelves */}
+              <div style={{ position: "absolute", top: 30, left: 30, width: 100, height: 8, background: "#3d2a1e" }} />
+              <div style={{ position: "absolute", top: 50, left: 30, width: 100, height: 8, background: "#3d2a1e" }} />
+              {/* Coffee cups */}
+              {[40, 60, 80, 100].map((left, i) => (
+                <div key={i} style={{ position: "absolute", top: 20, left, width: 12, height: 15, background: "#f5f5dc", borderRadius: "0 0 4px 4px" }} />
+              ))}
+              {/* Warm lighting */}
+              <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, background: "radial-gradient(circle, rgba(251,191,36,0.2) 0%, transparent 70%)" }} />
+            </>
+          )}
+          
+          {currentVenue === 3 && (
+            <>
+              {/* Club lights */}
+              <div style={{ position: "absolute", top: 20, left: "20%", width: 20, height: 100, background: "linear-gradient(180deg, #dc2626 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite" }} />
+              <div style={{ position: "absolute", top: 20, left: "50%", width: 20, height: 100, background: "linear-gradient(180deg, #8b5cf6 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite 0.5s" }} />
+              <div style={{ position: "absolute", top: 20, right: "20%", width: 20, height: 100, background: "linear-gradient(180deg, #06b6d4 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite 1s" }} />
+              {/* Disco ball */}
+              <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", width: 30, height: 30, background: "radial-gradient(circle, #fff 0%, #888 100%)", borderRadius: "50%", boxShadow: "0 0 20px rgba(255,255,255,0.5)" }} />
+            </>
+          )}
+          
+          {currentVenue === 4 && (
+            <>
+              {/* Arena lights */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 100, background: "linear-gradient(180deg, #000 0%, transparent 100%)" }} />
+              {/* Spotlights */}
+              <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 150, height: 300, background: "linear-gradient(180deg, rgba(251,191,36,0.3) 0%, transparent 100%)", clipPath: "polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)" }} />
+              {/* Stage edge */}
+              <div style={{ position: "absolute", bottom: 80, left: 0, right: 0, height: 10, background: "linear-gradient(90deg, #fbbf24, #eab308, #fbbf24)", boxShadow: "0 0 20px #fbbf24" }} />
+            </>
+          )}
 
-            {/* Click Button */}
-            <div style={{
-              background: "rgba(0,0,0,0.6)",
-              borderRadius: 16,
-              padding: 20,
-              marginBottom: 16,
-              border: "2px solid #eab30840",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}>
-              <button
-                onClick={handleClick}
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: "50%",
-                  background: isPlaying 
-                    ? "radial-gradient(circle, #fbbf24 0%, #eab308 50%, #ca8a04 100%)"
-                    : "radial-gradient(circle, #eab308 0%, #ca8a04 50%, #a16207 100%)",
-                  border: "4px solid #fbbf24",
-                  cursor: "pointer",
-                  fontSize: 64,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: isPlaying
-                    ? "0 0 40px rgba(234, 179, 8, 0.8), inset 0 -4px 20px rgba(0,0,0,0.3)"
-                    : "0 0 20px rgba(234, 179, 8, 0.4), inset 0 -4px 20px rgba(0,0,0,0.3)",
-                  transform: isPlaying ? "scale(0.95)" : "scale(1)",
-                  transition: "transform 0.1s, box-shadow 0.1s, background 0.1s",
-                  position: "relative",
-                  overflow: "visible",
-                }}
-              >
-                🎸
-                {/* Click effects */}
-                {clickEffects.map(effect => (
-                  <div
-                    key={effect.id}
-                    style={{
-                      position: "absolute",
-                      left: effect.x,
-                      top: effect.y,
-                      color: "#fbbf24",
-                      fontSize: 18,
-                      fontWeight: 700,
-                      pointerEvents: "none",
-                      animation: "floatUp 1s ease-out forwards",
-                      textShadow: "0 0 10px rgba(234, 179, 8, 0.8)",
-                    }}
-                  >
-                    +{formatNumber(effect.amount)}
-                  </div>
-                ))}
-              </button>
-            </div>
+          {/* Stage/Ground */}
+          <div style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 80,
+            background: `linear-gradient(180deg, ${venue.groundColor} 0%, ${venue.groundColor}dd 100%)`,
+          }} />
 
-            {/* Fame Progress */}
-            <div style={{
-              background: "rgba(0,0,0,0.6)",
-              borderRadius: 16,
-              padding: 16,
-              border: "2px solid #eab30840",
-            }}>
-              <div style={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                alignItems: "center",
-                marginBottom: 8,
-              }}>
-                <span style={{ color: "#eab308", fontSize: 14, fontWeight: 600 }}>
-                  {fameLevel.icon} {fameLevel.name}
-                </span>
-                {nextFame && (
-                  <span style={{ color: "#666", fontSize: 12 }}>
-                    → {nextFame.icon} {nextFame.name}
-                  </span>
-                )}
-              </div>
-              <div style={{
-                height: 8,
-                background: "#1a1a1a",
-                borderRadius: 4,
-                overflow: "hidden",
-              }}>
-                <div style={{
-                  height: "100%",
-                  width: `${Math.min(fameProgress, 100)}%`,
-                  background: "linear-gradient(90deg, #eab308, #fbbf24)",
-                  borderRadius: 4,
-                  transition: "width 0.3s",
-                }} />
-              </div>
-              <div style={{ color: "#666", fontSize: 11, marginTop: 6, textAlign: "center" }}>
-                Total earned: {formatNumber(totalEarned)} ZC
-                {nextFame && ` • Next: ${formatNumber(nextFame.minEarnings)} ZC`}
-              </div>
-            </div>
+          {/* Crowd */}
+          <div style={{ position: "absolute", bottom: 80, left: 0, right: 0, height: 50 }}>
+            {crowdMembers.map((member, i) => (
+              <CrowdMember key={i} x={member.x} delay={member.delay} isHappy={crowdHappy} />
+            ))}
           </div>
 
-          {/* Right Panel - Upgrades */}
-          <div style={{ flex: "1 1 500px", minWidth: 300 }}>
-            {/* Category Tabs */}
-            <div style={{
-              display: "flex",
-              gap: 8,
-              marginBottom: 16,
-              flexWrap: "wrap",
-            }}>
-              {categories.map(cat => (
+          {/* Amp (if owned) */}
+          {hasAmp && (
+            <div style={{ position: "absolute", bottom: 90, left: "25%", transform: "translateX(-50%)" }}>
+              <Amp level={ampLevel} />
+            </div>
+          )}
+
+          {/* Musician */}
+          <div style={{ position: "absolute", bottom: 90, left: "50%", transform: "translateX(-50%)" }}>
+            <Musician isPlaying={isPlaying} hasElectric={hasElectric} hasMic={hasMic} outfit={outfit} />
+          </div>
+
+          {/* Tip Jar */}
+          <div style={{ position: "absolute", bottom: 90, right: "25%", transform: "translateX(50%)" }}>
+            <TipJar fillPercent={tipJarFill} onClick={() => {}} />
+          </div>
+
+          {/* Flying coins */}
+          {flyingCoins.map(coin => (
+            <FlyingCoin key={coin.id} x={coin.x} y={coin.y} amount={coin.amount} />
+          ))}
+
+          {/* Venue name */}
+          <div style={{
+            position: "absolute",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            padding: "8px 20px",
+            background: "rgba(0,0,0,0.6)",
+            borderRadius: 20,
+            color: "#fbbf24",
+            fontSize: 14,
+            fontWeight: 600,
+          }}>
+            📍 {venue.name}
+          </div>
+
+          {/* Click hint */}
+          <div style={{
+            position: "absolute",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            color: "rgba(255,255,255,0.4)",
+            fontSize: 12,
+          }}>
+            Click to play music!
+          </div>
+        </div>
+
+        {/* Upgrades Button */}
+        <button
+          onClick={() => setShowUpgrades(!showUpgrades)}
+          style={{
+            width: "100%",
+            padding: "16px",
+            background: showUpgrades ? "#eab308" : "rgba(234, 179, 8, 0.2)",
+            border: "2px solid #eab308",
+            borderRadius: 12,
+            color: showUpgrades ? "#000" : "#eab308",
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: "pointer",
+            marginBottom: 16,
+          }}
+        >
+          {showUpgrades ? "▼ Hide Upgrades" : "▲ Show Upgrades"}
+        </button>
+
+        {/* Upgrades Panel */}
+        {showUpgrades && (
+          <div style={{
+            background: "rgba(0,0,0,0.6)",
+            borderRadius: 16,
+            border: "2px solid rgba(234, 179, 8, 0.3)",
+            overflow: "hidden",
+          }}>
+            {/* Tabs */}
+            <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+              {(["skill", "instrument", "gear", "band", "venue"] as const).map(tab => (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  key={tab}
+                  onClick={() => setSelectedTab(tab)}
                   style={{
-                    padding: "8px 16px",
-                    borderRadius: 20,
-                    border: selectedCategory === cat.id ? "2px solid #eab308" : "2px solid #333",
-                    background: selectedCategory === cat.id ? "#eab30820" : "rgba(0,0,0,0.4)",
-                    color: selectedCategory === cat.id ? "#eab308" : "#888",
+                    flex: 1,
+                    padding: "12px 8px",
+                    background: selectedTab === tab ? "rgba(234, 179, 8, 0.2)" : "transparent",
+                    border: "none",
+                    borderBottom: selectedTab === tab ? "2px solid #eab308" : "2px solid transparent",
+                    color: selectedTab === tab ? "#eab308" : "#888",
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: "pointer",
-                    transition: "all 0.2s",
+                    textTransform: "capitalize",
                   }}
                 >
-                  {cat.icon} {cat.name}
+                  {tab === "skill" ? "✋" : tab === "instrument" ? "🎸" : tab === "gear" ? "🔊" : tab === "band" ? "🧑‍🎤" : "📍"} {tab}
                 </button>
               ))}
             </div>
 
-            {/* Upgrades List */}
-            <div style={{
-              background: "rgba(0,0,0,0.4)",
-              borderRadius: 16,
-              border: "2px solid #eab30830",
-              maxHeight: 500,
-              overflowY: "auto",
-            }}>
-              {filteredUpgrades.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", color: "#666" }}>
-                  Keep earning to unlock more upgrades!
-                </div>
+            {/* Upgrade list */}
+            <div style={{ maxHeight: 300, overflowY: "auto", padding: 8 }}>
+              {selectedTab === "venue" ? (
+                // Venue upgrades
+                VENUES.map((v, i) => {
+                  const isUnlocked = i <= currentVenue;
+                  const canAfford = zc >= v.unlockCost;
+                  const isCurrent = i === currentVenue;
+                  
+                  return (
+                    <div key={v.id} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: 12,
+                      background: isCurrent ? "rgba(234, 179, 8, 0.1)" : "transparent",
+                      borderRadius: 8,
+                      marginBottom: 4,
+                    }}>
+                      <div style={{ fontSize: 28 }}>📍</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: isUnlocked ? "#fff" : "#666", fontWeight: 600 }}>
+                          {v.name}
+                          {isCurrent && <span style={{ color: "#22c55e", marginLeft: 8 }}>✓ Current</span>}
+                        </div>
+                        <div style={{ color: "#888", fontSize: 12 }}>{v.description}</div>
+                        <div style={{ color: "#22c55e", fontSize: 11, marginTop: 2 }}>+{v.crowdSize - (VENUES[i-1]?.crowdSize || 0)} crowd</div>
+                      </div>
+                      {!isUnlocked && (
+                        <button
+                          onClick={() => unlockVenue(i)}
+                          disabled={!canAfford}
+                          style={{
+                            padding: "10px 16px",
+                            borderRadius: 8,
+                            border: "none",
+                            background: canAfford ? "linear-gradient(135deg, #eab308, #ca8a04)" : "#333",
+                            color: canAfford ? "#000" : "#666",
+                            fontWeight: 700,
+                            fontSize: 13,
+                            cursor: canAfford ? "pointer" : "default",
+                          }}
+                        >
+                          {formatNumber(v.unlockCost)} ZC
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
               ) : (
-                filteredUpgrades.map(upgrade => {
+                // Regular upgrades
+                UPGRADES.filter(u => u.category === selectedTab).map(upgrade => {
                   const level = upgradeLevels[upgrade.id] || 0;
                   const cost = getUpgradeCost(upgrade, level);
                   const canAfford = zc >= cost && level < upgrade.maxLevel;
-                  const isLocked = totalEarned < upgrade.unlockAt;
                   const isMaxed = level >= upgrade.maxLevel;
 
                   return (
-                    <div
-                      key={upgrade.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        padding: 16,
-                        borderBottom: "1px solid #ffffff10",
-                        opacity: isLocked ? 0.5 : 1,
-                      }}
-                    >
-                      <div style={{ fontSize: 32, width: 48, textAlign: "center" }}>
-                        {upgrade.icon}
+                    <div key={upgrade.id} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: 12,
+                      borderRadius: 8,
+                      marginBottom: 4,
+                    }}>
+                      <div style={{ fontSize: 28 }}>
+                        {upgrade.category === "instrument" ? "🎸" : upgrade.category === "gear" ? "🔊" : upgrade.category === "band" ? "🧑‍🎤" : "✋"}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ 
-                          color: isLocked ? "#666" : "#fff", 
-                          fontWeight: 600,
-                          fontSize: 14,
-                        }}>
+                        <div style={{ color: "#fff", fontWeight: 600 }}>
                           {upgrade.name}
                           {level > 0 && <span style={{ color: "#eab308", marginLeft: 8 }}>Lv.{level}</span>}
                         </div>
-                        <div style={{ color: "#888", fontSize: 12, marginTop: 2 }}>
-                          {isLocked 
-                            ? `🔒 Unlocks at ${formatNumber(upgrade.unlockAt)} ZC`
-                            : upgrade.description
-                          }
-                        </div>
-                        {!isLocked && !isMaxed && (
-                          <div style={{ color: "#22c55e", fontSize: 11, marginTop: 4 }}>
-                            +{upgrade.zpsBonus > 0 ? `${formatNumber(upgrade.zpsBonus)}/sec` : `${formatNumber(upgrade.zpcBonus)}/click`}
+                        <div style={{ color: "#888", fontSize: 12 }}>{upgrade.description}</div>
+                        {!isMaxed && (
+                          <div style={{ color: "#22c55e", fontSize: 11, marginTop: 2 }}>
+                            +{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/click`}
                           </div>
                         )}
                       </div>
                       <button
                         onClick={() => buyUpgrade(upgrade.id)}
-                        disabled={!canAfford || isLocked}
+                        disabled={!canAfford}
                         style={{
                           padding: "10px 16px",
                           borderRadius: 8,
                           border: "none",
-                          background: isMaxed 
-                            ? "#22c55e" 
-                            : canAfford 
-                              ? "linear-gradient(135deg, #eab308, #ca8a04)" 
-                              : "#333",
+                          background: isMaxed ? "#22c55e" : canAfford ? "linear-gradient(135deg, #eab308, #ca8a04)" : "#333",
                           color: isMaxed || canAfford ? "#000" : "#666",
                           fontWeight: 700,
                           fontSize: 13,
-                          cursor: canAfford && !isLocked ? "pointer" : "default",
-                          minWidth: 90,
-                          transition: "transform 0.1s",
+                          cursor: canAfford ? "pointer" : "default",
+                          minWidth: 80,
                         }}
-                        onMouseEnter={(e) => canAfford && (e.currentTarget.style.transform = "scale(1.05)")}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                       >
                         {isMaxed ? "MAX" : `${formatNumber(cost)} ZC`}
                       </button>
@@ -641,19 +1083,24 @@ export default function MusicianBeggarPage() {
               )}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <style>{`
-        @keyframes floatUp {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-60px) scale(1.5);
-          }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes coinFly {
+          0% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.7; }
         }
       `}</style>
     </div>
