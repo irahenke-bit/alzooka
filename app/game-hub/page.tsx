@@ -140,13 +140,13 @@ export default function GameHubPage() {
       available: true,
     },
     {
-      id: "coming-soon-1",
-      name: "Coming Soon",
-      description: "More games are on the way...",
-      icon: "gamepad",
-      href: "#",
-      color: "#9333ea",
-      available: false,
+      id: "musician-beggar",
+      name: "Musician Beggar",
+      description: "Start as a street musician, earn Zooka Coins, buy upgrades, and rise to fame!",
+      icon: "🎸",
+      href: "/game-hub/musician-beggar",
+      color: "#eab308",
+      available: true,
     },
   ];
 
