@@ -93,6 +93,7 @@ export default function RockDropPage() {
   const [highScore, setHighScore] = useState(0);
   
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const dropPieceRef = useRef<() => void>(() => {});
   const supabase = createBrowserClient();
   const router = useRouter();
 
@@ -201,6 +202,11 @@ export default function RockDropPage() {
     }
   }, [currentPiece, position, board, gameOver, isPaused, isValidPosition, lockPiece, clearLines, calculateScore, combo, level, nextPiece, getRandomPiece, score, highScore]);
 
+  // Keep dropPieceRef updated with the latest dropPiece function
+  useEffect(() => {
+    dropPieceRef.current = dropPiece;
+  }, [dropPiece]);
+
   // Move piece
   const movePiece = useCallback((dx: number) => {
     if (!currentPiece || gameOver || isPaused) return;
@@ -307,7 +313,7 @@ export default function RockDropPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameStarted, gameOver, movePiece, dropPiece, rotate, hardDrop, startGame]);
 
-  // Game loop
+  // Game loop - uses ref to avoid resetting interval when dropPiece changes
   useEffect(() => {
     if (!gameStarted || gameOver || isPaused) {
       if (gameLoopRef.current) {
@@ -320,7 +326,7 @@ export default function RockDropPage() {
     const speed = Math.max(100, INITIAL_DROP_SPEED - (level - 1) * SPEED_INCREASE_PER_LEVEL);
     
     gameLoopRef.current = setInterval(() => {
-      dropPiece();
+      dropPieceRef.current();
     }, speed);
     
     return () => {
@@ -328,7 +334,7 @@ export default function RockDropPage() {
         clearInterval(gameLoopRef.current);
       }
     };
-  }, [gameStarted, gameOver, isPaused, level, dropPiece]);
+  }, [gameStarted, gameOver, isPaused, level]);
 
   // Initialize
   useEffect(() => {
