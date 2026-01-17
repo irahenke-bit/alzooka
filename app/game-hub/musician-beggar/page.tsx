@@ -152,21 +152,23 @@ function RobloxPerson({
   );
 }
 
-// Homeless Musician with realistic acoustic guitar
+// Homeless Musician with realistic acoustic guitar - proper holding position
 function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; hasSign: boolean; hasDog: boolean }) {
   return (
-    <div style={{ position: "relative", width: 180, height: 180, zIndex: 10 }}>
-      {/* Blanket */}
-      <div style={{ position: "absolute", bottom: 0, left: -10, width: 200, height: 16, background: "linear-gradient(90deg, #4a3a2a 0%, #6a5a4a 50%, #4a3a2a 100%)", borderRadius: 3 }} />
+    <div style={{ position: "relative", width: 200, height: 200, zIndex: 10 }}>
+      {/* Blanket/cardboard */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, width: 200, height: 20, background: "linear-gradient(90deg, #5a4a3a 0%, #7a6a5a 50%, #5a4a3a 100%)", borderRadius: 4 }} />
+      
       {/* Hat for coins */}
-      <div style={{ position: "absolute", bottom: 8, right: 10, width: 40, height: 14, background: "#222", borderRadius: "0 0 50% 50%" }}>
-        <div style={{ position: "absolute", top: 3, left: 8, width: 7, height: 4, background: "#b8860b", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", top: 5, left: 22, width: 5, height: 3, background: "#daa520", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", bottom: 12, right: 20, width: 45, height: 16, background: "#1a1a1a", borderRadius: "0 0 50% 50%" }}>
+        <div style={{ position: "absolute", top: 4, left: 10, width: 8, height: 5, background: "#b8860b", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", top: 6, left: 26, width: 6, height: 4, background: "#daa520", borderRadius: "50%" }} />
       </div>
+      
       {/* Dog */}
       {hasDog && (
-        <div style={{ position: "absolute", bottom: 10, left: -55 }}>
-          <svg width="55" height="45" viewBox="0 0 30 25">
+        <div style={{ position: "absolute", bottom: 15, left: -50 }}>
+          <svg width="60" height="50" viewBox="0 0 30 25">
             <ellipse cx="18" cy="15" rx="10" ry="7" fill="#8b5a2b" />
             <ellipse cx="6" cy="10" rx="6" ry="5" fill="#8b5a2b" />
             <ellipse cx="3" cy="8" rx="2" ry="3" fill="#6b4423" />
@@ -177,116 +179,151 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
           </svg>
         </div>
       )}
+      
       {/* Sign */}
       {hasSign && (
-        <div style={{ position: "absolute", bottom: 20, right: -45, width: 55, height: 40, background: "#a08060", border: "2px solid #705030", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(3deg)" }}>
-          <span style={{ fontSize: 8, color: "#222", fontWeight: "bold", textAlign: "center", lineHeight: 1.1 }}>ANYTHING<br/>HELPS</span>
+        <div style={{ position: "absolute", bottom: 25, right: -40, width: 60, height: 45, background: "#a08060", border: "2px solid #705030", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(5deg)" }}>
+          <span style={{ fontSize: 9, color: "#222", fontWeight: "bold", textAlign: "center", lineHeight: 1.1 }}>ANYTHING<br/>HELPS</span>
         </div>
       )}
       
-      {/* Musician SVG */}
-      <svg width="140" height="160" viewBox="0 0 80 110" style={{ position: "absolute", bottom: 10, left: 20 }}>
-        {/* Crossed legs */}
-        <ellipse cx="25" cy="95" rx="18" ry="7" fill="#3d3d4d" />
-        <ellipse cx="55" cy="95" rx="18" ry="7" fill="#3d3d4d" />
-        {/* Shoes */}
-        <ellipse cx="10" cy="97" rx="7" ry="4" fill="#222" />
-        <ellipse cx="70" cy="97" rx="7" ry="4" fill="#222" />
+      {/* Musician with guitar */}
+      <svg width="180" height="180" viewBox="0 0 120 120" style={{ position: "absolute", bottom: 12, left: 10 }}>
         
-        {/* Body/Torso */}
-        <path d="M25,45 Q15,50 15,60 L15,88 Q15,92 25,92 L55,92 Q65,92 65,88 L65,60 Q65,50 55,45 Q45,40 40,40 Q35,40 25,45" fill="#4a4a4a" />
-        
-        {/* REALISTIC ACOUSTIC GUITAR */}
-        <g style={{ transform: isPlaying ? "rotate(-2deg)" : "rotate(0deg)", transformOrigin: "42px 70px", transition: "transform 0.1s" }}>
-          {/* Guitar Neck */}
-          <rect x="54" y="25" width="6" height="45" rx="1" fill="#3d2817" />
-          {/* Fretboard */}
-          <rect x="54.5" y="25" width="5" height="45" fill="#1a0f08" />
-          {/* Frets */}
-          {[0,1,2,3,4,5,6,7,8].map(i => (
-            <rect key={i} x="54" y={28 + i*5} width="6" height="1" fill="#c0c0c0" />
-          ))}
-          {/* Fret markers (dots) */}
-          <circle cx="57" cy="38" r="1" fill="#f5f5dc" />
-          <circle cx="57" cy="48" r="1" fill="#f5f5dc" />
-          <circle cx="57" cy="58" r="1" fill="#f5f5dc" />
+        {/* GUITAR - positioned across lap, neck angled up-left */}
+        <g style={{ transform: isPlaying ? "rotate(-1deg)" : "rotate(0deg)", transformOrigin: "60px 85px", transition: "transform 0.15s" }}>
           
-          {/* Headstock */}
-          <path d="M52,15 L52,27 L60,27 L60,15 Q60,12 56,12 Q52,12 52,15" fill="#3d2817" />
-          {/* Tuning pegs - left side */}
-          <ellipse cx="51" cy="17" rx="2" ry="1.5" fill="#c0c0c0" />
-          <ellipse cx="51" cy="21" rx="2" ry="1.5" fill="#c0c0c0" />
-          <ellipse cx="51" cy="25" rx="2" ry="1.5" fill="#c0c0c0" />
-          {/* Tuning pegs - right side */}
-          <ellipse cx="61" cy="17" rx="2" ry="1.5" fill="#c0c0c0" />
-          <ellipse cx="61" cy="21" rx="2" ry="1.5" fill="#c0c0c0" />
-          <ellipse cx="61" cy="25" rx="2" ry="1.5" fill="#c0c0c0" />
-          {/* Nut */}
-          <rect x="53" y="26" width="8" height="2" fill="#f5f5dc" />
-          
-          {/* Guitar Body - Figure 8 shape */}
+          {/* Guitar body - classic dreadnought shape */}
+          {/* Lower bout (main body) */}
+          <ellipse cx="70" cy="90" rx="22" ry="18" fill="#c4956a" />
           {/* Upper bout */}
-          <ellipse cx="42" cy="58" rx="12" ry="10" fill="#d4a574" />
-          {/* Lower bout (larger) */}
-          <ellipse cx="42" cy="78" rx="16" ry="14" fill="#d4a574" />
-          {/* Waist connection */}
-          <rect x="32" y="58" width="20" height="20" fill="#d4a574" />
-          {/* Body outline/binding */}
-          <ellipse cx="42" cy="58" rx="12" ry="10" fill="none" stroke="#8b6914" strokeWidth="1" />
-          <ellipse cx="42" cy="78" rx="16" ry="14" fill="none" stroke="#8b6914" strokeWidth="1" />
+          <ellipse cx="58" cy="72" rx="14" ry="11" fill="#c4956a" />
+          {/* Waist curves - smooth hourglass connection */}
+          <path d="M44,72 Q42,81 48,90 L92,90 Q98,81 96,72 Q82,78 70,78 Q58,78 44,72" fill="#c4956a" />
+          
+          {/* Body edge/binding */}
+          <ellipse cx="70" cy="90" rx="22" ry="18" fill="none" stroke="#8b5a2b" strokeWidth="1.5" />
+          <ellipse cx="58" cy="72" rx="14" ry="11" fill="none" stroke="#8b5a2b" strokeWidth="1" />
           
           {/* Sound hole */}
-          <circle cx="42" cy="68" r="6" fill="#1a0f08" />
-          {/* Rosette (decorative ring around sound hole) */}
-          <circle cx="42" cy="68" r="7" fill="none" stroke="#8b6914" strokeWidth="0.8" />
-          <circle cx="42" cy="68" r="8" fill="none" stroke="#5c4033" strokeWidth="0.5" />
-          <circle cx="42" cy="68" r="5" fill="none" stroke="#5c4033" strokeWidth="0.5" />
+          <circle cx="62" cy="82" r="7" fill="#2a1a10" />
+          {/* Rosette */}
+          <circle cx="62" cy="82" r="8.5" fill="none" stroke="#5c3d2e" strokeWidth="1.5" />
+          <circle cx="62" cy="82" r="9.5" fill="none" stroke="#8b5a2b" strokeWidth="0.5" />
           
           {/* Bridge */}
-          <rect x="36" y="82" width="12" height="3" rx="0.5" fill="#1a0f08" />
+          <rect x="56" y="96" width="16" height="4" rx="1" fill="#2a1a10" />
           {/* Saddle */}
-          <rect x="37" y="81.5" width="10" height="1" rx="0.5" fill="#f5f5dc" />
-          {/* Bridge pins */}
-          {[0,1,2,3,4,5].map(i => (
-            <circle key={i} cx={38 + i*1.6} cy="84" r="0.6" fill="#f5f5dc" />
-          ))}
+          <rect x="57" y="95" width="14" height="1.5" rx="0.5" fill="#f0ead6" />
           
-          {/* Strings */}
-          <line x1="38" y1="82" x2="54" y2="27" stroke="#e8e8e8" strokeWidth="0.3" />
-          <line x1="39.5" y1="82" x2="55" y2="27" stroke="#e8e8e8" strokeWidth="0.3" />
-          <line x1="41" y1="82" x2="56" y2="27" stroke="#d4d4d4" strokeWidth="0.4" />
-          <line x1="42.5" y1="82" x2="57" y2="27" stroke="#d4d4d4" strokeWidth="0.4" />
-          <line x1="44" y1="82" x2="58" y2="27" stroke="#b8860b" strokeWidth="0.5" />
-          <line x1="45.5" y1="82" x2="59" y2="27" stroke="#b8860b" strokeWidth="0.5" />
+          {/* Neck - angled up to the left */}
+          <rect x="20" y="48" width="38" height="8" rx="1" fill="#5c3d2e" transform="rotate(-25 44 62)" />
+          {/* Fretboard */}
+          <rect x="20" y="49" width="38" height="6" rx="0.5" fill="#1a0f08" transform="rotate(-25 44 62)" />
+          {/* Frets */}
+          <line x1="26" y1="49" x2="26" y2="55" stroke="#c0c0c0" strokeWidth="0.8" transform="rotate(-25 44 62)" />
+          <line x1="32" y1="49" x2="32" y2="55" stroke="#c0c0c0" strokeWidth="0.8" transform="rotate(-25 44 62)" />
+          <line x1="38" y1="49" x2="38" y2="55" stroke="#c0c0c0" strokeWidth="0.8" transform="rotate(-25 44 62)" />
+          <line x1="44" y1="49" x2="44" y2="55" stroke="#c0c0c0" strokeWidth="0.8" transform="rotate(-25 44 62)" />
+          <line x1="50" y1="49" x2="50" y2="55" stroke="#c0c0c0" strokeWidth="0.8" transform="rotate(-25 44 62)" />
+          {/* Fret markers */}
+          <circle cx="29" cy="52" r="1" fill="#f0ead6" transform="rotate(-25 44 62)" />
+          <circle cx="41" cy="52" r="1" fill="#f0ead6" transform="rotate(-25 44 62)" />
+          
+          {/* Headstock */}
+          <path d="M8,32 L8,48 Q8,50 12,50 L20,50 Q24,50 24,48 L24,32 Q24,28 16,28 Q8,28 8,32" fill="#5c3d2e" transform="rotate(-25 44 62)" />
+          {/* Nut */}
+          <rect x="19" y="48" width="6" height="2" fill="#f0ead6" transform="rotate(-25 44 62)" />
+          {/* Tuning pegs */}
+          <circle cx="10" cy="35" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          <circle cx="10" cy="41" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          <circle cx="10" cy="47" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          <circle cx="22" cy="35" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          <circle cx="22" cy="41" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          <circle cx="22" cy="47" r="2.5" fill="#c0c0c0" transform="rotate(-25 44 62)" />
+          
+          {/* Strings - from bridge to nut */}
+          <line x1="58" y1="95" x2="22" y2="42" stroke="#d4d4d4" strokeWidth="0.4" />
+          <line x1="60" y1="95" x2="24" y2="43" stroke="#d4d4d4" strokeWidth="0.4" />
+          <line x1="63" y1="95" x2="27" y2="44" stroke="#b8b8b8" strokeWidth="0.5" />
+          <line x1="66" y1="95" x2="30" y2="45" stroke="#b8b8b8" strokeWidth="0.5" />
+          <line x1="68" y1="95" x2="32" y2="46" stroke="#cd853f" strokeWidth="0.6" />
+          <line x1="70" y1="95" x2="34" y2="47" stroke="#cd853f" strokeWidth="0.6" />
           
           {/* Pickguard */}
-          <path d="M34,70 Q30,75 34,82 Q38,85 42,82 Q40,76 36,72 Z" fill="#1a0f08" opacity="0.7" />
+          <path d="M50,84 Q46,88 50,96 Q56,100 62,96 Q58,90 54,86 Z" fill="#1a0f08" opacity="0.6" />
         </g>
         
-        {/* Arms */}
-        <path d={isPlaying ? "M25,50 Q12,60 18,75" : "M25,50 Q14,60 20,75"} fill="none" stroke="#4a4a4a" strokeWidth="8" strokeLinecap="round" />
-        <path d={isPlaying ? "M55,50 Q68,58 58,72" : "M55,50 Q66,58 56,72"} fill="none" stroke="#4a4a4a" strokeWidth="8" strokeLinecap="round" />
-        {/* Hands */}
-        <circle cx={isPlaying ? 18 : 20} cy="75" r="5" fill="#c4a67c" />
-        <circle cx={isPlaying ? 58 : 56} cy="72" r="5" fill="#c4a67c" />
+        {/* BODY - sitting cross-legged */}
+        {/* Legs crossed */}
+        <ellipse cx="45" cy="108" rx="22" ry="8" fill="#3d3d4d" />
+        <ellipse cx="75" cy="108" rx="22" ry="8" fill="#3d3d4d" />
+        {/* Shoes */}
+        <ellipse cx="25" cy="110" rx="8" ry="5" fill="#1a1a1a" />
+        <ellipse cx="95" cy="110" rx="8" ry="5" fill="#1a1a1a" />
+        
+        {/* Torso */}
+        <path d="M40,50 Q28,55 28,68 L28,100 Q28,105 40,105 L80,105 Q92,105 92,100 L92,68 Q92,55 80,50 Q65,42 60,42 Q55,42 40,50" fill="#4a4a4a" />
+        {/* Hoodie pocket */}
+        <path d="M45,85 L75,85 L72,95 L48,95 Z" fill="#3a3a3a" />
+        
+        {/* LEFT ARM - reaching to guitar neck (fretting hand) */}
+        <path d={isPlaying ? "M40,58 Q25,50 18,42 Q12,36 15,32" : "M40,58 Q26,52 20,44 Q14,38 17,34"} 
+              fill="none" stroke="#4a4a4a" strokeWidth="10" strokeLinecap="round" />
+        {/* Left hand on neck */}
+        <g transform={isPlaying ? "translate(15,30)" : "translate(17,32)"}>
+          <ellipse cx="0" cy="0" rx="6" ry="5" fill="#c4a67c" />
+          {/* Fingers wrapped around neck */}
+          <ellipse cx="-3" cy="4" rx="2" ry="3" fill="#c4a67c" />
+          <ellipse cx="0" cy="5" rx="2" ry="3" fill="#c4a67c" />
+          <ellipse cx="3" cy="4" rx="2" ry="3" fill="#c4a67c" />
+        </g>
+        
+        {/* RIGHT ARM - over guitar body (strumming hand) */}
+        <path d={isPlaying ? "M80,58 Q90,65 85,80" : "M80,58 Q88,64 84,78"} 
+              fill="none" stroke="#4a4a4a" strokeWidth="10" strokeLinecap="round" />
+        {/* Right hand near sound hole */}
+        <g transform={isPlaying ? "translate(84,82)" : "translate(83,80)"}>
+          <ellipse cx="0" cy="0" rx="6" ry="5" fill="#c4a67c" />
+          {/* Fingers for strumming */}
+          <ellipse cx="2" cy="5" rx="1.5" ry="3" fill="#c4a67c" />
+          <ellipse cx="5" cy="4" rx="1.5" ry="3" fill="#c4a67c" />
+          <ellipse cx="-1" cy="5" rx="1.5" ry="3" fill="#c4a67c" />
+        </g>
         
         {/* Neck */}
-        <rect x="36" y="30" width="8" height="12" rx="2" fill="#c4a67c" />
+        <rect x="54" y="32" width="12" height="12" rx="3" fill="#c4a67c" />
         
         {/* Head */}
-        <ellipse cx="40" cy="20" rx="12" ry="14" fill="#c4a67c" />
+        <ellipse cx="60" cy="22" rx="14" ry="16" fill="#c4a67c" />
+        
         {/* Beanie */}
-        <path d="M28,16 Q28,6 40,6 Q52,6 52,16" fill="#4a6670" />
-        <rect x="28" y="14" width="24" height="4" fill="#4a6670" />
-        {/* Eyes */}
-        <ellipse cx="35" cy="20" rx="2" ry="1.5" fill="#222" />
-        <ellipse cx="45" cy="20" rx="2" ry="1.5" fill="#222" />
+        <path d="M46,18 Q46,4 60,4 Q74,4 74,18" fill="#4a6670" />
+        <rect x="46" y="14" width="28" height="6" fill="#4a6670" />
+        <rect x="46" y="18" width="28" height="3" fill="#3a565f" />
+        
+        {/* Face */}
+        {/* Eyes - tired look */}
+        <ellipse cx="54" cy="22" rx="2.5" ry="2" fill="#222" />
+        <ellipse cx="66" cy="22" rx="2.5" ry="2" fill="#222" />
+        {/* Eyebags */}
+        <path d="M51,24 Q54,26 57,24" fill="none" stroke="#a08a7a" strokeWidth="0.5" />
+        <path d="M63,24 Q66,26 69,24" fill="none" stroke="#a08a7a" strokeWidth="0.5" />
+        
+        {/* Nose */}
+        <path d="M60,24 L59,28 L61,28" fill="#b8a090" />
+        
         {/* Mouth */}
-        <path d={isPlaying ? "M36,31 Q40,34 44,31" : "M37,31 Q40,32 43,31"} fill="none" stroke="#8a6a5a" strokeWidth="1" />
-        {/* Ear */}
-        <ellipse cx="52" cy="20" rx="2" ry="3" fill="#c4a67c" />
+        <path d={isPlaying ? "M55,33 Q60,37 65,33" : "M56,33 Q60,35 64,33"} fill="none" stroke="#8a6a5a" strokeWidth="1.2" />
+        
         {/* Stubble */}
-        {[0,1,2,3,4].map(i => <circle key={i} cx={35 + (i%3)*4} cy={28 + Math.floor(i/3)*2} r="0.4" fill="#8a7a6a" opacity="0.5" />)}
+        {[0,1,2,3,4,5,6,7].map(i => (
+          <circle key={i} cx={54 + (i%4)*3} cy={31 + Math.floor(i/4)*2} r="0.5" fill="#7a6a5a" opacity="0.6" />
+        ))}
+        
+        {/* Ears */}
+        <ellipse cx="46" cy="22" rx="3" ry="4" fill="#c4a67c" />
+        <ellipse cx="74" cy="22" rx="3" ry="4" fill="#c4a67c" />
       </svg>
     </div>
   );
