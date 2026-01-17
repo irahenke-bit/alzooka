@@ -615,7 +615,7 @@ export default function MusicianBeggarPage() {
 
   // Spawn pedestrians
   const spawnPedestrian = useCallback(() => {
-    const direction = Math.random() > 0.5 ? "right" : "left";
+    const direction: "left" | "right" = Math.random() > 0.5 ? "right" : "left";
     const attractionLevel = (upgradeLevels["sign"] || 0) + (upgradeLevels["banner"] || 0) + (upgradeLevels["costume"] || 0) + (upgradeLevels["mascot"] || 0);
     const stopChance = Math.min(0.4, 0.1 + attractionLevel * 0.02);
     const tipChance = Math.min(0.6, 0.2 + attractionLevel * 0.03);
