@@ -190,7 +190,7 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
       {/* Musician SVG */}
       <svg width="180" height="180" viewBox="0 0 140 140" style={{ position: "absolute", bottom: 8, left: 5 }}>
         
-        {/* === LEGS (behind everything) === */}
+        {/* === LEGS === */}
         <ellipse cx="50" cy="128" rx="25" ry="9" fill="#3d3d4d" />
         <ellipse cx="90" cy="128" rx="25" ry="9" fill="#3d3d4d" />
         <ellipse cx="28" cy="130" rx="9" ry="5" fill="#1a1a1a" />
@@ -200,77 +200,89 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
         <path d="M45,55 Q30,62 30,78 L30,118 Q30,125 45,125 L95,125 Q110,125 110,118 L110,78 Q110,62 95,55 Q78,46 70,46 Q62,46 45,55" fill="#4a4a4a" />
         <path d="M52,100 L88,100 L85,115 L55,115 Z" fill="#3a3a3a" />
         
-        {/* === GUITAR (in front of torso) === */}
-        <g style={{ transform: isPlaying ? "translate(0, -1px)" : "translate(0, 0)", transition: "transform 0.1s" }}>
-          {/* Guitar body - sitting on lap, sound hole facing viewer */}
-          <ellipse cx="70" cy="105" rx="32" ry="22" fill="#c4956a" />
-          <ellipse cx="70" cy="105" rx="32" ry="22" fill="none" stroke="#8b5a2b" strokeWidth="2" />
+        {/* === GUITAR - HORIZONTAL across body === */}
+        <g style={{ transform: isPlaying ? "translateY(-1px)" : "", transition: "transform 0.1s" }}>
+          
+          {/* NECK - horizontal, going LEFT, slight upward tilt */}
+          {/* Neck back */}
+          <polygon points="5,62 48,72 48,82 5,72" fill="#5c3d2e" />
+          {/* Fretboard */}
+          <polygon points="8,64 48,73 48,81 8,71" fill="#1a0f08" />
+          {/* Frets */}
+          <line x1="15" y1="65" x2="15" y2="71" stroke="#c0c0c0" strokeWidth="1" />
+          <line x1="22" y1="66" x2="22" y2="72" stroke="#c0c0c0" strokeWidth="1" />
+          <line x1="29" y1="67" x2="29" y2="74" stroke="#c0c0c0" strokeWidth="1" />
+          <line x1="36" y1="69" x2="36" y2="76" stroke="#c0c0c0" strokeWidth="1" />
+          <line x1="43" y1="71" x2="43" y2="78" stroke="#c0c0c0" strokeWidth="1" />
+          {/* Fret markers */}
+          <circle cx="18" cy="68" r="1.5" fill="#f0ead6" />
+          <circle cx="32" cy="71" r="1.5" fill="#f0ead6" />
+          
+          {/* HEADSTOCK - at far left */}
+          <polygon points="-8,58 8,62 8,74 -8,70" fill="#5c3d2e" />
+          {/* Nut */}
+          <line x1="6" y1="63" x2="6" y2="73" stroke="#f0ead6" strokeWidth="2" />
+          {/* Tuning pegs - top */}
+          <circle cx="-4" cy="60" r="3" fill="#c0c0c0" />
+          <circle cx="-4" cy="65" r="3" fill="#c0c0c0" />
+          <circle cx="-4" cy="70" r="3" fill="#c0c0c0" />
+          {/* Tuning pegs - bottom */}
+          <circle cx="2" cy="61" r="3" fill="#c0c0c0" />
+          <circle cx="2" cy="66" r="3" fill="#c0c0c0" />
+          <circle cx="2" cy="71" r="3" fill="#c0c0c0" />
+          
+          {/* GUITAR BODY - on lap */}
+          {/* Lower bout */}
+          <ellipse cx="80" cy="100" rx="35" ry="24" fill="#c4956a" />
+          <ellipse cx="80" cy="100" rx="35" ry="24" fill="none" stroke="#8b5a2b" strokeWidth="2" />
           {/* Upper bout */}
-          <ellipse cx="70" cy="80" rx="22" ry="14" fill="#c4956a" />
-          <ellipse cx="70" cy="80" rx="22" ry="14" fill="none" stroke="#8b5a2b" strokeWidth="1.5" />
-          {/* Waist fill */}
-          <rect x="48" y="80" width="44" height="25" fill="#c4956a" />
+          <ellipse cx="58" cy="82" rx="20" ry="14" fill="#c4956a" />
+          <ellipse cx="58" cy="82" rx="20" ry="14" fill="none" stroke="#8b5a2b" strokeWidth="1.5" />
+          {/* Waist */}
+          <path d="M48,76 Q45,88 48,100 L80,108 Q95,100 95,88 L80,76 Q65,72 48,76" fill="#c4956a" />
           
           {/* Sound hole */}
-          <circle cx="70" cy="95" r="10" fill="#2a1a10" />
-          <circle cx="70" cy="95" r="12" fill="none" stroke="#5c3d2e" strokeWidth="2" />
-          <circle cx="70" cy="95" r="14" fill="none" stroke="#8b5a2b" strokeWidth="1" />
+          <circle cx="72" cy="92" r="12" fill="#2a1a10" />
+          <circle cx="72" cy="92" r="14" fill="none" stroke="#5c3d2e" strokeWidth="2" />
+          <circle cx="72" cy="92" r="16" fill="none" stroke="#8b5a2b" strokeWidth="1" />
           
           {/* Bridge */}
-          <rect x="58" y="112" width="24" height="5" rx="1" fill="#3d2817" />
-          <rect x="60" y="111" width="20" height="2" rx="0.5" fill="#f0ead6" />
+          <rect x="62" y="108" width="28" height="5" rx="1" fill="#3d2817" />
+          <rect x="64" y="107" width="24" height="2" rx="0.5" fill="#f0ead6" />
           
           {/* Pickguard */}
-          <ellipse cx="56" cy="100" rx="10" ry="14" fill="#2a1a10" opacity="0.5" />
+          <ellipse cx="58" cy="95" rx="12" ry="16" fill="#2a1a10" opacity="0.4" />
           
-          {/* NECK - going to the LEFT */}
-          <rect x="8" y="52" width="48" height="12" rx="2" fill="#5c3d2e" transform="rotate(-35 32 58)" />
-          <rect x="8" y="54" width="48" height="8" rx="1" fill="#1a0f08" transform="rotate(-35 32 58)" />
-          
-          {/* Frets */}
-          {[0,1,2,3,4,5,6].map(i => (
-            <rect key={i} x={14 + i*7} y="53" width="1.5" height="10" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          ))}
-          {/* Fret dots */}
-          <circle cx="24" cy="58" r="1.5" fill="#f0ead6" transform="rotate(-35 32 58)" />
-          <circle cx="38" cy="58" r="1.5" fill="#f0ead6" transform="rotate(-35 32 58)" />
-          
-          {/* Headstock */}
-          <rect x="-2" y="50" width="14" height="18" rx="2" fill="#5c3d2e" transform="rotate(-35 32 58)" />
-          {/* Tuning pegs */}
-          <circle cx="0" cy="54" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          <circle cx="0" cy="60" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          <circle cx="0" cy="66" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          <circle cx="10" cy="54" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          <circle cx="10" cy="60" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          <circle cx="10" cy="66" r="3" fill="#c0c0c0" transform="rotate(-35 32 58)" />
-          
-          {/* Strings */}
-          <line x1="62" y1="111" x2="18" y2="38" stroke="#e0e0e0" strokeWidth="0.5" />
-          <line x1="66" y1="111" x2="22" y2="40" stroke="#e0e0e0" strokeWidth="0.5" />
-          <line x1="70" y1="111" x2="26" y2="42" stroke="#d0d0d0" strokeWidth="0.6" />
-          <line x1="74" y1="111" x2="30" y2="44" stroke="#d0d0d0" strokeWidth="0.6" />
-          <line x1="78" y1="111" x2="34" y2="46" stroke="#cd853f" strokeWidth="0.7" />
-          <line x1="82" y1="111" x2="38" y2="48" stroke="#cd853f" strokeWidth="0.7" />
+          {/* Strings - from bridge to nut */}
+          <line x1="66" y1="107" x2="6" y2="64" stroke="#e0e0e0" strokeWidth="0.5" />
+          <line x1="70" y1="107" x2="6" y2="66" stroke="#e0e0e0" strokeWidth="0.5" />
+          <line x1="74" y1="107" x2="6" y2="68" stroke="#d0d0d0" strokeWidth="0.6" />
+          <line x1="78" y1="107" x2="6" y2="70" stroke="#d0d0d0" strokeWidth="0.6" />
+          <line x1="82" y1="107" x2="6" y2="72" stroke="#cd853f" strokeWidth="0.7" />
+          <line x1="86" y1="107" x2="6" y2="74" stroke="#cd853f" strokeWidth="0.7" />
         </g>
         
         {/* === LEFT ARM - fretting hand on neck === */}
-        <path d="M45,62 Q28,55 20,45" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
-        {/* Left hand gripping neck */}
-        <ellipse cx="18" cy="42" rx="8" ry="7" fill="#c4a67c" />
-        <ellipse cx="14" cy="48" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="18" cy="50" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="22" cy="49" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="25" cy="46" rx="2.5" ry="3.5" fill="#c4a67c" />
+        <path d="M42,62 Q30,60 22,65" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
+        {/* Left hand wrapped around neck */}
+        <ellipse cx="20" cy="68" rx="9" ry="7" fill="#c4a67c" />
+        {/* Fingers curling over fretboard */}
+        <ellipse cx="16" cy="62" rx="3" ry="4" fill="#c4a67c" />
+        <ellipse cx="20" cy="61" rx="3" ry="4" fill="#c4a67c" />
+        <ellipse cx="24" cy="62" rx="3" ry="4" fill="#c4a67c" />
+        <ellipse cx="27" cy="64" rx="2.5" ry="3.5" fill="#c4a67c" />
+        {/* Thumb behind neck */}
+        <ellipse cx="18" cy="76" rx="3" ry="4" fill="#c4a67c" />
         
         {/* === RIGHT ARM - strumming hand over sound hole === */}
-        <path d="M95,62 Q105,75 95,92" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
-        {/* Right hand near sound hole */}
-        <ellipse cx="94" cy="95" rx="8" ry="6" fill="#c4a67c" />
-        <ellipse cx="88" cy="100" rx="2.5" ry="4" fill="#c4a67c" />
-        <ellipse cx="92" cy="102" rx="2.5" ry="4" fill="#c4a67c" />
-        <ellipse cx="96" cy="102" rx="2.5" ry="4" fill="#c4a67c" />
+        <path d="M98,62 Q110,75 100,90" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
+        {/* Right hand over strings */}
+        <ellipse cx="98" cy="93" rx="9" ry="7" fill="#c4a67c" />
+        {/* Strumming fingers */}
+        <ellipse cx="92" cy="98" rx="2.5" ry="4" fill="#c4a67c" />
+        <ellipse cx="96" cy="100" rx="2.5" ry="4" fill="#c4a67c" />
         <ellipse cx="100" cy="100" rx="2.5" ry="4" fill="#c4a67c" />
+        <ellipse cx="104" cy="98" rx="2.5" ry="4" fill="#c4a67c" />
         
         {/* === HEAD === */}
         <rect x="64" y="38" width="12" height="14" rx="3" fill="#c4a67c" />
