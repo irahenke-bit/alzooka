@@ -152,15 +152,18 @@ function RobloxPerson({
   );
 }
 
-// Homeless Musician
+// Homeless Musician with realistic acoustic guitar
 function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; hasSign: boolean; hasDog: boolean }) {
   return (
     <div style={{ position: "relative", width: 180, height: 180, zIndex: 10 }}>
+      {/* Blanket */}
       <div style={{ position: "absolute", bottom: 0, left: -10, width: 200, height: 16, background: "linear-gradient(90deg, #4a3a2a 0%, #6a5a4a 50%, #4a3a2a 100%)", borderRadius: 3 }} />
+      {/* Hat for coins */}
       <div style={{ position: "absolute", bottom: 8, right: 10, width: 40, height: 14, background: "#222", borderRadius: "0 0 50% 50%" }}>
         <div style={{ position: "absolute", top: 3, left: 8, width: 7, height: 4, background: "#b8860b", borderRadius: "50%" }} />
         <div style={{ position: "absolute", top: 5, left: 22, width: 5, height: 3, background: "#daa520", borderRadius: "50%" }} />
       </div>
+      {/* Dog */}
       {hasDog && (
         <div style={{ position: "absolute", bottom: 10, left: -55 }}>
           <svg width="55" height="45" viewBox="0 0 30 25">
@@ -174,47 +177,128 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
           </svg>
         </div>
       )}
+      {/* Sign */}
       {hasSign && (
         <div style={{ position: "absolute", bottom: 20, right: -45, width: 55, height: 40, background: "#a08060", border: "2px solid #705030", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(3deg)" }}>
           <span style={{ fontSize: 8, color: "#222", fontWeight: "bold", textAlign: "center", lineHeight: 1.1 }}>ANYTHING<br/>HELPS</span>
         </div>
       )}
+      
+      {/* Musician SVG */}
       <svg width="140" height="160" viewBox="0 0 80 110" style={{ position: "absolute", bottom: 10, left: 20 }}>
+        {/* Crossed legs */}
         <ellipse cx="25" cy="95" rx="18" ry="7" fill="#3d3d4d" />
         <ellipse cx="55" cy="95" rx="18" ry="7" fill="#3d3d4d" />
+        {/* Shoes */}
         <ellipse cx="10" cy="97" rx="7" ry="4" fill="#222" />
         <ellipse cx="70" cy="97" rx="7" ry="4" fill="#222" />
+        
+        {/* Body/Torso */}
         <path d="M25,45 Q15,50 15,60 L15,88 Q15,92 25,92 L55,92 Q65,92 65,88 L65,60 Q65,50 55,45 Q45,40 40,40 Q35,40 25,45" fill="#4a4a4a" />
-        <g style={{ transform: isPlaying ? "rotate(-2deg)" : "rotate(0deg)", transformOrigin: "40px 70px", transition: "transform 0.1s" }}>
-          <rect x="52" y="30" width="5" height="38" rx="1" fill="#5c4033" />
-          <rect x="51" y="22" width="7" height="10" rx="1" fill="#3d2817" />
-          <ellipse cx="40" cy="72" rx="15" ry="18" fill="#a08060" stroke="#806040" strokeWidth="1.5" />
-          <ellipse cx="40" cy="72" rx="5" ry="6" fill="#2c1810" />
+        
+        {/* REALISTIC ACOUSTIC GUITAR */}
+        <g style={{ transform: isPlaying ? "rotate(-2deg)" : "rotate(0deg)", transformOrigin: "42px 70px", transition: "transform 0.1s" }}>
+          {/* Guitar Neck */}
+          <rect x="54" y="25" width="6" height="45" rx="1" fill="#3d2817" />
+          {/* Fretboard */}
+          <rect x="54.5" y="25" width="5" height="45" fill="#1a0f08" />
+          {/* Frets */}
+          {[0,1,2,3,4,5,6,7,8].map(i => (
+            <rect key={i} x="54" y={28 + i*5} width="6" height="1" fill="#c0c0c0" />
+          ))}
+          {/* Fret markers (dots) */}
+          <circle cx="57" cy="38" r="1" fill="#f5f5dc" />
+          <circle cx="57" cy="48" r="1" fill="#f5f5dc" />
+          <circle cx="57" cy="58" r="1" fill="#f5f5dc" />
+          
+          {/* Headstock */}
+          <path d="M52,15 L52,27 L60,27 L60,15 Q60,12 56,12 Q52,12 52,15" fill="#3d2817" />
+          {/* Tuning pegs - left side */}
+          <ellipse cx="51" cy="17" rx="2" ry="1.5" fill="#c0c0c0" />
+          <ellipse cx="51" cy="21" rx="2" ry="1.5" fill="#c0c0c0" />
+          <ellipse cx="51" cy="25" rx="2" ry="1.5" fill="#c0c0c0" />
+          {/* Tuning pegs - right side */}
+          <ellipse cx="61" cy="17" rx="2" ry="1.5" fill="#c0c0c0" />
+          <ellipse cx="61" cy="21" rx="2" ry="1.5" fill="#c0c0c0" />
+          <ellipse cx="61" cy="25" rx="2" ry="1.5" fill="#c0c0c0" />
+          {/* Nut */}
+          <rect x="53" y="26" width="8" height="2" fill="#f5f5dc" />
+          
+          {/* Guitar Body - Figure 8 shape */}
+          {/* Upper bout */}
+          <ellipse cx="42" cy="58" rx="12" ry="10" fill="#d4a574" />
+          {/* Lower bout (larger) */}
+          <ellipse cx="42" cy="78" rx="16" ry="14" fill="#d4a574" />
+          {/* Waist connection */}
+          <rect x="32" y="58" width="20" height="20" fill="#d4a574" />
+          {/* Body outline/binding */}
+          <ellipse cx="42" cy="58" rx="12" ry="10" fill="none" stroke="#8b6914" strokeWidth="1" />
+          <ellipse cx="42" cy="78" rx="16" ry="14" fill="none" stroke="#8b6914" strokeWidth="1" />
+          
+          {/* Sound hole */}
+          <circle cx="42" cy="68" r="6" fill="#1a0f08" />
+          {/* Rosette (decorative ring around sound hole) */}
+          <circle cx="42" cy="68" r="7" fill="none" stroke="#8b6914" strokeWidth="0.8" />
+          <circle cx="42" cy="68" r="8" fill="none" stroke="#5c4033" strokeWidth="0.5" />
+          <circle cx="42" cy="68" r="5" fill="none" stroke="#5c4033" strokeWidth="0.5" />
+          
+          {/* Bridge */}
+          <rect x="36" y="82" width="12" height="3" rx="0.5" fill="#1a0f08" />
+          {/* Saddle */}
+          <rect x="37" y="81.5" width="10" height="1" rx="0.5" fill="#f5f5dc" />
+          {/* Bridge pins */}
+          {[0,1,2,3,4,5].map(i => (
+            <circle key={i} cx={38 + i*1.6} cy="84" r="0.6" fill="#f5f5dc" />
+          ))}
+          
+          {/* Strings */}
+          <line x1="38" y1="82" x2="54" y2="27" stroke="#e8e8e8" strokeWidth="0.3" />
+          <line x1="39.5" y1="82" x2="55" y2="27" stroke="#e8e8e8" strokeWidth="0.3" />
+          <line x1="41" y1="82" x2="56" y2="27" stroke="#d4d4d4" strokeWidth="0.4" />
+          <line x1="42.5" y1="82" x2="57" y2="27" stroke="#d4d4d4" strokeWidth="0.4" />
+          <line x1="44" y1="82" x2="58" y2="27" stroke="#b8860b" strokeWidth="0.5" />
+          <line x1="45.5" y1="82" x2="59" y2="27" stroke="#b8860b" strokeWidth="0.5" />
+          
+          {/* Pickguard */}
+          <path d="M34,70 Q30,75 34,82 Q38,85 42,82 Q40,76 36,72 Z" fill="#1a0f08" opacity="0.7" />
         </g>
+        
+        {/* Arms */}
         <path d={isPlaying ? "M25,50 Q12,60 18,75" : "M25,50 Q14,60 20,75"} fill="none" stroke="#4a4a4a" strokeWidth="8" strokeLinecap="round" />
         <path d={isPlaying ? "M55,50 Q68,58 58,72" : "M55,50 Q66,58 56,72"} fill="none" stroke="#4a4a4a" strokeWidth="8" strokeLinecap="round" />
+        {/* Hands */}
         <circle cx={isPlaying ? 18 : 20} cy="75" r="5" fill="#c4a67c" />
         <circle cx={isPlaying ? 58 : 56} cy="72" r="5" fill="#c4a67c" />
+        
+        {/* Neck */}
         <rect x="36" y="30" width="8" height="12" rx="2" fill="#c4a67c" />
+        
+        {/* Head */}
         <ellipse cx="40" cy="20" rx="12" ry="14" fill="#c4a67c" />
+        {/* Beanie */}
         <path d="M28,16 Q28,6 40,6 Q52,6 52,16" fill="#4a6670" />
         <rect x="28" y="14" width="24" height="4" fill="#4a6670" />
+        {/* Eyes */}
         <ellipse cx="35" cy="20" rx="2" ry="1.5" fill="#222" />
         <ellipse cx="45" cy="20" rx="2" ry="1.5" fill="#222" />
+        {/* Mouth */}
         <path d={isPlaying ? "M36,31 Q40,34 44,31" : "M37,31 Q40,32 43,31"} fill="none" stroke="#8a6a5a" strokeWidth="1" />
+        {/* Ear */}
         <ellipse cx="52" cy="20" rx="2" ry="3" fill="#c4a67c" />
+        {/* Stubble */}
+        {[0,1,2,3,4].map(i => <circle key={i} cx={35 + (i%3)*4} cy={28 + Math.floor(i/3)*2} r="0.4" fill="#8a7a6a" opacity="0.5" />)}
       </svg>
     </div>
   );
 }
 
-// Upgrade Shop - bigger
+// Upgrade Shop - on sidewalk
 function UpgradeShop({ onClick }: { onClick: () => void }) {
   return (
-    <div onClick={onClick} style={{ position: "absolute", bottom: 5, right: "15%", cursor: "pointer", zIndex: 15, transition: "transform 0.2s" }}
+    <div onClick={onClick} style={{ position: "absolute", bottom: "24%", right: "12%", cursor: "pointer", zIndex: 15, transition: "transform 0.2s" }}
       onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-      <svg width="160" height="170" viewBox="0 0 100 110">
+      <svg width="130" height="140" viewBox="0 0 100 110">
         <rect x="5" y="25" width="90" height="85" fill="#2a2a35" stroke="#1a1a25" strokeWidth="2" />
         <path d="M0,27 L50,5 L100,27" fill="#3a3a45" stroke="#2a2a35" strokeWidth="1" />
         <rect x="25" y="50" width="50" height="60" rx="2" fill="#1a1a25" />
@@ -229,13 +313,13 @@ function UpgradeShop({ onClick }: { onClick: () => void }) {
   );
 }
 
-// Lottery Shop
+// Lottery Shop - on sidewalk
 function LotteryShop({ onClick }: { onClick: () => void }) {
   return (
-    <div onClick={onClick} style={{ position: "absolute", bottom: 5, left: "10%", cursor: "pointer", zIndex: 15, transition: "transform 0.2s" }}
+    <div onClick={onClick} style={{ position: "absolute", bottom: "24%", left: "8%", cursor: "pointer", zIndex: 15, transition: "transform 0.2s" }}
       onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-      <svg width="160" height="170" viewBox="0 0 100 110">
+      <svg width="130" height="140" viewBox="0 0 100 110">
         <rect x="5" y="25" width="90" height="85" fill="#2a3525" stroke="#1a2515" strokeWidth="2" />
         <path d="M0,27 L50,5 L100,27" fill="#3a4535" stroke="#2a3525" strokeWidth="1" />
         <rect x="25" y="50" width="50" height="60" rx="2" fill="#1a2515" />
