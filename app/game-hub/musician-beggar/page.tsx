@@ -12,56 +12,7 @@ type UserData = {
   avatar_url: string | null;
 };
 
-// Venue/Scene definitions
-const VENUES = [
-  { 
-    id: "street", 
-    name: "Street Corner", 
-    unlockCost: 0,
-    background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, #1a1a2e 100%)",
-    groundColor: "#2d2d44",
-    description: "Where every legend begins",
-    crowdSize: 2,
-  },
-  { 
-    id: "subway", 
-    name: "Subway Station", 
-    unlockCost: 5000,
-    background: "linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 40%, #1a1a1a 100%)",
-    groundColor: "#3d3d3d",
-    description: "Underground vibes",
-    crowdSize: 5,
-  },
-  { 
-    id: "cafe", 
-    name: "Coffee Shop", 
-    unlockCost: 50000,
-    background: "linear-gradient(180deg, #2d1b0e 0%, #4a2c17 40%, #2d1b0e 100%)",
-    groundColor: "#5c3d2e",
-    description: "Cozy acoustics",
-    crowdSize: 8,
-  },
-  { 
-    id: "club", 
-    name: "Night Club", 
-    unlockCost: 500000,
-    background: "linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 40%, #0a0a1a 100%)",
-    groundColor: "#1a1a2e",
-    description: "Neon dreams",
-    crowdSize: 15,
-  },
-  { 
-    id: "arena", 
-    name: "Arena", 
-    unlockCost: 5000000,
-    background: "linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 40%, #0a0a0a 100%)",
-    groundColor: "#2a2a2a",
-    description: "The big time",
-    crowdSize: 30,
-  },
-];
-
-// Upgrade categories
+// Upgrade types
 type UpgradeType = {
   id: string;
   name: string;
@@ -71,33 +22,35 @@ type UpgradeType = {
   zpsBonus: number;
   zpcBonus: number;
   maxLevel: number;
-  category: "instrument" | "gear" | "band" | "skill";
+  category: "instrument" | "gear" | "skill" | "attraction";
 };
 
 const UPGRADES: UpgradeType[] = [
-  // Instruments - visually change what musician holds
-  { id: "acoustic", name: "Acoustic Guitar", description: "Your trusty six-string", baseCost: 50, costMultiplier: 1.15, zpsBonus: 1, zpcBonus: 0, maxLevel: 25, category: "instrument" },
-  { id: "electric", name: "Electric Guitar", description: "Time to plug in", baseCost: 2000, costMultiplier: 1.15, zpsBonus: 10, zpcBonus: 0, maxLevel: 25, category: "instrument" },
-  { id: "keyboard", name: "Keyboard", description: "Ivory keys", baseCost: 10000, costMultiplier: 1.15, zpsBonus: 50, zpcBonus: 0, maxLevel: 25, category: "instrument" },
-  { id: "drums", name: "Drum Kit", description: "Keep the beat", baseCost: 75000, costMultiplier: 1.15, zpsBonus: 200, zpcBonus: 0, maxLevel: 25, category: "instrument" },
-  
-  // Gear - appears around musician
-  { id: "amp", name: "Amplifier", description: "Get loud", baseCost: 100, costMultiplier: 1.12, zpsBonus: 2, zpcBonus: 0, maxLevel: 30, category: "gear" },
-  { id: "mic", name: "Microphone", description: "Sing it out", baseCost: 500, costMultiplier: 1.12, zpsBonus: 5, zpcBonus: 0, maxLevel: 30, category: "gear" },
-  { id: "speakers", name: "Speakers", description: "Full sound", baseCost: 5000, costMultiplier: 1.12, zpsBonus: 30, zpcBonus: 0, maxLevel: 30, category: "gear" },
-  { id: "lights", name: "Stage Lights", description: "Spotlight on you", baseCost: 50000, costMultiplier: 1.12, zpsBonus: 150, zpcBonus: 0, maxLevel: 30, category: "gear" },
-  
-  // Band members - appear on stage
-  { id: "drummer", name: "Drummer", description: "Rhythm section", baseCost: 3000, costMultiplier: 1.2, zpsBonus: 20, zpcBonus: 0, maxLevel: 15, category: "band" },
-  { id: "bassist", name: "Bassist", description: "Low end power", baseCost: 15000, costMultiplier: 1.2, zpsBonus: 80, zpcBonus: 0, maxLevel: 15, category: "band" },
-  { id: "keyboardist", name: "Keyboardist", description: "Keys player", baseCost: 100000, costMultiplier: 1.2, zpsBonus: 400, zpcBonus: 0, maxLevel: 15, category: "band" },
-  { id: "backup", name: "Backup Singers", description: "Harmonies", baseCost: 500000, costMultiplier: 1.2, zpsBonus: 1500, zpcBonus: 0, maxLevel: 15, category: "band" },
-  
   // Skills - boost click power
   { id: "practice", name: "Practice", description: "Better technique", baseCost: 25, costMultiplier: 1.08, zpsBonus: 0, zpcBonus: 1, maxLevel: 100, category: "skill" },
-  { id: "showmanship", name: "Showmanship", description: "Work the crowd", baseCost: 500, costMultiplier: 1.1, zpsBonus: 0, zpcBonus: 5, maxLevel: 50, category: "skill" },
-  { id: "charisma", name: "Charisma", description: "Natural charm", baseCost: 10000, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 25, maxLevel: 50, category: "skill" },
-  { id: "viral", name: "Go Viral", description: "Internet fame", baseCost: 250000, costMultiplier: 1.15, zpsBonus: 0, zpcBonus: 200, maxLevel: 25, category: "skill" },
+  { id: "repertoire", name: "Song Repertoire", description: "More songs = more tips", baseCost: 200, costMultiplier: 1.1, zpsBonus: 0, zpcBonus: 3, maxLevel: 75, category: "skill" },
+  { id: "showmanship", name: "Showmanship", description: "Work the crowd", baseCost: 1000, costMultiplier: 1.1, zpsBonus: 0, zpcBonus: 10, maxLevel: 50, category: "skill" },
+  { id: "charisma", name: "Charisma", description: "Natural charm", baseCost: 10000, costMultiplier: 1.12, zpsBonus: 0, zpcBonus: 50, maxLevel: 50, category: "skill" },
+  { id: "viral", name: "Go Viral", description: "Internet fame", baseCost: 250000, costMultiplier: 1.15, zpsBonus: 0, zpcBonus: 500, maxLevel: 25, category: "skill" },
+  
+  // Instruments - passive income
+  { id: "acoustic", name: "Acoustic Guitar", description: "Your trusty six-string", baseCost: 50, costMultiplier: 1.15, zpsBonus: 1, zpcBonus: 0, maxLevel: 30, category: "instrument" },
+  { id: "harmonica", name: "Harmonica", description: "Blues vibes", baseCost: 300, costMultiplier: 1.15, zpsBonus: 4, zpcBonus: 0, maxLevel: 30, category: "instrument" },
+  { id: "electric", name: "Electric Guitar", description: "Plug in and rock", baseCost: 2500, costMultiplier: 1.15, zpsBonus: 15, zpcBonus: 0, maxLevel: 30, category: "instrument" },
+  { id: "keyboard", name: "Keyboard", description: "Ivory keys", baseCost: 15000, costMultiplier: 1.15, zpsBonus: 60, zpcBonus: 0, maxLevel: 30, category: "instrument" },
+  { id: "drums", name: "Drum Kit", description: "Keep the beat", baseCost: 100000, costMultiplier: 1.15, zpsBonus: 250, zpcBonus: 0, maxLevel: 30, category: "instrument" },
+  
+  // Gear - multipliers
+  { id: "amp", name: "Amplifier", description: "Get loud", baseCost: 150, costMultiplier: 1.12, zpsBonus: 2, zpcBonus: 0, maxLevel: 40, category: "gear" },
+  { id: "mic", name: "Microphone", description: "Sing it out", baseCost: 800, costMultiplier: 1.12, zpsBonus: 6, zpcBonus: 0, maxLevel: 40, category: "gear" },
+  { id: "speakers", name: "Speakers", description: "Full sound", baseCost: 5000, costMultiplier: 1.12, zpsBonus: 30, zpcBonus: 0, maxLevel: 40, category: "gear" },
+  { id: "lights", name: "String Lights", description: "Ambiance", baseCost: 25000, costMultiplier: 1.12, zpsBonus: 100, zpcBonus: 0, maxLevel: 40, category: "gear" },
+  
+  // Attraction - more listeners
+  { id: "sign", name: "Tip Sign", description: "Tips Appreciated!", baseCost: 100, costMultiplier: 1.2, zpsBonus: 3, zpcBonus: 0, maxLevel: 20, category: "attraction" },
+  { id: "banner", name: "Banner", description: "Advertise yourself", baseCost: 2000, costMultiplier: 1.2, zpsBonus: 20, zpcBonus: 0, maxLevel: 20, category: "attraction" },
+  { id: "costume", name: "Cool Outfit", description: "Look the part", baseCost: 20000, costMultiplier: 1.2, zpsBonus: 120, zpcBonus: 0, maxLevel: 20, category: "attraction" },
+  { id: "mascot", name: "Dancing Mascot", description: "Draws a crowd", baseCost: 150000, costMultiplier: 1.2, zpsBonus: 600, zpcBonus: 0, maxLevel: 20, category: "attraction" },
 ];
 
 function formatNumber(num: number): string {
@@ -112,418 +65,447 @@ function getUpgradeCost(upgrade: UpgradeType, level: number): number {
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, level));
 }
 
-// Musician Character Component
-function Musician({ 
+// Pedestrian types for variety
+const PEDESTRIAN_STYLES = [
+  { hair: "#2c1810", skin: "#e8c4a0", shirt: "#3b5998", pants: "#2d3436", type: "business" },
+  { hair: "#8b4513", skin: "#deb887", shirt: "#e74c3c", pants: "#1a1a2e", type: "casual" },
+  { hair: "#1a1a1a", skin: "#c4a67c", shirt: "#27ae60", pants: "#34495e", type: "casual" },
+  { hair: "#d4a574", skin: "#fdd9b5", shirt: "#9b59b6", pants: "#2c3e50", type: "casual" },
+  { hair: "#4a3728", skin: "#e8beac", shirt: "#f39c12", pants: "#1a252f", type: "hipster" },
+  { hair: "#1a1a1a", skin: "#8d5524", shirt: "#1abc9c", pants: "#2d3436", type: "casual" },
+  { hair: "#a0522d", skin: "#f5deb3", shirt: "#e84393", pants: "#0c0c0c", type: "stylish" },
+  { hair: "#696969", skin: "#deb887", shirt: "#636e72", pants: "#2d3436", type: "elder" },
+];
+
+// Realistic Person Component
+function Person({ 
+  style, 
+  isWalking, 
+  direction,
+  isStopped,
+  scale = 1,
+}: { 
+  style: typeof PEDESTRIAN_STYLES[0];
+  isWalking: boolean;
+  direction: "left" | "right";
+  isStopped: boolean;
+  scale?: number;
+}) {
+  return (
+    <svg 
+      width={30 * scale} 
+      height={70 * scale} 
+      viewBox="0 0 30 70" 
+      style={{ 
+        transform: direction === "left" ? "scaleX(-1)" : "scaleX(1)",
+      }}
+    >
+      {/* Shadow */}
+      <ellipse cx="15" cy="68" rx="10" ry="2" fill="rgba(0,0,0,0.2)" />
+      
+      {/* Legs */}
+      <g style={{ 
+        animation: isWalking && !isStopped ? "walkLegs 0.4s ease-in-out infinite" : undefined,
+        transformOrigin: "15px 42px",
+      }}>
+        {/* Left leg */}
+        <path 
+          d={`M12,42 Q11,52 10,62 Q10,65 12,66 L14,66 Q15,65 14,62 Q14,52 14,42`}
+          fill={style.pants}
+        />
+        {/* Right leg */}
+        <path 
+          d={`M16,42 Q17,52 18,62 Q18,65 16,66 L18,66 Q19,65 20,62 Q20,52 18,42`}
+          fill={style.pants}
+        />
+        {/* Shoes */}
+        <ellipse cx="12" cy="66" rx="4" ry="2" fill="#1a1a1a" />
+        <ellipse cx="18" cy="66" rx="4" ry="2" fill="#1a1a1a" />
+      </g>
+      
+      {/* Body/Torso */}
+      <path 
+        d="M8,22 Q6,24 6,28 L6,42 Q6,44 10,44 L20,44 Q24,44 24,42 L24,28 Q24,24 22,22 Q18,20 15,20 Q12,20 8,22"
+        fill={style.shirt}
+      />
+      {/* Collar detail */}
+      <path d="M12,22 L15,26 L18,22" fill="none" stroke={style.skin} strokeWidth="1.5" />
+      
+      {/* Arms */}
+      <g style={{
+        animation: isWalking && !isStopped ? "walkArms 0.4s ease-in-out infinite" : undefined,
+        transformOrigin: "15px 24px",
+      }}>
+        {/* Left arm */}
+        <path 
+          d="M6,24 Q4,28 5,36 Q5,38 7,38 Q9,38 9,36 Q10,30 8,24"
+          fill={style.shirt}
+        />
+        <ellipse cx="6" cy="38" rx="2.5" ry="3" fill={style.skin} />
+        
+        {/* Right arm */}
+        <path 
+          d="M24,24 Q26,28 25,36 Q25,38 23,38 Q21,38 21,36 Q20,30 22,24"
+          fill={style.shirt}
+        />
+        <ellipse cx="24" cy="38" rx="2.5" ry="3" fill={style.skin} />
+      </g>
+      
+      {/* Neck */}
+      <rect x="13" y="16" width="4" height="5" fill={style.skin} rx="1" />
+      
+      {/* Head */}
+      <ellipse cx="15" cy="11" rx="7" ry="8" fill={style.skin} />
+      
+      {/* Hair */}
+      <path 
+        d="M8,9 Q8,3 15,3 Q22,3 22,9 Q22,7 20,6 Q15,4 10,6 Q8,7 8,9"
+        fill={style.hair}
+      />
+      {style.type === "hipster" && (
+        <rect x="9" y="4" width="12" height="4" rx="2" fill={style.hair} />
+      )}
+      
+      {/* Face */}
+      <ellipse cx="12" cy="10" rx="1" ry="1.2" fill="#2c2c2c" />
+      <ellipse cx="18" cy="10" rx="1" ry="1.2" fill="#2c2c2c" />
+      <path d="M13,14 Q15,15.5 17,14" fill="none" stroke="#c4846a" strokeWidth="0.8" />
+      
+      {/* Ear */}
+      <ellipse cx="22" cy="11" rx="1.5" ry="2" fill={style.skin} />
+    </svg>
+  );
+}
+
+// Street Musician Component
+function StreetMusician({ 
   isPlaying, 
-  hasElectric, 
+  hasElectric,
   hasMic,
-  outfit,
+  outfitLevel,
 }: { 
   isPlaying: boolean;
   hasElectric: boolean;
   hasMic: boolean;
-  outfit: number;
+  outfitLevel: number;
 }) {
-  const bodyColor = outfit >= 3 ? "#1a1a1a" : outfit >= 2 ? "#2d4a6d" : outfit >= 1 ? "#4a3728" : "#3d3d5c";
-  const pantsColor = outfit >= 2 ? "#1a1a1a" : "#2d2d44";
+  const shirtColor = outfitLevel >= 3 ? "#1a1a1a" : outfitLevel >= 2 ? "#8b4513" : outfitLevel >= 1 ? "#2c5282" : "#4a5568";
+  const pantsColor = outfitLevel >= 2 ? "#1a1a1a" : "#3d4852";
+  const hasHat = outfitLevel >= 1;
+  const hasSunglasses = outfitLevel >= 3;
+  
+  return (
+    <svg width="80" height="160" viewBox="0 0 80 160">
+      {/* Shadow */}
+      <ellipse cx="40" cy="156" rx="25" ry="4" fill="rgba(0,0,0,0.3)" />
+      
+      {/* Stool/Seat */}
+      <rect x="25" y="105" width="30" height="8" rx="2" fill="#5c4033" />
+      <rect x="28" y="113" width="4" height="25" fill="#4a3728" />
+      <rect x="48" y="113" width="4" height="25" fill="#4a3728" />
+      <rect x="24" y="135" width="32" height="4" rx="1" fill="#4a3728" />
+      
+      {/* Legs (seated) */}
+      <path d="M32,108 Q28,120 30,138 L34,138 Q35,125 34,108" fill={pantsColor} />
+      <path d="M48,108 Q52,120 50,138 L46,138 Q45,125 46,108" fill={pantsColor} />
+      {/* Shoes */}
+      <ellipse cx="31" cy="140" rx="6" ry="3" fill="#2c2c2c" />
+      <ellipse cx="49" cy="140" rx="6" ry="3" fill="#2c2c2c" />
+      
+      {/* Body */}
+      <path 
+        d="M28,55 Q22,58 22,65 L22,108 Q22,112 30,112 L50,112 Q58,112 58,108 L58,65 Q58,58 52,55 Q46,52 40,52 Q34,52 28,55"
+        fill={shirtColor}
+      />
+      {/* Shirt details */}
+      {outfitLevel >= 2 && (
+        <>
+          <line x1="40" y1="55" x2="40" y2="75" stroke="#fbbf24" strokeWidth="2" />
+          <circle cx="40" cy="60" r="3" fill="#fbbf24" />
+        </>
+      )}
+      
+      {/* Guitar */}
+      <g style={{
+        transform: isPlaying ? "rotate(-3deg)" : "rotate(0deg)",
+        transformOrigin: "40px 85px",
+        transition: "transform 0.1s",
+      }}>
+        {/* Guitar neck */}
+        <rect x="55" y="45" width="6" height="45" rx="2" fill={hasElectric ? "#1a1a1a" : "#8b6914"} />
+        {/* Frets */}
+        {[0,1,2,3,4,5].map(i => (
+          <rect key={i} x="55" y={48 + i*7} width="6" height="1" fill="#ccc" />
+        ))}
+        {/* Headstock */}
+        <rect x="54" y="38" width="8" height="10" rx="2" fill={hasElectric ? "#1a1a1a" : "#5c4033"} />
+        {/* Tuning pegs */}
+        <circle cx="55" cy="42" r="1.5" fill="#888" />
+        <circle cx="61" cy="42" r="1.5" fill="#888" />
+        
+        {/* Guitar body */}
+        <ellipse 
+          cx="45" cy="95" rx="18" ry="22" 
+          fill={hasElectric ? "#dc2626" : "#d4a574"}
+          stroke={hasElectric ? "#991b1b" : "#8b6914"}
+          strokeWidth="2"
+        />
+        {!hasElectric && (
+          <ellipse cx="45" cy="95" rx="6" ry="7" fill="#3d2810" />
+        )}
+        {hasElectric && (
+          <>
+            <rect x="38" y="85" width="14" height="4" rx="1" fill="#fbbf24" />
+            <rect x="38" y="100" width="14" height="4" rx="1" fill="#fbbf24" />
+          </>
+        )}
+        {/* Strings */}
+        <line x1="45" y1="73" x2="58" y2="48" stroke="#ddd" strokeWidth="0.5" />
+        <line x1="47" y1="73" x2="59" y2="48" stroke="#ddd" strokeWidth="0.5" />
+      </g>
+      
+      {/* Arms */}
+      <g style={{
+        animation: isPlaying ? "strum 0.15s ease-in-out infinite alternate" : undefined,
+      }}>
+        {/* Left arm (on neck) */}
+        <path 
+          d="M28,60 Q20,65 22,75 Q22,78 25,78 L30,75 Q32,72 30,65 Q30,60 28,60"
+          fill={shirtColor}
+        />
+        <ellipse cx="54" cy="60" rx="5" ry="6" fill="#e8c4a0" />
+        
+        {/* Right arm (strumming) */}
+        <path 
+          d="M52,60 Q60,68 58,85 Q58,88 55,88 L50,85 Q48,80 50,70 Q50,62 52,60"
+          fill={shirtColor}
+        />
+        <ellipse cx="52" cy="88" rx="5" ry="6" fill="#e8c4a0" />
+      </g>
+      
+      {/* Neck */}
+      <rect x="35" y="42" width="10" height="12" rx="3" fill="#e8c4a0" />
+      
+      {/* Head */}
+      <ellipse cx="40" cy="30" rx="14" ry="16" fill="#e8c4a0" />
+      
+      {/* Hair */}
+      <path 
+        d="M26,26 Q26,14 40,14 Q54,14 54,26 Q54,20 48,18 Q40,15 32,18 Q26,20 26,26"
+        fill="#2c1810"
+      />
+      
+      {/* Hat (if upgraded) */}
+      {hasHat && (
+        <>
+          <ellipse cx="40" cy="16" rx="16" ry="4" fill="#1a1a1a" />
+          <rect x="30" y="8" width="20" height="10" rx="2" fill="#1a1a1a" />
+        </>
+      )}
+      
+      {/* Face */}
+      {hasSunglasses ? (
+        <>
+          <rect x="30" y="26" width="9" height="6" rx="1" fill="#1a1a1a" />
+          <rect x="41" y="26" width="9" height="6" rx="1" fill="#1a1a1a" />
+          <line x1="39" y1="29" x2="41" y2="29" stroke="#1a1a1a" strokeWidth="1" />
+        </>
+      ) : (
+        <>
+          <ellipse cx="34" cy="28" rx="2" ry="2.5" fill="#2c2c2c" />
+          <ellipse cx="46" cy="28" rx="2" ry="2.5" fill="#2c2c2c" />
+        </>
+      )}
+      
+      {/* Nose */}
+      <path d="M40,30 L40,35 Q40,37 42,37" fill="none" stroke="#c4846a" strokeWidth="1.5" />
+      
+      {/* Mouth */}
+      <path 
+        d={isPlaying ? "M35,40 Q40,44 45,40" : "M36,40 Q40,42 44,40"} 
+        fill="none" 
+        stroke="#c4846a" 
+        strokeWidth="1.5" 
+      />
+      
+      {/* Ears */}
+      <ellipse cx="26" cy="30" rx="2" ry="4" fill="#e8c4a0" />
+      <ellipse cx="54" cy="30" rx="2" ry="4" fill="#e8c4a0" />
+      
+      {/* Microphone on stand (if owned) */}
+      {hasMic && (
+        <g>
+          <rect x="12" y="50" width="3" height="80" fill="#444" />
+          <rect x="8" y="125" width="11" height="8" rx="2" fill="#333" />
+          <ellipse cx="13.5" cy="45" rx="6" ry="8" fill="#222" />
+          <ellipse cx="13.5" cy="45" rx="4" ry="6" fill="#333" />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+// Walking Pedestrian Component
+function WalkingPedestrian({ 
+  x, 
+  style, 
+  direction, 
+  speed,
+  willStop,
+  willTip,
+  stopPosition,
+  onTip,
+}: { 
+  x: number;
+  style: typeof PEDESTRIAN_STYLES[0];
+  direction: "left" | "right";
+  speed: number;
+  willStop: boolean;
+  willTip: boolean;
+  stopPosition: number;
+  onTip: () => void;
+}) {
+  const [currentX, setCurrentX] = useState(x);
+  const [isStopped, setIsStopped] = useState(false);
+  const [hasTipped, setHasTipped] = useState(false);
+  const [showCoin, setShowCoin] = useState(false);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentX(prev => {
+        const next = direction === "right" ? prev + speed : prev - speed;
+        
+        // Check if should stop
+        if (willStop && !isStopped) {
+          const distToStop = Math.abs(next - stopPosition);
+          if (distToStop < 10) {
+            setIsStopped(true);
+            // Stay stopped for a while, maybe tip
+            setTimeout(() => {
+              if (willTip && !hasTipped) {
+                setShowCoin(true);
+                setHasTipped(true);
+                onTip();
+                setTimeout(() => setShowCoin(false), 800);
+              }
+              // Resume walking after stopping
+              setTimeout(() => setIsStopped(false), willTip ? 2000 : 1500);
+            }, 1000);
+          }
+        }
+        
+        return next;
+      });
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, [direction, speed, willStop, stopPosition, isStopped, willTip, hasTipped, onTip]);
+  
+  // Remove when off screen
+  if ((direction === "right" && currentX > 500) || (direction === "left" && currentX < -50)) {
+    return null;
+  }
   
   return (
     <div style={{
-      position: "relative",
-      width: 120,
-      height: 200,
-      transform: isPlaying ? "scale(1.02)" : "scale(1)",
-      transition: "transform 0.1s",
+      position: "absolute",
+      left: currentX,
+      bottom: 20,
+      transition: isStopped ? "none" : undefined,
     }}>
-      {/* Head */}
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: 40,
-        height: 45,
-        background: "#e8c4a0",
-        borderRadius: "50% 50% 45% 45%",
-      }}>
-        {/* Hair */}
+      <Person 
+        style={style} 
+        isWalking={!isStopped} 
+        direction={direction}
+        isStopped={isStopped}
+        scale={0.9}
+      />
+      {/* Coin throw animation */}
+      {showCoin && (
         <div style={{
           position: "absolute",
-          top: -5,
-          left: -3,
-          right: -3,
-          height: 25,
-          background: outfit >= 2 ? "#1a1a1a" : "#4a3728",
-          borderRadius: "50% 50% 30% 30%",
-        }} />
-        {/* Eyes */}
-        <div style={{ position: "absolute", top: 18, left: 8, width: 6, height: 6, background: "#2d2d2d", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", top: 18, right: 8, width: 6, height: 6, background: "#2d2d2d", borderRadius: "50%" }} />
-        {/* Smile */}
-        <div style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 12,
-          height: 6,
-          borderBottom: "2px solid #c4846a",
-          borderRadius: "0 0 50% 50%",
-        }} />
-      </div>
-      
-      {/* Body/Torso */}
-      <div style={{
-        position: "absolute",
-        top: 45,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: 50,
-        height: 60,
-        background: bodyColor,
-        borderRadius: "10px 10px 5px 5px",
-      }}>
-        {/* Shirt detail */}
-        {outfit >= 1 && (
-          <div style={{
-            position: "absolute",
-            top: 10,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 20,
-            height: 2,
-            background: outfit >= 3 ? "#eab308" : "#888",
-          }} />
-        )}
-      </div>
-      
-      {/* Arms */}
-      <div style={{
-        position: "absolute",
-        top: 55,
-        left: 10,
-        width: 15,
-        height: 45,
-        background: bodyColor,
-        borderRadius: 8,
-        transform: isPlaying ? "rotate(-10deg)" : "rotate(-5deg)",
-        transformOrigin: "top center",
-        transition: "transform 0.1s",
-      }} />
-      <div style={{
-        position: "absolute",
-        top: 55,
-        right: 10,
-        width: 15,
-        height: 45,
-        background: bodyColor,
-        borderRadius: 8,
-        transform: isPlaying ? "rotate(15deg)" : "rotate(5deg)",
-        transformOrigin: "top center",
-        transition: "transform 0.1s",
-      }} />
-      
-      {/* Hands */}
-      <div style={{
-        position: "absolute",
-        top: 95,
-        left: 5,
-        width: 12,
-        height: 12,
-        background: "#e8c4a0",
-        borderRadius: "50%",
-        transform: isPlaying ? "rotate(-10deg)" : "rotate(-5deg)",
-      }} />
-      <div style={{
-        position: "absolute",
-        top: 95,
-        right: 5,
-        width: 12,
-        height: 12,
-        background: "#e8c4a0",
-        borderRadius: "50%",
-      }} />
-      
-      {/* Legs */}
-      <div style={{
-        position: "absolute",
-        top: 105,
-        left: 30,
-        width: 20,
-        height: 55,
-        background: pantsColor,
-        borderRadius: "5px 5px 8px 8px",
-      }} />
-      <div style={{
-        position: "absolute",
-        top: 105,
-        right: 30,
-        width: 20,
-        height: 55,
-        background: pantsColor,
-        borderRadius: "5px 5px 8px 8px",
-      }} />
-      
-      {/* Shoes */}
-      <div style={{
-        position: "absolute",
-        bottom: 0,
-        left: 25,
-        width: 25,
-        height: 12,
-        background: outfit >= 2 ? "#8b4513" : "#2d2d2d",
-        borderRadius: "5px 8px 5px 5px",
-      }} />
-      <div style={{
-        position: "absolute",
-        bottom: 0,
-        right: 25,
-        width: 25,
-        height: 12,
-        background: outfit >= 2 ? "#8b4513" : "#2d2d2d",
-        borderRadius: "8px 5px 5px 5px",
-      }} />
-      
-      {/* Guitar */}
-      <div style={{
-        position: "absolute",
-        top: 60,
-        left: "50%",
-        transform: `translateX(-50%) rotate(${isPlaying ? -5 : 0}deg)`,
-        transition: "transform 0.1s",
-      }}>
-        {/* Guitar body */}
-        <div style={{
-          width: 35,
-          height: 45,
-          background: hasElectric 
-            ? "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)" 
-            : "linear-gradient(180deg, #d4a574 0%, #8b6914 100%)",
-          borderRadius: hasElectric ? "5px 5px 15px 15px" : "50%",
-          border: hasElectric ? "2px solid #7f1d1d" : "2px solid #6b4f1d",
-          position: "relative",
+          top: 20,
+          left: direction === "right" ? 30 : -10,
+          animation: "throwCoin 0.8s ease-out forwards",
         }}>
-          {/* Sound hole */}
-          {!hasElectric && (
-            <div style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 12,
-              height: 12,
-              background: "#3d2810",
-              borderRadius: "50%",
-            }} />
-          )}
-          {/* Pickups for electric */}
-          {hasElectric && (
-            <>
-              <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", width: 20, height: 4, background: "#fbbf24", borderRadius: 2 }} />
-              <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", width: 20, height: 4, background: "#fbbf24", borderRadius: 2 }} />
-            </>
-          )}
-        </div>
-        {/* Guitar neck */}
-        <div style={{
-          position: "absolute",
-          bottom: 40,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 8,
-          height: 50,
-          background: hasElectric ? "#1a1a1a" : "#5c4033",
-          borderRadius: "3px 3px 0 0",
-        }}>
-          {/* Frets */}
-          {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} style={{
-              position: "absolute",
-              top: 8 + i * 10,
-              left: 0,
-              right: 0,
-              height: 1,
-              background: "#888",
-            }} />
-          ))}
-        </div>
-        {/* Headstock */}
-        <div style={{
-          position: "absolute",
-          bottom: 85,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 12,
-          height: 15,
-          background: hasElectric ? "#1a1a1a" : "#5c4033",
-          borderRadius: "3px 3px 0 0",
-        }} />
-      </div>
-      
-      {/* Microphone (if owned) */}
-      {hasMic && (
-        <div style={{
-          position: "absolute",
-          top: 30,
-          right: -20,
-          transform: "rotate(-15deg)",
-        }}>
-          <div style={{ width: 8, height: 40, background: "#666", borderRadius: 2 }} />
-          <div style={{ 
-            width: 16, 
-            height: 20, 
-            background: "linear-gradient(180deg, #444 0%, #222 100%)", 
-            borderRadius: "8px 8px 4px 4px",
-            position: "absolute",
-            top: -18,
-            left: -4,
-            border: "2px solid #555",
-          }}>
-            <div style={{
-              position: "absolute",
-              top: 2,
-              left: 2,
-              right: 2,
-              bottom: 6,
-              background: "repeating-linear-gradient(0deg, #333 0px, #333 2px, #444 2px, #444 4px)",
-              borderRadius: "6px 6px 2px 2px",
-            }} />
-          </div>
+          🪙
         </div>
       )}
     </div>
   );
 }
 
-// Crowd member component
-function CrowdMember({ x, delay, isHappy }: { x: number; delay: number; isHappy: boolean }) {
-  const colors = ["#3d5a80", "#5c4033", "#2d4a3e", "#4a3050", "#503020"];
-  const color = colors[Math.floor(Math.random() * colors.length)];
+// Guitar Case / Tip Jar
+function GuitarCase({ amount }: { amount: number }) {
+  const fillHeight = Math.min(80, (amount % 500) / 5);
   
   return (
-    <div style={{
-      position: "absolute",
-      bottom: 0,
-      left: x,
-      animation: isHappy ? `bounce 0.5s ease-in-out ${delay}s infinite` : undefined,
-    }}>
-      {/* Head */}
-      <div style={{
-        width: 16,
-        height: 18,
-        background: "#dbb896",
-        borderRadius: "50% 50% 40% 40%",
-        marginBottom: 2,
-      }} />
-      {/* Body */}
-      <div style={{
-        width: 20,
-        height: 25,
-        background: color,
-        borderRadius: "5px 5px 0 0",
-        marginLeft: -2,
-      }} />
-    </div>
-  );
-}
-
-// Amp component
-function Amp({ level }: { level: number }) {
-  const size = Math.min(40 + level * 3, 70);
-  return (
-    <div style={{
-      width: size,
-      height: size * 0.9,
-      background: "linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%)",
-      borderRadius: 4,
-      border: "2px solid #3d3d3d",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 4,
-    }}>
-      <div style={{
-        width: size * 0.7,
-        height: size * 0.4,
-        background: "#1a1a1a",
-        borderRadius: 2,
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gridTemplateRows: "repeat(3, 1fr)",
-        gap: 1,
-        padding: 2,
-      }}>
-        {Array(12).fill(0).map((_, i) => (
-          <div key={i} style={{ background: "#333", borderRadius: 1 }} />
+    <svg width="70" height="35" viewBox="0 0 70 35">
+      {/* Case shadow */}
+      <ellipse cx="35" cy="33" rx="32" ry="2" fill="rgba(0,0,0,0.3)" />
+      
+      {/* Case body */}
+      <path 
+        d="M5,8 Q2,8 2,12 L2,28 Q2,32 8,32 L62,32 Q68,32 68,28 L68,12 Q68,8 65,8 L55,5 Q50,3 35,3 Q20,3 15,5 L5,8"
+        fill="#2c1810"
+        stroke="#1a0f08"
+        strokeWidth="1"
+      />
+      
+      {/* Case interior */}
+      <path 
+        d="M8,10 L62,10 L60,28 L10,28 Z"
+        fill="#4a3728"
+      />
+      
+      {/* Velvet lining */}
+      <path 
+        d="M10,12 L60,12 L58,26 L12,26 Z"
+        fill="#722f37"
+      />
+      
+      {/* Coins */}
+      <clipPath id="coinClip">
+        <path d="M12,26 L58,26 L60,12 L10,12 Z" />
+      </clipPath>
+      <g clipPath="url(#coinClip)">
+        <rect 
+          x="10" 
+          y={26 - fillHeight} 
+          width="50" 
+          height={fillHeight} 
+          fill="url(#coinGradient)"
+        />
+        {/* Coin texture */}
+        {Array.from({ length: Math.floor(fillHeight / 4) }).map((_, i) => (
+          <ellipse 
+            key={i} 
+            cx={15 + (i * 7) % 40} 
+            cy={24 - i * 3} 
+            rx="4" 
+            ry="2" 
+            fill="#eab308"
+            stroke="#ca8a04"
+            strokeWidth="0.5"
+          />
         ))}
-      </div>
-      <div style={{ display: "flex", gap: 3 }}>
-        {[0, 1, 2].map(i => (
-          <div key={i} style={{
-            width: 6,
-            height: 6,
-            background: i === 0 ? "#22c55e" : "#444",
-            borderRadius: "50%",
-          }} />
-        ))}
-      </div>
-    </div>
+      </g>
+      
+      {/* Gradient definition */}
+      <defs>
+        <linearGradient id="coinGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#ca8a04" />
+        </linearGradient>
+      </defs>
+      
+      {/* Case latch */}
+      <rect x="32" y="6" width="6" height="4" rx="1" fill="#b8860b" />
+    </svg>
   );
 }
 
-// Tip Jar component
-function TipJar({ fillPercent, onClick }: { fillPercent: number; onClick: () => void }) {
-  return (
-    <div 
-      onClick={onClick}
-      style={{
-        width: 50,
-        height: 60,
-        background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-        borderRadius: "5px 5px 10px 10px",
-        border: "2px solid rgba(255,255,255,0.2)",
-        position: "relative",
-        overflow: "hidden",
-        cursor: "pointer",
-      }}
-    >
-      {/* Coins fill */}
-      <div style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: `${Math.min(fillPercent, 100)}%`,
-        background: "linear-gradient(180deg, #fbbf24 0%, #eab308 50%, #ca8a04 100%)",
-        transition: "height 0.3s",
-      }} />
-      {/* Coins texture */}
-      <div style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: `${Math.min(fillPercent, 100)}%`,
-        background: "repeating-linear-gradient(90deg, transparent 0px, transparent 8px, rgba(0,0,0,0.1) 8px, rgba(0,0,0,0.1) 10px)",
-      }} />
-      {/* Label */}
-      <div style={{
-        position: "absolute",
-        top: 5,
-        left: "50%",
-        transform: "translateX(-50%)",
-        fontSize: 8,
-        color: "rgba(255,255,255,0.5)",
-        fontWeight: 600,
-      }}>
-        TIPS
-      </div>
-    </div>
-  );
-}
-
-// Flying coin effect
+// Flying Coin Effect
 function FlyingCoin({ x, y, amount }: { x: number; y: number; amount: number }) {
   return (
     <div style={{
@@ -533,19 +515,16 @@ function FlyingCoin({ x, y, amount }: { x: number; y: number; amount: number }) 
       pointerEvents: "none",
       animation: "coinFly 1s ease-out forwards",
       zIndex: 100,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      color: "#fbbf24",
+      fontWeight: 700,
+      fontSize: 18,
+      textShadow: "0 2px 4px rgba(0,0,0,0.8)",
     }}>
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-        color: "#fbbf24",
-        fontWeight: 700,
-        fontSize: 16,
-        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
-      }}>
-        <span style={{ fontSize: 20 }}>🪙</span>
-        +{formatNumber(amount)}
-      </div>
+      <span>🪙</span>
+      <span>+{formatNumber(amount)}</span>
     </div>
   );
 }
@@ -561,15 +540,24 @@ export default function MusicianBeggarPage() {
   const [zps, setZps] = useState(0);
   const [zpc, setZpc] = useState(1);
   const [upgradeLevels, setUpgradeLevels] = useState<Record<string, number>>({});
-  const [currentVenue, setCurrentVenue] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [flyingCoins, setFlyingCoins] = useState<Array<{ id: number; x: number; y: number; amount: number }>>([]);
   const [showUpgrades, setShowUpgrades] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<"instrument" | "gear" | "band" | "skill" | "venue">("skill");
-  const [crowdHappy, setCrowdHappy] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<"skill" | "instrument" | "gear" | "attraction">("skill");
+  const [pedestrians, setPedestrians] = useState<Array<{
+    id: number;
+    x: number;
+    style: typeof PEDESTRIAN_STYLES[0];
+    direction: "left" | "right";
+    speed: number;
+    willStop: boolean;
+    willTip: boolean;
+  }>>([]);
   
   const coinIdRef = useRef(0);
+  const pedestrianIdRef = useRef(0);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const spawnLoopRef = useRef<NodeJS.Timeout | null>(null);
   const supabase = createBrowserClient();
   const router = useRouter();
 
@@ -591,13 +579,12 @@ export default function MusicianBeggarPage() {
   // Load game
   const loadGame = useCallback(() => {
     try {
-      const saved = localStorage.getItem("musician-beggar-v2");
+      const saved = localStorage.getItem("musician-beggar-v3");
       if (saved) {
         const data = JSON.parse(saved);
         setZc(data.zc || 0);
         setTotalEarned(data.totalEarned || 0);
         setUpgradeLevels(data.upgradeLevels || {});
-        setCurrentVenue(data.currentVenue || 0);
         recalculateStats(data.upgradeLevels || {});
         
         // Offline earnings
@@ -618,13 +605,40 @@ export default function MusicianBeggarPage() {
   // Save game
   const saveGame = useCallback(() => {
     try {
-      localStorage.setItem("musician-beggar-v2", JSON.stringify({
-        zc, totalEarned, upgradeLevels, currentVenue, zps, lastSave: Date.now(),
+      localStorage.setItem("musician-beggar-v3", JSON.stringify({
+        zc, totalEarned, upgradeLevels, zps, lastSave: Date.now(),
       }));
     } catch (e) {
       console.error("Failed to save:", e);
     }
-  }, [zc, totalEarned, upgradeLevels, currentVenue, zps]);
+  }, [zc, totalEarned, upgradeLevels, zps]);
+
+  // Spawn pedestrians
+  const spawnPedestrian = useCallback(() => {
+    const direction = Math.random() > 0.5 ? "right" : "left";
+    const attractionLevel = (upgradeLevels["sign"] || 0) + (upgradeLevels["banner"] || 0) + (upgradeLevels["costume"] || 0) + (upgradeLevels["mascot"] || 0);
+    const stopChance = Math.min(0.4, 0.1 + attractionLevel * 0.02);
+    const tipChance = Math.min(0.6, 0.2 + attractionLevel * 0.03);
+    
+    const newPedestrian = {
+      id: pedestrianIdRef.current++,
+      x: direction === "right" ? -50 : 450,
+      style: PEDESTRIAN_STYLES[Math.floor(Math.random() * PEDESTRIAN_STYLES.length)],
+      direction,
+      speed: 1.5 + Math.random() * 1.5,
+      willStop: Math.random() < stopChance,
+      willTip: Math.random() < tipChance,
+    };
+    
+    setPedestrians(prev => [...prev.slice(-15), newPedestrian]); // Keep max 15 pedestrians
+  }, [upgradeLevels]);
+
+  // Handle pedestrian tip
+  const handlePedestrianTip = useCallback(() => {
+    const tipAmount = Math.floor(zpc * (0.5 + Math.random() * 1));
+    setZc(prev => prev + tipAmount);
+    setTotalEarned(prev => prev + tipAmount);
+  }, [zpc]);
 
   // Handle click on musician
   const handleMusicianClick = useCallback((e: React.MouseEvent) => {
@@ -635,7 +649,6 @@ export default function MusicianBeggarPage() {
     setZc(prev => prev + zpc);
     setTotalEarned(prev => prev + zpc);
     setIsPlaying(true);
-    setCrowdHappy(true);
     
     // Flying coin effect
     const coinId = coinIdRef.current++;
@@ -643,7 +656,6 @@ export default function MusicianBeggarPage() {
     setTimeout(() => setFlyingCoins(prev => prev.filter(c => c.id !== coinId)), 1000);
     
     setTimeout(() => setIsPlaying(false), 150);
-    setTimeout(() => setCrowdHappy(false), 500);
   }, [zpc]);
 
   // Buy upgrade
@@ -664,16 +676,6 @@ export default function MusicianBeggarPage() {
       return newLevels;
     });
   }, [zc, upgradeLevels, recalculateStats]);
-
-  // Unlock venue
-  const unlockVenue = useCallback((venueIndex: number) => {
-    const venue = VENUES[venueIndex];
-    if (!venue || zc < venue.unlockCost) return;
-    if (venueIndex <= currentVenue) return;
-    
-    setZc(prev => prev - venue.unlockCost);
-    setCurrentVenue(venueIndex);
-  }, [zc, currentVenue]);
 
   // Initialize
   useEffect(() => {
@@ -699,7 +701,7 @@ export default function MusicianBeggarPage() {
     init();
   }, [supabase, router, loadGame]);
 
-  // Game loop
+  // Game loop for passive income
   useEffect(() => {
     if (loading) return;
     
@@ -713,6 +715,20 @@ export default function MusicianBeggarPage() {
     
     return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current); };
   }, [loading, zps]);
+
+  // Pedestrian spawn loop
+  useEffect(() => {
+    if (loading) return;
+    
+    // Initial spawn
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => spawnPedestrian(), i * 500);
+    }
+    
+    spawnLoopRef.current = setInterval(spawnPedestrian, 2000 + Math.random() * 2000);
+    
+    return () => { if (spawnLoopRef.current) clearInterval(spawnLoopRef.current); };
+  }, [loading, spawnPedestrian]);
 
   // Auto-save
   useEffect(() => {
@@ -729,7 +745,7 @@ export default function MusicianBeggarPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
+      <div style={{ minHeight: "100vh", background: "#1a1a2e" }}>
         <div style={{ height: 60, background: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(255,255,255,0.1)" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
           <div style={{
@@ -744,25 +760,12 @@ export default function MusicianBeggarPage() {
     );
   }
 
-  const venue = VENUES[currentVenue];
   const hasElectric = (upgradeLevels["electric"] || 0) > 0;
   const hasMic = (upgradeLevels["mic"] || 0) > 0;
-  const hasAmp = (upgradeLevels["amp"] || 0) > 0;
-  const ampLevel = upgradeLevels["amp"] || 0;
-  const outfit = Math.min(3, Math.floor(totalEarned / 100000));
-  const tipJarFill = Math.min(100, (zc % 1000) / 10);
-
-  // Generate crowd
-  const crowdMembers = [];
-  for (let i = 0; i < venue.crowdSize; i++) {
-    crowdMembers.push({
-      x: 20 + (i * 25) + (Math.random() * 10 - 5),
-      delay: Math.random() * 0.3,
-    });
-  }
+  const outfitLevel = Math.min(3, (upgradeLevels["costume"] || 0));
 
   return (
-    <div style={{ minHeight: "100vh", background: venue.background }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px" }}>
@@ -780,13 +783,12 @@ export default function MusicianBeggarPage() {
           </div>
         </div>
 
-        {/* Stage/Scene */}
+        {/* Street Scene */}
         <div 
           onClick={handleMusicianClick}
           style={{
             position: "relative",
-            height: 350,
-            background: venue.groundColor,
+            height: 380,
             borderRadius: 16,
             overflow: "hidden",
             cursor: "pointer",
@@ -794,104 +796,198 @@ export default function MusicianBeggarPage() {
             marginBottom: 16,
           }}
         >
-          {/* Background elements based on venue */}
-          {currentVenue === 0 && (
-            <>
-              {/* Street buildings */}
-              <div style={{ position: "absolute", top: 0, left: 20, width: 60, height: 150, background: "#1a1a2e", borderRadius: "0 0 4px 4px" }} />
-              <div style={{ position: "absolute", top: 0, left: 100, width: 80, height: 180, background: "#16213e", borderRadius: "0 0 4px 4px" }} />
-              <div style={{ position: "absolute", top: 0, right: 50, width: 70, height: 160, background: "#1a1a2e", borderRadius: "0 0 4px 4px" }} />
-              {/* Windows */}
-              {[30, 60, 90].map((top, i) => (
-                <div key={i} style={{ position: "absolute", top, left: 30, width: 15, height: 20, background: "#fbbf2440", borderRadius: 2 }} />
+          {/* Sky */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 150,
+            background: "linear-gradient(180deg, #0f0f23 0%, #1a1a3e 50%, #2d2d5a 100%)",
+          }} />
+          
+          {/* Stars */}
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} style={{
+              position: "absolute",
+              top: 10 + Math.random() * 100,
+              left: `${Math.random() * 100}%`,
+              width: 2,
+              height: 2,
+              background: "#fff",
+              borderRadius: "50%",
+              opacity: 0.3 + Math.random() * 0.5,
+            }} />
+          ))}
+          
+          {/* Moon */}
+          <div style={{
+            position: "absolute",
+            top: 20,
+            right: 40,
+            width: 40,
+            height: 40,
+            background: "radial-gradient(circle at 30% 30%, #fffacd, #f0e68c)",
+            borderRadius: "50%",
+            boxShadow: "0 0 30px rgba(255, 250, 205, 0.4)",
+          }} />
+          
+          {/* Buildings background */}
+          <div style={{ position: "absolute", bottom: 120, left: 0, right: 0, height: 180 }}>
+            {/* Far buildings */}
+            <div style={{ position: "absolute", bottom: 0, left: 20, width: 60, height: 140, background: "#1a1a2e", borderRadius: "4px 4px 0 0" }}>
+              {[20, 50, 80, 110].map((top, i) => (
+                <div key={i} style={{ position: "absolute", top, left: 10, width: 12, height: 15, background: Math.random() > 0.3 ? "#fbbf2440" : "#333", borderRadius: 2 }} />
               ))}
-              {/* Street lamp */}
-              <div style={{ position: "absolute", bottom: 100, right: 30, width: 8, height: 100, background: "#3d3d3d" }} />
-              <div style={{ position: "absolute", bottom: 190, right: 20, width: 30, height: 15, background: "#fbbf24", borderRadius: "50%", boxShadow: "0 0 30px #fbbf24" }} />
-            </>
-          )}
-          
-          {currentVenue === 1 && (
-            <>
-              {/* Subway tiles */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 100, background: "repeating-linear-gradient(90deg, #3d3d3d 0px, #3d3d3d 48px, #2d2d2d 48px, #2d2d2d 50px)" }} />
-              {/* Subway sign */}
-              <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", padding: "8px 24px", background: "#1a1a1a", border: "2px solid #fbbf24", borderRadius: 4 }}>
-                <span style={{ color: "#fbbf24", fontWeight: 700, fontSize: 14 }}>🚇 SUBWAY</span>
-              </div>
-            </>
-          )}
-          
-          {currentVenue === 2 && (
-            <>
-              {/* Cafe interior */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 80, background: "#5c3d2e" }} />
-              {/* Shelves */}
-              <div style={{ position: "absolute", top: 30, left: 30, width: 100, height: 8, background: "#3d2a1e" }} />
-              <div style={{ position: "absolute", top: 50, left: 30, width: 100, height: 8, background: "#3d2a1e" }} />
-              {/* Coffee cups */}
-              {[40, 60, 80, 100].map((left, i) => (
-                <div key={i} style={{ position: "absolute", top: 20, left, width: 12, height: 15, background: "#f5f5dc", borderRadius: "0 0 4px 4px" }} />
+            </div>
+            <div style={{ position: "absolute", bottom: 0, left: 90, width: 80, height: 170, background: "#16213e", borderRadius: "4px 4px 0 0" }}>
+              {[20, 50, 80, 110, 140].map((top, i) => (
+                <div key={i} style={{ position: "absolute", top, left: 15, width: 15, height: 18, background: Math.random() > 0.4 ? "#fbbf2430" : "#2a2a4a", borderRadius: 2 }} />
               ))}
-              {/* Warm lighting */}
-              <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, background: "radial-gradient(circle, rgba(251,191,36,0.2) 0%, transparent 70%)" }} />
-            </>
-          )}
+              {[20, 50, 80, 110, 140].map((top, i) => (
+                <div key={i} style={{ position: "absolute", top, right: 15, width: 15, height: 18, background: Math.random() > 0.4 ? "#fbbf2430" : "#2a2a4a", borderRadius: 2 }} />
+              ))}
+            </div>
+            <div style={{ position: "absolute", bottom: 0, right: 60, width: 70, height: 120, background: "#1a1a2e", borderRadius: "4px 4px 0 0" }}>
+              {[15, 40, 65, 90].map((top, i) => (
+                <div key={i} style={{ position: "absolute", top, left: 12, width: 14, height: 16, background: Math.random() > 0.3 ? "#fbbf2440" : "#333", borderRadius: 2 }} />
+              ))}
+            </div>
+            <div style={{ position: "absolute", bottom: 0, right: 140, width: 55, height: 100, background: "#0f1629", borderRadius: "4px 4px 0 0" }} />
+            
+            {/* Store fronts closer */}
+            <div style={{ position: "absolute", bottom: 0, left: 180, width: 100, height: 80, background: "#2a2a4a", borderRadius: "4px 4px 0 0" }}>
+              {/* Store window */}
+              <div style={{ position: "absolute", bottom: 10, left: 10, width: 35, height: 40, background: "#fbbf2420", border: "2px solid #3d3d5c", borderRadius: 2 }} />
+              <div style={{ position: "absolute", bottom: 10, right: 10, width: 35, height: 40, background: "#fbbf2420", border: "2px solid #3d3d5c", borderRadius: 2 }} />
+              {/* Store sign */}
+              <div style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", padding: "2px 8px", background: "#dc2626", borderRadius: 2, fontSize: 8, color: "#fff" }}>OPEN</div>
+            </div>
+          </div>
           
-          {currentVenue === 3 && (
-            <>
-              {/* Club lights */}
-              <div style={{ position: "absolute", top: 20, left: "20%", width: 20, height: 100, background: "linear-gradient(180deg, #dc2626 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite" }} />
-              <div style={{ position: "absolute", top: 20, left: "50%", width: 20, height: 100, background: "linear-gradient(180deg, #8b5cf6 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite 0.5s" }} />
-              <div style={{ position: "absolute", top: 20, right: "20%", width: 20, height: 100, background: "linear-gradient(180deg, #06b6d4 0%, transparent 100%)", opacity: 0.5, animation: "pulse 2s infinite 1s" }} />
-              {/* Disco ball */}
-              <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", width: 30, height: 30, background: "radial-gradient(circle, #fff 0%, #888 100%)", borderRadius: "50%", boxShadow: "0 0 20px rgba(255,255,255,0.5)" }} />
-            </>
-          )}
+          {/* Street lamp */}
+          <div style={{ position: "absolute", bottom: 120, left: 50 }}>
+            <div style={{ width: 6, height: 120, background: "#3d3d3d", borderRadius: 3 }} />
+            <div style={{ position: "absolute", top: -15, left: -12, width: 30, height: 20, background: "#4a4a4a", borderRadius: "4px 4px 0 0" }} />
+            <div style={{ position: "absolute", top: 0, left: -8, width: 22, height: 8, background: "#fbbf24", borderRadius: 2, boxShadow: "0 0 30px #fbbf24, 0 20px 40px rgba(251, 191, 36, 0.3)" }} />
+          </div>
           
-          {currentVenue === 4 && (
-            <>
-              {/* Arena lights */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 100, background: "linear-gradient(180deg, #000 0%, transparent 100%)" }} />
-              {/* Spotlights */}
-              <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 150, height: 300, background: "linear-gradient(180deg, rgba(251,191,36,0.3) 0%, transparent 100%)", clipPath: "polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)" }} />
-              {/* Stage edge */}
-              <div style={{ position: "absolute", bottom: 80, left: 0, right: 0, height: 10, background: "linear-gradient(90deg, #fbbf24, #eab308, #fbbf24)", boxShadow: "0 0 20px #fbbf24" }} />
-            </>
-          )}
-
-          {/* Stage/Ground */}
+          {/* Street lamp 2 */}
+          <div style={{ position: "absolute", bottom: 120, right: 80 }}>
+            <div style={{ width: 6, height: 100, background: "#3d3d3d", borderRadius: 3 }} />
+            <div style={{ position: "absolute", top: -15, left: -12, width: 30, height: 20, background: "#4a4a4a", borderRadius: "4px 4px 0 0" }} />
+            <div style={{ position: "absolute", top: 0, left: -8, width: 22, height: 8, background: "#fbbf24", borderRadius: 2, boxShadow: "0 0 30px #fbbf24, 0 20px 40px rgba(251, 191, 36, 0.3)" }} />
+          </div>
+          
+          {/* Road */}
+          <div style={{
+            position: "absolute",
+            bottom: 60,
+            left: 0,
+            right: 0,
+            height: 60,
+            background: "#2d2d3d",
+          }}>
+            {/* Road lines */}
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: 0,
+              right: 0,
+              height: 4,
+              background: "repeating-linear-gradient(90deg, #eab308 0px, #eab308 30px, transparent 30px, transparent 60px)",
+              transform: "translateY(-50%)",
+            }} />
+          </div>
+          
+          {/* Sidewalk */}
           <div style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            height: 80,
-            background: `linear-gradient(180deg, ${venue.groundColor} 0%, ${venue.groundColor}dd 100%)`,
-          }} />
-
-          {/* Crowd */}
-          <div style={{ position: "absolute", bottom: 80, left: 0, right: 0, height: 50 }}>
-            {crowdMembers.map((member, i) => (
-              <CrowdMember key={i} x={member.x} delay={member.delay} isHappy={crowdHappy} />
-            ))}
+            height: 60,
+            background: "linear-gradient(180deg, #4a4a5c 0%, #3d3d4d 100%)",
+          }}>
+            {/* Sidewalk tiles */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "repeating-linear-gradient(90deg, transparent 0px, transparent 58px, #3a3a4a 58px, #3a3a4a 60px)",
+            }} />
+            {/* Curb */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 6,
+              background: "#5a5a6c",
+            }} />
           </div>
-
-          {/* Amp (if owned) */}
-          {hasAmp && (
-            <div style={{ position: "absolute", bottom: 90, left: "25%", transform: "translateX(-50%)" }}>
-              <Amp level={ampLevel} />
+          
+          {/* Walking Pedestrians */}
+          {pedestrians.map(ped => (
+            <WalkingPedestrian
+              key={ped.id}
+              x={ped.x}
+              style={ped.style}
+              direction={ped.direction}
+              speed={ped.speed}
+              willStop={ped.willStop}
+              willTip={ped.willTip}
+              stopPosition={220}
+              onTip={handlePedestrianTip}
+            />
+          ))}
+          
+          {/* Musician area */}
+          <div style={{ 
+            position: "absolute", 
+            bottom: 60, 
+            left: "50%", 
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            {/* Guitar case */}
+            <div style={{ position: "absolute", bottom: -10, left: 90 }}>
+              <GuitarCase amount={zc} />
             </div>
-          )}
-
-          {/* Musician */}
-          <div style={{ position: "absolute", bottom: 90, left: "50%", transform: "translateX(-50%)" }}>
-            <Musician isPlaying={isPlaying} hasElectric={hasElectric} hasMic={hasMic} outfit={outfit} />
-          </div>
-
-          {/* Tip Jar */}
-          <div style={{ position: "absolute", bottom: 90, right: "25%", transform: "translateX(50%)" }}>
-            <TipJar fillPercent={tipJarFill} onClick={() => {}} />
+            
+            {/* The musician */}
+            <StreetMusician 
+              isPlaying={isPlaying} 
+              hasElectric={hasElectric}
+              hasMic={hasMic}
+              outfitLevel={outfitLevel}
+            />
+            
+            {/* Amp (if owned) */}
+            {(upgradeLevels["amp"] || 0) > 0 && (
+              <div style={{ position: "absolute", bottom: 0, left: -50 }}>
+                <svg width="40" height="45" viewBox="0 0 40 45">
+                  <rect x="2" y="5" width="36" height="38" rx="3" fill="#1a1a1a" stroke="#333" strokeWidth="2" />
+                  <rect x="6" y="10" width="28" height="20" rx="2" fill="#0a0a0a" />
+                  {/* Speaker grille */}
+                  {Array.from({ length: 4 }).map((_, row) => (
+                    Array.from({ length: 6 }).map((_, col) => (
+                      <circle key={`${row}-${col}`} cx={10 + col * 4.5} cy={14 + row * 4.5} r="1.5" fill="#333" />
+                    ))
+                  ))}
+                  {/* Knobs */}
+                  <circle cx="12" cy="36" r="3" fill="#444" />
+                  <circle cx="22" cy="36" r="3" fill="#444" />
+                  <circle cx="32" cy="36" r="3" fill="#444" />
+                  {/* Power light */}
+                  <circle cx="7" cy="36" r="2" fill="#22c55e" />
+                </svg>
+              </div>
+            )}
           </div>
 
           {/* Flying coins */}
@@ -899,32 +995,17 @@ export default function MusicianBeggarPage() {
             <FlyingCoin key={coin.id} x={coin.x} y={coin.y} amount={coin.amount} />
           ))}
 
-          {/* Venue name */}
-          <div style={{
-            position: "absolute",
-            top: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "8px 20px",
-            background: "rgba(0,0,0,0.6)",
-            borderRadius: 20,
-            color: "#fbbf24",
-            fontSize: 14,
-            fontWeight: 600,
-          }}>
-            📍 {venue.name}
-          </div>
-
           {/* Click hint */}
           <div style={{
             position: "absolute",
-            bottom: 16,
+            bottom: 70,
             left: "50%",
             transform: "translateX(-50%)",
-            color: "rgba(255,255,255,0.4)",
-            fontSize: 12,
+            color: "rgba(255,255,255,0.3)",
+            fontSize: 11,
+            pointerEvents: "none",
           }}>
-            Click to play music!
+            Click to play!
           </div>
         </div>
 
@@ -957,7 +1038,7 @@ export default function MusicianBeggarPage() {
           }}>
             {/* Tabs */}
             <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-              {(["skill", "instrument", "gear", "band", "venue"] as const).map(tab => (
+              {(["skill", "instrument", "gear", "attraction"] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setSelectedTab(tab)}
@@ -974,113 +1055,66 @@ export default function MusicianBeggarPage() {
                     textTransform: "capitalize",
                   }}
                 >
-                  {tab === "skill" ? "✋" : tab === "instrument" ? "🎸" : tab === "gear" ? "🔊" : tab === "band" ? "🧑‍🎤" : "📍"} {tab}
+                  {tab === "skill" ? "✋" : tab === "instrument" ? "🎸" : tab === "gear" ? "🔊" : "✨"} {tab}
                 </button>
               ))}
             </div>
 
             {/* Upgrade list */}
             <div style={{ maxHeight: 300, overflowY: "auto", padding: 8 }}>
-              {selectedTab === "venue" ? (
-                // Venue upgrades
-                VENUES.map((v, i) => {
-                  const isUnlocked = i <= currentVenue;
-                  const canAfford = zc >= v.unlockCost;
-                  const isCurrent = i === currentVenue;
-                  
-                  return (
-                    <div key={v.id} style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: 12,
-                      background: isCurrent ? "rgba(234, 179, 8, 0.1)" : "transparent",
-                      borderRadius: 8,
-                      marginBottom: 4,
-                    }}>
-                      <div style={{ fontSize: 28 }}>📍</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ color: isUnlocked ? "#fff" : "#666", fontWeight: 600 }}>
-                          {v.name}
-                          {isCurrent && <span style={{ color: "#22c55e", marginLeft: 8 }}>✓ Current</span>}
-                        </div>
-                        <div style={{ color: "#888", fontSize: 12 }}>{v.description}</div>
-                        <div style={{ color: "#22c55e", fontSize: 11, marginTop: 2 }}>+{v.crowdSize - (VENUES[i-1]?.crowdSize || 0)} crowd</div>
+              {UPGRADES.filter(u => u.category === selectedTab).map(upgrade => {
+                const level = upgradeLevels[upgrade.id] || 0;
+                const cost = getUpgradeCost(upgrade, level);
+                const canAfford = zc >= cost && level < upgrade.maxLevel;
+                const isMaxed = level >= upgrade.maxLevel;
+
+                return (
+                  <div key={upgrade.id} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: 12,
+                    borderRadius: 8,
+                    marginBottom: 4,
+                    background: level > 0 ? "rgba(234, 179, 8, 0.05)" : "transparent",
+                  }}>
+                    <div style={{ width: 50, textAlign: "center" }}>
+                      <div style={{ fontSize: 24 }}>
+                        {upgrade.category === "skill" ? "✋" : upgrade.category === "instrument" ? "🎸" : upgrade.category === "gear" ? "🔊" : "✨"}
                       </div>
-                      {!isUnlocked && (
-                        <button
-                          onClick={() => unlockVenue(i)}
-                          disabled={!canAfford}
-                          style={{
-                            padding: "10px 16px",
-                            borderRadius: 8,
-                            border: "none",
-                            background: canAfford ? "linear-gradient(135deg, #eab308, #ca8a04)" : "#333",
-                            color: canAfford ? "#000" : "#666",
-                            fontWeight: 700,
-                            fontSize: 13,
-                            cursor: canAfford ? "pointer" : "default",
-                          }}
-                        >
-                          {formatNumber(v.unlockCost)} ZC
-                        </button>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
+                        {upgrade.name}
+                        {level > 0 && <span style={{ color: "#eab308", marginLeft: 8 }}>Lv.{level}</span>}
+                      </div>
+                      <div style={{ color: "#888", fontSize: 12 }}>{upgrade.description}</div>
+                      {!isMaxed && (
+                        <div style={{ color: "#22c55e", fontSize: 11, marginTop: 2 }}>
+                          +{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/click`}
+                        </div>
                       )}
                     </div>
-                  );
-                })
-              ) : (
-                // Regular upgrades
-                UPGRADES.filter(u => u.category === selectedTab).map(upgrade => {
-                  const level = upgradeLevels[upgrade.id] || 0;
-                  const cost = getUpgradeCost(upgrade, level);
-                  const canAfford = zc >= cost && level < upgrade.maxLevel;
-                  const isMaxed = level >= upgrade.maxLevel;
-
-                  return (
-                    <div key={upgrade.id} style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: 12,
-                      borderRadius: 8,
-                      marginBottom: 4,
-                    }}>
-                      <div style={{ fontSize: 28 }}>
-                        {upgrade.category === "instrument" ? "🎸" : upgrade.category === "gear" ? "🔊" : upgrade.category === "band" ? "🧑‍🎤" : "✋"}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ color: "#fff", fontWeight: 600 }}>
-                          {upgrade.name}
-                          {level > 0 && <span style={{ color: "#eab308", marginLeft: 8 }}>Lv.{level}</span>}
-                        </div>
-                        <div style={{ color: "#888", fontSize: 12 }}>{upgrade.description}</div>
-                        {!isMaxed && (
-                          <div style={{ color: "#22c55e", fontSize: 11, marginTop: 2 }}>
-                            +{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/click`}
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => buyUpgrade(upgrade.id)}
-                        disabled={!canAfford}
-                        style={{
-                          padding: "10px 16px",
-                          borderRadius: 8,
-                          border: "none",
-                          background: isMaxed ? "#22c55e" : canAfford ? "linear-gradient(135deg, #eab308, #ca8a04)" : "#333",
-                          color: isMaxed || canAfford ? "#000" : "#666",
-                          fontWeight: 700,
-                          fontSize: 13,
-                          cursor: canAfford ? "pointer" : "default",
-                          minWidth: 80,
-                        }}
-                      >
-                        {isMaxed ? "MAX" : `${formatNumber(cost)} ZC`}
-                      </button>
-                    </div>
-                  );
-                })
-              )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); buyUpgrade(upgrade.id); }}
+                      disabled={!canAfford}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 8,
+                        border: "none",
+                        background: isMaxed ? "#22c55e" : canAfford ? "linear-gradient(135deg, #eab308, #ca8a04)" : "#333",
+                        color: isMaxed || canAfford ? "#000" : "#666",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: canAfford ? "pointer" : "default",
+                        minWidth: 85,
+                      }}
+                    >
+                      {isMaxed ? "MAX" : `${formatNumber(cost)} ZC`}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1092,15 +1126,25 @@ export default function MusicianBeggarPage() {
         }
         @keyframes coinFly {
           0% { opacity: 1; transform: translateY(0) scale(1); }
-          100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+          100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
         }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
+        @keyframes throwCoin {
+          0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+          100% { opacity: 0; transform: translate(30px, 30px) rotate(360deg); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.7; }
+        @keyframes walkLegs {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(8deg); }
+          75% { transform: rotate(-8deg); }
+        }
+        @keyframes walkArms {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-5deg); }
+          75% { transform: rotate(5deg); }
+        }
+        @keyframes strum {
+          0% { transform: rotate(-2deg); }
+          100% { transform: rotate(2deg); }
         }
       `}</style>
     </div>
