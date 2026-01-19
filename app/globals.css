@@ -40,45 +40,6 @@ body {
   position: relative;
 }
 
-/* Shiny black polished surface */
-body::before {
-  content: '';
-  position: fixed;
-  top: 60px; /* Below header */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: 
-    /* Glossy highlight - center top */
-    radial-gradient(ellipse 60% 30% at 50% 0%, 
-      rgba(255, 255, 255, 0.06) 0%, 
-      rgba(255, 255, 255, 0.02) 40%,
-      transparent 70%
-    ),
-    /* Subtle vertical shine */
-    radial-gradient(ellipse 30% 100% at 50% 50%, 
-      rgba(255, 255, 255, 0.03) 0%, 
-      transparent 60%
-    ),
-    /* Edge vignette for depth */
-    radial-gradient(ellipse 100% 100% at 50% 50%, 
-      transparent 40%,
-      rgba(0, 0, 0, 0.5) 100%
-    ),
-    /* Pure black base */
-    linear-gradient(180deg, 
-      #0a0a0a 0%, 
-      #080808 50%,
-      #0a0a0a 100%
-    );
-}
-
-body > * {
-  position: relative;
-  z-index: 1;
-}
 
 /* Headings - use display font */
 h1, h2, h3, h4, h5, h6 {
