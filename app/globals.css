@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  /* Alzooka Brand Colors */
-  --alzooka-teal: #0f1c2e;
+  /* Alzooka Brand Colors - Black Theme */
+  --alzooka-black: #0a0a0a;
   --alzooka-cream: #e8e4dc;
   --alzooka-gold: #c9a55c;
-  --alzooka-teal-light: #1a2940;
-  --alzooka-teal-dark: #080f1a;
+  --alzooka-black-light: #151515;
+  --alzooka-black-dark: #050505;
   
-  --background: #0a0a0a;
+  --background: var(--alzooka-black);
   --foreground: var(--alzooka-cream);
   --accent: var(--alzooka-gold);
   
@@ -130,7 +130,7 @@ a:hover {
 
 /* Form Elements */
 input, textarea {
-  background: var(--alzooka-teal-light);
+  background: var(--alzooka-black-light);
   border: 1px solid var(--alzooka-cream);
   border-radius: 4px;
   color: var(--alzooka-cream);
@@ -153,7 +153,7 @@ input:focus, textarea:focus {
 
 button {
   background: linear-gradient(135deg, #d4af5a 0%, #c9a55c 50%, #b8944d 100%);
-  color: var(--alzooka-teal-dark);
+  color: var(--alzooka-black-dark);
   border: none;
   border-radius: 6px;
   padding: 12px 24px;
@@ -316,7 +316,7 @@ button.btn-lg {
 }
 
 .card {
-  background: var(--alzooka-teal-light);
+  background: var(--alzooka-black-light);
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 16px;
