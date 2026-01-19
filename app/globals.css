@@ -181,7 +181,7 @@ a:hover {
 
 /* Form Elements */
 input, textarea {
-  background: var(--alzooka-black-light);
+  background: #151515;
   border: 1px solid var(--alzooka-cream);
   border-radius: 4px;
   color: var(--alzooka-cream);
@@ -190,6 +190,8 @@ input, textarea {
   font-family: var(--font-body);
   line-height: 1.5;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 input::placeholder, textarea::placeholder {
@@ -218,6 +220,7 @@ button {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+  z-index: 2;
 }
 
 button::before {
@@ -357,10 +360,12 @@ button.btn-lg {
   max-width: 792px;
   margin: 0 auto;
   padding: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .card {
-  background: var(--alzooka-black-light);
+  background: #151515;
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 16px;
@@ -369,6 +374,8 @@ button.btn-lg {
   transition: all 0.3s ease;
   /* Ensure post content uses Georgia, not display font */
   font-family: Georgia, 'Times New Roman', serif;
+  position: relative;
+  z-index: 2;
 }
 
 .card:hover {
