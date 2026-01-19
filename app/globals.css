@@ -125,11 +125,7 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 0 15px rgba(201, 162, 39, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -193,7 +189,7 @@ button:disabled {
 
 button:disabled:hover {
   transform: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 15px rgba(201, 162, 39, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 button:disabled::before {
@@ -205,7 +201,7 @@ button.btn-outline {
   background: transparent;
   border: 2px solid var(--alzooka-gold);
   color: var(--alzooka-gold);
-  box-shadow: 0 0 15px rgba(201, 162, 39, 0.15);
+  box-shadow: none;
 }
 
 button.btn-outline::before {
@@ -243,10 +239,7 @@ button.btn-ghost:hover {
 
 button.btn-danger {
   background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 0 15px rgba(220, 53, 69, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 button.btn-danger:hover {
@@ -282,7 +275,7 @@ button.btn-lg {
   padding: 24px;
   margin-bottom: 16px;
   border: 1px solid rgba(201, 162, 39, 0.1);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   transition: all 0.3s ease;
   /* Ensure post content uses Georgia, not display font */
   font-family: Georgia, 'Times New Roman', serif;
@@ -290,7 +283,6 @@ button.btn-lg {
 
 .card:hover {
   border-color: rgba(201, 162, 39, 0.25);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(201, 162, 39, 0.1);
 }
 
 /* Ensure usernames and post content use plain Georgia font */
@@ -317,35 +309,25 @@ button.btn-lg {
   background: rgba(0,0,0,0.7) !important;
 }
 
-/* Glow utility classes */
+/* Glow utility classes - only for hover states */
 .glow-gold {
-  box-shadow: 0 0 20px rgba(201, 162, 39, 0.4), 0 0 40px rgba(201, 162, 39, 0.2);
+  box-shadow: none;
 }
 
 .glow-gold-subtle {
-  box-shadow: 0 0 10px rgba(201, 162, 39, 0.2), 0 0 20px rgba(201, 162, 39, 0.1);
+  box-shadow: none;
 }
 
 .glow-text-gold {
-  text-shadow: 0 0 10px rgba(201, 162, 39, 0.5), 0 0 20px rgba(201, 162, 39, 0.3);
+  text-shadow: none;
 }
 
 .glow-text-gold-strong {
-  text-shadow: 0 0 15px rgba(201, 162, 39, 0.7), 0 0 30px rgba(201, 162, 39, 0.4), 0 0 45px rgba(201, 162, 39, 0.2);
-}
-
-/* Animated glow pulse */
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(201, 162, 39, 0.3), 0 0 30px rgba(201, 162, 39, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(201, 162, 39, 0.5), 0 0 50px rgba(201, 162, 39, 0.25);
-  }
+  text-shadow: none;
 }
 
 .glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+  animation: none;
 }
 
 /* Link glow on hover */
