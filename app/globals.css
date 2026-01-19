@@ -38,6 +38,96 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
+  overflow-x: hidden;
+}
+
+/* Starfield background with parallax */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Far stars - smaller, more numerous, slower parallax */
+body::before {
+  background-image: 
+    radial-gradient(1px 1px at 100px 50px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 200px 150px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 300px 75px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 400px 200px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 500px 100px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 50px 300px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 150px 400px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 250px 350px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 350px 450px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 450px 380px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 550px 280px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 600px 420px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 700px 180px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 800px 320px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 900px 80px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 1000px 250px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 1100px 400px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 1200px 150px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 80px 500px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 180px 600px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 280px 550px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 380px 650px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 480px 580px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 580px 700px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 680px 620px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 780px 750px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 880px 680px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 980px 580px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 1080px 720px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 1180px 650px, rgba(255,255,255,0.6), transparent);
+  background-size: 1300px 800px;
+  background-attachment: fixed;
+  animation: parallax-slow 60s linear infinite;
+}
+
+/* Near stars - larger, fewer, gold tint, faster parallax */
+body::after {
+  background-image: 
+    radial-gradient(2px 2px at 120px 120px, rgba(201,165,92,0.9), transparent),
+    radial-gradient(2px 2px at 350px 280px, rgba(255,255,255,0.9), transparent),
+    radial-gradient(2px 2px at 580px 180px, rgba(201,165,92,0.8), transparent),
+    radial-gradient(2px 2px at 800px 380px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 1050px 220px, rgba(201,165,92,0.9), transparent),
+    radial-gradient(2px 2px at 200px 480px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 450px 550px, rgba(201,165,92,0.8), transparent),
+    radial-gradient(2px 2px at 700px 620px, rgba(255,255,255,0.9), transparent),
+    radial-gradient(2px 2px at 950px 520px, rgba(201,165,92,0.8), transparent),
+    radial-gradient(2px 2px at 1150px 680px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1.5px 1.5px at 50px 250px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 650px 350px, rgba(201,165,92,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 900px 150px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 300px 700px, rgba(201,165,92,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 1100px 450px, rgba(255,255,255,0.7), transparent);
+  background-size: 1200px 750px;
+  background-attachment: fixed;
+  animation: parallax-fast 45s linear infinite;
+}
+
+@keyframes parallax-slow {
+  0% { background-position: 0 0; }
+  100% { background-position: 1300px 800px; }
+}
+
+@keyframes parallax-fast {
+  0% { background-position: 0 0; }
+  100% { background-position: -1200px -750px; }
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 
