@@ -1757,11 +1757,12 @@ function FeedContent() {
             alignItems: "flex-start",
             gap: 12,
             padding: "12px 16px",
-            background: "var(--alzooka-teal-dark)",
+            background: "#151515",
             borderRadius: 12,
             border: isDraggingOver ? "2px solid var(--alzooka-gold)" : "1px solid rgba(240, 235, 224, 0.15)",
             marginBottom: 12,
             position: "relative",
+            zIndex: 2,
           }}
           onDragOver={(e) => e.preventDefault()}
           onDragEnter={() => setIsDraggingOver(true)}
@@ -2161,7 +2162,7 @@ function FeedContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
-              background: "transparent",
+              background: "#151515",
               border: "1px solid rgba(240, 235, 224, 0.3)",
               color: "var(--alzooka-cream)",
               padding: "8px 16px",
@@ -2170,6 +2171,7 @@ function FeedContent() {
               display: "flex",
               alignItems: "center",
               gap: 6,
+              zIndex: 2,
             }}
           >
             📷 Photo
