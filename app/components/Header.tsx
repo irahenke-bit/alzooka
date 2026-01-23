@@ -140,6 +140,16 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         .profile-avatar-wrapper:hover img {
           box-shadow: 0 0 12px rgba(201, 162, 39, 0.6);
         }
+        .friends-icon-link,
+        .friends-icon-link:hover,
+        .friends-icon-link:focus,
+        .friends-icon-link:active,
+        .friends-icon-link:visited {
+          background: transparent !important;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
       `}</style>
 
       {/* Search - custom or default */}
@@ -268,6 +278,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <Link
             href={`/profile/${userUsername}?showFriends=true`}
             title="Friends"
+            className="friends-icon-link"
             style={{
               display: "flex",
               alignItems: "center",
