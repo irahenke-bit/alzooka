@@ -140,16 +140,6 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         .profile-avatar-wrapper:hover img {
           box-shadow: 0 0 12px rgba(201, 162, 39, 0.6);
         }
-        .friends-icon-link,
-        .friends-icon-link:hover,
-        .friends-icon-link:focus,
-        .friends-icon-link:active,
-        .friends-icon-link:visited {
-          background: transparent !important;
-          background-color: transparent !important;
-          box-shadow: none !important;
-          outline: none !important;
-        }
       `}</style>
 
       {/* Search - custom or default */}
@@ -275,10 +265,9 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
 
         {/* Friends */}
         {user && userUsername && (
-          <Link
+          <a
             href={`/profile/${userUsername}?showFriends=true`}
             title="Friends"
-            className="friends-icon-link"
             style={{
               display: "flex",
               alignItems: "center",
@@ -286,12 +275,16 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               width: 40,
               height: 40,
               textDecoration: "none",
+              background: "none",
+              border: "none",
+              padding: 0,
+              margin: 0,
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
               <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
-          </Link>
+          </a>
         )}
 
         {/* Notifications */}
