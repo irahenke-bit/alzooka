@@ -198,13 +198,16 @@ nav a:hover {
 }
 
 /* Fix Friends icon button styling */
-a[href="/friends"] {
-  all: unset !important;
-  display: inline-flex !important;
-  cursor: pointer !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: transparent !important;
+@layer components {
+  a[href="/friends"],
+  span[data-friends-icon] {
+    all: unset !important;
+    display: inline-flex !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: transparent !important;
+  }
 }
 
 /* Form Elements */
