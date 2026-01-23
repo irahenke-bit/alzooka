@@ -268,7 +268,6 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="Friends">
             <Link
               href={`/profile/${userUsername}?showFriends=true`}
-              className="nav-icon-glow"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -276,14 +275,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
-                transition: "all 0.2s",
+                background: "transparent",
                 textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
