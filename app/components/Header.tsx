@@ -121,10 +121,12 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           text-shadow: 0 0 15px rgba(201, 162, 39, 0.7), 0 0 30px rgba(201, 162, 39, 0.4), 0 0 45px rgba(201, 162, 39, 0.2) !important;
         }
         .nav-icon-glow {
-          transition: all 0.2s ease !important;
+          transition: background 0.2s ease !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
         .nav-icon-glow:hover {
-          box-shadow: 0 0 15px rgba(201, 162, 39, 0.5), 0 0 30px rgba(201, 162, 39, 0.3) !important;
+          background: rgba(240, 235, 224, 0.1) !important;
         }
         .nav-icon-glow:hover svg {
           filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.8));
