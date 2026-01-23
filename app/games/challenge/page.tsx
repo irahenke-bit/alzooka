@@ -194,7 +194,7 @@ export default function ChallengePage() {
                     flex: 1,
                     padding: "12px 16px",
                     fontSize: 16,
-                    background: "rgba(240, 235, 224, 0.1)",
+                    background: "#151515",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
                     borderRadius: 8,
                     color: "var(--alzooka-cream)",

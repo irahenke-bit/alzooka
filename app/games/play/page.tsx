@@ -499,7 +499,7 @@ export default function PlayPage() {
               const isSelected = answer === selectedAnswer;
               
               // Determine background and border colors based on state
-              let bgColor = "rgba(240, 235, 224, 0.1)";
+              let bgColor = "#1a1a1a";
               let borderColor = "rgba(240, 235, 224, 0.2)";
               
               // Only change colors AFTER user has answered (showResult is true)

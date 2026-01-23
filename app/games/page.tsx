@@ -473,7 +473,7 @@ export default function GamesPage() {
                 padding: "12px 16px",
                 fontSize: 14,
                 fontWeight: 600,
-                background: activeTab === tab ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
+                background: activeTab === tab ? "var(--alzooka-gold)" : "#151515",
                 color: activeTab === tab ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
                 border: "none",
                 borderRadius: 8,
@@ -627,7 +627,7 @@ export default function GamesPage() {
                   style={{
                     background: index < 3 
                       ? `rgba(${index === 0 ? "255, 215, 0" : index === 1 ? "192, 192, 192" : "205, 127, 50"}, 0.1)`
-                      : "rgba(240, 235, 224, 0.05)",
+                      : "#151515",
                     borderRadius: 12,
                     padding: 12,
                     display: "flex",
