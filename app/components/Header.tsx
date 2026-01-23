@@ -267,7 +267,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         {user && userUsername && (
           <InstantTooltip text="Friends">
             <Link
-              href={`/profile/${userUsername}?showFriends=true`}
+              href="/friends"
               style={{
                 display: "inline-flex",
                 alignItems: "center",

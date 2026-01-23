@@ -198,8 +198,7 @@ nav a:hover {
 }
 
 /* Fix Friends icon button styling */
-a[href*="showFriends=true"],
-span[onclick*="showFriends"] {
+a[href="/friends"] {
   all: unset !important;
   display: inline-flex !important;
   cursor: pointer !important;
