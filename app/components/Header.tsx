@@ -140,6 +140,20 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         .profile-avatar-wrapper:hover img {
           box-shadow: 0 0 12px rgba(201, 162, 39, 0.6);
         }
+        .friends-nav-icon {
+          all: unset !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 40px !important;
+          height: 40px !important;
+          border-radius: 50% !important;
+          cursor: pointer !important;
+          background: transparent !important;
+        }
+        .friends-nav-icon:hover {
+          background: rgba(240, 235, 224, 0.1) !important;
+        }
       `}</style>
 
       {/* Search - custom or default */}
@@ -268,22 +282,16 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="Friends">
             <Link
               href={`/profile/${userUsername}?showFriends=true`}
-              className="nav-icon-glow"
+              className="friends-nav-icon"
               style={{
+                all: "unset",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
-                textDecoration: "none",
-                marginRight: 4,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
+                cursor: "pointer",
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
