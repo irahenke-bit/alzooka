@@ -275,10 +275,17 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               width: 40,
               height: 40,
               textDecoration: "none",
-              background: "none",
+              background: "transparent",
+              backgroundColor: "transparent",
               border: "none",
               padding: 0,
               margin: 0,
+              appearance: "none",
+              WebkitAppearance: "none",
+              boxShadow: "none",
+              borderRadius: 0,
+              position: "relative",
+              zIndex: 10,
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
