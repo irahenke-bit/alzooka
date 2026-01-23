@@ -105,7 +105,7 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            backgroundColor: "#fff",
+            background: "#fff",
             color: "#1a3a4a",
             border: "2px solid var(--alzooka-gold)",
           }}
