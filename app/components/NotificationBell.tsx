@@ -215,42 +215,28 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
     return date.toLocaleDateString();
   }
 
-  // Handle hover open with delay for closing
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  function handleMouseEnter() {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    if (!isOpen) {
-      setIsOpen(true);
-      // Don't auto-mark as read - wait for user to click or close
-    }
-  }
-
-  function handleMouseLeave() {
-    closeTimeoutRef.current = setTimeout(() => {
-      // Mark all as read when closing the panel (except friend requests)
+  // Handle click to toggle
+  function handleToggle() {
+    if (isOpen) {
+      // Mark all as read when closing (except friend requests)
       const nonFriendRequestUnread = notifications.filter(
         n => !n.is_read && n.type !== "friend_request"
       );
       if (nonFriendRequestUnread.length > 0) {
         nonFriendRequestUnread.forEach(n => markAsRead(n.id));
       }
-      setIsOpen(false);
-    }, 150);
+    }
+    setIsOpen(!isOpen);
   }
 
   return (
     <div 
       ref={dropdownRef} 
       style={{ position: "relative" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       {/* Bell Button */}
       <button
+        onClick={handleToggle}
         style={{
           background: isOpen ? "rgba(240, 235, 224, 0.1)" : "transparent",
           border: "none",
@@ -264,12 +250,6 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           borderRadius: "50%",
           transition: "all 0.2s",
           overflow: "visible",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
-        }}
-        onMouseLeave={(e) => {
-          if (!isOpen) e.currentTarget.style.background = "transparent";
         }}
       >
         <span style={{ fontSize: 22, color: "#c9a227" }}>🔔</span>
