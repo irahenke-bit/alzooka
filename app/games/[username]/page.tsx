@@ -289,7 +289,7 @@ export default function GamingProfilePage() {
         {/* Stats card */}
         {canSeeStats ? (
           <div style={{
-            background: "rgba(240, 235, 224, 0.05)",
+            background: "#151515",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -347,7 +347,7 @@ export default function GamingProfilePage() {
           </div>
         ) : (
           <div style={{
-            background: "rgba(240, 235, 224, 0.05)",
+            background: "#151515",
             borderRadius: 12,
             padding: 32,
             marginBottom: 24,

@@ -266,7 +266,7 @@ export default function AcceptChallengePage() {
         <div style={{
           marginTop: 24,
           padding: 24,
-          background: "rgba(240, 235, 224, 0.05)",
+          background: "#151515",
           borderRadius: 16,
           border: "1px solid rgba(240, 235, 224, 0.1)",
           textAlign: "center",
@@ -362,7 +362,7 @@ export default function AcceptChallengePage() {
               {/* Sharing consent */}
               <div style={{
                 padding: 16,
-                background: "rgba(240, 235, 224, 0.05)",
+                background: "#151515",
                 borderRadius: 12,
                 marginBottom: 24,
                 textAlign: "left",

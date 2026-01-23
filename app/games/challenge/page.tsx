@@ -234,7 +234,7 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "rgba(240, 235, 224, 0.05)",
+                        background: "#151515",
                         border: "1px solid rgba(240, 235, 224, 0.1)",
                         borderRadius: 8,
                         cursor: "pointer",
@@ -281,7 +281,7 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "rgba(240, 235, 224, 0.05)",
+                        background: "#151515",
                         border: "1px solid rgba(240, 235, 224, 0.1)",
                         borderRadius: 8,
                         cursor: "pointer",
@@ -323,7 +323,7 @@ export default function ChallengePage() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: 16,
-              background: "rgba(240, 235, 224, 0.05)",
+              background: "#151515",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -375,7 +375,7 @@ export default function ChallengePage() {
                   style={{
                     flex: 1,
                     padding: 16,
-                    background: selectedMode === "blitz" ? "rgba(29, 185, 84, 0.2)" : "rgba(240, 235, 224, 0.05)",
+                    background: selectedMode === "blitz" ? "rgba(29, 185, 84, 0.2)" : "#151515",
                     border: selectedMode === "blitz" ? "2px solid #1DB954" : "2px solid rgba(240, 235, 224, 0.1)",
                     borderRadius: 12,
                     cursor: "pointer",
@@ -391,7 +391,7 @@ export default function ChallengePage() {
                   style={{
                     flex: 1,
                     padding: 16,
-                    background: selectedMode === "five_second" ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.05)",
+                    background: selectedMode === "five_second" ? "rgba(229, 115, 115, 0.2)" : "#151515",
                     border: selectedMode === "five_second" ? "2px solid #e57373" : "2px solid rgba(240, 235, 224, 0.1)",
                     borderRadius: 12,
                     cursor: "pointer",
@@ -408,7 +408,7 @@ export default function ChallengePage() {
             {/* Sharing consent */}
             <div style={{
               padding: 16,
-              background: "rgba(240, 235, 224, 0.05)",
+              background: "#151515",
               borderRadius: 12,
               marginBottom: 24,
             }}>

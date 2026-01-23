@@ -324,7 +324,7 @@ export default function GamesPage() {
         {/* Your Stats Card */}
         {stats && (
           <div style={{
-            background: "rgba(240, 235, 224, 0.05)",
+            background: "#151515",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -403,7 +403,7 @@ export default function GamesPage() {
                 <div
                   key={game.id}
                   style={{
-                    background: "rgba(240, 235, 224, 0.05)",
+                    background: "#151515",
                     borderRadius: 8,
                     padding: 12,
                     display: "flex",
@@ -529,7 +529,7 @@ export default function GamesPage() {
                   <div
                     key={challenge.id}
                     style={{
-                      background: "rgba(240, 235, 224, 0.05)",
+                      background: "#151515",
                       borderRadius: 12,
                       padding: 16,
                       display: "flex",

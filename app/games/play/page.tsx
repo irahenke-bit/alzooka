@@ -485,7 +485,7 @@ export default function PlayPage() {
         <div style={{
           maxWidth: 600,
           margin: "0 auto",
-          background: "rgba(240, 235, 224, 0.05)",
+          background: "#151515",
           borderRadius: 16,
           padding: 24,
         }}>
