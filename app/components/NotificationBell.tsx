@@ -306,7 +306,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             width: 340,
             maxHeight: 400,
             overflowY: "auto",
-            background: "var(--alzooka-teal-light)",
+            background: "#151515",
             border: "1px solid rgba(240, 235, 224, 0.2)",
             borderRadius: 8,
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
