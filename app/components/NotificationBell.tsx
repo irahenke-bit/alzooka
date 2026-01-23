@@ -215,9 +215,21 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
     return date.toLocaleDateString();
   }
 
-  // Handle click to toggle
-  function handleToggle() {
-    if (isOpen) {
+  // Handle hover open with delay for closing
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  function handleMouseEnter() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  }
+
+  function handleMouseLeave() {
+    closeTimeoutRef.current = setTimeout(() => {
       // Mark all as read when closing (except friend requests)
       const nonFriendRequestUnread = notifications.filter(
         n => !n.is_read && n.type !== "friend_request"
@@ -225,18 +237,19 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
       if (nonFriendRequestUnread.length > 0) {
         nonFriendRequestUnread.forEach(n => markAsRead(n.id));
       }
-    }
-    setIsOpen(!isOpen);
+      setIsOpen(false);
+    }, 200);
   }
 
   return (
     <div 
       ref={dropdownRef} 
       style={{ position: "relative" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Bell Button */}
       <button
-        onClick={handleToggle}
         style={{
           background: isOpen ? "rgba(240, 235, 224, 0.1)" : "transparent",
           border: "none",
