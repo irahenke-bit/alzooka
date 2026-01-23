@@ -277,6 +277,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 height: 40,
                 borderRadius: "50%",
                 textDecoration: "none",
+                marginRight: 4,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
