@@ -140,20 +140,6 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         .profile-avatar-wrapper:hover img {
           box-shadow: 0 0 12px rgba(201, 162, 39, 0.6);
         }
-        .friends-nav-icon {
-          all: unset !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          width: 40px !important;
-          height: 40px !important;
-          border-radius: 50% !important;
-          cursor: pointer !important;
-          background: transparent !important;
-        }
-        .friends-nav-icon:hover {
-          background: rgba(240, 235, 224, 0.1) !important;
-        }
       `}</style>
 
       {/* Search - custom or default */}
@@ -277,14 +263,12 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           </InstantTooltip>
         ) : null}
 
-        {/* Friends */}
+        {/* Friends - using span wrapper to avoid any link/button styling issues */}
         {user && userUsername && (
           <InstantTooltip text="Friends">
-            <Link
-              href={`/profile/${userUsername}?showFriends=true`}
-              className="friends-nav-icon"
+            <span
+              onClick={() => window.location.href = `/profile/${userUsername}?showFriends=true`}
               style={{
-                all: "unset",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -292,12 +276,19 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 height: 40,
                 borderRadius: "50%",
                 cursor: "pointer",
+                background: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
                 <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
-            </Link>
+            </span>
           </InstantTooltip>
         )}
 
