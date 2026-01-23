@@ -263,6 +263,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           height: 40,
           borderRadius: "50%",
           transition: "all 0.2s",
+          overflow: "visible",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
@@ -276,8 +277,8 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           <span
             style={{
               position: "absolute",
-              top: 0,
-              right: 0,
+              top: 2,
+              right: 2,
               background: "#e53935",
               color: "#fff",
               fontSize: 11,
