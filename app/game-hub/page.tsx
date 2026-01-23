@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
+// Redirect to home in production - Game Hub is dev-only
+const isDev = process.env.NODE_ENV === "development";
+
 // Custom gamepad icon - Apple emoji style with colored buttons
 const GamepadIcon = ({ size = 48, color = "#9333ea" }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 36 36" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
@@ -46,6 +49,12 @@ export default function GameHubPage() {
 
   useEffect(() => {
     async function init() {
+      // Redirect to home in production - Game Hub is dev-only
+      if (!isDev) {
+        router.push("/");
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user ?? null;
       if (!user) {

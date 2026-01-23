@@ -204,8 +204,8 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           </InstantTooltip>
         )}
 
-        {/* Game Hub */}
-        {user && (
+        {/* Game Hub (dev only) or Music Trivia (production) */}
+        {user && process.env.NODE_ENV === "development" ? (
           <InstantTooltip text="Game Hub">
             <Link
               href="/game-hub"
@@ -232,7 +232,34 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               </svg>
             </Link>
           </InstantTooltip>
-        )}
+        ) : user ? (
+          <InstantTooltip text="Music Trivia">
+            <Link
+              href="/games"
+              className="nav-icon-glow"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                transition: "all 0.2s",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </Link>
+          </InstantTooltip>
+        ) : null}
 
         {/* Friends */}
         {user && userUsername && (

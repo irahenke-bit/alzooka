@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
+// Dev-only game - redirect in production
+const isDev = process.env.NODE_ENV === "development";
+
 type UserData = {
   id: string;
   username: string;
@@ -287,6 +290,12 @@ export default function SoundWavePage() {
   // Initialize
   useEffect(() => {
     async function init() {
+      // Redirect to home in production - this game is dev-only
+      if (!isDev) {
+        router.push("/");
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const currentUser = session?.user ?? null;
       if (!currentUser) {

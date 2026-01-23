@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 
+// Dev-only game - redirect in production
+const isDev = process.env.NODE_ENV === "development";
+
 type UserData = { id: string; username: string; avatar_url: string | null };
 
 type UpgradeType = {
@@ -653,6 +656,9 @@ export default function MusicianBeggarPage() {
 
   useEffect(() => {
     async function init() {
+      // Redirect to home in production - this game is dev-only
+      if (!isDev) { router.push("/"); return; }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) { router.push("/login"); return; }
       setUser(session.user);
