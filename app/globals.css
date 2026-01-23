@@ -197,6 +197,17 @@ nav a:hover {
   text-decoration: none !important;
 }
 
+/* Fix Friends icon button styling */
+a[href*="showFriends=true"],
+span[onclick*="showFriends"] {
+  all: unset !important;
+  display: inline-flex !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+}
+
 /* Form Elements */
 input, textarea {
   background: #151515;
