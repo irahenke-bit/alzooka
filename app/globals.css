@@ -179,6 +179,24 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Reset for nav icon links - prevent button styling */
+nav a {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+nav a:hover {
+  background: transparent !important;
+  text-decoration: none !important;
+}
+
 /* Form Elements */
 input, textarea {
   background: #151515;
