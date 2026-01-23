@@ -197,17 +197,31 @@ nav a:hover {
   text-decoration: none !important;
 }
 
-/* Fix Friends icon button styling */
-@layer components {
-  a[href="/friends"],
-  span[data-friends-icon] {
-    all: unset !important;
-    display: inline-flex !important;
-    cursor: pointer !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    background: transparent !important;
-  }
+/* Fix Friends icon button styling - MUST be outside @layer for highest specificity */
+a[href="/friends"],
+nav a[href="/friends"],
+header nav a[href="/friends"] {
+  all: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+}
+
+a[href="/friends"]:hover,
+nav a[href="/friends"]:hover,
+header nav a[href="/friends"]:hover {
+  background: rgba(240, 235, 224, 0.1) !important;
 }
 
 /* Form Elements */

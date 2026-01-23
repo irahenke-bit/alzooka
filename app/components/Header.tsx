@@ -268,13 +268,17 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           <InstantTooltip text="Friends">
             <Link
               href="/friends"
+              className="nav-icon-glow"
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
+                transition: "all 0.2s",
+                textDecoration: "none",
+                background: "transparent",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)";
