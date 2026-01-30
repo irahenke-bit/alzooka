@@ -248,8 +248,10 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Bell Button */}
-      <button
+      {/* Bell Button - using div to avoid global button styling */}
+      <div
+        role="button"
+        tabIndex={0}
         style={{
           background: isOpen ? "rgba(240, 235, 224, 0.1)" : "transparent",
           border: "none",
@@ -287,7 +289,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-        </button>
+        </div>
 
       {/* Dropdown */}
       {isOpen && (
