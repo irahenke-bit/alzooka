@@ -38,7 +38,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "var(--alzooka-teal-dark)",
+            background: "#0a0a0a",
             color: "var(--alzooka-cream)",
             fontSize: 12,
             fontWeight: 500,
@@ -1434,7 +1434,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
+                        color: "#0a0a0a",
                         fontWeight: 700,
                         fontSize: isReply ? 11 : 12,
                       }}
@@ -1607,7 +1607,7 @@ export function PostModal({
                       padding: "6px 12px",
                       fontSize: 13,
                       background: "var(--alzooka-gold)",
-                      color: "var(--alzooka-teal-dark)",
+                      color: "#0a0a0a",
                       border: "none",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -1881,7 +1881,7 @@ export function PostModal({
         }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--alzooka-teal-light)",
+          background: "#151515",
           borderRadius: 12,
           width: modalSize?.width ?? "100%",
           maxWidth: modalSize ? undefined : 680,
@@ -2146,7 +2146,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
+                        color: "#0a0a0a",
                         fontWeight: 700,
                         fontSize: 16,
                       }}
@@ -2310,7 +2310,7 @@ export function PostModal({
                             style={{
                               background: "var(--alzooka-gold)",
                               border: "none",
-                              color: "var(--alzooka-teal-dark)",
+                              color: "#0a0a0a",
                               padding: "10px 12px",
                               borderRadius: 6,
                               cursor: savingImage ? "not-allowed" : "pointer",
@@ -2331,7 +2331,7 @@ export function PostModal({
                             style={{
                               background: "var(--alzooka-gold)",
                               border: "none",
-                              color: "var(--alzooka-teal-dark)",
+                              color: "#0a0a0a",
                               padding: "10px 12px",
                               borderRadius: 6,
                               cursor: savingImage ? "not-allowed" : "pointer",
@@ -2476,7 +2476,7 @@ export function PostModal({
           style={{
             padding: "16px 20px",
             borderTop: "1px solid rgba(240, 235, 224, 0.1)",
-            background: "var(--alzooka-teal-light)",
+            background: "#151515",
             borderRadius: "0 0 12px 12px",
             cursor: isDragging ? "grabbing" : undefined,
           }}
@@ -2570,7 +2570,7 @@ export function PostModal({
                     alignItems: "flex-end",
                     gap: 10,
                     padding: "8px 12px",
-                    background: "var(--alzooka-teal-dark)",
+                    background: "#0a0a0a",
                     borderRadius: 20,
                     border: "1px solid rgba(240, 235, 224, 0.15)",
                   }}
@@ -2598,7 +2598,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
+                        color: "#0a0a0a",
                         fontWeight: 700,
                         fontSize: 13,
                         flexShrink: 0,
@@ -2677,7 +2677,7 @@ export function PostModal({
                       style={{
                         background: "var(--alzooka-gold)",
                         border: "none",
-                        color: "var(--alzooka-teal-dark)",
+                        color: "#0a0a0a",
                         width: 32,
                         height: 32,
                         borderRadius: "50%",
