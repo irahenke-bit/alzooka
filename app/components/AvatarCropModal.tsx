@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
@@ -31,6 +32,11 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { width, height } = e.currentTarget;
@@ -91,13 +97,15 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  const modalContent = (
     <div
       style={{
         position: "fixed",
         inset: 0,
         background: "rgba(0, 0, 0, 0.95)",
-        zIndex: 2000,
+        zIndex: 9999,
         display: "flex",
         flexDirection: "column",
       }}
@@ -196,4 +204,6 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
       </p>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
