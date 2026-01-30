@@ -108,7 +108,9 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center",
-        borderBottom: "1px solid rgba(255,255,255,0.1)"
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        flexShrink: 0,
+        background: "rgba(0, 0, 0, 0.95)",
       }}>
         <h2 style={{ margin: 0, fontSize: 18, color: "white" }}>Crop your photo</h2>
         <div style={{ display: "flex", gap: 12 }}>
@@ -151,7 +153,8 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
         alignItems: "center", 
         justifyContent: "center",
         overflow: "auto",
-        padding: "20px"
+        padding: "20px",
+        minHeight: 0,
       }}>
         <ReactCrop
           crop={crop}
@@ -185,7 +188,9 @@ export function AvatarCropModal({ imageSrc, onCancel, onSave }: Props) {
         color: "rgba(255,255,255,0.6)", 
         fontSize: 14, 
         margin: 0,
-        padding: "16px"
+        padding: "16px",
+        flexShrink: 0,
+        background: "rgba(0, 0, 0, 0.95)",
       }}>
         Drag the corners to resize • Drag inside to reposition
       </p>
