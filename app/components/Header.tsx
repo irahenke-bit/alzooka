@@ -17,61 +17,70 @@ type HeaderProps = {
   isOwnProfile?: boolean; // True when viewing your own profile
 };
 
-// Isolated Friends icon - no Link, no global classes, pure inline styles
-function FriendsIcon() {
-  const [isHovered, setIsHovered] = useState(false);
-  const [showFriends, setShowFriends] = useState(false);
+// Isolated Friends icon - pure CSS hover, no React state
+function FriendsIcon({ userUsername }: { userUsername: string }) {
+  const router = useRouter();
   
   return (
-    <div style={{ position: "relative", display: "inline-flex" }}>
-      <div
-        onClick={() => setShowFriends(!showFriends)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          cursor: "pointer",
-          background: isHovered ? "rgba(240, 235, 224, 0.1)" : "transparent",
-          transition: "background 0.2s",
-        }}
-        title="Friends"
-      >
-        <svg 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="#c9a227"
-          style={{ filter: isHovered ? "drop-shadow(0 0 6px rgba(201, 162, 39, 0.8))" : "none" }}
+    <>
+      <style>{`
+        .friends-icon-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          cursor: pointer;
+          background: transparent !important;
+          transition: background 0.2s;
+          border: none;
+          padding: 0;
+          margin: 0;
+          outline: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        .friends-icon-btn:hover {
+          background: rgba(240, 235, 224, 0.1) !important;
+        }
+        .friends-icon-btn:hover svg {
+          filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.8));
+        }
+        .friends-icon-btn:hover + .friends-tooltip {
+          opacity: 1;
+          visibility: visible;
+        }
+        .friends-tooltip {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.85);
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 4px;
+          font-size: 12px;
+          white-space: nowrap;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.1s, visibility 0.1s;
+          pointer-events: none;
+          z-index: 1001;
+        }
+      `}</style>
+      <div style={{ position: "relative", display: "inline-flex" }}>
+        <div
+          className="friends-icon-btn"
+          onClick={() => router.push(`/profile/${userUsername}?showFriends=true`)}
         >
-          <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#c9a227">
+            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <span className="friends-tooltip">Friends</span>
       </div>
-      {/* Tooltip */}
-      <span style={{
-        position: "absolute",
-        top: "calc(100% + 6px)",
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "rgba(0, 0, 0, 0.85)",
-        color: "#fff",
-        padding: "6px 10px",
-        borderRadius: 4,
-        fontSize: 12,
-        whiteSpace: "nowrap",
-        opacity: isHovered ? 1 : 0,
-        visibility: isHovered ? "visible" : "hidden",
-        transition: "opacity 0.1s, visibility 0.1s",
-        pointerEvents: "none",
-        zIndex: 1001,
-      }}>
-        Friends
-      </span>
-    </div>
+    </>
   );
 }
 
@@ -323,7 +332,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
 
         {/* Friends */}
         {user && userUsername && (
-          <FriendsIcon />
+          <FriendsIcon userUsername={userUsername} />
         )}
 
         {/* Notifications */}
