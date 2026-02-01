@@ -1791,11 +1791,11 @@ function FeedContent() {
                   width: 40,
                   height: 40,
                   borderRadius: "50%",
-                  background: "var(--accent)",
+                  background: "rgba(255, 255, 255, 0.15)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#000000",
+                  color: "#ffffff",
                   fontWeight: 700,
                   fontSize: 16,
                 }}
@@ -2367,9 +2367,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(1, 101, 252, 0.1)",
+        background: "rgba(255, 255, 255, 0.05)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--accent)",
+        borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
       }}>
         <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
           Loading playlist info...
@@ -2383,11 +2383,11 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(1, 101, 252, 0.1)",
+        background: "rgba(255, 255, 255, 0.05)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--accent)",
+        borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
           📀 Full Album/Playlist
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -2401,11 +2401,11 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     <div style={{
       marginBottom: 12,
       padding: "12px 16px",
-      background: "rgba(1, 101, 252, 0.1)",
+      background: "rgba(255, 255, 255, 0.05)",
       borderRadius: 8,
-      borderLeft: "4px solid var(--accent)",
+      borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
         📀 {title}
       </div>
       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -2503,7 +2503,7 @@ function PostCard({
       className="card" 
       id={`post-${post.id}`}
       style={isHighlighted ? { 
-        boxShadow: "0 0 0 2px var(--accent)",
+        boxShadow: "0 0 0 2px rgba(255, 255, 255, 0.3)",
         scrollMarginTop: 100,
       } : undefined}
     >
@@ -2541,11 +2541,11 @@ function PostCard({
                   width: 40,
                   height: 40,
                   borderRadius: "50%",
-                  background: "var(--accent)",
+                  background: "rgba(255, 255, 255, 0.15)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#000000",
+                  color: "#ffffff",
                   fontWeight: 700,
                   fontSize: 16,
                 }}>
@@ -2629,14 +2629,14 @@ function PostCard({
           </div>
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
             <div style={{ marginBottom: 8, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
-              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--accent)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
+              Posted on <Link href={`/profile/${post.wall_user.username}`}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
             </div>
           )}
 
           {/* Group attribution */}
           {post.group_id && post.groups && (
             <div style={{ marginBottom: 8, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
-              Posted in <Link href={`/groups/${post.group_id}`} style={{ color: "var(--accent)" }}>{post.groups.name}</Link>
+              Posted in <Link href={`/groups/${post.group_id}`}>{post.groups.name}</Link>
             </div>
           )}
 
@@ -2645,15 +2645,15 @@ function PostCard({
             <div style={{ 
               marginBottom: 12, 
               padding: "8px 12px",
-              background: "rgba(1, 101, 252, 0.1)",
+              background: "rgba(255, 255, 255, 0.05)",
               borderRadius: 8,
-              borderLeft: "3px solid var(--accent)",
+              borderLeft: "3px solid rgba(255, 255, 255, 0.2)",
               fontSize: 13,
             }}>
               <span style={{ color: "rgba(255,255,255,0.7)" }}>Shared from </span>
               <Link 
                 href={`/profile/${post.shared_from_post.users?.username}`} 
-                style={{ color: "var(--accent)", fontWeight: 600 }}
+                style={{ fontWeight: 600 }}
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
@@ -2663,7 +2663,7 @@ function PostCard({
                   <span style={{ opacity: 0.7 }}> in </span>
                   <Link 
                     href={`/groups/${post.shared_from_post.groups.id}`} 
-                    style={{ color: "var(--accent)", fontWeight: 600 }}
+                    style={{ fontWeight: 600 }}
                   >
                     {post.shared_from_post.groups.name}
                   </Link>

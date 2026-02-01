@@ -136,11 +136,13 @@ strong, b {
 }
 
 a {
-  color: var(--accent);
+  color: var(--text-primary);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 a:hover {
+  color: var(--accent);
   text-decoration: underline;
 }
 
@@ -172,11 +174,11 @@ input:focus, textarea:focus {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* Primary Button - Steel Blue */
+/* Primary Button - Black default, blue on interaction */
 button {
-  background: var(--accent);
-  color: var(--text-inverse);
-  border: none;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 12px 24px;
   font-size: 14px;
@@ -186,7 +188,7 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
   z-index: 2;
@@ -202,7 +204,7 @@ button::before {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.1),
     transparent
   );
   transition: left 0.4s ease;
@@ -213,8 +215,10 @@ button:hover::before {
 }
 
 button:hover {
-  background: var(--accent-hover);
-  box-shadow: var(--shadow-card-hover);
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card);
   transform: translateY(-1px);
 }
 
@@ -405,13 +409,13 @@ button.btn-lg {
 
 /* Link styles */
 a {
-  color: var(--accent);
+  color: var(--text-primary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--accent-light);
+  color: var(--accent);
   text-decoration: underline;
 }
 

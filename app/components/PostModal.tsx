@@ -83,10 +83,12 @@ function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string,
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#0165FC',
-            textDecoration: 'none',
+            color: 'rgba(255,255,255,0.9)',
+            textDecoration: 'underline',
             wordBreak: 'break-all',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#0165FC'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
           onClick={(e) => e.stopPropagation()}
         >
           {part}
@@ -105,10 +107,12 @@ function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string,
           key={i}
           href={`/profile/${username}`}
           style={{
-            color: 'var(--accent)',
+            color: 'rgba(255,255,255,0.9)',
             fontWeight: 600,
             textDecoration: 'none',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#0165FC'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
           onClick={(e) => e.stopPropagation()}
         >
           {displayText}
@@ -385,7 +389,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
+          color: userVote === 1 ? "var(--gold)" : "rgba(255,255,255,0.5)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,

@@ -396,7 +396,7 @@ function ProfileDropdown({
               height: 34,
               borderRadius: "50%",
               objectFit: "cover",
-              border: "2px solid var(--accent)",
+              border: "2px solid rgba(255, 255, 255, 0.2)",
               display: "block",
             }}
           />
@@ -406,11 +406,11 @@ function ProfileDropdown({
               width: 34,
               height: 34,
               borderRadius: "50%",
-              background: "var(--accent)",
+              background: "rgba(255, 255, 255, 0.15)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#000000",
+              color: "#ffffff",
               fontWeight: 700,
               fontSize: 14,
             }}
