@@ -1,7 +1,45 @@
 import { createAdminClient } from '@/lib/supabaseAdmin'
+import { createServerClient } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
+// =============================================================================
+// ADMIN-ONLY ROUTE - Database seeding
+// Disabled in production. Only admins can run in development.
+// =============================================================================
+
+// Admin user IDs - only these users can run admin operations
+const ADMIN_USER_IDS = [
+  "5aa34cc1-ed8e-4b31-9b88-12ffe6de250a", // irahenke
+];
+
 export async function POST() {
+  // GUARD 1: Disable in production
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Seed endpoint is disabled in production" },
+      { status: 403 }
+    );
+  }
+
+  // GUARD 2: Require authenticated user
+  const supabaseAuth = await createServerClient();
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // GUARD 3: Require admin role
+  if (!ADMIN_USER_IDS.includes(user.id)) {
+    return NextResponse.json(
+      { error: "Admin access required" },
+      { status: 403 }
+    );
+  }
+
   try {
     const supabase = createAdminClient()
 

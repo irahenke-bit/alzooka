@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabaseAdmin";
+import { createServerClient } from "@/lib/supabase";
+
+// =============================================================================
+// USER-SCOPED ROUTE - Spotify token management
+// Requires authentication + userId must match logged-in user
+// =============================================================================
 
 // Get current Spotify token (refreshing if needed)
 export async function GET(request: NextRequest) {
@@ -7,6 +13,25 @@ export async function GET(request: NextRequest) {
   
   if (!userId) {
     return NextResponse.json({ error: "No user ID provided" }, { status: 400 });
+  }
+
+  // GUARD: Require authenticated user and verify ownership
+  const supabaseAuth = await createServerClient();
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // GUARD: User can only access their own Spotify tokens
+  if (user.id !== userId) {
+    return NextResponse.json(
+      { error: "You can only access your own Spotify tokens" },
+      { status: 403 }
+    );
   }
 
   let supabase;
@@ -98,6 +123,25 @@ export async function DELETE(request: NextRequest) {
   
   if (!userId) {
     return NextResponse.json({ error: "No user ID provided" }, { status: 400 });
+  }
+
+  // GUARD: Require authenticated user and verify ownership
+  const supabaseAuth = await createServerClient();
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // GUARD: User can only disconnect their own Spotify
+  if (user.id !== userId) {
+    return NextResponse.json(
+      { error: "You can only disconnect your own Spotify" },
+      { status: 403 }
+    );
   }
 
   let supabase;

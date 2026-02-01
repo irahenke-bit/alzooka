@@ -1,8 +1,11 @@
 import { createAdminClient } from "@/lib/supabaseAdmin";
+import { createServerClient } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
-// This route uses admin client because it saves game data for any user
-// and the game save table may have RLS that requires bypassing
+// =============================================================================
+// USER-SCOPED ROUTE - Game save
+// Requires authentication + user_id must match logged-in user
+// =============================================================================
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +13,25 @@ export async function POST(request: NextRequest) {
     
     if (!userId) {
       return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
+    }
+
+    // GUARD: Require authenticated user and verify ownership
+    const supabaseAuth = await createServerClient();
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // GUARD: User can only save their own game data
+    if (user.id !== userId) {
+      return NextResponse.json(
+        { error: "You can only save your own game data" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

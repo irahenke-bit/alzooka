@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabaseAdmin";
+import { createServerClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
+
+// =============================================================================
+// OAUTH CALLBACK ROUTE - Spotify authentication
+// Uses CSRF state validation + verifies user ownership
+// =============================================================================
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -15,22 +21,13 @@ export async function GET(request: NextRequest) {
   const host = request.headers.get("host") || "alzooka.com";
   const protocol = host.includes("localhost") ? "http" : "https";
   const siteUrl = `${protocol}://${host}`;
-  
-  // Use admin client to bypass RLS for updating user's Spotify tokens
-  let supabase;
-  try {
-    supabase = createAdminClient();
-  } catch (e) {
-    console.error("Admin client error:", e);
-    return NextResponse.redirect(new URL("/station?error=admin_client_failed", siteUrl));
-  }
 
   // Handle errors or user denial
   if (error) {
     return NextResponse.redirect(new URL(`/station?error=${error}`, siteUrl));
   }
 
-  // Verify state for CSRF protection
+  // GUARD 1: Verify state for CSRF protection
   if (!state || state !== storedState) {
     return NextResponse.redirect(new URL("/station?error=state_mismatch", siteUrl));
   }
@@ -39,6 +36,28 @@ export async function GET(request: NextRequest) {
   const userId = state.split("_")[0];
   if (!userId) {
     return NextResponse.redirect(new URL("/station?error=no_user", siteUrl));
+  }
+
+  // GUARD 2: Verify the logged-in user matches the user who initiated OAuth
+  const supabaseAuth = await createServerClient();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(new URL("/station?error=not_authenticated", siteUrl));
+  }
+
+  if (user.id !== userId) {
+    console.error("OAuth user mismatch:", { loggedIn: user.id, stateUserId: userId });
+    return NextResponse.redirect(new URL("/station?error=user_mismatch", siteUrl));
+  }
+
+  // Use admin client to bypass RLS for updating user's Spotify tokens
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (e) {
+    console.error("Admin client error:", e);
+    return NextResponse.redirect(new URL("/station?error=admin_client_failed", siteUrl));
   }
 
   if (!code) {

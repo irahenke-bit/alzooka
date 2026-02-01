@@ -1,14 +1,36 @@
 import { createAdminClient } from "@/lib/supabaseAdmin";
+import { createServerClient } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
-// This route uses admin client to access user preferences across users
-// TODO: Consider refactoring to use authenticated server client with proper RLS
+// =============================================================================
+// USER-SCOPED ROUTE - Group preferences
+// Requires authentication + userId path must match logged-in user
+// =============================================================================
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; groupId: string }> }
 ) {
   const { id: userId, groupId } = await params;
+
+  // GUARD: Require authenticated user and verify ownership
+  const supabaseAuth = await createServerClient();
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // GUARD: User can only access their own preferences
+  if (user.id !== userId) {
+    return NextResponse.json(
+      { error: "You can only access your own preferences" },
+      { status: 403 }
+    );
+  }
   
   const supabase = createAdminClient();
   
@@ -44,6 +66,26 @@ export async function POST(
   { params }: { params: Promise<{ id: string; groupId: string }> }
 ) {
   const { id: userId, groupId } = await params;
+
+  // GUARD: Require authenticated user and verify ownership
+  const supabaseAuth = await createServerClient();
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // GUARD: User can only update their own preferences
+  if (user.id !== userId) {
+    return NextResponse.json(
+      { error: "You can only update your own preferences" },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
   
   const supabase = createAdminClient();
