@@ -142,17 +142,17 @@ export default function SignupPage() {
       alignItems: "center", 
       justifyContent: "center",
       padding: 20,
-      background: "radial-gradient(ellipse at center, #000000 0%, #000000 50%, rgba(0,0,0,0.95) 100%)",
+      background: "#000000",
     }}>
       {/* Centered Card Container */}
       <div style={{
         width: "100%",
         maxWidth: 420,
-        background: "linear-gradient(180deg, #0d0d0d 0%, #151515 50%, #121212 100%)",
+        background: "linear-gradient(180deg, #141414 0%, #1a1a1a 50%, #161616 100%)",
         border: "none",
         borderRadius: 16,
         padding: "48px 40px",
-        boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.4)",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
       }}>
         <div style={{ marginBottom: 40, textAlign: "center" }}>
           <LogoWithText />
