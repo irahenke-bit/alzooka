@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabaseAdmin";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// This route uses admin client to access user preferences across users
+// TODO: Consider refactoring to use authenticated server client with proper RLS
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +10,7 @@ export async function GET(
 ) {
   const { id: userId, groupId } = await params;
   
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createAdminClient();
   
   const { data, error } = await supabase
     .from("user_group_preferences")
@@ -46,7 +46,7 @@ export async function POST(
   const { id: userId, groupId } = await params;
   const body = await request.json();
   
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createAdminClient();
   
   // Upsert preferences
   const { data, error } = await supabase

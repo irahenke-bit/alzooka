@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabaseAdmin";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {

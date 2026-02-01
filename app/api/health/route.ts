@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createAnonServerClient } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
 // Health check endpoint - ping this daily to keep Supabase active
@@ -6,10 +6,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createAnonServerClient();
 
     // Simple query to keep the database active
     const { count, error } = await supabase

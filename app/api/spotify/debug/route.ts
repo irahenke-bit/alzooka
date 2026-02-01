@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
 
 // Debug endpoint to check Spotify token status
 export async function GET() {
@@ -18,34 +17,11 @@ export async function GET() {
     }
   }
   
-  // Find the session token cookie and try to parse it
-  const sessionCookie = allCookies.find(c => 
-    c.name.includes('auth-token') || 
-    (c.name.includes('sb-') && c.name.includes('-auth-token'))
-  );
+  // Use the proper server client with cookie handling
+  const testSupabase = await createServerClient();
   
-  let sessionFromCookie = null;
-  if (sessionCookie) {
-    try {
-      const tokenData = JSON.parse(sessionCookie.value);
-      if (tokenData.access_token) {
-        const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const key = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-        const supabase = createClient(url, key, { auth: { persistSession: false } });
-        await supabase.auth.setSession({
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || '',
-        });
-        const { data: { session } } = await supabase.auth.getSession();
-        sessionFromCookie = session;
-      }
-    } catch {
-      // Cookie might not be JSON
-    }
-  }
-  
-  // Also try a direct lookup to see if Spotify tokens were saved
-  const testSupabase = createServerClient();
+  // Get current user from session
+  const { data: { user: currentUser } } = await testSupabase.auth.getUser();
   const { data: anyUser } = await testSupabase
     .from("users")
     .select("id, spotify_refresh_token")
@@ -82,8 +58,7 @@ export async function GET() {
   return NextResponse.json({
     cookieNames,
     authCookies,
-    sessionCookieFound: !!sessionCookie,
-    sessionFromCookie: sessionFromCookie ? { userId: sessionFromCookie.user?.id } : null,
+    currentUser: currentUser ? { id: currentUser.id, email: currentUser.email } : null,
     anyUserWithSpotify: anyUser && anyUser.length > 0 ? anyUser[0].id : null,
     knownUser: {
       id: knownUser?.id,
