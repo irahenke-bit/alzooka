@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // Log blocked content for review (without storing the actual image)
     if (result.blocked) {
-      const supabase = createServerClient();
+      const supabase = await createServerClient();
       const clientIP = request.headers.get('x-forwarded-for') || 
                        request.headers.get('x-real-ip') || 
                        'unknown';

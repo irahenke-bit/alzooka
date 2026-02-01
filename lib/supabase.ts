@@ -1,6 +1,5 @@
 import { createBrowserClient as createSupabaseBrowserClient } from "@supabase/ssr";
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // =============================================================================
@@ -43,6 +42,8 @@ export function createBrowserClient() {
  *   const { data: { user } } = await supabase.auth.getUser();
  */
 export async function createServerClient() {
+  // Dynamic import to avoid "next/headers" being evaluated at module level
+  const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
 
   return createSupabaseServerClient(

@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     
     // Parse request body
     let body;
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     
   const { data, error } = await supabase
     .from('items')

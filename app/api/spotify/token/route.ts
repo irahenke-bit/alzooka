@@ -42,18 +42,18 @@ export async function GET(request: NextRequest) {
   }
 
   // Get user's Spotify tokens
-  const { data: user, error: fetchError } = await supabase
+  const { data: userData, error: fetchError } = await supabase
     .from("users")
     .select("spotify_access_token, spotify_refresh_token, spotify_token_expires_at")
     .eq("id", userId)
     .single();
 
-  if (fetchError || !user?.spotify_refresh_token) {
+  if (fetchError || !userData?.spotify_refresh_token) {
     return NextResponse.json({ error: "Spotify not connected" }, { status: 401 });
   }
 
   // Check if token is expired or will expire in next 5 minutes
-  const expiresAt = user.spotify_token_expires_at ? new Date(user.spotify_token_expires_at) : null;
+  const expiresAt = userData.spotify_token_expires_at ? new Date(userData.spotify_token_expires_at) : null;
   const isExpired = !expiresAt || expiresAt.getTime() < Date.now() + 5 * 60 * 1000;
 
   if (isExpired) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         },
         body: new URLSearchParams({
           grant_type: "refresh_token",
-          refresh_token: user.spotify_refresh_token,
+          refresh_token: userData.spotify_refresh_token,
         }),
       });
 
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Token is still valid
-  return NextResponse.json({ access_token: user.spotify_access_token });
+  return NextResponse.json({ access_token: userData.spotify_access_token });
 }
 
 // Disconnect Spotify
