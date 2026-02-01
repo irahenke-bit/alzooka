@@ -33,16 +33,16 @@ type GameSave = {
 
 // Speaker designs for rebirth levels - chrome/silver base with accent colors
 const SPEAKER_DESIGNS = [
-  { id: 1, name: "Chrome Classic", rimColor: "#C0C0C0", coneColor: "#1a1a1a", glowColor: "#E8E8E8", accentColor: "#888888" },
-  { id: 2, name: "Midnight Silver", rimColor: "#A8A8A8", coneColor: "#0d0d0d", glowColor: "#D4D4D4", accentColor: "#4A90D9" },
-  { id: 3, name: "Platinum Bass", rimColor: "#E5E4E2", coneColor: "#141414", glowColor: "#FFFFFF", accentColor: "#9B59B6" },
-  { id: 4, name: "Gunmetal Gray", rimColor: "#5A5A5A", coneColor: "#0a0a0a", glowColor: "#8A8A8A", accentColor: "#E74C3C" },
-  { id: 5, name: "Titanium Drop", rimColor: "#B8B8B8", coneColor: "#121212", glowColor: "#DCDCDC", accentColor: "#F39C12" },
-  { id: 6, name: "Steel Pulse", rimColor: "#71797E", coneColor: "#0f0f0f", glowColor: "#A9A9A9", accentColor: "#1ABC9C" },
-  { id: 7, name: "Mercury Wave", rimColor: "#D3D3D3", coneColor: "#161616", glowColor: "#F5F5F5", accentColor: "#3498DB" },
-  { id: 8, name: "Nickel Thunder", rimColor: "#727472", coneColor: "#0b0b0b", glowColor: "#9E9E9E", accentColor: "#E91E63" },
-  { id: 9, name: "Pewter Boom", rimColor: "#8F8F8F", coneColor: "#131313", glowColor: "#C4C4C4", accentColor: "#00BCD4" },
-  { id: 10, name: "Diamond Edition", rimColor: "#F0F0F0", coneColor: "#080808", glowColor: "#FFFFFF", accentColor: "#FFD700" },
+  { id: 1, name: "Chrome Classic", rimColor: "rgba(255,255,255,0.75)", coneColor: "black", glowColor: "#ffffff", accentColor: "rgba(255,255,255,0.6)888" },
+  { id: 2, name: "Midnight Silver", rimColor: "rgba(255,255,255,0.65)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#2563eb" },
+  { id: 3, name: "Platinum Bass", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
+  { id: 4, name: "Gunmetal Gray", rimColor: "rgba(255,255,255,0.35)", coneColor: "black", glowColor: "rgba(255,255,255,0.55)", accentColor: "#2563eb" },
+  { id: 5, name: "Titanium Drop", rimColor: "rgba(255,255,255,0.7)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#2563eb" },
+  { id: 6, name: "Steel Pulse", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.65)", accentColor: "#2563eb" },
+  { id: 7, name: "Mercury Wave", rimColor: "rgba(255,255,255,0.85)", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
+  { id: 8, name: "Nickel Thunder", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.6)", accentColor: "#2563eb" },
+  { id: 9, name: "Pewter Boom", rimColor: "rgba(255,255,255,0.55)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.75)", accentColor: "#2563eb" },
+  { id: 10, name: "Diamond Edition", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
 ];
 
 // Collectors (auto-clickers)
@@ -507,7 +507,7 @@ export default function CoinCollectorPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(107, 140, 174, 0.2)",
+            border: "3px solid rgba(37, 99, 235, 0.2)",
             borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
@@ -525,7 +525,7 @@ export default function CoinCollectorPage() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: `linear-gradient(180deg, #0a0612 0%, #12081a 50%, #0d0618 100%)`,
+      background: `linear-gradient(180deg, #000000 0%, #000000 50%, #000000 100%)`,
     }}>
       <Header 
         user={user} 
@@ -551,9 +551,9 @@ export default function CoinCollectorPage() {
           </Link>
           <div style={{ 
             fontSize: 12, 
-            color: saveStatus === "saved" ? "#4ade80" : 
-                   saveStatus === "saving" ? "#fbbf24" : 
-                   saveStatus === "error" ? "#f87171" : "rgba(255,255,255,0.4)"
+            color: saveStatus === "saved" ? "#2563eb" : 
+                   saveStatus === "saving" ? "#2563eb" : 
+                   saveStatus === "error" ? "#2563eb" : "rgba(255,255,255,0.4)"
           }}>
             {saveStatus === "saved" && "✓ Saved"}
             {saveStatus === "saving" && "Saving..."}
@@ -579,12 +579,12 @@ export default function CoinCollectorPage() {
                 <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)" }}>
                   🪙 {formatNumber(coins)}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7 }}>
+                <div style={{ fontSize: 13, color: "#ffffff", opacity: 0.7 }}>
                   +{formatNumber(coinsPerSecond)}/sec • +{formatNumber(coinsPerClick)}/click
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
+                <div style={{ fontSize: 14, color: "#ffffff", opacity: 0.7 }}>
                   Rebirth Level: {rebirthCount}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--accent)" }}>
@@ -599,7 +599,7 @@ export default function CoinCollectorPage() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: `radial-gradient(ellipse at center, ${speakerDesign.accentColor}08 0%, #0a0612 50%, #06030a 100%)`,
+              background: `radial-gradient(ellipse at center, ${speakerDesign.accentColor}08 0%, #000000 50%, #000000 100%)`,
               borderRadius: 24,
               padding: "60px 40px",
               marginBottom: 24,
@@ -670,32 +670,32 @@ export default function CoinCollectorPage() {
                   <defs>
                     {/* Chrome frame gradient */}
                     <linearGradient id={`frameGrad-${speakerDesign.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f0f0f0" />
+                      <stop offset="0%" stopColor="#ffffff" />
                       <stop offset="25%" stopColor={speakerDesign.rimColor} />
-                      <stop offset="50%" stopColor="#666666" />
+                      <stop offset="50%" stopColor="rgba(255,255,255,0.4)" />
                       <stop offset="75%" stopColor={speakerDesign.rimColor} />
-                      <stop offset="100%" stopColor="#e0e0e0" />
+                      <stop offset="100%" stopColor="#ffffff" />
                     </linearGradient>
                     
                     {/* Rubber surround gradient */}
                     <radialGradient id={`surroundGrad-${speakerDesign.id}`} cx="50%" cy="50%">
-                      <stop offset="0%" stopColor="#2a2a2a" />
-                      <stop offset="50%" stopColor="#1a1a1a" />
-                      <stop offset="100%" stopColor="#0d0d0d" />
+                      <stop offset="0%" stopColor="#000000" />
+                      <stop offset="50%" stopColor="black" />
+                      <stop offset="100%" stopColor="#000000" />
                     </radialGradient>
                     
                     {/* Cone gradient - realistic paper/poly cone */}
                     <radialGradient id={`coneGrad-${speakerDesign.id}`} cx="40%" cy="40%">
-                      <stop offset="0%" stopColor="#2d2d2d" />
+                      <stop offset="0%" stopColor="#000000" />
                       <stop offset="40%" stopColor={speakerDesign.coneColor} />
-                      <stop offset="100%" stopColor="#050505" />
+                      <stop offset="100%" stopColor="#000000" />
                     </radialGradient>
                     
                     {/* Dust cap gradient */}
                     <radialGradient id={`dustCapGrad-${speakerDesign.id}`} cx="35%" cy="35%">
-                      <stop offset="0%" stopColor="#4a4a4a" />
-                      <stop offset="50%" stopColor="#252525" />
-                      <stop offset="100%" stopColor="#0a0a0a" />
+                      <stop offset="0%" stopColor="#000000" />
+                      <stop offset="50%" stopColor="#000000" />
+                      <stop offset="100%" stopColor="black" />
                     </radialGradient>
                   </defs>
 
@@ -703,7 +703,7 @@ export default function CoinCollectorPage() {
                   <circle cx="100" cy="100" r="98" fill={`url(#frameGrad-${speakerDesign.id})`} />
                   
                   {/* Frame inner edge */}
-                  <circle cx="100" cy="100" r="92" fill="#1a1a1a" />
+                  <circle cx="100" cy="100" r="92" fill="black" />
                   
                   {/* Rubber surround - the flexible ring */}
                   <circle cx="100" cy="100" r="88" fill={`url(#surroundGrad-${speakerDesign.id})`} />
@@ -716,14 +716,14 @@ export default function CoinCollectorPage() {
                       cy="100" 
                       r={r} 
                       fill="none" 
-                      stroke="#0a0a0a" 
+                      stroke="black" 
                       strokeWidth="1.5"
                       opacity="0.6"
                     />
                   ))}
                   
                   {/* Cone attachment ring */}
-                  <circle cx="100" cy="100" r="75" fill="#1d1d1d" />
+                  <circle cx="100" cy="100" r="75" fill="#000000" />
                   
                   {/* Main speaker cone */}
                   <circle cx="100" cy="100" r="72" fill={`url(#coneGrad-${speakerDesign.id})`} />
@@ -739,7 +739,7 @@ export default function CoinCollectorPage() {
                       <line 
                         key={angle}
                         x1={x1} y1={y1} x2={x2} y2={y2} 
-                        stroke="#0a0a0a" 
+                        stroke="black" 
                         strokeWidth="0.5"
                         opacity="0.3"
                       />
@@ -747,13 +747,13 @@ export default function CoinCollectorPage() {
                   })}
                   
                   {/* Cone ring highlights */}
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#2a2a2a" strokeWidth="0.5" />
-                  <circle cx="100" cy="100" r="55" fill="none" stroke="#1f1f1f" strokeWidth="0.5" />
-                  <circle cx="100" cy="100" r="45" fill="none" stroke="#2a2a2a" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="65" fill="none" stroke="#000000" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="55" fill="none" stroke="#000000" strokeWidth="0.5" />
+                  <circle cx="100" cy="100" r="45" fill="none" stroke="#000000" strokeWidth="0.5" />
                   
                   {/* Dust cap (center dome) */}
                   <circle cx="100" cy="100" r="26" fill={`url(#dustCapGrad-${speakerDesign.id})`} />
-                  <circle cx="100" cy="100" r="26" fill="none" stroke="#333" strokeWidth="1" />
+                  <circle cx="100" cy="100" r="26" fill="none" stroke="black" strokeWidth="1" />
                   
                   {/* Dust cap highlight */}
                   <ellipse cx="92" cy="92" rx="12" ry="8" fill="white" opacity="0.08" />
@@ -801,8 +801,7 @@ export default function CoinCollectorPage() {
 
               <p style={{ 
                 marginTop: 8, 
-                color: "var(--text-primary)", 
-                opacity: 0.6,
+                color: "rgba(255,255,255,0.7)",
                 fontSize: 13,
               }}>
                 Click the speaker to collect!
@@ -819,7 +818,7 @@ export default function CoinCollectorPage() {
                 borderRadius: 12,
                 border: "none",
                 background: canRebirth 
-                  ? "linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)"
+                  ? "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)"
                   : "rgba(255,255,255,0.1)",
                 color: canRebirth ? "#fff" : "rgba(255,255,255,0.3)",
                 fontSize: 16,
@@ -852,7 +851,7 @@ export default function CoinCollectorPage() {
                   borderRadius: 8,
                   border: "none",
                   background: activeTab === "collectors" ? "var(--accent)" : "rgba(255,255,255,0.1)",
-                  color: activeTab === "collectors" ? "var(--bg-header)" : "var(--alzooka-cream)",
+                  color: activeTab === "collectors" ? "black" : "rgba(255,255,255,0.5)",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontSize: 14,
@@ -868,7 +867,7 @@ export default function CoinCollectorPage() {
                   borderRadius: 8,
                   border: "none",
                   background: activeTab === "upgrades" ? "var(--accent)" : "rgba(255,255,255,0.1)",
-                  color: activeTab === "upgrades" ? "var(--bg-header)" : "var(--alzooka-cream)",
+                  color: activeTab === "upgrades" ? "black" : "rgba(255,255,255,0.5)",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontSize: 14,
@@ -899,7 +898,7 @@ export default function CoinCollectorPage() {
                         padding: 12,
                         borderRadius: 10,
                         border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(107, 140, 174, 0.1)" : "rgba(255,255,255,0.05)",
+                        background: canAfford ? "rgba(37, 99, 235, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -909,7 +908,7 @@ export default function CoinCollectorPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ 
                           fontWeight: 600, 
-                          color: "var(--text-primary)",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 14,
                           marginBottom: 2,
                         }}>
@@ -924,13 +923,13 @@ export default function CoinCollectorPage() {
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.6 }}>
+                        <div style={{ fontSize: 12, color: "#ffffff", opacity: 0.6 }}>
                           +{production.toFixed(1)}/sec each
                         </div>
                       </div>
                       <div style={{ 
                         fontWeight: 600, 
-                        color: canAfford ? "var(--accent)" : "var(--alzooka-cream)",
+                        color: canAfford ? "var(--accent)" : "rgba(255,255,255,0.5)",
                         fontSize: 13,
                       }}>
                         🪙 {formatNumber(cost)}
@@ -962,7 +961,7 @@ export default function CoinCollectorPage() {
                         padding: 12,
                         borderRadius: 10,
                         border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(107, 140, 174, 0.1)" : "rgba(255,255,255,0.05)",
+                        background: canAfford ? "rgba(37, 99, 235, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -972,7 +971,7 @@ export default function CoinCollectorPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ 
                           fontWeight: 600, 
-                          color: "var(--text-primary)",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 14,
                           marginBottom: 2,
                         }}>
@@ -987,13 +986,13 @@ export default function CoinCollectorPage() {
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.6 }}>
+                        <div style={{ fontSize: 12, color: "#ffffff", opacity: 0.6 }}>
                           +{Math.floor(bonus)}/click each
                         </div>
                       </div>
                       <div style={{ 
                         fontWeight: 600, 
-                        color: canAfford ? "var(--accent)" : "var(--alzooka-cream)",
+                        color: canAfford ? "var(--accent)" : "rgba(255,255,255,0.5)",
                         fontSize: 13,
                       }}>
                         🪙 {formatNumber(cost)}
@@ -1011,10 +1010,10 @@ export default function CoinCollectorPage() {
               background: "rgba(0,0,0,0.2)",
               borderRadius: 10,
             }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", marginBottom: 12 }}>
                 Stats
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.7, lineHeight: 1.8 }}>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.8 }}>
                 <div>Total Clicks: {clicks.toLocaleString()}</div>
                 <div>All-time Coins: {formatNumber(totalCoinsEarned)}</div>
                 <div>Highest Balance: {formatNumber(highestCoins)}</div>
@@ -1028,8 +1027,7 @@ export default function CoinCollectorPage() {
                 marginTop: 12, 
                 textAlign: "center", 
                 fontSize: 12, 
-                color: "var(--accent)",
-                opacity: 0.7,
+                color: "rgba(255,255,255,0.7)",
               }}>
                 Saving...
               </div>
@@ -1058,7 +1056,7 @@ export default function CoinCollectorPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "var(--bg-elevated)",
+              background: "black",
               borderRadius: 16,
               padding: 32,
               maxWidth: 400,
@@ -1066,14 +1064,14 @@ export default function CoinCollectorPage() {
             }}
           >
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔄</div>
-            <h2 style={{ color: "var(--text-primary)", marginBottom: 12 }}>
+            <h2 style={{ color: "#ffffff", marginBottom: 12 }}>
               Ready to Rebirth?
             </h2>
-            <p style={{ color: "var(--text-primary)", opacity: 0.8, marginBottom: 8 }}>
+            <p style={{ color: "#ffffff", opacity: 0.8, marginBottom: 8 }}>
               You'll reset all progress but gain:
             </p>
             <div style={{
-              background: "rgba(107, 140, 174, 0.2)",
+              background: "rgba(37, 99, 235, 0.2)",
               borderRadius: 8,
               padding: 16,
               marginBottom: 24,
@@ -1081,10 +1079,10 @@ export default function CoinCollectorPage() {
               <div style={{ color: "var(--accent)", fontWeight: 600, fontSize: 18 }}>
                 +25% permanent bonus
               </div>
-              <div style={{ color: "var(--text-primary)", opacity: 0.7, fontSize: 14, marginTop: 4 }}>
+              <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, marginTop: 4 }}>
                 New total: {((rebirthBonus + 0.25) * 100).toFixed(0)}% production
               </div>
-              <div style={{ color: "var(--text-primary)", opacity: 0.7, fontSize: 14, marginTop: 8 }}>
+              <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, marginTop: 8 }}>
                 New speaker design: {SPEAKER_DESIGNS[currentPresident % SPEAKER_DESIGNS.length].name}
               </div>
             </div>
@@ -1097,7 +1095,7 @@ export default function CoinCollectorPage() {
                   borderRadius: 8,
                   border: "1px solid rgba(255,255,255,0.2)",
                   background: "transparent",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontWeight: 600,
                 }}
@@ -1111,8 +1109,8 @@ export default function CoinCollectorPage() {
                   padding: "12px 24px",
                   borderRadius: 8,
                   border: "none",
-                  background: "linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)",
-                  color: "#fff",
+                  background: "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontWeight: 600,
                 }}

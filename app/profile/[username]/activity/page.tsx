@@ -425,8 +425,8 @@ export default function ActivityPage() {
                 <article className="card" style={{ marginBottom: 12, padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
                     <span style={{ 
-                      background: item.type === "post" ? "var(--accent)" : "rgba(240, 235, 224, 0.2)",
-                      color: item.type === "post" ? "var(--bg-header)" : "var(--alzooka-cream)",
+                      background: item.type === "post" ? "var(--accent)" : "var(--border-default)",
+                      color: item.type === "post" ? "black" : "rgba(255,255,255,0.5)",
                       padding: "2px 8px",
                       borderRadius: 4,
                       fontSize: 11,
@@ -454,7 +454,7 @@ export default function ActivityPage() {
                     <div style={{ 
                       marginTop: 12,
                       padding: "8px 12px", 
-                      background: "rgba(0, 0, 0, 0.2)", 
+                      background: "var(--border-subtle)", 
                       borderRadius: 6,
                       borderLeft: "3px solid var(--accent)",
                     }}>

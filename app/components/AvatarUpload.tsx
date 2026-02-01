@@ -157,7 +157,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
           borderRadius: "50%",
           background: currentAvatarUrl 
             ? `url(${currentAvatarUrl}) center/cover`
-            : "var(--bg-header)",
+            : "black",
           border: "3px solid var(--accent)",
           cursor: uploading ? "wait" : "pointer",
           display: "flex",
@@ -187,7 +187,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--text-primary)",
+              color: "#ffffff",
             }}
           >
             ...
@@ -205,7 +205,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--text-primary)",
+              color: "#ffffff",
               pointerEvents: "none",
             }}
           >
@@ -217,7 +217,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
       {/* Error message */}
       {error && (
         <p style={{ 
-          color: "#e57373", 
+          color: "#2563eb", 
           fontSize: 12, 
           marginTop: 8,
           textAlign: "center",

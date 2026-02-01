@@ -245,7 +245,7 @@ function CompleteProfileContent() {
         </h1>
         <p style={{ 
           fontSize: 14, 
-          opacity: 0.7, 
+          color: "rgba(255,255,255,0.7)", 
           marginBottom: 32,
           textAlign: "center",
           lineHeight: 1.5,
@@ -272,7 +272,7 @@ function CompleteProfileContent() {
               style={{ width: "100%" }}
               autoFocus
             />
-            <p style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
               This is how your name appears on posts and your profile
             </p>
           </div>
@@ -284,11 +284,11 @@ function CompleteProfileContent() {
               padding: 16,
               background: "rgba(240, 235, 224, 0.05)",
               borderRadius: 8,
-              border: "1px solid rgba(240, 235, 224, 0.1)",
+              border: "1px solid var(--border-subtle)",
             }}>
               <p style={{ 
                 fontSize: 13, 
-                opacity: 0.7, 
+                color: "rgba(255,255,255,0.7)", 
                 marginBottom: 8,
               }}>
                 Your username will be:
@@ -304,14 +304,14 @@ function CompleteProfileContent() {
                   `@${generatedUsername}`
                 )}
               </p>
-              <p style={{ fontSize: 12, opacity: 0.5, marginTop: 8 }}>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>
                 Others can mention you with this @username
               </p>
             </div>
           )}
 
           {error && (
-            <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#2563eb", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}

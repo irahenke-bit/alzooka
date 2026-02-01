@@ -86,13 +86,13 @@ function NoProfileContent() {
         <div style={{
           marginTop: 40,
           padding: 32,
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           maxWidth: 400,
         }}>
-          <h2 style={{ marginBottom: 16, color: "#e57373" }}>Profile Creation Failed</h2>
-          <p style={{ marginBottom: 16, color: "var(--text-primary)" }}>{errorMsg}</p>
-          <p style={{ marginBottom: 24, color: "var(--text-muted)" }}>
+          <h2 style={{ marginBottom: 16, color: "#2563eb" }}>Profile Creation Failed</h2>
+          <p style={{ marginBottom: 16, color: "#ffffff" }}>{errorMsg}</p>
+          <p style={{ marginBottom: 24, color: "rgba(255,255,255,0.5)" }}>
             Please try again or contact support.
           </p>
           <Link href="/signup" style={{ color: "var(--accent)" }}>
@@ -121,17 +121,17 @@ function NoProfileContent() {
       <div style={{
         maxWidth: 400,
         padding: 32,
-        background: "var(--bg-header)",
+        background: "black",
         borderRadius: 12,
-        border: "1px solid rgba(240, 235, 224, 0.2)",
+        border: "1px solid var(--border-default)",
       }}>
         <h2 style={{ marginBottom: 16, fontSize: 22, color: "var(--accent)" }}>
           No Profile Found
         </h2>
-        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--text-primary)" }}>
+        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "#ffffff" }}>
           No profile has been found associated with this Google account: <strong>{email}</strong>
         </p>
-        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "var(--text-muted)" }}>
+        <p style={{ marginBottom: 24, lineHeight: 1.6, color: "rgba(255,255,255,0.5)" }}>
           Please sign up to create your Alzooka profile.
         </p>
         <Link
@@ -140,7 +140,7 @@ function NoProfileContent() {
             display: "inline-block",
             padding: "12px 32px",
             background: "var(--accent)",
-            color: "var(--bg-header)",
+            color: "black",
             borderRadius: 6,
             textDecoration: "none",
             fontWeight: 600,
@@ -149,7 +149,7 @@ function NoProfileContent() {
         >
           Sign Up
         </Link>
-        <p style={{ marginTop: 20, fontSize: 14, color: "var(--text-muted)" }}>
+        <p style={{ marginTop: 20, fontSize: 14, color: "rgba(255,255,255,0.5)" }}>
           Already have an account?{" "}
           <Link href="/login" style={{ color: "var(--accent)" }}>
             Try signing in again

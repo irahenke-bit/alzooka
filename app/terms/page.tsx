@@ -10,7 +10,7 @@ export default function TermsPage() {
       <header
         style={{
           padding: "12px 24px",
-          borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+          borderBottom: "1px solid var(--border-subtle)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -18,7 +18,7 @@ export default function TermsPage() {
       >
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <Logo size={32} />
-          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--text-primary)" }}>
+          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "#ffffff" }}>
             Alzooka
           </h1>
         </Link>
@@ -31,9 +31,9 @@ export default function TermsPage() {
         <div style={{ 
           lineHeight: 1.8, 
           fontSize: 15,
-          color: "var(--text-primary)",
+          color: "#ffffff",
         }}>
-          <p style={{ opacity: 0.7, marginBottom: 24 }}>Last Updated: December 13, 2025</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 24 }}>Last Updated: December 13, 2025</p>
 
           <h2 style={{ fontSize: 20, marginTop: 32, marginBottom: 12 }}>1. Acceptance of Terms</h2>
           <p>By accessing or using Alzooka (&quot;the Service&quot;), you agree to be bound by these Terms and Conditions. If you do not agree, you must discontinue use of the Service.</p>

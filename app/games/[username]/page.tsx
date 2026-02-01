@@ -224,10 +224,10 @@ export default function GamingProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
@@ -235,10 +235,10 @@ export default function GamingProfilePage() {
 
   if (!profile) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", marginBottom: 16 }}>Player not found</p>
+          <p style={{ color: "#ffffff", marginBottom: 16 }}>Player not found</p>
           <Link href="/games" style={{ color: "var(--accent)" }}>← Back to Games</Link>
         </div>
       </div>
@@ -246,11 +246,11 @@ export default function GamingProfilePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+    <div style={{ minHeight: "100vh", background: "black" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
@@ -269,7 +269,7 @@ export default function GamingProfilePage() {
               width: 80,
               height: 80,
               borderRadius: "50%",
-              background: "rgba(240, 235, 224, 0.2)",
+              background: "var(--border-default)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -280,7 +280,7 @@ export default function GamingProfilePage() {
           )}
           <div>
             <h1 style={{ margin: "0 0 4px", fontSize: 24 }}>@{profile.username}</h1>
-            <p style={{ margin: 0, opacity: 0.7, fontSize: 14 }}>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
               🎯 Trivia Stats
             </p>
           </div>
@@ -289,11 +289,11 @@ export default function GamingProfilePage() {
         {/* Stats card */}
         {canSeeStats ? (
           <div style={{
-            background: "var(--bg-card)",
+            background: "black",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
-            border: "1px solid rgba(240, 235, 224, 0.1)",
+            border: "1px solid var(--border-subtle)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h2 style={{ margin: 0, fontSize: 18 }}>Stats</h2>
@@ -324,7 +324,7 @@ export default function GamingProfilePage() {
             </div>
 
             {profile.blitz_high_score > 0 && (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.1)" }}>
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border-subtle)" }}>
                 <p style={{ margin: 0, fontSize: 14, opacity: 0.7 }}>
                   ⚡ Blitz High Score: <strong>{profile.blitz_high_score}</strong>
                 </p>
@@ -332,7 +332,7 @@ export default function GamingProfilePage() {
             )}
 
             {isOwnProfile && (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(240, 235, 224, 0.1)" }}>
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border-subtle)" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 14 }}>
                   <input
                     type="checkbox"
@@ -347,12 +347,12 @@ export default function GamingProfilePage() {
           </div>
         ) : (
           <div style={{
-            background: "var(--bg-card)",
+            background: "black",
             borderRadius: 12,
             padding: 32,
             marginBottom: 24,
             textAlign: "center",
-            border: "1px solid rgba(240, 235, 224, 0.1)",
+            border: "1px solid var(--border-subtle)",
           }}>
             <p style={{ margin: 0, opacity: 0.6 }}>
               🔒 Stats are hidden
@@ -371,7 +371,7 @@ export default function GamingProfilePage() {
               fontSize: 16,
               fontWeight: 600,
               background: "var(--accent)",
-              color: "var(--bg-header)",
+              color: "black",
               border: "none",
               borderRadius: 12,
               textDecoration: "none",
@@ -425,7 +425,7 @@ export default function GamingProfilePage() {
         <div style={{ marginTop: 32, textAlign: "center" }}>
           <Link
             href={`/profile/${profile.username}`}
-            style={{ color: "var(--text-primary)", opacity: 0.6, fontSize: 14 }}
+            style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}
           >
             View full profile →
           </Link>

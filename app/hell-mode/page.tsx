@@ -337,7 +337,7 @@ export default function HellModePage() {
           <h1 style={{ 
             margin: "0 0 8px 0", 
             fontSize: 24,
-            color: "#ff6b6b",
+            color: "rgba(255,255,255,0.7)",
             display: "flex",
             alignItems: "center",
             gap: 10,
@@ -411,7 +411,7 @@ export default function HellModePage() {
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: userVote?.value === 1 ? "var(--accent)" : "var(--alzooka-cream)",
+                        color: userVote?.value === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
                         cursor: "pointer",
                         fontSize: 16,
                         padding: 4,
@@ -420,7 +420,7 @@ export default function HellModePage() {
                     >
                       ▲
                     </button>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: total > 0 ? "var(--accent)" : total < 0 ? "#e57373" : "var(--alzooka-cream)" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>
                       {total}
                     </span>
                     <button
@@ -428,7 +428,7 @@ export default function HellModePage() {
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: userVote?.value === -1 ? "#e57373" : "var(--alzooka-cream)",
+                        color: userVote?.value === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
                         cursor: "pointer",
                         fontSize: 16,
                         padding: 4,
@@ -449,12 +449,12 @@ export default function HellModePage() {
                         {post.users?.avatar_url ? (
                           <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                         ) : (
-                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--bg-header)", fontWeight: 700 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: 700 }}>
                             {(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                          <span style={{ fontWeight: 600, color: "#ffffff" }}>
                             {post.users?.display_name || post.users?.username || "Unknown"}
                           </span>
                           <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
@@ -520,7 +520,7 @@ export default function HellModePage() {
                         style={{
                           background: "transparent",
                           border: "none",
-                          color: "var(--text-primary)",
+                          color: "rgba(255,255,255,0.7)",
                           cursor: "pointer",
                           padding: 0,
                           display: "flex",

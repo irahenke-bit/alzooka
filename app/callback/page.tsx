@@ -94,11 +94,11 @@ export default function CallbackPage() {
       <div style={{
         marginTop: 40,
         padding: 24,
-        background: "var(--bg-header)",
+        background: "black",
         borderRadius: 12,
         textAlign: "center",
       }}>
-        <p style={{ marginBottom: 16, color: "#e57373" }}>Authentication failed. Please try again.</p>
+        <p style={{ marginBottom: 16, color: "#2563eb" }}>Authentication failed. Please try again.</p>
         <Link href="/login" style={{ color: "var(--accent)" }}>
           Back to Sign In
         </Link>

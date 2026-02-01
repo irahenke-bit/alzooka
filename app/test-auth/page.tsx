@@ -22,7 +22,7 @@ export default function TestAuthPage() {
       <h1>Auth Test Page</h1>
       <p>This page shows exactly what URL we received:</p>
       <pre style={{ 
-        background: "#1a3a4a", 
+        background: "#000000", 
         padding: 20, 
         borderRadius: 8, 
         overflow: "auto",

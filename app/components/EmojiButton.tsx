@@ -47,9 +47,9 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32, direction = "up" }
         onClick={() => setShowPicker(!showPicker)}
         title="Add emoji"
         style={{
-          background: "rgba(240, 235, 224, 0.1)",
+          background: "var(--border-subtle)",
           border: "none",
-          color: "var(--text-primary)",
+          color: "#ffffff",
           width: buttonSize,
           height: buttonSize,
           borderRadius: "50%",

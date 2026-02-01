@@ -1757,7 +1757,7 @@ function FeedContent() {
             alignItems: "flex-start",
             gap: 12,
             padding: "12px 16px",
-            background: "var(--bg-card)",
+            background: "black",
             borderRadius: 12,
             border: isDraggingOver ? "2px solid var(--accent)" : "1px solid var(--border-default)",
             marginBottom: 12,
@@ -1794,7 +1794,7 @@ function FeedContent() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--text-inverse)",
+                  color: "#000000",
                   fontWeight: 700,
                   fontSize: 16,
                 }}
@@ -1853,7 +1853,7 @@ function FeedContent() {
               style={{
                 background: "var(--accent)",
                 border: "none",
-                color: "var(--text-inverse)",
+                color: "#000000",
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
@@ -1882,7 +1882,7 @@ function FeedContent() {
               resize: "vertical",
               border: "none",
               background: "transparent",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 14,
               lineHeight: 1.5,
               outline: "none",
@@ -1905,7 +1905,7 @@ function FeedContent() {
             >
               <span style={{ 
                 background: "var(--accent)", 
-                color: "var(--text-inverse)",
+                color: "#000000",
                 padding: "8px 16px",
                 borderRadius: 20,
                 fontWeight: 600,
@@ -1937,9 +1937,9 @@ function FeedContent() {
                     width: 24,
                     height: 24,
                     borderRadius: "50%",
-                    background: "#e57373",
+                    background: "rgba(255,255,255,0.2)",
                     border: "none",
-                    color: "white",
+                    color: "rgba(255,255,255,0.7)",
                     cursor: "pointer",
                     fontSize: 14,
                     display: "flex",
@@ -1959,9 +1959,9 @@ function FeedContent() {
                   width: 100,
                   height: 100,
                   borderRadius: 8,
-                  border: "2px dashed rgba(240, 235, 224, 0.3)",
+                  border: "2px dashed var(--border-hover)",
                   background: "transparent",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontSize: 24,
                   display: "flex",
@@ -1984,10 +1984,10 @@ function FeedContent() {
         {youtubePreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "var(--bg-header)", 
+              background: "black", 
               borderRadius: 8, 
               overflow: "hidden",
-              border: "1px solid rgba(240, 235, 224, 0.2)"
+              border: "1px solid var(--border-default)"
             }}>
               <img 
                 src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
@@ -1995,7 +1995,7 @@ function FeedContent() {
                 style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
               />
               <div style={{ padding: "12px 16px" }}>
-                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>
                   YouTube.com
                 </p>
                 <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2015,7 +2015,7 @@ function FeedContent() {
                 borderRadius: "50%",
                 width: 28,
                 height: 28,
-                color: "white",
+                color: "rgba(255,255,255,0.7)",
                 cursor: "pointer",
                 fontSize: 16,
                 display: "flex",
@@ -2037,10 +2037,10 @@ function FeedContent() {
         {spotifyPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "var(--bg-header)", 
+              background: "black", 
               borderRadius: 8, 
               overflow: "hidden",
-              border: "1px solid rgba(240, 235, 224, 0.2)"
+              border: "1px solid var(--border-default)"
             }}>
               {spotifyPreview.thumbnail && (
                 <img 
@@ -2050,7 +2050,7 @@ function FeedContent() {
                 />
               )}
               <div style={{ padding: "12px 16px" }}>
-                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>
                   🎵 Spotify.com
                 </p>
                 <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2070,7 +2070,7 @@ function FeedContent() {
                 borderRadius: "50%",
                 width: 28,
                 height: 28,
-                color: "white",
+                color: "rgba(255,255,255,0.7)",
                 cursor: "pointer",
                 fontSize: 16,
                 display: "flex",
@@ -2087,10 +2087,10 @@ function FeedContent() {
         {linkPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{
-              background: "var(--bg-header)",
+              background: "black",
               borderRadius: 8,
               overflow: "hidden",
-              border: "1px solid rgba(240, 235, 224, 0.2)"
+              border: "1px solid var(--border-default)"
             }}>
               {linkPreview.image && (
                 <img
@@ -2100,7 +2100,7 @@ function FeedContent() {
                 />
               )}
               <div style={{ padding: "12px 16px" }}>
-                <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>
                   🔗 {linkPreview.domain}
                 </p>
                 {linkPreview.title && (
@@ -2109,7 +2109,7 @@ function FeedContent() {
                   </p>
                 )}
                 {linkPreview.description && (
-                  <p style={{ margin: "4px 0 0 0", fontSize: 13, opacity: 0.7, lineHeight: 1.4 }}>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
                     {linkPreview.description.substring(0, 150)}{linkPreview.description.length > 150 ? "..." : ""}
                   </p>
                 )}
@@ -2127,7 +2127,7 @@ function FeedContent() {
                 borderRadius: "50%",
                 width: 28,
                 height: 28,
-                color: "white",
+                color: "rgba(255,255,255,0.7)",
                 cursor: "pointer",
                 fontSize: 16,
                 display: "flex",
@@ -2162,9 +2162,9 @@ function FeedContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
-              background: "var(--bg-card)",
+              background: "black",
               border: "1px solid var(--border-default)",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               padding: "8px 16px",
               fontSize: 14,
               cursor: "pointer",
@@ -2266,12 +2266,8 @@ function VoteButtons({
   const userVote = votes[key]?.value || 0;
   const score = voteTotals[key] || 0;
 
-  // Determine score color: gold if positive (achievement), red if negative, muted if zero
-  const scoreColor = score > 0 
-    ? "var(--gold)" 
-    : score < 0 
-      ? "#e57373" 
-      : "var(--text-secondary)";
+  // Score is always white (only vote ARROWS can be gold/red)
+  const scoreColor = "rgba(255,255,255,0.7)";
   
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
@@ -2282,7 +2278,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--gold)" : "var(--text-muted)",
+          color: userVote === 1 ? "var(--gold)" : "rgba(255,255,255,0.5)",
           fontSize: 14,
           lineHeight: 1,
           boxShadow: "none",
@@ -2307,7 +2303,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === -1 ? "#e57373" : "var(--text-muted)",
+          color: userVote === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
           fontSize: 14,
           lineHeight: 1,
           boxShadow: "none",
@@ -2370,11 +2366,11 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(107, 140, 174, 0.1)",
+        background: "rgba(37, 99, 235, 0.1)",
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
           Loading playlist info...
         </div>
       </div>
@@ -2386,14 +2382,14 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(107, 140, 174, 0.1)",
+        background: "rgba(37, 99, 235, 0.1)",
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -2404,14 +2400,14 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     <div style={{
       marginBottom: 12,
       padding: "12px 16px",
-      background: "rgba(107, 140, 174, 0.1)",
+      background: "rgba(37, 99, 235, 0.1)",
       borderRadius: 8,
       borderLeft: "4px solid var(--accent)",
     }}>
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -2548,7 +2544,7 @@ function PostCard({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--text-inverse)",
+                  color: "#000000",
                   fontWeight: 700,
                   fontSize: 16,
                 }}>
@@ -2556,7 +2552,7 @@ function PostCard({
                 </div>
               )}
               <div>
-                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                <span style={{ fontWeight: 600, color: "#ffffff" }}>
                   {post.users?.display_name || post.users?.username || "Unknown"}
                 </span>
                 <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
@@ -2571,7 +2567,7 @@ function PostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-secondary)",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 12,
                   cursor: "pointer",
                   padding: "4px 8px",
@@ -2590,7 +2586,7 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-secondary)",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -2606,7 +2602,7 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#e57373",
+                      color: "rgba(255,255,255,0.6)",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -2622,14 +2618,14 @@ function PostCard({
             </div>
           </div>
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
-            <div style={{ marginBottom: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+            <div style={{ marginBottom: 8, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
               Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--accent)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
             </div>
           )}
 
           {/* Group attribution */}
           {post.group_id && post.groups && (
-            <div style={{ marginBottom: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+            <div style={{ marginBottom: 8, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
               Posted in <Link href={`/groups/${post.group_id}`} style={{ color: "var(--accent)" }}>{post.groups.name}</Link>
             </div>
           )}
@@ -2639,12 +2635,12 @@ function PostCard({
             <div style={{ 
               marginBottom: 12, 
               padding: "8px 12px",
-              background: "rgba(107, 140, 174, 0.1)",
+              background: "rgba(37, 99, 235, 0.1)",
               borderRadius: 8,
               borderLeft: "3px solid var(--accent)",
               fontSize: 13,
             }}>
-              <span style={{ color: "var(--text-secondary)" }}>Shared from </span>
+              <span style={{ color: "rgba(255,255,255,0.7)" }}>Shared from </span>
               <Link 
                 href={`/profile/${post.shared_from_post.users?.username}`} 
                 style={{ color: "var(--accent)", fontWeight: 600 }}
@@ -2683,8 +2679,8 @@ function PostCard({
                   onClick={cancelEdit}
                   style={{
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-hover)",
+                    color: "#ffffff",
                   }}
                 >
                   Cancel
@@ -2751,7 +2747,7 @@ function PostCard({
                 <div style={{ 
                   marginBottom: 16, 
                   padding: 12, 
-                  background: "rgba(0, 0, 0, 0.2)", 
+                  background: "var(--border-subtle)", 
                   borderRadius: 8,
                   fontSize: 14,
                 }}>
@@ -2764,13 +2760,13 @@ function PostCard({
                       style={{ 
                         marginBottom: index < post.edit_history.length - 1 ? 12 : 0,
                         paddingBottom: index < post.edit_history.length - 1 ? 12 : 0,
-                        borderBottom: index < post.edit_history.length - 1 ? "1px solid rgba(240, 235, 224, 0.1)" : "none",
+                        borderBottom: index < post.edit_history.length - 1 ? "1px solid var(--border-subtle)" : "none",
                       }}
                     >
                       <span style={{ fontSize: 11, opacity: 0.5 }}>
                         {formatTime(entry.edited_at)}
                       </span>
-                      <p style={{ margin: "4px 0 0 0", opacity: 0.7, fontStyle: "italic" }}>
+                      <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.7)", fontStyle: "italic" }}>
                         {entry.content || "(no text)"}
                       </p>
                     </div>
@@ -2844,7 +2840,7 @@ function PostCard({
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "white",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 24,
                           fontWeight: 600,
                           cursor: "pointer",
@@ -2949,18 +2945,17 @@ function PostCard({
               onClick={onOpenModal}
               style={{
                 background: "transparent",
-                color: "var(--text-primary)",
+                color: "rgba(255,255,255,0.7)",
                 padding: "4px 0",
                 fontSize: 14,
                 border: "none",
-                opacity: 0.7,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
+                boxShadow: "none",
+                textTransform: "none",
               }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
             >
               {/* Chat bubble outline icon */}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

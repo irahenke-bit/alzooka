@@ -148,7 +148,7 @@ export function ShareModal({
     >
       <div
         style={{
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,
@@ -162,7 +162,7 @@ export function ShareModal({
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -174,7 +174,7 @@ export function ShareModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -189,11 +189,11 @@ export function ShareModal({
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
-            background: "rgba(0, 0, 0, 0.2)",
+            borderBottom: "1px solid var(--border-subtle)",
+            background: "var(--border-subtle)",
           }}
         >
-          <p style={{ margin: 0, fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>
             Sharing post by {originalPosterName}
           </p>
           <p
@@ -219,7 +219,7 @@ export function ShareModal({
               width: "100%",
               padding: "14px 16px",
               background: "var(--accent)",
-              color: "var(--bg-header)",
+              color: "black",
               border: "none",
               borderRadius: 8,
               fontSize: 14,
@@ -237,9 +237,9 @@ export function ShareModal({
 
           {/* Share to Group */}
           {loading ? (
-            <p style={{ opacity: 0.6, textAlign: "center" }}>Loading communities...</p>
+            <p style={{ color: "rgba(255,255,255,0.7)", textAlign: "center" }}>Loading communities...</p>
           ) : groups.length === 0 ? (
-            <p style={{ opacity: 0.6, textAlign: "center", fontSize: 13 }}>
+            <p style={{ color: "rgba(255,255,255,0.7)", textAlign: "center", fontSize: 13 }}>
               You're not a member of any communities yet
             </p>
           ) : (
@@ -256,9 +256,9 @@ export function ShareModal({
                     style={{
                       width: "100%",
                       padding: "12px 16px",
-                      background: "rgba(240, 235, 224, 0.1)",
-                      color: "var(--text-primary)",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      background: "var(--border-subtle)",
+                      color: "rgba(255,255,255,0.7)",
+                      border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       fontSize: 14,
                       cursor: sharing ? "wait" : "pointer",
@@ -281,7 +281,7 @@ export function ShareModal({
                         justifyContent: "center",
                         fontSize: 16,
                         fontWeight: 700,
-                        color: "var(--bg-header)",
+                        color: "black",
                         flexShrink: 0,
                       }}
                     >

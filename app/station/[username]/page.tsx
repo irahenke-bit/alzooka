@@ -707,7 +707,7 @@ export default function ViewStationPage() {
       <div className="container" style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 16px" }}>
         {/* Station Header */}
         <div style={{
-          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
+          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.1) 0%, var(--shadow-card) 100%)",
           borderRadius: 16,
           padding: 24,
           marginBottom: 24,
@@ -721,7 +721,7 @@ export default function ViewStationPage() {
               />
             )}
             <div>
-              <p style={{ margin: 0, fontSize: 12, opacity: 0.7, textTransform: "uppercase", letterSpacing: 1 }}>
+              <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: 1 }}>
                 Visiting Station
               </p>
               <h1 style={{ margin: "4px 0", fontSize: 28 }}>{station.name}</h1>
@@ -736,7 +736,7 @@ export default function ViewStationPage() {
           {/* Your current playback */}
           {currentTrack && (
             <div style={{
-              background: "rgba(0, 0, 0, 0.3)",
+              background: "var(--shadow-card)",
               borderRadius: 8,
               padding: 12,
               display: "flex",
@@ -761,7 +761,7 @@ export default function ViewStationPage() {
                   border: "none",
                   borderRadius: 20,
                   padding: "8px 16px",
-                  color: "#fff",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontSize: 14,
                 }}
@@ -781,7 +781,7 @@ export default function ViewStationPage() {
                 fontSize: 14,
                 fontWeight: 600,
                 background: "#1DB954",
-                color: "#fff",
+                color: "rgba(255,255,255,0.7)",
                 border: "none",
                 borderRadius: 24,
                 cursor: "pointer",
@@ -853,7 +853,7 @@ export default function ViewStationPage() {
                 <div
                   key={album.id}
                   style={{
-                    background: "rgba(0, 0, 0, 0.2)",
+                    background: "var(--border-subtle)",
                     borderRadius: 12,
                     overflow: "hidden",
                   }}
@@ -877,7 +877,7 @@ export default function ViewStationPage() {
                           borderRadius: "50%",
                           background: "#1DB954",
                           border: "none",
-                          color: "#fff",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 16,
                           cursor: "pointer",
                           display: "flex",
@@ -931,13 +931,13 @@ export default function ViewStationPage() {
                         fontWeight: 600,
                         background: alreadyHave || justCopied
                           ? "rgba(30, 215, 96, 0.2)"
-                          : "rgba(107, 140, 174, 0.2)",
+                          : "rgba(37, 99, 235, 0.2)",
                         color: alreadyHave || justCopied
                           ? "#1DB954"
                           : "var(--accent)",
                         border: alreadyHave || justCopied
                           ? "1px solid rgba(30, 215, 96, 0.4)"
-                          : "1px solid rgba(107, 140, 174, 0.4)",
+                          : "1px solid rgba(37, 99, 235, 0.4)",
                         borderRadius: 6,
                         cursor: alreadyHave || isAdding ? "not-allowed" : "pointer",
                         opacity: isAdding ? 0.5 : 1,
@@ -968,7 +968,7 @@ export default function ViewStationPage() {
                   <div
                     key={playlist.id}
                     style={{
-                      background: "rgba(0, 0, 0, 0.2)",
+                      background: "var(--border-subtle)",
                       borderRadius: 8,
                       overflow: "hidden",
                     }}
@@ -1017,7 +1017,7 @@ export default function ViewStationPage() {
                     {isExpanded && (
                       <div style={{ padding: "0 12px 12px" }}>
                         {tracks.length === 0 ? (
-                          <p style={{ opacity: 0.5, fontSize: 13 }}>Loading tracks...</p>
+                          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Loading tracks...</p>
                         ) : (
                           <>
                             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1033,7 +1033,7 @@ export default function ViewStationPage() {
                                     borderRadius: 4,
                                   }}
                                 >
-                                  <span style={{ opacity: 0.5, fontSize: 12, width: 20 }}>{idx + 1}</span>
+                                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, width: 20 }}>{idx + 1}</span>
                                   {track.image && (
                                     <img src={track.image} alt="" style={{ width: 32, height: 32, borderRadius: 4 }} />
                                   )}
@@ -1057,13 +1057,13 @@ export default function ViewStationPage() {
                                   fontWeight: 600,
                                   background: copiedPlaylists.has(playlist.id)
                                     ? "rgba(30, 215, 96, 0.2)"
-                                    : "rgba(107, 140, 174, 0.2)",
+                                    : "rgba(37, 99, 235, 0.2)",
                                   color: copiedPlaylists.has(playlist.id)
                                     ? "#1DB954"
                                     : "var(--accent)",
                                   border: copiedPlaylists.has(playlist.id)
                                     ? "1px solid rgba(30, 215, 96, 0.4)"
-                                    : "1px solid rgba(107, 140, 174, 0.4)",
+                                    : "1px solid rgba(37, 99, 235, 0.4)",
                                   borderRadius: 6,
                                   cursor: copiedPlaylists.has(playlist.id) || copyingPlaylist === playlist.id 
                                     ? "not-allowed" 

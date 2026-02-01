@@ -115,7 +115,7 @@ export function ContentFilterModal({
     >
       <div
         style={{
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           width: "100%",
           maxWidth: 480,
@@ -130,7 +130,7 @@ export function ContentFilterModal({
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -142,7 +142,7 @@ export function ContentFilterModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -178,7 +178,7 @@ export function ContentFilterModal({
                   onClick={handleConfirmCommonWord}
                   style={{
                     background: "var(--accent)",
-                    color: "var(--bg-header)",
+                    color: "black",
                     border: "none",
                     borderRadius: 6,
                     padding: "8px 16px",
@@ -193,8 +193,8 @@ export function ContentFilterModal({
                   onClick={handleCancelWarning}
                   style={{
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-hover)",
+                    color: "rgba(255,255,255,0.7)",
                     borderRadius: 6,
                     padding: "8px 16px",
                     cursor: "pointer",
@@ -223,9 +223,9 @@ export function ContentFilterModal({
                 flex: 1,
                 padding: "10px 14px",
                 borderRadius: 8,
-                border: "1px solid rgba(240, 235, 224, 0.2)",
-                background: "rgba(0, 0, 0, 0.2)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-default)",
+                background: "var(--border-subtle)",
+                color: "rgba(255,255,255,0.7)",
                 fontSize: 14,
               }}
             />
@@ -234,7 +234,7 @@ export function ContentFilterModal({
               disabled={saving || !newWord.trim()}
               style={{
                 background: "var(--accent)",
-                color: "var(--bg-header)",
+                color: "black",
                 border: "none",
                 borderRadius: 8,
                 padding: "10px 20px",
@@ -253,7 +253,7 @@ export function ContentFilterModal({
               Filtered Words ({filteredWords.length})
             </h3>
             {filteredWords.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 14, opacity: 0.5, fontStyle: "italic" }}>
+              <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.5)", fontStyle: "italic" }}>
                 No words filtered yet.
               </p>
             ) : (
@@ -265,7 +265,7 @@ export function ContentFilterModal({
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
-                      background: "rgba(240, 235, 224, 0.1)",
+                      background: "var(--border-subtle)",
                       borderRadius: 20,
                       padding: "6px 12px",
                       fontSize: 14,
@@ -278,11 +278,10 @@ export function ContentFilterModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--text-primary)",
+                        color: "rgba(255,255,255,0.7)",
                         cursor: "pointer",
                         padding: 0,
                         fontSize: 16,
-                        opacity: 0.6,
                         lineHeight: 1,
                       }}
                       title="Remove filter"
@@ -300,7 +299,7 @@ export function ContentFilterModal({
         <div
           style={{
             padding: "16px 20px",
-            borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+            borderTop: "1px solid var(--border-subtle)",
             background: "rgba(0, 0, 0, 0.1)",
           }}
         >
@@ -315,7 +314,7 @@ export function ContentFilterModal({
               background: "rgba(139, 0, 0, 0.3)",
               border: "1px solid rgba(139, 0, 0, 0.5)",
               borderRadius: 8,
-              color: "#ff6b6b",
+              color: "rgba(255,255,255,0.7)",
               textDecoration: "none",
               fontSize: 14,
               fontWeight: 600,

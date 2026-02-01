@@ -129,15 +129,15 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "var(--bg-header)",
-            color: "var(--text-primary)",
+            background: "black",
+            color: "rgba(255,255,255,0.7)",
             fontSize: 12,
             fontWeight: 500,
             borderRadius: 4,
             whiteSpace: "nowrap",
             zIndex: 9999,
             boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-            border: "1px solid rgba(240, 235, 224, 0.2)",
+            border: "1px solid var(--border-default)",
           }}
         >
           {text}
@@ -203,7 +203,7 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#6b9eff',
+            color: '#2563eb',
             textDecoration: 'none',
             wordBreak: 'break-all',
           }}
@@ -1880,7 +1880,7 @@ export default function GroupPage() {
           overflow: "hidden",
           background: group.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 70%), url(${group.banner_url}) center/cover`
-            : "linear-gradient(135deg, var(--bg-header) 0%, var(--alzooka-teal) 100%)",
+            : "linear-gradient(135deg, black 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
           minHeight: 300,
@@ -1925,7 +1925,7 @@ export default function GroupPage() {
                 style={{
                   background: "rgba(0, 0, 0, 0.7)",
                   border: "none",
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   padding: "8px 16px",
                   borderRadius: 6,
                   fontSize: 13,
@@ -1956,8 +1956,8 @@ export default function GroupPage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "var(--bg-header)",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      background: "black",
+                      border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       minWidth: 200,
                       boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
@@ -1974,12 +1974,12 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     📷 {uploadingBanner ? "Uploading..." : "Change Banner"}
@@ -1995,12 +1995,12 @@ export default function GroupPage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--text-primary)",
+                        color: "rgba(255,255,255,0.7)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
                         fontSize: 14,
-                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        borderBottom: "1px solid var(--border-subtle)",
                       }}
                     >
                       ✂️ Crop Banner
@@ -2018,12 +2018,12 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     ✏️ Edit Info
@@ -2039,12 +2039,12 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     {group.privacy === "public" ? "🔒 Make Private" : "🌐 Make Public"}
@@ -2060,12 +2060,12 @@ export default function GroupPage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--text-primary)",
+                        color: "rgba(255,255,255,0.7)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
                         fontSize: 14,
-                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        borderBottom: "1px solid var(--border-subtle)",
                       }}
                     >
                       {group.allow_member_invites ? "🚫 Disable Member Invites" : "✅ Allow Member Invites"}
@@ -2081,12 +2081,12 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     🚫 Banned Users {bannedUsers.length > 0 && `(${bannedUsers.length})`}
@@ -2098,7 +2098,7 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "#ff6b6b",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2143,7 +2143,7 @@ export default function GroupPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "var(--bg-header)",
+              color: "black",
               fontWeight: 700,
               fontSize: 36,
               flexShrink: 0,
@@ -2159,7 +2159,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   padding: 0,
                   fontSize: 14,
@@ -2167,7 +2167,7 @@ export default function GroupPage() {
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              <span style={{ fontSize: 14, color: "var(--text-primary)" }}>
+              <span style={{ fontSize: 14, color: "#ffffff" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
               {/* Buttons */}
@@ -2177,8 +2177,8 @@ export default function GroupPage() {
                     onClick={() => setShowFeedPrefsModal(true)}
                     style={{
                       background: "rgba(0,0,0,0.4)",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-hover)",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 11,
                       padding: "6px 10px",
                     }}
@@ -2191,8 +2191,8 @@ export default function GroupPage() {
                       onClick={() => setShowInviteModal(true)}
                       style={{
                         background: "rgba(0,0,0,0.4)",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-hover)",
+                        color: "rgba(255,255,255,0.7)",
                         fontSize: 11,
                         padding: "6px 10px",
                       }}
@@ -2205,8 +2205,8 @@ export default function GroupPage() {
                       onClick={handleLeave}
                       style={{
                         background: "rgba(0,0,0,0.4)",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-hover)",
+                        color: "rgba(255,255,255,0.7)",
                         fontSize: 11,
                         padding: "6px 10px",
                       }}
@@ -2216,28 +2216,28 @@ export default function GroupPage() {
                   )}
                 </div>
               ) : isUserBanned ? (
-                <span style={{ fontSize: 14, color: "#e57373", opacity: 0.9 }}>
+                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", opacity: 1 }}>
                   🚫 Banned
                 </span>
               ) : group.privacy === "private" ? (
                 pendingInvite ? (
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "var(--bg-header)" }}>
+                    <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "black" }}>
                       ✓ Accept Invite
                     </button>
                     <button
                       onClick={declineInvite}
                       style={{
                         background: "rgba(0,0,0,0.4)",
-                        border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-hover)",
+                        color: "#ffffff",
                       }}
                     >
                       ✕ Decline
                     </button>
                   </div>
                 ) : (
-                  <span style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
+                  <span style={{ fontSize: 14, color: "#ffffff", opacity: 0.7 }}>
                     🔒 Invite only
                   </span>
                 )
@@ -2294,7 +2294,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: "0 8px",
@@ -2336,7 +2336,7 @@ export default function GroupPage() {
                         display: "flex",
                         alignItems: "center",
                         padding: "12px 0",
-                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        borderBottom: "1px solid var(--border-subtle)",
                         gap: 12,
                       }}
                     >
@@ -2353,7 +2353,7 @@ export default function GroupPage() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "var(--bg-header)",
+                            color: "black",
                             fontWeight: 700,
                             fontSize: 16,
                           }}>
@@ -2369,7 +2369,7 @@ export default function GroupPage() {
                           onClick={() => setShowMembersModal(false)}
                           style={{ textDecoration: "none" }}
                         >
-                          <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                          <div style={{ fontWeight: 600, color: "#ffffff" }}>
                             {member.users.display_name || member.users.username}
                           </div>
                         </Link>
@@ -2385,7 +2385,7 @@ export default function GroupPage() {
                           friendStatus === "accepted" ? (
                             <span style={{ fontSize: 12, color: "var(--accent)", padding: "6px 10px" }}>✓ Friends</span>
                           ) : friendStatus === "pending" ? (
-                            <span style={{ fontSize: 12, opacity: 0.6, padding: "6px 10px" }}>Pending</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", padding: "6px 10px" }}>Pending</span>
                           ) : (
                             <button
                               onClick={() => handleAddFriend(member.user_id)}
@@ -2414,8 +2414,8 @@ export default function GroupPage() {
                                   onClick={() => handleMakeAdmin(member.id, member.user_id)}
                                   style={{
                                     background: "transparent",
-                                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                                    color: "var(--text-primary)",
+                                    border: "1px solid var(--border-hover)",
+                                    color: "rgba(255,255,255,0.7)",
                                     fontSize: 11,
                                     padding: "6px 8px",
                                     borderRadius: 4,
@@ -2431,8 +2431,8 @@ export default function GroupPage() {
                                   onClick={() => handleRemoveAdmin(member.id)}
                                   style={{
                                     background: "transparent",
-                                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                                    color: "var(--text-primary)",
+                                    border: "1px solid var(--border-hover)",
+                                    color: "rgba(255,255,255,0.7)",
                                     fontSize: 11,
                                     padding: "6px 8px",
                                     borderRadius: 4,
@@ -2448,8 +2448,8 @@ export default function GroupPage() {
                                 onClick={() => handleBanUser(member.user_id)}
                                 style={{
                                   background: "transparent",
-                                  border: "1px solid #e57373",
-                                  color: "#e57373",
+                                  border: "1px solid rgba(255,255,255,0.3)",
+                                  color: "rgba(255,255,255,0.6)",
                                   fontSize: 11,
                                   padding: "6px 8px",
                                   borderRadius: 4,
@@ -2476,8 +2476,8 @@ export default function GroupPage() {
                 marginTop: 16,
                 width: "100%",
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "#ffffff",
               }}
             >
               Close
@@ -2518,7 +2518,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: "0 8px",
@@ -2542,7 +2542,7 @@ export default function GroupPage() {
                       display: "flex",
                       alignItems: "center",
                       padding: "12px 0",
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                       gap: 12,
                     }}
                   >
@@ -2558,7 +2558,7 @@ export default function GroupPage() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#fff",
+                        color: "rgba(255,255,255,0.7)",
                         fontWeight: 700,
                         fontSize: 16,
                       }}>
@@ -2568,7 +2568,7 @@ export default function GroupPage() {
                     
                     {/* Name */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                      <div style={{ fontWeight: 600, color: "#ffffff" }}>
                         {ban.users?.display_name || ban.users?.username || "Unknown"}
                       </div>
                       <div style={{ fontSize: 12, opacity: 0.6 }}>Banned</div>
@@ -2600,8 +2600,8 @@ export default function GroupPage() {
                 marginTop: 16,
                 width: "100%",
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "#ffffff",
               }}
             >
               Close
@@ -2687,7 +2687,7 @@ export default function GroupPage() {
                 {/* Member Controls */}
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ fontWeight: 600, marginBottom: 12 }}>Member Controls</div>
-                  <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 12 }}>
                     Prioritize or mute specific members
                   </div>
                   <div style={{ maxHeight: 200, overflowY: "auto" }}>
@@ -2699,7 +2699,7 @@ export default function GroupPage() {
                           alignItems: "center",
                           justifyContent: "space-between",
                           padding: "8px 0",
-                          borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                          borderBottom: "1px solid var(--border-subtle)",
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2714,7 +2714,7 @@ export default function GroupPage() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "var(--bg-header)",
+                              color: "black",
                               fontWeight: 700,
                               fontSize: 12,
                             }}>
@@ -2729,7 +2729,7 @@ export default function GroupPage() {
                             style={{
                               background: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--accent)" : "transparent",
                               border: "1px solid var(--accent)",
-                              color: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--bg-header)" : "var(--accent)",
+                              color: feedPrefs.whitelist_members.includes(member.user_id) ? "black" : "var(--accent)",
                               padding: "4px 8px",
                               fontSize: 11,
                               cursor: "pointer",
@@ -2742,9 +2742,9 @@ export default function GroupPage() {
                           <button
                             onClick={() => toggleMute(member.user_id)}
                             style={{
-                              background: feedPrefs.mute_members.includes(member.user_id) ? "#e57373" : "transparent",
-                              border: "1px solid #e57373",
-                              color: feedPrefs.mute_members.includes(member.user_id) ? "white" : "#e57373",
+                              background: feedPrefs.mute_members.includes(member.user_id) ? "#2563eb" : "transparent",
+                              border: "1px solid rgba(255,255,255,0.3)",
+                              color: feedPrefs.mute_members.includes(member.user_id) ? "#000000" : "rgba(255,255,255,0.7)",
                               padding: "4px 8px",
                               fontSize: 11,
                               cursor: "pointer",
@@ -2776,8 +2776,8 @@ export default function GroupPage() {
                 style={{
                   flex: 1,
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-hover)",
+                  color: "#ffffff",
                 }}
               >
                 Cancel
@@ -2828,7 +2828,7 @@ export default function GroupPage() {
                       alignItems: "center",
                       justifyContent: "space-between",
                       padding: "10px 0",
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2843,7 +2843,7 @@ export default function GroupPage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--bg-header)",
+                          color: "black",
                           fontWeight: 700,
                           fontSize: 14,
                         }}>
@@ -2857,8 +2857,7 @@ export default function GroupPage() {
                         style={{
                           padding: "6px 12px",
                           fontSize: 13,
-                          color: "var(--accent)",
-                          opacity: 0.7,
+                          color: "rgba(255,255,255,0.7)",
                         }}
                       >
                         Pending
@@ -2891,8 +2890,8 @@ export default function GroupPage() {
                 marginTop: 16,
                 width: "100%",
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "#ffffff",
               }}
             >
               Close
@@ -2968,8 +2967,8 @@ export default function GroupPage() {
                 style={{
                   flex: 1,
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-hover)",
+                  color: "#ffffff",
                 }}
               >
                 Cancel
@@ -2982,7 +2981,7 @@ export default function GroupPage() {
       {/* Banned User Message */}
       {isUserBanned && (
         <div className="card" style={{ marginBottom: 24, textAlign: "center", padding: 20, background: "rgba(229, 115, 115, 0.1)", border: "1px solid rgba(229, 115, 115, 0.3)" }}>
-          <p style={{ margin: 0, color: "#e57373" }}>🚫 You have been banned from interacting with this community.</p>
+          <p style={{ margin: 0, color: "#2563eb" }}>🚫 You have been banned from interacting with this community.</p>
         </div>
       )}
 
@@ -2996,7 +2995,7 @@ export default function GroupPage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--bg-header)",
+              background: "black",
               borderRadius: 12,
               border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
@@ -3032,7 +3031,7 @@ export default function GroupPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--bg-header)",
+                    color: "black",
                     fontWeight: 700,
                     fontSize: 16,
                   }}
@@ -3091,7 +3090,7 @@ export default function GroupPage() {
                 style={{
                   background: "var(--accent)",
                   border: "none",
-                  color: "var(--bg-header)",
+                  color: "black",
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
@@ -3120,7 +3119,7 @@ export default function GroupPage() {
                 resize: "vertical",
                 border: "none",
                 background: "transparent",
-                color: "var(--text-primary)",
+                color: "rgba(255,255,255,0.7)",
                 fontSize: 14,
                 lineHeight: 1.5,
                 outline: "none",
@@ -3143,7 +3142,7 @@ export default function GroupPage() {
               >
                 <span style={{ 
                   background: "var(--accent)", 
-                  color: "var(--bg-header)",
+                  color: "black",
                   padding: "8px 16px",
                   borderRadius: 20,
                   fontWeight: 600,
@@ -3174,9 +3173,9 @@ export default function GroupPage() {
                       width: 24,
                       height: 24,
                       borderRadius: "50%",
-                      background: "#e57373",
+                      background: "rgba(255,255,255,0.2)",
                       border: "none",
-                      color: "white",
+                      color: "rgba(255,255,255,0.7)",
                       cursor: "pointer",
                       fontSize: 14,
                       display: "flex",
@@ -3196,9 +3195,9 @@ export default function GroupPage() {
                     width: 100,
                     height: 100,
                     borderRadius: 8,
-                    border: "2px dashed rgba(240, 235, 224, 0.3)",
+                    border: "2px dashed var(--border-hover)",
                     background: "transparent",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     cursor: "pointer",
                     fontSize: 24,
                     display: "flex",
@@ -3219,10 +3218,10 @@ export default function GroupPage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "var(--bg-header)", 
+                background: "black", 
                 borderRadius: 8, 
                 overflow: "hidden",
-                border: "1px solid rgba(240, 235, 224, 0.2)"
+                border: "1px solid var(--border-default)"
               }}>
                 <img 
                   src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
@@ -3230,7 +3229,7 @@ export default function GroupPage() {
                   style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
                 />
                 <div style={{ padding: "12px 16px" }}>
-                  <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                  <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>
                     YouTube.com
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -3250,7 +3249,7 @@ export default function GroupPage() {
                   borderRadius: "50%",
                   width: 28,
                   height: 28,
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontSize: 16,
                   display: "flex",
@@ -3270,10 +3269,10 @@ export default function GroupPage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "var(--bg-header)", 
+                background: "black", 
                 borderRadius: 8, 
                 overflow: "hidden",
-                border: "1px solid rgba(240, 235, 224, 0.2)"
+                border: "1px solid var(--border-default)"
               }}>
                 {spotifyPreview.thumbnail && (
                   <img 
@@ -3283,7 +3282,7 @@ export default function GroupPage() {
                   />
                 )}
                 <div style={{ padding: "12px 16px" }}>
-                  <p style={{ margin: 0, fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>
+                  <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>
                     🎵 Spotify.com
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -3303,7 +3302,7 @@ export default function GroupPage() {
                   borderRadius: "50%",
                   width: 28,
                   height: 28,
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontSize: 16,
                   display: "flex",
@@ -3329,8 +3328,8 @@ export default function GroupPage() {
               onClick={() => fileInputRef.current?.click()}
               style={{
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "rgba(255,255,255,0.7)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3343,22 +3342,22 @@ export default function GroupPage() {
               onClick={() => setShowYouTubeSearch(true)}
               style={{
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "rgba(255,255,255,0.7)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
               }}
             >
-              <span style={{ color: "#ff0000" }}>▶</span> YouTube
+              <span style={{ color: "#2563eb" }}>▶</span> YouTube
             </button>
             <button
               type="button"
               onClick={() => setShowSpotifySearch(true)}
               style={{
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "rgba(255,255,255,0.7)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3497,15 +3496,15 @@ export default function GroupPage() {
             <>
               <p className="text-muted" style={{ marginBottom: 16 }}>You have been invited to join!</p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "var(--bg-header)" }}>
+                <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "black" }}>
                   ✓ Accept Invite
                 </button>
                 <button
                   onClick={declineInvite}
                   style={{
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-hover)",
+                    color: "#ffffff",
                   }}
                 >
                   ✕ Decline
@@ -3703,7 +3702,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
+        <div style={{ fontSize: 14, color: "#ffffff", opacity: 0.7 }}>
           Loading playlist info...
         </div>
       </div>
@@ -3722,7 +3721,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -3740,7 +3739,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -3989,7 +3988,7 @@ function YouTubeThumbnail({
         width: "100%",
         height: "100%",
         cursor: "pointer",
-        backgroundColor: "#1a1a1a",
+        backgroundColor: "black",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -4011,12 +4010,12 @@ function YouTubeThumbnail({
       />
       {/* Loading/error state */}
       {!thumbnailLoaded && !thumbnailError && (
-        <div style={{ position: "absolute", color: "#666", fontSize: 14 }}>
+        <div style={{ position: "absolute", color: "rgba(255,255,255,0.5)", fontSize: 14 }}>
           Loading...
         </div>
       )}
       {thumbnailError && (
-        <div style={{ position: "absolute", color: "#888", fontSize: 14, textAlign: "center" }}>
+        <div style={{ position: "absolute", color: "rgba(255,255,255,0.7)", fontSize: 14, textAlign: "center" }}>
           Click to play video
         </div>
       )}
@@ -4107,7 +4106,7 @@ const GroupPostCard = memo(function GroupPostCard({
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
   const score = voteTotals[postKey] || 0;
-  const scoreColor = score > 0 ? "var(--accent)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
+  const scoreColor = "rgba(255,255,255,0.7)";
 
   async function handleSaveEdit() {
     if (!editContent.trim() && !post.image_url && !post.video_url) return;
@@ -4149,7 +4148,7 @@ const GroupPostCard = memo(function GroupPostCard({
               border: "none",
               padding: "4px 8px",
               cursor: "pointer",
-              color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
+              color: userVote === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
               opacity: userVote === 1 ? 1 : 0.5,
               fontSize: 14,
             }}
@@ -4164,7 +4163,7 @@ const GroupPostCard = memo(function GroupPostCard({
               border: "none",
               padding: "4px 8px",
               cursor: "pointer",
-              color: userVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+              color: userVote === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
               opacity: userVote === -1 ? 1 : 0.5,
               fontSize: 14,
             }}
@@ -4191,7 +4190,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--bg-header)",
+                  color: "black",
                   fontWeight: 700,
                   fontSize: 16,
                 }}>
@@ -4199,7 +4198,7 @@ const GroupPostCard = memo(function GroupPostCard({
                 </div>
               )}
               <div>
-                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                <span style={{ fontWeight: 600, color: "#ffffff" }}>
                   {post.users?.display_name || post.users?.username || "Unknown"}
                 </span>
                 {isPostAuthorAdmin && (
@@ -4227,11 +4226,12 @@ const GroupPostCard = memo(function GroupPostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 12,
                   cursor: "pointer",
-                  opacity: 0.7,
                   padding: "4px 8px",
+                  boxShadow: "none",
+                  textTransform: "none",
                 }}
                 title="Share post"
               >
@@ -4244,10 +4244,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "var(--text-primary)",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    opacity: 0.7,
+                    color: "rgba(255,255,255,0.7)",
                     padding: "4px 8px",
                   }}
                   title="Edit post"
@@ -4262,11 +4259,12 @@ const GroupPostCard = memo(function GroupPostCard({
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "#e57373",
+                    color: "rgba(255,255,255,0.6)",
                     fontSize: 12,
                     cursor: "pointer",
-                    opacity: 0.7,
                     padding: "4px 8px",
+                    boxShadow: "none",
+                    textTransform: "none",
                   }}
                   title="Delete post"
                 >
@@ -4281,7 +4279,7 @@ const GroupPostCard = memo(function GroupPostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#e57373",
+                      color: "rgba(255,255,255,0.6)",
                       fontSize: 14,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -4299,7 +4297,7 @@ const GroupPostCard = memo(function GroupPostCard({
             <div style={{
               marginBottom: 12,
               padding: "8px 12px",
-              background: "rgba(107, 140, 174, 0.1)",
+              background: "rgba(37, 99, 235, 0.1)",
               borderRadius: 8,
               borderLeft: "3px solid var(--accent)",
               fontSize: 13,
@@ -4345,8 +4343,8 @@ const GroupPostCard = memo(function GroupPostCard({
                     padding: "8px 16px",
                     fontSize: 14,
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-hover)",
+                    color: "#ffffff",
                   }}
                 >
                   Cancel
@@ -4444,7 +4442,7 @@ const GroupPostCard = memo(function GroupPostCard({
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "white",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 24,
                           fontWeight: 600,
                           cursor: "pointer",
@@ -4480,7 +4478,7 @@ const GroupPostCard = memo(function GroupPostCard({
                       padding: "10px 12px",
                       background: "rgba(240, 235, 224, 0.05)",
                       borderRadius: "8px 8px 0 0",
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}>
                       <span style={{ fontSize: 18 }}>🎵</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -4538,11 +4536,7 @@ const GroupPostCard = memo(function GroupPostCard({
             onClick={onOpenModal}
             style={{
               background: "transparent",
-              color: "var(--text-primary)",
-              padding: "4px 0",
-              fontSize: 14,
-              border: "none",
-              opacity: 0.7,
+              color: "rgba(255,255,255,0.7)",
               cursor: "pointer",
             }}
             onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}

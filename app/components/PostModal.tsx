@@ -38,15 +38,15 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "var(--bg-page)",
-            color: "var(--text-primary)",
+            background: "black",
+            color: "rgba(255,255,255,0.7)",
             fontSize: 12,
             fontWeight: 500,
             borderRadius: 4,
             whiteSpace: "nowrap",
             zIndex: 9999,
             boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-            border: "1px solid rgba(240, 235, 224, 0.2)",
+            border: "1px solid var(--border-default)",
           }}
         >
           {text}
@@ -83,7 +83,7 @@ function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string,
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#6b9eff',
+            color: '#2563eb',
             textDecoration: 'none',
             wordBreak: 'break-all',
           }}
@@ -370,7 +370,7 @@ function VoteButtons({
   const score = voteTotals[key] || 0;
 
   const scoreColor =
-    score > 0 ? "var(--accent)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
+    "rgba(255,255,255,0.7)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
@@ -385,7 +385,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
+          color: userVote === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,
@@ -415,7 +415,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+          color: userVote === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
           opacity: userVote === -1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,
@@ -1379,7 +1379,7 @@ export function PostModal({
           marginLeft: isReply ? 40 : 0,
           ...(activeHighlight === comment.id
             ? {
-                background: "rgba(107, 140, 174, 0.2)",
+                background: "rgba(37, 99, 235, 0.2)",
                 padding: 12,
                 marginLeft: isReply ? 28 : -12,
                 marginRight: -12,
@@ -1398,7 +1398,7 @@ export function PostModal({
             onVote={onVote}
           />
 
-          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--accent)' : 'rgba(107, 140, 174, 0.4)'}` }}>
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--accent)' : 'rgba(37, 99, 235, 0.4)'}` }}>
             <div
               style={{
                 marginBottom: 4,
@@ -1434,7 +1434,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#0a0a0a",
+                        color: "black",
                         fontWeight: 700,
                         fontSize: isReply ? 11 : 12,
                       }}
@@ -1443,7 +1443,7 @@ export function PostModal({
                     </div>
                   )}
                   <div>
-                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--text-primary)" }}>
+                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "#ffffff" }}>
                       {comment.users.display_name || comment.users.username}
                     </span>
                   </div>
@@ -1496,11 +1496,12 @@ export function PostModal({
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     fontSize: 11,
                     cursor: "pointer",
-                    opacity: 0.6,
                     padding: "2px 6px",
+                    boxShadow: "none",
+                    textTransform: "none",
                   }}
                 >
                   Reply
@@ -1516,11 +1517,12 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 11,
                       cursor: "pointer",
-                      opacity: 0.7,
                       padding: "2px 6px",
+                      boxShadow: "none",
+                      textTransform: "none",
                     }}
                     title="Edit comment"
                   >
@@ -1534,11 +1536,12 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#e57373",
+                      color: "#2563eb",
                       fontSize: 11,
                       cursor: "pointer",
-                      opacity: 0.7,
                       padding: "2px 6px",
+                      boxShadow: "none",
+                      textTransform: "none",
                     }}
                     title="Delete comment"
                   >
@@ -1553,7 +1556,7 @@ export function PostModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "#e57373",
+                        color: "#2563eb",
                         fontSize: 13,
                         cursor: "pointer",
                         padding: "2px 6px",
@@ -1590,9 +1593,9 @@ export function PostModal({
                     resize: "none",
                     padding: "12px",
                     borderRadius: "8px",
-                    border: "1px solid rgba(240, 235, 224, 0.2)",
-                    background: "rgba(0, 0, 0, 0.2)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-default)",
+                    background: "var(--border-subtle)",
+                    color: "#ffffff",
                     minHeight: 44,
                     maxHeight: 144,
                     overflowY: "auto",
@@ -1607,7 +1610,7 @@ export function PostModal({
                       padding: "6px 12px",
                       fontSize: 13,
                       background: "var(--accent)",
-                      color: "#0a0a0a",
+                      color: "black",
                       border: "none",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -1625,8 +1628,8 @@ export function PostModal({
                       padding: "6px 12px",
                       fontSize: 13,
                       background: "transparent",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-hover)",
+                      color: "rgba(255,255,255,0.7)",
                       borderRadius: "4px",
                       cursor: "pointer",
                     }}
@@ -1781,7 +1784,7 @@ export function PostModal({
                     style={{
                       marginTop: 8,
                       padding: 12,
-                      background: "rgba(0, 0, 0, 0.2)",
+                      background: "var(--border-subtle)",
                       borderRadius: 8,
                       fontSize: 13,
                     }}
@@ -1794,7 +1797,7 @@ export function PostModal({
                           marginBottom: index < comment.edit_history!.length - 1 ? 12 : 0,
                           paddingBottom: index < comment.edit_history!.length - 1 ? 12 : 0,
                           borderBottom:
-                            index < comment.edit_history!.length - 1 ? "1px solid rgba(240, 235, 224, 0.1)" : "none",
+                            index < comment.edit_history!.length - 1 ? "1px solid var(--border-subtle)" : "none",
                         }}
                       >
                         <span style={{ fontSize: 11, opacity: 0.5 }}>{formatTime(entry.edited_at)}</span>
@@ -1843,7 +1846,7 @@ export function PostModal({
         right: 0,
         bottom: 0,
         // In multi-window mode, hide backdrop for non-front windows
-        background: hideBackdrop ? "transparent" : (seeThroughMode ? "transparent" : "rgba(0, 0, 0, 0.85)"),
+        background: hideBackdrop ? "transparent" : (seeThroughMode ? "transparent" : "black"),
         zIndex: propZIndex ?? 9999,
         display: "flex",
         alignItems: "center",
@@ -1881,7 +1884,7 @@ export function PostModal({
         }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--bg-card)",
+          background: "black",
           borderRadius: 12,
           width: modalSize?.width ?? "100%",
           maxWidth: modalSize ? undefined : 680,
@@ -1904,7 +1907,7 @@ export function PostModal({
           pointerEvents: "auto",
           // Add border in see-through mode so modal is distinguishable
           border: seeThroughMode 
-            ? "2px solid rgba(107, 140, 174, 0.6)" 
+            ? "2px solid rgba(37, 99, 235, 0.6)" 
             : "none",
           position: "relative",
           overflow: "hidden",
@@ -2022,7 +2025,7 @@ export function PostModal({
           onMouseDown={handleDragStart}
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -2045,10 +2048,10 @@ export function PostModal({
               top: "50%",
               transform: "translateY(-50%)",
               background: seeThroughMode 
-                ? "rgba(107, 140, 174, 0.3)" 
-                : "rgba(240, 235, 224, 0.1)",
+                ? "rgba(37, 99, 235, 0.3)" 
+                : "var(--border-subtle)",
               border: seeThroughMode 
-                ? "1px solid rgba(107, 140, 174, 0.5)" 
+                ? "1px solid rgba(37, 99, 235, 0.5)" 
                 : "none",
               borderRadius: "50%",
               width: 36,
@@ -2059,7 +2062,7 @@ export function PostModal({
               cursor: "pointer",
               color: seeThroughMode 
                 ? "var(--accent)" 
-                : "var(--alzooka-cream)",
+                : "rgba(255,255,255,0.5)",
               fontSize: 18,
               fontWeight: "bold",
             }}
@@ -2068,7 +2071,7 @@ export function PostModal({
             {seeThroughMode ? "🐵" : "🙈"}
           </button>
           
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "#ffffff" }}>
             {post.users?.display_name || post.users?.username || "Unknown"}'s Post
           </h2>
           <button
@@ -2078,7 +2081,7 @@ export function PostModal({
               right: 16,
               top: "50%",
               transform: "translateY(-50%)",
-              background: "rgba(240, 235, 224, 0.1)",
+              background: "var(--border-subtle)",
               border: "none",
               borderRadius: "50%",
               width: 36,
@@ -2087,12 +2090,12 @@ export function PostModal({
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 20,
               transition: "background 0.2s",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(240, 235, 224, 0.2)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(240, 235, 224, 0.1)")}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--border-default)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--border-subtle)")}
             title="Close"
           >
             ×
@@ -2146,7 +2149,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#0a0a0a",
+                        color: "black",
                         fontWeight: 700,
                         fontSize: 16,
                       }}
@@ -2155,7 +2158,7 @@ export function PostModal({
                     </div>
                   )}
                   <div>
-                    <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
                       {post.users?.display_name || post.users?.username || "Unknown"}
                     </span>
                     {isGroupAdmin(post.user_id) && (
@@ -2241,7 +2244,7 @@ export function PostModal({
                   style={{
                     marginBottom: 16,
                     padding: 12,
-                    background: "rgba(0, 0, 0, 0.2)",
+                    background: "var(--border-subtle)",
                     borderRadius: 8,
                     fontSize: 14,
                   }}
@@ -2254,11 +2257,11 @@ export function PostModal({
                         marginBottom: index < post.edit_history.length - 1 ? 12 : 0,
                         paddingBottom: index < post.edit_history.length - 1 ? 12 : 0,
                         borderBottom:
-                          index < post.edit_history.length - 1 ? "1px solid rgba(240, 235, 224, 0.1)" : "none",
+                          index < post.edit_history.length - 1 ? "1px solid var(--border-subtle)" : "none",
                       }}
                     >
                       <span style={{ fontSize: 11, opacity: 0.5 }}>{formatTime(entry.edited_at)}</span>
-                      <p style={{ margin: "4px 0 0 0", opacity: 0.7, fontStyle: "italic" }}>
+                      <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.7)", fontStyle: "italic" }}>
                         {entry.content || "(no text)"}
                       </p>
                     </div>
@@ -2310,7 +2313,7 @@ export function PostModal({
                             style={{
                               background: "var(--accent)",
                               border: "none",
-                              color: "#0a0a0a",
+                              color: "black",
                               padding: "10px 12px",
                               borderRadius: 6,
                               cursor: savingImage ? "not-allowed" : "pointer",
@@ -2331,7 +2334,7 @@ export function PostModal({
                             style={{
                               background: "var(--accent)",
                               border: "none",
-                              color: "#0a0a0a",
+                              color: "black",
                               padding: "10px 12px",
                               borderRadius: 6,
                               cursor: savingImage ? "not-allowed" : "pointer",
@@ -2475,14 +2478,14 @@ export function PostModal({
           onMouseDown={handleBackgroundDragStart}
           style={{
             padding: "16px 20px",
-            borderTop: "1px solid rgba(240, 235, 224, 0.1)",
-            background: "var(--bg-card)",
+            borderTop: "1px solid var(--border-subtle)",
+            background: "black",
             borderRadius: "0 0 12px 12px",
             cursor: isDragging ? "grabbing" : undefined,
           }}
         >
           {isUserBanned ? (
-            <div style={{ textAlign: "center", color: "#e57373", fontSize: 14 }}>
+            <div style={{ textAlign: "center", color: "#2563eb", fontSize: 14 }}>
               🚫 You have been banned from interacting with this community.
             </div>
           ) : (
@@ -2504,11 +2507,12 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 12,
                       cursor: "pointer",
-                      opacity: 0.6,
                       padding: "2px 6px",
+                      boxShadow: "none",
+                      textTransform: "none",
                     }}
                   >
                     ✕ Cancel
@@ -2526,7 +2530,7 @@ export function PostModal({
                       right: 8,
                       background: "rgba(0,0,0,0.6)",
                       border: "none",
-                      color: "#fff",
+                      color: "#ffffff",
                       width: 24,
                       height: 24,
                       borderRadius: "50%",
@@ -2544,7 +2548,7 @@ export function PostModal({
                         alt="YouTube thumbnail"
                         style={{ width: "100%", maxHeight: 150, objectFit: "cover" }}
                       />
-                      <div style={{ padding: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, color: "var(--text-primary)" }}>
+                      <div style={{ padding: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, color: "#ffffff" }}>
                         YouTube Video {commentLinkPreview.playlistId && "(Playlist)"}
                       </div>
                     </div>
@@ -2570,7 +2574,7 @@ export function PostModal({
                     alignItems: "flex-end",
                     gap: 10,
                     padding: "8px 12px",
-                    background: "var(--bg-page)",
+                    background: "black",
                     borderRadius: 20,
                     border: "1px solid rgba(240, 235, 224, 0.15)",
                   }}
@@ -2598,7 +2602,7 @@ export function PostModal({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#0a0a0a",
+                        color: "black",
                         fontWeight: 700,
                         fontSize: 13,
                         flexShrink: 0,
@@ -2640,7 +2644,7 @@ export function PostModal({
                       overflowY: "auto",
                       lineHeight: 1.4,
                       fontFamily: "inherit",
-                      color: "var(--text-primary)",
+                      color: "#ffffff",
                       outline: "none",
                     }}
                   />
@@ -2677,7 +2681,7 @@ export function PostModal({
                       style={{
                         background: "var(--accent)",
                         border: "none",
-                        color: "#0a0a0a",
+                        color: "black",
                         width: 32,
                         height: 32,
                         borderRadius: "50%",

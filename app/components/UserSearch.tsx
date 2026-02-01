@@ -198,10 +198,10 @@ export function UserSearch() {
           padding: "8px 12px",
           fontSize: 14,
           width: 180,
-          background: "var(--bg-elevated)",
-          border: "1px solid rgba(240, 235, 224, 0.2)",
+          background: "black",
+          border: "1px solid var(--border-default)",
           borderRadius: 4,
-          color: "var(--text-primary)",
+          color: "#ffffff",
         }}
       />
 
@@ -214,13 +214,13 @@ export function UserSearch() {
             left: 0,
             right: 0,
             marginTop: 4,
-            background: "var(--bg-elevated)",
-            border: "1px solid rgba(240, 235, 224, 0.2)",
+            background: "black",
+            border: "1px solid var(--border-default)",
             borderRadius: 4,
             maxHeight: 350,
             overflowY: "auto",
             zIndex: 100,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+            boxShadow: "0 4px 12px var(--shadow-card)",
           }}
         >
           {/* Recent Searches */}
@@ -230,9 +230,8 @@ export function UserSearch() {
                 style={{
                   padding: "8px 12px",
                   fontSize: 12,
-                  color: "var(--text-primary)",
-                  opacity: 0.5,
-                  borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                  color: "rgba(255,255,255,0.5)",
+                  borderBottom: "1px solid var(--border-subtle)",
                 }}
               >
                 Recent Searches
@@ -247,7 +246,7 @@ export function UserSearch() {
                     justifyContent: "space-between",
                     padding: "10px 12px",
                     cursor: "pointer",
-                    borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    borderBottom: "1px solid var(--border-subtle)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -272,7 +271,7 @@ export function UserSearch() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--bg-header)",
+                          color: "black",
                           fontWeight: 700,
                           fontSize: 14,
                         }}
@@ -281,7 +280,7 @@ export function UserSearch() {
                       </div>
                     )}
                     <div>
-                      <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
+                      <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 14 }}>
                         {user.display_name || user.username}
                       </div>
                       <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>
@@ -294,8 +293,7 @@ export function UserSearch() {
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
-                      opacity: 0.4,
+                      color: "rgba(255,255,255,0.5)",
                       cursor: "pointer",
                       padding: "4px 8px",
                       fontSize: 16,
@@ -313,11 +311,11 @@ export function UserSearch() {
           {showResults && (
             <>
               {loading ? (
-                <div style={{ padding: 12, fontSize: 14, color: "var(--text-primary)", opacity: 0.6 }}>
+                <div style={{ padding: 12, fontSize: 14, color: "#ffffff", opacity: 0.6 }}>
                   Searching...
                 </div>
               ) : results.length === 0 && groupResults.length === 0 ? (
-                <div style={{ padding: 12, fontSize: 14, color: "var(--text-primary)", opacity: 0.6 }}>
+                <div style={{ padding: 12, fontSize: 14, color: "#ffffff", opacity: 0.6 }}>
                   No results found
                 </div>
               ) : (
@@ -325,7 +323,7 @@ export function UserSearch() {
                   {/* Groups */}
                   {groupResults.length > 0 && (
                     <>
-                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-primary)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+                      <div style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.5)", borderBottom: "1px solid var(--border-subtle)" }}>
                         Groups
                       </div>
                       {groupResults.map((group) => (
@@ -338,7 +336,7 @@ export function UserSearch() {
                             gap: 10,
                             padding: "10px 12px",
                             cursor: "pointer",
-                            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                            borderBottom: "1px solid var(--border-subtle)",
                           }}
                         >
                           {group.avatar_url ? (
@@ -356,7 +354,7 @@ export function UserSearch() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "var(--bg-header)",
+                              color: "black",
                               fontWeight: 700,
                               fontSize: 14,
                             }}>
@@ -364,7 +362,7 @@ export function UserSearch() {
                             </div>
                           )}
                           <div>
-                            <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
+                            <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 14 }}>
                               {group.name}
                             </div>
                             <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>
@@ -379,7 +377,7 @@ export function UserSearch() {
                   {/* Users */}
                   {results.length > 0 && (
                     <>
-                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-primary)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+                      <div style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.5)", borderBottom: "1px solid var(--border-subtle)" }}>
                         People
                       </div>
                       {results.map((user) => (
@@ -392,7 +390,7 @@ export function UserSearch() {
                             gap: 10,
                             padding: "10px 12px",
                             cursor: "pointer",
-                            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                            borderBottom: "1px solid var(--border-subtle)",
                           }}
                         >
                           {user.avatar_url ? (
@@ -416,7 +414,7 @@ export function UserSearch() {
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                color: "var(--bg-header)",
+                                color: "black",
                                 fontWeight: 700,
                                 fontSize: 14,
                               }}
@@ -425,7 +423,7 @@ export function UserSearch() {
                             </div>
                           )}
                           <div>
-                            <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
+                            <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 14 }}>
                               {user.display_name || user.username}
                             </div>
                             <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>

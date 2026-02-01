@@ -149,14 +149,14 @@ export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = f
         alignItems: "center",
         borderBottom: "1px solid rgba(255,255,255,0.1)"
       }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: "white" }}>Crop your banner</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: "#ffffff" }}>Crop your banner</h2>
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={onCancel}
             style={{
               background: "transparent",
               border: "1px solid rgba(255,255,255,0.3)",
-              color: "white",
+              color: "rgba(255,255,255,0.7)",
               padding: "8px 20px",
               borderRadius: 6,
               cursor: "pointer",
@@ -170,7 +170,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = f
             style={{
               background: "var(--accent)",
               border: "none",
-              color: "var(--bg-header)",
+              color: "black",
               padding: "8px 20px",
               borderRadius: 6,
               cursor: "pointer",
@@ -221,7 +221,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = f
       {moderationError && (
         <p style={{ 
           textAlign: "center", 
-          color: "#e57373", 
+          color: "#2563eb", 
           fontSize: 14, 
           margin: 0,
           padding: "8px 16px",

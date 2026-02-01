@@ -146,7 +146,7 @@ function SetPasswordContent() {
         </h1>
         <p style={{ 
           fontSize: 14, 
-          opacity: 0.7, 
+          color: "rgba(255,255,255,0.7)", 
           marginBottom: 32,
           textAlign: "center",
           lineHeight: 1.5,
@@ -173,7 +173,7 @@ function SetPasswordContent() {
               readOnly
               style={{ 
                 width: "100%", 
-                opacity: 0.7,
+                color: "rgba(255,255,255,0.7)",
                 cursor: "not-allowed",
               }}
             />
@@ -197,7 +197,7 @@ function SetPasswordContent() {
               onChange={(e) => setPassword(e.target.value)}
               style={{ width: "100%" }}
             />
-            <p style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
               8+ characters, 1 uppercase, 1 special character
             </p>
           </div>
@@ -223,7 +223,7 @@ function SetPasswordContent() {
           </div>
 
           {error && (
-            <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#2563eb", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}
@@ -241,9 +241,9 @@ function SetPasswordContent() {
             onClick={handleSkip}
             style={{ 
               width: "100%",
-              background: "linear-gradient(135deg, #1a5a5a 0%, #0d3d3d 100%)",
+              background: "linear-gradient(135deg, #000000 0%, #000000 100%)",
               border: "2px solid var(--accent)",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -258,7 +258,7 @@ function SetPasswordContent() {
           </button>
           <p style={{ 
             fontSize: 13, 
-            opacity: 0.6, 
+            color: "rgba(255,255,255,0.7)", 
             marginTop: 10,
             textAlign: "center",
             lineHeight: 1.5,
@@ -270,7 +270,7 @@ function SetPasswordContent() {
 
         <p style={{ 
           fontSize: 12, 
-          opacity: 0.5, 
+          color: "rgba(255,255,255,0.5)", 
           marginTop: 24,
           textAlign: "center",
           lineHeight: 1.5,

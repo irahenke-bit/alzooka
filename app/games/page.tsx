@@ -297,17 +297,17 @@ export default function GamesPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={user} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+    <div style={{ minHeight: "100vh", background: "black" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px" }}>
@@ -316,7 +316,7 @@ export default function GamesPage() {
           <h1 style={{ fontSize: 32, margin: "0 0 8px", color: "var(--accent)" }}>
             🎵 Music Trivia
           </h1>
-          <p style={{ opacity: 0.7, margin: 0 }}>
+          <p style={{ color: "rgba(255,255,255,0.7)", margin: 0 }}>
             Test your music knowledge. Challenge your friends.
           </p>
         </div>
@@ -324,11 +324,11 @@ export default function GamesPage() {
         {/* Your Stats Card */}
         {stats && (
           <div style={{
-            background: "var(--bg-card)",
+            background: "black",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
-            border: "1px solid rgba(240, 235, 224, 0.1)",
+            border: "1px solid var(--border-subtle)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h2 style={{ margin: 0, fontSize: 18 }}>Your Stats</h2>
@@ -371,8 +371,8 @@ export default function GamesPage() {
             padding: "18px 24px",
             fontSize: 18,
             fontWeight: 700,
-            background: "linear-gradient(135deg, #1DB954 0%, #1a8f44 100%)",
-            color: "#fff",
+            background: "linear-gradient(135deg, #1DB954 0%, #2563eb 100%)",
+            color: "rgba(255,255,255,0.7)",
             border: "none",
             borderRadius: 12,
             cursor: "pointer",
@@ -403,7 +403,7 @@ export default function GamesPage() {
                 <div
                   key={game.id}
                   style={{
-                    background: "var(--bg-card)",
+                    background: "black",
                     borderRadius: 8,
                     padding: 12,
                     display: "flex",
@@ -423,7 +423,7 @@ export default function GamesPage() {
                         width: 36,
                         height: 36,
                         borderRadius: "50%",
-                        background: "rgba(240, 235, 224, 0.2)",
+                        background: "var(--border-default)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -448,7 +448,7 @@ export default function GamesPage() {
                       background: "#1DB954",
                       border: "none",
                       borderRadius: 6,
-                      color: "#fff",
+                      color: "rgba(255,255,255,0.7)",
                       cursor: "pointer",
                       fontWeight: 600,
                       fontSize: 14,
@@ -473,8 +473,8 @@ export default function GamesPage() {
                 padding: "12px 16px",
                 fontSize: 14,
                 fontWeight: 600,
-                background: activeTab === tab ? "var(--accent)" : "#151515",
-                color: activeTab === tab ? "var(--bg-header)" : "var(--alzooka-cream)",
+                background: activeTab === tab ? "var(--accent)" : "black",
+                color: activeTab === tab ? "black" : "rgba(255,255,255,0.5)",
                 border: "none",
                 borderRadius: 8,
                 cursor: "pointer",
@@ -483,8 +483,8 @@ export default function GamesPage() {
             >
               {tab === "challenges" && challenges.filter(c => c.challenged_id === user?.id).length > 0 && (
                 <span style={{
-                  background: "#e57373",
-                  color: "#fff",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "rgba(255,255,255,0.7)",
                   borderRadius: "50%",
                   padding: "2px 6px",
                   fontSize: 11,
@@ -510,7 +510,7 @@ export default function GamesPage() {
                     marginTop: 16,
                     padding: "10px 20px",
                     background: "var(--accent)",
-                    color: "var(--bg-header)",
+                    color: "black",
                     border: "none",
                     borderRadius: 8,
                     cursor: "pointer",
@@ -529,13 +529,13 @@ export default function GamesPage() {
                   <div
                     key={challenge.id}
                     style={{
-                      background: "var(--bg-card)",
+                      background: "black",
                       borderRadius: 12,
                       padding: 16,
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      border: "1px solid rgba(240, 235, 224, 0.1)",
+                      border: "1px solid var(--border-subtle)",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -550,7 +550,7 @@ export default function GamesPage() {
                           width: 40,
                           height: 40,
                           borderRadius: "50%",
-                          background: "rgba(240, 235, 224, 0.2)",
+                          background: "var(--border-default)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -576,9 +576,9 @@ export default function GamesPage() {
                           style={{
                             padding: "8px 16px",
                             background: "transparent",
-                            border: "1px solid rgba(240, 235, 224, 0.3)",
+                            border: "1px solid var(--border-hover)",
                             borderRadius: 6,
-                            color: "var(--text-primary)",
+                            color: "rgba(255,255,255,0.7)",
                             cursor: "pointer",
                           }}
                         >
@@ -591,7 +591,7 @@ export default function GamesPage() {
                             background: "var(--accent)",
                             border: "none",
                             borderRadius: 6,
-                            color: "var(--bg-header)",
+                            color: "black",
                             cursor: "pointer",
                             fontWeight: 600,
                           }}
@@ -627,15 +627,15 @@ export default function GamesPage() {
                   style={{
                     background: index < 3 
                       ? `rgba(${index === 0 ? "255, 215, 0" : index === 1 ? "192, 192, 192" : "205, 127, 50"}, 0.1)`
-                      : "#151515",
+                      : "black",
                     borderRadius: 12,
                     padding: 12,
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
                     textDecoration: "none",
-                    color: "var(--text-primary)",
-                    border: index < 3 ? `1px solid rgba(${index === 0 ? "255, 215, 0" : index === 1 ? "192, 192, 192" : "205, 127, 50"}, 0.3)` : "1px solid rgba(240, 235, 224, 0.1)",
+                    color: "rgba(255,255,255,0.7)",
+                    border: index < 3 ? `1px solid rgba(${index === 0 ? "255, 215, 0" : index === 1 ? "192, 192, 192" : "205, 127, 50"}, 0.3)` : "1px solid var(--border-subtle)",
                   }}
                 >
                   <span style={{ 
@@ -654,7 +654,7 @@ export default function GamesPage() {
                       width: 36,
                       height: 36,
                       borderRadius: "50%",
-                      background: "rgba(240, 235, 224, 0.2)",
+                      background: "var(--border-default)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",

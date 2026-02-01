@@ -194,7 +194,7 @@ export function ProfilePictureModal({
         left: 0,
         right: 0,
         bottom: 0,
-        background: "rgba(0, 0, 0, 0.85)",
+        background: "black",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -222,7 +222,7 @@ export function ProfilePictureModal({
         <div
           style={{
             flex: "1 1 50%",
-            background: "var(--bg-header)",
+            background: "black",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -251,7 +251,7 @@ export function ProfilePictureModal({
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 80,
-                color: "var(--bg-header)",
+                color: "black",
                 fontWeight: 700,
               }}
             >
@@ -268,7 +268,7 @@ export function ProfilePictureModal({
               right: 12,
               background: "rgba(0, 0, 0, 0.5)",
               border: "none",
-              color: "white",
+              color: "#ffffff",
               width: 36,
               height: 36,
               borderRadius: "50%",
@@ -297,7 +297,7 @@ export function ProfilePictureModal({
           <div
             style={{
               padding: 16,
-              borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+              borderBottom: "1px solid var(--border-subtle)",
             }}
           >
             <Link
@@ -332,7 +332,7 @@ export function ProfilePictureModal({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--bg-header)",
+                    color: "black",
                     fontWeight: 700,
                   }}
                 >
@@ -363,7 +363,7 @@ export function ProfilePictureModal({
               <p
                 style={{
                   textAlign: "center",
-                  opacity: 0.5,
+                  color: "rgba(255,255,255,0.5)",
                   fontStyle: "italic",
                 }}
               >
@@ -405,7 +405,7 @@ export function ProfilePictureModal({
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--bg-header)",
+                          color: "black",
                           fontWeight: 700,
                           fontSize: 14,
                         }}
@@ -433,7 +433,7 @@ export function ProfilePictureModal({
                       <span
                         style={{
                           fontSize: 12,
-                          opacity: 0.5,
+                          color: "rgba(255,255,255,0.5)",
                         }}
                       >
                         {formatTime(comment.created_at)}
@@ -458,11 +458,12 @@ export function ProfilePictureModal({
                           style={{
                             background: "transparent",
                             border: "none",
-                            color: "#e57373",
+                            color: "#2563eb",
                             fontSize: 12,
                             cursor: "pointer",
                             padding: "4px 0",
-                            opacity: 0.7,
+                            boxShadow: "none",
+                            textTransform: "none",
                           }}
                         >
                           Delete
@@ -479,7 +480,7 @@ export function ProfilePictureModal({
           <div
             style={{
               padding: "12px 16px",
-              borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+              borderTop: "1px solid var(--border-subtle)",
               display: "flex",
               alignItems: "center",
               gap: 12,
@@ -512,7 +513,7 @@ export function ProfilePictureModal({
               onSubmit={handleComment}
               style={{
                 padding: 16,
-                borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+                borderTop: "1px solid var(--border-subtle)",
                 display: "flex",
                 gap: 8,
               }}
@@ -543,10 +544,10 @@ export function ProfilePictureModal({
             <div
               style={{
                 padding: 16,
-                borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+                borderTop: "1px solid var(--border-subtle)",
                 textAlign: "center",
                 fontSize: 14,
-                opacity: 0.6,
+                color: "rgba(255,255,255,0.7)",
               }}
             >
               <Link href="/login" style={{ color: "var(--accent)" }}>

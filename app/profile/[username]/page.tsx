@@ -208,7 +208,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
+        <div style={{ fontSize: 14, color: "#ffffff", opacity: 0.7 }}>
           Loading playlist info...
         </div>
       </div>
@@ -227,7 +227,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -245,7 +245,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -1630,7 +1630,7 @@ export default function ProfilePage() {
           <div style={{ 
             width: "100%", 
             height: 200, 
-            background: "linear-gradient(135deg, rgba(107, 140, 174, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
+            background: "linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, var(--shadow-card) 100%)",
             position: "relative"
           }}>
             {/* Skeleton Avatar */}
@@ -1653,7 +1653,7 @@ export default function ProfilePage() {
                 <div style={{ width: 180, height: 28, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
                 <div style={{ width: 100, height: 16, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
               </div>
-              <div style={{ width: 100, height: 36, background: "rgba(107, 140, 174, 0.2)", borderRadius: 8 }} />
+              <div style={{ width: 100, height: 36, background: "rgba(37, 99, 235, 0.2)", borderRadius: 8 }} />
             </div>
             
             {/* Skeleton Bio */}
@@ -1744,7 +1744,7 @@ export default function ProfilePage() {
           overflow: "visible",
           background: profile.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
-            : "linear-gradient(135deg, var(--bg-header) 0%, var(--alzooka-teal) 100%)",
+            : "linear-gradient(135deg, black 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
           minHeight: 240,
@@ -1779,7 +1779,7 @@ export default function ProfilePage() {
                 style={{
                   background: "rgba(0, 0, 0, 0.7)",
                   border: "none",
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   padding: "8px 16px",
                   borderRadius: 6,
                   fontSize: 13,
@@ -1810,8 +1810,8 @@ export default function ProfilePage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "var(--bg-header)",
-                      border: "1px solid rgba(240, 235, 224, 0.2)",
+                      background: "black",
+                      border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       minWidth: 220,
                       boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
@@ -1827,12 +1827,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     ✏️ Edit Profile
@@ -1848,12 +1848,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     📷 {uploadingBanner ? "Uploading..." : "Change Banner"}
@@ -1870,12 +1870,12 @@ export default function ProfilePage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--text-primary)",
+                        color: "rgba(255,255,255,0.7)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
                         fontSize: 14,
-                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        borderBottom: "1px solid var(--border-subtle)",
                       }}
                     >
                       ✂️ Crop Banner
@@ -1890,12 +1890,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     {allowWallPosts ? "📝 Wall Posts Enabled ✓" : "🚫 Wall Posts Disabled ✓"}
@@ -1910,12 +1910,12 @@ export default function ProfilePage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--text-primary)",
+                        color: "rgba(255,255,255,0.7)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
                         fontSize: 14,
-                        borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                        borderBottom: "1px solid var(--border-subtle)",
                       }}
                     >
                       {wallFriendsOnly ? "👥 Only Friends Can Post ✓" : "🌐 Anyone Can Post ✓"}
@@ -1931,12 +1931,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     {profile.has_password ? "🔐 Change Password" : "🔐 Set Password"}
@@ -1952,12 +1952,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     📡 Feed Control
@@ -1972,12 +1972,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     🚫 Content Filter
@@ -1988,7 +1988,7 @@ export default function ProfilePage() {
                     style={{
                       width: "100%",
                       padding: "12px 16px",
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     <button
@@ -2007,7 +2007,7 @@ export default function ProfilePage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: karmaStats?.qualifiesForPrivacy ? "var(--alzooka-cream)" : "rgba(240, 235, 224, 0.4)",
+                        color: karmaStats?.qualifiesForPrivacy ? "rgba(255,255,255,0.5)" : "rgba(240, 235, 224, 0.4)",
                         padding: 0,
                         textAlign: "left",
                         cursor: karmaStats?.qualifiesForPrivacy ? "pointer" : "not-allowed",
@@ -2020,7 +2020,7 @@ export default function ProfilePage() {
                       <p style={{
                         margin: "8px 0 0 0",
                         fontSize: 11,
-                        opacity: 0.6,
+                        color: "rgba(255,255,255,0.7)",
                         lineHeight: 1.4,
                       }}>
                         30 days of positive contributions to Alzooka will earn you the right to hide your history.
@@ -2034,12 +2034,12 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
                       fontSize: 14,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     💤 {profile.is_active ?? true ? "Deactivate Account" : "Reactivate Account"}
@@ -2050,7 +2050,7 @@ export default function ProfilePage() {
                     padding: "12px 16px",
                     fontSize: 13,
                     color: "rgba(240, 235, 224, 0.6)",
-                    borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                    borderBottom: "1px solid var(--border-subtle)",
                   }}>
                     📧 {currentUser?.email}
                   </div>
@@ -2058,7 +2058,7 @@ export default function ProfilePage() {
                   {/* Separator line */}
                   <div style={{
                     height: 1,
-                    background: "rgba(240, 235, 224, 0.2)",
+                    background: "var(--border-default)",
                     margin: "4px 0",
                   }} />
                   
@@ -2068,7 +2068,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "#ff6b6b",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2114,7 +2114,7 @@ export default function ProfilePage() {
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: 14,
-                      color: "var(--bg-header)",
+                      color: "black",
                     }}
                     title="View profile picture"
                   >
@@ -2131,7 +2131,7 @@ export default function ProfilePage() {
                   borderRadius: "50%",
                   background: profile.avatar_url 
                     ? `url(${profile.avatar_url}) center/cover`
-                    : "var(--bg-header)",
+                    : "black",
                   border: "3px solid var(--accent)",
                   display: "flex",
                   alignItems: "center",
@@ -2163,7 +2163,7 @@ export default function ProfilePage() {
               /* Edit Mode */
               <div>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 12, opacity: 0.7, display: "block", marginBottom: 4 }}>
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
                     Display Name
                   </label>
                   <input
@@ -2175,7 +2175,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 12, opacity: 0.7, display: "block", marginBottom: 4 }}>
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 4 }}>
                     Bio
                   </label>
                   <textarea
@@ -2202,8 +2202,8 @@ export default function ProfilePage() {
                     }}
                     style={{
                       background: "transparent",
-                      border: "1px solid var(--alzooka-cream)",
-                      color: "var(--text-primary)",
+                      border: "1px solid rgba(255,255,255,0.5)",
+                      color: "#ffffff",
                     }}
                   >
                     Cancel
@@ -2269,8 +2269,8 @@ export default function ProfilePage() {
                       alignItems: "center",
                       gap: 6,
                       padding: "4px 10px",
-                      background: "rgba(107, 140, 174, 0.15)",
-                      border: "1px solid rgba(107, 140, 174, 0.3)",
+                      background: "rgba(37,99,235,0.2)",
+                      border: "1px solid rgba(37, 99, 235, 0.3)",
                       borderRadius: 16,
                       fontSize: 12,
                       color: "var(--accent)",
@@ -2388,7 +2388,7 @@ export default function ProfilePage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--bg-header)",
+              background: "black",
               borderRadius: 12,
               border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
@@ -2424,7 +2424,7 @@ export default function ProfilePage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--bg-header)",
+                    color: "black",
                     fontWeight: 700,
                     fontSize: 16,
                   }}
@@ -2483,7 +2483,7 @@ export default function ProfilePage() {
                 style={{
                   background: "var(--accent)",
                   border: "none",
-                  color: "var(--bg-header)",
+                  color: "black",
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
@@ -2536,7 +2536,7 @@ export default function ProfilePage() {
                 resize: "vertical",
                 border: "none",
                 background: "transparent",
-                color: "var(--text-primary)",
+                color: "rgba(255,255,255,0.7)",
                 fontSize: 14,
                 lineHeight: 1.5,
                 outline: "none",
@@ -2559,7 +2559,7 @@ export default function ProfilePage() {
               >
                 <span style={{ 
                   background: "var(--accent)", 
-                  color: "var(--bg-header)",
+                  color: "black",
                   padding: "8px 16px",
                   borderRadius: 20,
                   fontWeight: 600,
@@ -2591,9 +2591,9 @@ export default function ProfilePage() {
                       width: 24,
                       height: 24,
                       borderRadius: "50%",
-                      background: "#e57373",
+                      background: "rgba(255,255,255,0.2)",
                       border: "none",
-                      color: "white",
+                      color: "rgba(255,255,255,0.7)",
                       cursor: "pointer",
                       fontSize: 14,
                       display: "flex",
@@ -2613,9 +2613,9 @@ export default function ProfilePage() {
                     width: 100,
                     height: 100,
                     borderRadius: 8,
-                    border: "2px dashed rgba(240, 235, 224, 0.3)",
+                    border: "2px dashed var(--border-hover)",
                     background: "transparent",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     cursor: "pointer",
                     fontSize: 24,
                     display: "flex",
@@ -2638,10 +2638,10 @@ export default function ProfilePage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "var(--bg-header)",
+                background: "black",
                 borderRadius: 8,
                 overflow: "hidden",
-                border: "1px solid rgba(240, 235, 224, 0.2)"
+                border: "1px solid var(--border-default)"
               }}>
                 <img
                   src={`https://img.youtube.com/vi/${youtubePreview.videoId}/hqdefault.jpg`}
@@ -2649,7 +2649,7 @@ export default function ProfilePage() {
                   style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
                 />
                 <div style={{ padding: "10px 12px" }}>
-                  <p style={{ margin: 0, fontSize: 11, opacity: 0.6, textTransform: "uppercase" }}>
+                  <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>
                     YouTube.com
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2672,7 +2672,7 @@ export default function ProfilePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 16,
                 }}
               >
@@ -2684,10 +2684,10 @@ export default function ProfilePage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "var(--bg-header)",
+                background: "black",
                 borderRadius: 8,
                 overflow: "hidden",
-                border: "1px solid rgba(240, 235, 224, 0.2)",
+                border: "1px solid var(--border-default)",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
@@ -2699,7 +2699,7 @@ export default function ProfilePage() {
                   style={{ width: 80, height: 80, borderRadius: 4, objectFit: "cover" }}
                 />
                 <div>
-                  <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: "#1DB954" }}>
+                  <p style={{ margin: 0, fontSize: 11, color: "#1DB954" }}>
                     SPOTIFY
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2722,7 +2722,7 @@ export default function ProfilePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                  color: "white",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 16,
                 }}
               >
@@ -2741,22 +2741,22 @@ export default function ProfilePage() {
                 onClick={() => setShowYouTubeSearch(true)}
                 style={{
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-hover)",
+                  color: "rgba(255,255,255,0.7)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
                 }}
               >
-                <span style={{ color: "#ff0000" }}>▶</span> YouTube
+                <span style={{ color: "#2563eb" }}>▶</span> YouTube
               </button>
               <button
                 type="button"
                 onClick={() => setShowSpotifySearch(true)}
                 style={{
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-hover)",
+                  color: "rgba(255,255,255,0.7)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2769,8 +2769,8 @@ export default function ProfilePage() {
                 onClick={() => imageInputRef.current?.click()}
                 style={{
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-hover)",
+                  color: "rgba(255,255,255,0.7)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2850,10 +2850,10 @@ export default function ProfilePage() {
               {wallYoutubePreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "var(--bg-header)",
+                    background: "black",
                     borderRadius: 8,
                     overflow: "hidden",
-                    border: "1px solid rgba(240, 235, 224, 0.2)"
+                    border: "1px solid var(--border-default)"
                   }}>
                     <img
                       src={`https://img.youtube.com/vi/${wallYoutubePreview.videoId}/hqdefault.jpg`}
@@ -2861,7 +2861,7 @@ export default function ProfilePage() {
                       style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
                     />
                     <div style={{ padding: "10px 12px" }}>
-                      <p style={{ margin: 0, fontSize: 11, opacity: 0.6, textTransform: "uppercase" }}>
+                      <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>
                         YouTube.com
                       </p>
                       <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2884,7 +2884,7 @@ export default function ProfilePage() {
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
-                      color: "white",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 16,
                     }}
                   >
@@ -2896,10 +2896,10 @@ export default function ProfilePage() {
               {wallSpotifyPreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "var(--bg-header)",
+                    background: "black",
                     borderRadius: 8,
                     overflow: "hidden",
-                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    border: "1px solid var(--border-default)",
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
@@ -2911,7 +2911,7 @@ export default function ProfilePage() {
                       style={{ width: 80, height: 80, borderRadius: 4, objectFit: "cover" }}
                     />
                     <div>
-                      <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: "#1DB954" }}>
+                      <p style={{ margin: 0, fontSize: 11, color: "#1DB954" }}>
                         SPOTIFY
                       </p>
                       <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: 600 }}>
@@ -2934,7 +2934,7 @@ export default function ProfilePage() {
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
-                      color: "white",
+                      color: "rgba(255,255,255,0.7)",
                       fontSize: 16,
                     }}
                   >
@@ -2974,22 +2974,22 @@ export default function ProfilePage() {
                     onClick={() => setShowWallYouTubeSearch(true)}
                     style={{
                       background: "transparent",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-hover)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "8px 16px",
                       fontSize: 14,
                       cursor: "pointer",
                     }}
                   >
-                    <span style={{ color: "#ff0000" }}>▶</span> YouTube
+                    <span style={{ color: "#2563eb" }}>▶</span> YouTube
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowWallSpotifySearch(true)}
                     style={{
                       background: "transparent",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-hover)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "8px 16px",
                       fontSize: 14,
                       cursor: "pointer",
@@ -3019,8 +3019,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab("posts")}
           style={{
             background: activeTab === "posts" ? "var(--accent)" : "transparent",
-            color: activeTab === "posts" ? "var(--bg-header)" : "var(--alzooka-cream)",
-            border: activeTab === "posts" ? "none" : "1px solid rgba(240, 235, 224, 0.3)",
+            color: activeTab === "posts" ? "black" : "rgba(255,255,255,0.5)",
+            border: activeTab === "posts" ? "none" : "1px solid var(--border-hover)",
             padding: "8px 16px",
             fontSize: 14,
           }}
@@ -3031,8 +3031,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab("comments")}
           style={{
             background: activeTab === "comments" ? "var(--accent)" : "transparent",
-            color: activeTab === "comments" ? "var(--bg-header)" : "var(--alzooka-cream)",
-            border: activeTab === "comments" ? "none" : "1px solid rgba(240, 235, 224, 0.3)",
+            color: activeTab === "comments" ? "black" : "rgba(255,255,255,0.5)",
+            border: activeTab === "comments" ? "none" : "1px solid var(--border-hover)",
             padding: "8px 16px",
             fontSize: 14,
           }}
@@ -3129,10 +3129,10 @@ export default function ProfilePage() {
                           {post.users?.avatar_url ? (
                             <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                           ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--bg-header)", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
                           )}
                           <div>
-                            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
+                            <span style={{ fontWeight: 600, color: "#ffffff" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
                             <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>{formatTime(post.created_at)}</span>
                           </div>
                         </Link>
@@ -3142,7 +3142,7 @@ export default function ProfilePage() {
                             {/* Share button - visible to everyone */}
                             <button
                               onClick={() => setSharePost(post)}
-                              style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                              style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
                               title="Share post"
                             >
                               Share
@@ -3153,7 +3153,7 @@ export default function ProfilePage() {
                                   setEditingPostId(post.id);
                                   setEditingContent(post.content || "");
                                 }}
-                                style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                                style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
                                 title="Edit post"
                               >
                                 Edit
@@ -3166,7 +3166,7 @@ export default function ProfilePage() {
                                   await supabase.from("posts").delete().eq("id", post.id);
                                   setPosts(prev => prev.filter(p => p.id !== post.id));
                                 }}
-                                style={{ background: "transparent", border: "none", color: "#e57373", fontSize: 12, cursor: "pointer", opacity: 0.9 }}
+                                style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 12, cursor: "pointer", opacity: 0.9 }}
                                 title="Delete post"
                               >
                                 Delete
@@ -3192,7 +3192,7 @@ export default function ProfilePage() {
                         <div style={{ 
                           marginBottom: 8, 
                           fontSize: 11, 
-                          opacity: 0.6,
+                          color: "rgba(255,255,255,0.7)",
                           display: "flex",
                           alignItems: "center",
                           gap: 4,
@@ -3210,7 +3210,7 @@ export default function ProfilePage() {
                         <div style={{ 
                           marginBottom: 12, 
                           padding: "8px 12px",
-                          background: "rgba(107, 140, 174, 0.1)",
+                          background: "rgba(37, 99, 235, 0.1)",
                           borderRadius: 8,
                           borderLeft: "3px solid var(--accent)",
                           fontSize: 13,
@@ -3280,7 +3280,7 @@ export default function ProfilePage() {
                         setEditingContent("");
                       }}
                             >Save</button>
-                            <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid rgba(240, 235, 224, 0.3)", color: "var(--text-primary)" }}>Cancel</button>
+                            <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid var(--border-hover)", color: "#ffffff" }}>Cancel</button>
                           </div>
                         </div>
                       ) : (
@@ -3316,7 +3316,7 @@ export default function ProfilePage() {
                                         style={{
                                           position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)",
                                           display: "flex", alignItems: "center", justifyContent: "center",
-                                          color: "white", fontSize: 24, fontWeight: 600, cursor: "pointer",
+                                          color: "#ffffff", fontSize: 24, fontWeight: 600, cursor: "pointer",
                                         }}
                                         onClick={() => setModalPost(post)}
                                       >
@@ -3410,7 +3410,7 @@ export default function ProfilePage() {
                                   padding: "10px 12px",
                                   background: "rgba(240, 235, 224, 0.05)",
                                   borderRadius: "8px 8px 0 0",
-                                  borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                                  borderBottom: "1px solid var(--border-subtle)",
                                 }}>
                                   <span style={{ fontSize: 18 }}>🎵</span>
                                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -3463,7 +3463,7 @@ export default function ProfilePage() {
                                       padding: "10px 12px",
                                       background: "rgba(240, 235, 224, 0.05)",
                                       borderRadius: "8px 8px 0 0",
-                                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                                      borderBottom: "1px solid var(--border-subtle)",
                                     }}>
                                       <span style={{ fontSize: 18, color: "#1DB954" }}>●</span>
                                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -3593,10 +3593,7 @@ export default function ProfilePage() {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 4,
-                                opacity: 0.6,
-                                background: "transparent",
-                                border: "none",
-                                color: "var(--text-primary)",
+                                                                color: "rgba(255,255,255,0.7)",
                                 cursor: "pointer",
                                 padding: "4px 8px",
                               }}
@@ -3740,10 +3737,10 @@ export default function ProfilePage() {
                   <div 
                     style={{ 
                       fontSize: 13, 
-                      opacity: 0.6, 
+                      color: "rgba(255,255,255,0.7)", 
                       marginBottom: 12,
                       paddingBottom: 12,
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
                     <span className="text-muted">Replying to: </span>
@@ -3761,7 +3758,7 @@ export default function ProfilePage() {
                     </span>
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                       <span style={{ 
-                        color: comment.voteScore > 0 ? "var(--accent)" : comment.voteScore < 0 ? "#e57373" : "inherit",
+                        color: "rgba(255,255,255,0.7)",
                         opacity: comment.voteScore === 0 ? 0.5 : 1,
                         fontSize: 14,
                       }}>
@@ -3769,7 +3766,7 @@ export default function ProfilePage() {
                       </span>
                       <span style={{ 
                         fontSize: 14,
-                        color: comment.voteScore > 0 ? "var(--accent)" : comment.voteScore < 0 ? "#e57373" : "inherit",
+                        color: "rgba(255,255,255,0.7)",
                         opacity: comment.voteScore === 0 ? 0.5 : 1,
                       }}>
                         {comment.voteScore}
@@ -3881,7 +3878,7 @@ export default function ProfilePage() {
               alignItems: "center",
               marginBottom: 16,
               paddingBottom: 12,
-              borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+              borderBottom: "1px solid var(--border-subtle)",
             }}>
               <h3 style={{ margin: 0, fontSize: 18 }}>
                 {profile?.display_name || profile?.username}'s Friends
@@ -3891,7 +3888,7 @@ export default function ProfilePage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: 0,
@@ -3944,7 +3941,7 @@ export default function ProfilePage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--bg-header)",
+                          color: "black",
                           fontWeight: 700,
                           fontSize: 16,
                         }}
@@ -4388,7 +4385,7 @@ function VoteButtons({
     ? "var(--accent)" 
     : score < 0 
       ? "#e57373" 
-      : "var(--alzooka-cream)";
+      : "rgba(255,255,255,0.5)";
   
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
@@ -4399,7 +4396,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
+          color: userVote === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,
@@ -4423,7 +4420,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === -1 ? "#e57373" : "var(--alzooka-cream)",
+          color: userVote === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
           opacity: userVote === -1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,

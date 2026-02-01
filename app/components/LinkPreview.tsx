@@ -133,11 +133,11 @@ export function LinkPreview({ url }: Props) {
         border: "1px solid rgba(240, 235, 224, 0.15)",
         borderRadius: 8,
         overflow: "hidden",
-        background: "var(--bg-elevated)",
+        background: "black",
         transition: "border-color 0.2s",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "rgba(240, 235, 224, 0.3)";
+        e.currentTarget.style.borderColor = "var(--border-hover)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.borderColor = "rgba(240, 235, 224, 0.15)";
@@ -173,8 +173,7 @@ export function LinkPreview({ url }: Props) {
         <div
           style={{
             fontSize: 11,
-            color: "var(--text-primary)",
-            opacity: 0.5,
+            color: "rgba(255,255,255,0.5)",
             marginBottom: 4,
             textTransform: "lowercase",
             display: "flex",
@@ -190,7 +189,7 @@ export function LinkPreview({ url }: Props) {
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               marginBottom: 4,
               lineHeight: 1.3,
             }}
@@ -202,8 +201,7 @@ export function LinkPreview({ url }: Props) {
           <div
             style={{
               fontSize: 13,
-              color: "var(--text-primary)",
-              opacity: 0.7,
+              color: "rgba(255,255,255,0.7)",
               lineHeight: 1.4,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -219,7 +217,7 @@ export function LinkPreview({ url }: Props) {
           <div
             style={{
               fontSize: 14,
-              color: "#6b9eff",
+              color: "#2563eb",
               marginTop: 4,
             }}
           >

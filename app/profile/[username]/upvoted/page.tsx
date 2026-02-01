@@ -275,8 +275,8 @@ export default function UpvotedPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ 
-                        background: item.type === "post" ? "var(--accent)" : "rgba(240, 235, 224, 0.2)",
-                        color: item.type === "post" ? "var(--bg-header)" : "var(--alzooka-cream)",
+                        background: item.type === "post" ? "var(--accent)" : "var(--border-default)",
+                        color: item.type === "post" ? "black" : "rgba(255,255,255,0.5)",
                         padding: "2px 8px",
                         borderRadius: 4,
                         fontSize: 11,

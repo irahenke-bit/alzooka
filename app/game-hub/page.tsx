@@ -10,26 +10,26 @@ import Header from "@/app/components/Header";
 const isDev = process.env.NODE_ENV === "development";
 
 // Custom gamepad icon - Apple emoji style with colored buttons
-const GamepadIcon = ({ size = 48, color = "#9333ea" }: { size?: number; color?: string }) => (
+const GamepadIcon = ({ size = 48, color = "#2563eb" }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 36 36" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
     {/* Main body - exact Apple emoji shape */}
-    <path fill="#3B3B3B" d="M2 17c0-3.813 2.995-7.071 3.926-8.74.89-1.596 2.391-2.86 4.324-2.86h15.5c1.933 0 3.434 1.264 4.324 2.86C30.995 9.93 34 13.188 34 17c0 5.5-3.5 12-7 12-2.5 0-4.5-2-9-2s-6.5 2-9 2c-3.5 0-7-6.5-7-12z"/>
+    <path fill="rgba(255,255,255,0.25)" d="M2 17c0-3.813 2.995-7.071 3.926-8.74.89-1.596 2.391-2.86 4.324-2.86h15.5c1.933 0 3.434 1.264 4.324 2.86C30.995 9.93 34 13.188 34 17c0 5.5-3.5 12-7 12-2.5 0-4.5-2-9-2s-6.5 2-9 2c-3.5 0-7-6.5-7-12z"/>
     {/* Shine/highlight */}
-    <path fill="#4A4A4A" d="M3 16c0-3.364 2.644-6.238 3.465-7.71C7.25 6.968 8.489 6 10.25 6h15.5c1.761 0 3 .968 3.785 2.29C30.356 9.762 33 12.636 33 16c0 4.5-3 10-6 10-2.5 0-5-2-9-2s-6.5 2-9 2c-3 0-6-5.5-6-10z"/>
+    <path fill="rgba(255,255,255,0.3)" d="M3 16c0-3.364 2.644-6.238 3.465-7.71C7.25 6.968 8.489 6 10.25 6h15.5c1.761 0 3 .968 3.785 2.29C30.356 9.762 33 12.636 33 16c0 4.5-3 10-6 10-2.5 0-5-2-9-2s-6.5 2-9 2c-3 0-6-5.5-6-10z"/>
     {/* D-pad */}
-    <path fill="#1D1D1D" d="M8 14h2v5H8zm2 1.5h1.5v2H10zm-3.5 0H8v2H6.5z"/>
-    <rect fill="#1D1D1D" x="7" y="14" width="4" height="5" rx="0.5"/>
-    <rect fill="#1D1D1D" x="6" y="15.5" width="6" height="2" rx="0.5"/>
+    <path fill="#000000" d="M8 14h2v5H8zm2 1.5h1.5v2H10zm-3.5 0H8v2H6.5z"/>
+    <rect fill="#000000" x="7" y="14" width="4" height="5" rx="0.5"/>
+    <rect fill="#000000" x="6" y="15.5" width="6" height="2" rx="0.5"/>
     {/* Face buttons - colored: Red, Green, Purple, Yellow */}
-    <circle fill="#EF4444" cx="27" cy="14" r="2.2"/> {/* Top - Red */}
-    <circle fill="#A855F7" cx="24" cy="17" r="2.2"/> {/* Left - Purple */}
-    <circle fill="#22C55E" cx="30" cy="17" r="2.2"/> {/* Right - Green */}
-    <circle fill="#EAB308" cx="27" cy="20" r="2.2"/> {/* Bottom - Yellow */}
+    <circle fill="#2563eb" cx="27" cy="14" r="2.2"/> {/* Top - Red */}
+    <circle fill="#2563eb" cx="24" cy="17" r="2.2"/> {/* Left - Purple */}
+    <circle fill="#2563eb" cx="30" cy="17" r="2.2"/> {/* Right - Green */}
+    <circle fill="#2563eb" cx="27" cy="20" r="2.2"/> {/* Bottom - Yellow */}
     {/* Joysticks */}
-    <circle fill="#1D1D1D" cx="14" cy="21" r="3"/>
-    <circle fill="#2D2D2D" cx="14" cy="21" r="2"/>
-    <circle fill="#1D1D1D" cx="20" cy="21" r="3"/>
-    <circle fill="#2D2D2D" cx="20" cy="21" r="2"/>
+    <circle fill="#000000" cx="14" cy="21" r="3"/>
+    <circle fill="#000000" cx="14" cy="21" r="2"/>
+    <circle fill="#000000" cx="20" cy="21" r="3"/>
+    <circle fill="#000000" cx="20" cy="21" r="2"/>
   </svg>
 );
 
@@ -96,7 +96,7 @@ export default function GameHubPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(107, 140, 174, 0.2)",
+            border: "3px solid rgba(37, 99, 235, 0.2)",
             borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
@@ -118,7 +118,7 @@ export default function GameHubPage() {
       description: "Click the speaker to drop the bass, buy upgrades, and become the ultimate bass master!",
       icon: "🔊",
       href: "/game-hub/coin-collector",
-      color: "#6b8cae",
+      color: "#2563eb",
       available: true,
     },
     {
@@ -136,7 +136,7 @@ export default function GameHubPage() {
       description: "Stack falling blocks to the beat! Clear lines, rack up combos, and rock out!",
       icon: "🎸",
       href: "/game-hub/rock-drop",
-      color: "#dc2626",
+      color: "#2563eb",
       available: true,
     },
     {
@@ -145,7 +145,7 @@ export default function GameHubPage() {
       description: "Ride the wave, collect amps, and smash through obstacles! Don't let your signal die!",
       icon: "〰️",
       href: "/game-hub/sound-wave",
-      color: "#06b6d4",
+      color: "#2563eb",
       available: true,
     },
     {
@@ -154,7 +154,7 @@ export default function GameHubPage() {
       description: "Start as a street musician, earn Zooka Coins, buy upgrades, and rise to fame!",
       icon: "🎸",
       href: "/game-hub/musician-beggar",
-      color: "#eab308",
+      color: "#2563eb",
       available: true,
     },
   ];
@@ -173,7 +173,7 @@ export default function GameHubPage() {
           <div style={{ 
             fontSize: 64, 
             marginBottom: 16,
-            filter: "drop-shadow(0 4px 12px rgba(107, 140, 174, 0.3))"
+            filter: "drop-shadow(0 4px 12px rgba(37, 99, 235, 0.3))"
           }}>
             🎮
           </div>
@@ -182,16 +182,15 @@ export default function GameHubPage() {
             fontWeight: 800, 
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
-            color: "var(--text-primary)",
+            color: "rgba(255,255,255,0.7)",
             margin: "0 0 12px 0",
-            textShadow: "0 0 20px rgba(107, 140, 174, 0.5), 0 0 40px rgba(107, 140, 174, 0.3)",
+            textShadow: "0 0 20px rgba(37, 99, 235, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)",
           }}>
             Game Hub
           </h1>
           <p style={{ 
             fontSize: 16, 
-            color: "var(--text-primary)", 
-            opacity: 0.7,
+            color: "rgba(255,255,255,0.7)",
             margin: 0,
           }}>
             Choose a game to play
@@ -257,7 +256,7 @@ export default function GameHubPage() {
                 <p style={{ 
                   fontSize: 14, 
                   fontFamily: "var(--font-body)",
-                  color: "var(--text-primary)", 
+                  color: "#ffffff", 
                   opacity: 0.85,
                   margin: 0,
                   lineHeight: 1.6,

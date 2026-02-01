@@ -150,7 +150,7 @@ export function FriendButton({
           onClick={sendRequest}
           style={{
             background: "var(--accent)",
-            color: "var(--bg-header)",
+            color: "black",
             padding: "8px 16px",
             fontSize: 14,
             fontWeight: 600,
@@ -169,10 +169,10 @@ export function FriendButton({
           onClick={cancelRequest}
           style={{
             background: "transparent",
-            color: "var(--text-primary)",
+            color: "rgba(255,255,255,0.7)",
             padding: "8px 16px",
             fontSize: 14,
-            border: "1px solid rgba(240, 235, 224, 0.3)",
+            border: "1px solid var(--border-hover)",
             borderRadius: 4,
             cursor: "pointer",
           }}
@@ -188,7 +188,7 @@ export function FriendButton({
             onClick={acceptRequest}
             style={{
               background: "var(--accent)",
-              color: "var(--bg-header)",
+              color: "black",
               padding: "8px 16px",
               fontSize: 14,
               fontWeight: 600,
@@ -203,10 +203,10 @@ export function FriendButton({
             onClick={rejectRequest}
             style={{
               background: "transparent",
-              color: "#e57373",
+              color: "#2563eb",
               padding: "8px 16px",
               fontSize: 14,
-              border: "1px solid #e57373",
+              border: "1px solid rgba(255,255,255,0.3)",
               borderRadius: 4,
               cursor: "pointer",
             }}
@@ -223,10 +223,10 @@ export function FriendButton({
             onClick={() => setShowUnfriendConfirm(true)}
             style={{
               background: "transparent",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               padding: "8px 16px",
               fontSize: 14,
-              border: "1px solid rgba(240, 235, 224, 0.3)",
+              border: "1px solid var(--border-hover)",
               borderRadius: 4,
               cursor: "pointer",
             }}
@@ -253,7 +253,7 @@ export function FriendButton({
             >
               <div
                 style={{
-                  backgroundColor: "var(--bg-header)",
+                  backgroundColor: "black",
                   border: "1px solid rgba(212, 175, 55, 0.3)",
                   borderRadius: 12,
                   padding: 24,
@@ -262,7 +262,7 @@ export function FriendButton({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <p style={{ color: "var(--text-primary)", fontSize: 16, marginBottom: 20 }}>
+                <p style={{ color: "#ffffff", fontSize: 16, marginBottom: 20 }}>
                   Are you sure you want to unfriend <strong>{targetDisplayName || "this user"}</strong>?
                 </p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
@@ -270,10 +270,10 @@ export function FriendButton({
                     onClick={() => setShowUnfriendConfirm(false)}
                     style={{
                       background: "transparent",
-                      color: "var(--text-primary)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "10px 24px",
                       fontSize: 14,
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
+                      border: "1px solid var(--border-hover)",
                       borderRadius: 6,
                       cursor: "pointer",
                     }}
@@ -286,8 +286,8 @@ export function FriendButton({
                       unfriend();
                     }}
                     style={{
-                      background: "#e57373",
-                      color: "#fff",
+                      background: "rgba(255,255,255,0.2)",
+                      color: "rgba(255,255,255,0.7)",
                       padding: "10px 24px",
                       fontSize: 14,
                       fontWeight: 600,

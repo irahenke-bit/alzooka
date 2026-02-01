@@ -161,8 +161,8 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
         style={{
           display: "flex",
           alignItems: "center",
-          background: "var(--bg-elevated)",
-          border: "1px solid rgba(240, 235, 224, 0.2)",
+          background: "black",
+          border: "1px solid var(--border-default)",
           borderRadius: 4,
           overflow: "hidden",
         }}
@@ -183,7 +183,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
             width: 180,
             background: "transparent",
             border: "none",
-            color: "var(--text-primary)",
+            color: "#ffffff",
             outline: "none",
           }}
         />
@@ -196,7 +196,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               display: "flex",
               alignItems: "center",
               gap: 4,
-              background: "rgba(107, 140, 174, 0.2)",
+              background: "rgba(37, 99, 235, 0.2)",
               border: "none",
               color: "var(--accent)",
               cursor: "pointer",
@@ -217,7 +217,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               display: "flex",
               alignItems: "center",
               gap: 4,
-              background: "rgba(240, 235, 224, 0.1)",
+              background: "var(--border-subtle)",
               border: "none",
               color: "rgba(240, 235, 224, 0.6)",
               cursor: "pointer",
@@ -242,14 +242,14 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
             left: 0,
             right: 0,
             marginTop: 4,
-            background: "var(--bg-elevated)",
-            border: "1px solid rgba(240, 235, 224, 0.2)",
+            background: "black",
+            border: "1px solid var(--border-default)",
             borderRadius: 4,
             maxHeight: 400,
             minWidth: 320,
             overflowY: "auto",
             zIndex: 100,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+            boxShadow: "0 4px 12px var(--shadow-card)",
           }}
         >
           {loading ? (
@@ -257,8 +257,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--text-primary)",
-                opacity: 0.6,
+                color: "rgba(255,255,255,0.7)",
                 textAlign: "center",
               }}
             >
@@ -269,8 +268,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--text-primary)",
-                opacity: 0.6,
+                color: "rgba(255,255,255,0.7)",
                 textAlign: "center",
               }}
             >
@@ -281,8 +279,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--text-primary)",
-                opacity: 0.6,
+                color: "rgba(255,255,255,0.7)",
                 textAlign: "center",
               }}
             >
@@ -294,9 +291,8 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                 style={{
                   padding: "8px 12px",
                   fontSize: 11,
-                  color: "var(--text-primary)",
-                  opacity: 0.5,
-                  borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                  color: "rgba(255,255,255,0.5)",
+                  borderBottom: "1px solid var(--border-subtle)",
                 }}
               >
                 {results.length} post{results.length !== 1 ? "s" : ""} found
@@ -314,7 +310,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                       gap: 12,
                       padding: "12px",
                       cursor: "pointer",
-                      borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+                      borderBottom: "1px solid var(--border-subtle)",
                       transition: "background 0.15s",
                     }}
                     onMouseEnter={(e) => {
@@ -358,7 +354,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "var(--bg-header)",
+                            color: "black",
                             fontWeight: 700,
                             fontSize: 14,
                           }}
@@ -373,7 +369,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                       {/* Title or content preview */}
                       <div
                         style={{
-                          color: "var(--text-primary)",
+                          color: "rgba(255,255,255,0.7)",
                           fontSize: 14,
                           fontWeight: 500,
                           overflow: "hidden",
@@ -391,8 +387,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                           alignItems: "center",
                           gap: 8,
                           fontSize: 12,
-                          color: "var(--text-primary)",
-                          opacity: 0.6,
+                          color: "rgba(255,255,255,0.7)",
                           marginTop: 4,
                         }}
                       >

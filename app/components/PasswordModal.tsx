@@ -125,18 +125,18 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           padding: 32,
           maxWidth: 400,
           width: "100%",
-          border: "1px solid rgba(240, 235, 224, 0.2)",
+          border: "1px solid var(--border-default)",
         }}
       >
         <h2 style={{ margin: "0 0 8px 0", fontSize: 22 }}>
           {hasPassword ? "🔐 Change Password" : "🔐 Set Password"}
         </h2>
-        <p style={{ margin: "0 0 24px 0", opacity: 0.7, fontSize: 14 }}>
+        <p style={{ margin: "0 0 24px 0", color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
           {hasPassword
             ? "Enter your current password and choose a new one."
             : "Create a password so you can sign in without an email link."}
@@ -171,7 +171,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
               autoComplete="new-password"
               style={{ width: "100%" }}
             />
-            <p style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
               8+ characters, 1 uppercase, 1 special character
             </p>
           </div>
@@ -191,7 +191,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
           </div>
 
           {error && (
-            <p style={{ color: "#e57373", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#2563eb", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}
@@ -203,8 +203,8 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
               style={{
                 flex: 1,
                 background: "transparent",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--text-primary)",
+                border: "1px solid var(--border-hover)",
+                color: "#ffffff",
               }}
             >
               Cancel

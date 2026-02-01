@@ -302,7 +302,7 @@ export default function GroupsPage() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--bg-header)",
+                        color: "black",
                         fontWeight: 700,
                         fontSize: 20,
                       }}>
@@ -317,7 +317,7 @@ export default function GroupsPage() {
                     </div>
                   </div>
                   {group.description && (
-                    <p style={{ margin: 0, fontSize: 14, opacity: 0.7, lineHeight: 1.4 }}>
+                    <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
                       {group.description.slice(0, 100)}{group.description.length > 100 ? "..." : ""}
                     </p>
                   )}
@@ -361,7 +361,7 @@ export default function GroupsPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "var(--bg-header)",
+                      color: "black",
                       fontWeight: 700,
                       fontSize: 20,
                     }}>
@@ -376,7 +376,7 @@ export default function GroupsPage() {
                   </div>
                 </div>
                 {group.description && (
-                  <p style={{ margin: "0 0 12px 0", fontSize: 14, opacity: 0.7, lineHeight: 1.4 }}>
+                  <p style={{ margin: "0 0 12px 0", fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
                     {group.description.slice(0, 100)}{group.description.length > 100 ? "..." : ""}
                   </p>
                 )}
@@ -401,8 +401,8 @@ export default function GroupsPage() {
                       marginTop: 12,
                       padding: "10px 16px",
                       background: "transparent",
-                      border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--text-primary)",
+                      border: "1px solid var(--border-hover)",
+                      color: "rgba(255,255,255,0.7)",
                       borderRadius: 8,
                       textAlign: "center",
                       textDecoration: "none",
@@ -508,8 +508,8 @@ export default function GroupsPage() {
                   onClick={() => setShowCreateModal(false)}
                   style={{
                     background: "transparent",
-                    border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-hover)",
+                    color: "#ffffff",
                   }}
                 >
                   Cancel

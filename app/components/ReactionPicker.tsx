@@ -150,7 +150,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
           disabled={!userId}
           style={{
             background: "transparent",
-            color: "var(--text-muted)",
+            color: "rgba(255,255,255,0.5)",
             padding: "4px 0",
             fontSize: 14,
             border: "none",
@@ -164,7 +164,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
             opacity: userId ? 1 : 0.4,
           }}
           onMouseEnter={(e) => userId && (e.currentTarget.style.color = "var(--accent)")}
-          onMouseLeave={(e) => userId && (e.currentTarget.style.color = "var(--text-muted)")}
+          onMouseLeave={(e) => userId && (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
           title="Add reaction"
         >
           {/* Smiley face outline icon */}
@@ -184,7 +184,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
               bottom: "100%",
               left: 0,
               marginBottom: 8,
-              background: "var(--bg-elevated)",
+              background: "black",
               border: "1px solid var(--border-default)",
               borderRadius: 24,
               padding: "8px 12px",
@@ -261,7 +261,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
                     display: "flex",
                     alignItems: "center",
                     gap: 2,
-                    color: "var(--text-secondary)",
+                    color: "rgba(255,255,255,0.7)",
                     boxShadow: "none",
                     textTransform: "none",
                   }}
@@ -279,7 +279,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
                       left: "50%",
                       transform: "translateX(-50%)",
                       marginBottom: 8,
-                      background: "var(--bg-elevated)",
+                      background: "black",
                       border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       padding: "8px 12px",
@@ -297,12 +297,12 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
                       fontWeight: 600,
                       borderBottom: "1px solid var(--border-subtle)",
                       paddingBottom: 6,
-                      color: "var(--text-primary)",
+                      color: "#ffffff",
                     }}>
                       {emoji} {type.charAt(0).toUpperCase() + type.slice(1)}
                     </p>
                     {getUsersForReaction(type).map((name, i) => (
-                      <p key={i} style={{ margin: "4px 0", fontSize: 12, color: "var(--text-secondary)" }}>
+                      <p key={i} style={{ margin: "4px 0", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
                         {name}
                       </p>
                     ))}

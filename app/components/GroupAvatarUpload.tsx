@@ -165,7 +165,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
           alignItems: "center",
           justifyContent: "center",
           fontSize: 36,
-          color: "var(--bg-header)",
+          color: "black",
           fontWeight: 700,
           padding: 0,
           position: "relative",
@@ -190,7 +190,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--text-primary)",
+              color: "#ffffff",
             }}
           >
             ...
@@ -208,7 +208,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--text-primary)",
+              color: "#ffffff",
               pointerEvents: "none",
             }}
           >
@@ -220,7 +220,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
       {/* Error message */}
       {error && (
         <p style={{ 
-          color: "#e57373", 
+          color: "#2563eb", 
           fontSize: 12, 
           marginTop: 8,
           textAlign: "center",

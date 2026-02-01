@@ -275,8 +275,8 @@ export default function DownvotedPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ 
-                        background: item.type === "post" ? "rgba(229, 115, 115, 0.2)" : "rgba(240, 235, 224, 0.2)",
-                        color: item.type === "post" ? "#e57373" : "var(--alzooka-cream)",
+                        background: item.type === "post" ? "rgba(229, 115, 115, 0.2)" : "var(--border-default)",
+                        color: "rgba(255,255,255,0.7)",
                         padding: "2px 8px",
                         borderRadius: 4,
                         fontSize: 11,

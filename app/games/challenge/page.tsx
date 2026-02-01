@@ -153,21 +153,21 @@ export default function ChallengePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={currentUser} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+    <div style={{ minHeight: "100vh", background: "black" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
@@ -194,10 +194,10 @@ export default function ChallengePage() {
                     flex: 1,
                     padding: "12px 16px",
                     fontSize: 16,
-                    background: "var(--bg-card)",
-                    border: "1px solid rgba(240, 235, 224, 0.2)",
+                    background: "black",
+                    border: "1px solid var(--border-default)",
                     borderRadius: 8,
-                    color: "var(--text-primary)",
+                    color: "#ffffff",
                   }}
                 />
                 <button
@@ -208,7 +208,7 @@ export default function ChallengePage() {
                     fontSize: 14,
                     fontWeight: 600,
                     background: "var(--accent)",
-                    color: "var(--bg-header)",
+                    color: "black",
                     border: "none",
                     borderRadius: 8,
                     cursor: searchQuery.trim() ? "pointer" : "not-allowed",
@@ -234,12 +234,12 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "var(--bg-card)",
-                        border: "1px solid rgba(240, 235, 224, 0.1)",
+                        background: "black",
+                        border: "1px solid var(--border-subtle)",
                         borderRadius: 8,
                         cursor: "pointer",
                         textAlign: "left",
-                        color: "var(--text-primary)",
+                        color: "#ffffff",
                       }}
                     >
                       {user.avatar_url ? (
@@ -249,7 +249,7 @@ export default function ChallengePage() {
                           width: 40,
                           height: 40,
                           borderRadius: "50%",
-                          background: "rgba(240, 235, 224, 0.2)",
+                          background: "var(--border-default)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -281,12 +281,12 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "var(--bg-card)",
-                        border: "1px solid rgba(240, 235, 224, 0.1)",
+                        background: "black",
+                        border: "1px solid var(--border-subtle)",
                         borderRadius: 8,
                         cursor: "pointer",
                         textAlign: "left",
-                        color: "var(--text-primary)",
+                        color: "#ffffff",
                       }}
                     >
                       {friend.avatar_url ? (
@@ -296,7 +296,7 @@ export default function ChallengePage() {
                           width: 40,
                           height: 40,
                           borderRadius: "50%",
-                          background: "rgba(240, 235, 224, 0.2)",
+                          background: "var(--border-default)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -323,7 +323,7 @@ export default function ChallengePage() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: 16,
-              background: "var(--bg-card)",
+              background: "black",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -335,7 +335,7 @@ export default function ChallengePage() {
                     width: 48,
                     height: 48,
                     borderRadius: "50%",
-                    background: "rgba(240, 235, 224, 0.2)",
+                    background: "var(--border-default)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -354,9 +354,9 @@ export default function ChallengePage() {
                   padding: "6px 12px",
                   fontSize: 12,
                   background: "transparent",
-                  border: "1px solid rgba(240, 235, 224, 0.3)",
+                  border: "1px solid var(--border-hover)",
                   borderRadius: 6,
-                  color: "var(--text-primary)",
+                  color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                 }}
               >
@@ -375,11 +375,11 @@ export default function ChallengePage() {
                   style={{
                     flex: 1,
                     padding: 16,
-                    background: selectedMode === "blitz" ? "rgba(29, 185, 84, 0.2)" : "#151515",
-                    border: selectedMode === "blitz" ? "2px solid #1DB954" : "2px solid rgba(240, 235, 224, 0.1)",
+                    background: selectedMode === "blitz" ? "rgba(29, 185, 84, 0.2)" : "black",
+                    border: selectedMode === "blitz" ? "2px solid #1DB954" : "2px solid var(--border-subtle)",
                     borderRadius: 12,
                     cursor: "pointer",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     textAlign: "left",
                   }}
                 >
@@ -391,11 +391,11 @@ export default function ChallengePage() {
                   style={{
                     flex: 1,
                     padding: 16,
-                    background: selectedMode === "five_second" ? "rgba(229, 115, 115, 0.2)" : "#151515",
-                    border: selectedMode === "five_second" ? "2px solid #e57373" : "2px solid rgba(240, 235, 224, 0.1)",
+                    background: selectedMode === "five_second" ? "rgba(229, 115, 115, 0.2)" : "black",
+                    border: selectedMode === "five_second" ? "2px solid #2563eb" : "2px solid var(--border-subtle)",
                     borderRadius: 12,
                     cursor: "pointer",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     textAlign: "left",
                   }}
                 >
@@ -408,7 +408,7 @@ export default function ChallengePage() {
             {/* Sharing consent */}
             <div style={{
               padding: 16,
-              background: "var(--bg-card)",
+              background: "black",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -455,7 +455,7 @@ export default function ChallengePage() {
                 fontSize: 18,
                 fontWeight: 700,
                 background: "var(--accent)",
-                color: "var(--bg-header)",
+                color: "black",
                 border: "none",
                 borderRadius: 12,
                 cursor: sending ? "not-allowed" : "pointer",

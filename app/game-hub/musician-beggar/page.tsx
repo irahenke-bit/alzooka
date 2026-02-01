@@ -105,13 +105,13 @@ function RobloxPerson({
         {/* Left Leg - blocky */}
         <g transform={`rotate(${legSwing}, 20, 65)`}>
           <rect x="12" y="65" width="12" height="35" rx="2" fill={pantsColor} />
-          <rect x="10" y="95" width="14" height="10" rx="2" fill="#1a1a1a" /> {/* Shoe */}
+          <rect x="10" y="95" width="14" height="10" rx="2" fill="black" /> {/* Shoe */}
         </g>
         
         {/* Right Leg - blocky */}
         <g transform={`rotate(${-legSwing}, 35, 65)`}>
           <rect x="31" y="65" width="12" height="35" rx="2" fill={pantsColor} />
-          <rect x="29" y="95" width="14" height="10" rx="2" fill="#1a1a1a" /> {/* Shoe */}
+          <rect x="29" y="95" width="14" height="10" rx="2" fill="black" /> {/* Shoe */}
         </g>
         
         {/* Body - blocky torso */}
@@ -139,13 +139,13 @@ function RobloxPerson({
         <rect x="12" y="0" width="31" height="25" rx="3" fill={skinColor} />
         
         {/* Hair - blocky */}
-        <rect x="12" y="0" width="31" height="10" rx="2" fill="#2a2a2a" />
+        <rect x="12" y="0" width="31" height="10" rx="2" fill="#000000" />
         
         {/* Face */}
-        <rect x="18" y="12" width="5" height="5" rx="1" fill="#1a1a1a" /> {/* Left eye */}
-        <rect x="32" y="12" width="5" height="5" rx="1" fill="#1a1a1a" /> {/* Right eye */}
-        <rect x="25" y="18" width="5" height="3" rx="1" fill="#c4a07c" /> {/* Nose */}
-        <rect x="22" y="22" width="11" height="2" rx="1" fill="#8a6a5a" /> {/* Mouth */}
+        <rect x="18" y="12" width="5" height="5" rx="1" fill="black" /> {/* Left eye */}
+        <rect x="32" y="12" width="5" height="5" rx="1" fill="black" /> {/* Right eye */}
+        <rect x="25" y="18" width="5" height="3" rx="1" fill="rgba(255,255,255,0.75)" /> {/* Nose */}
+        <rect x="22" y="22" width="11" height="2" rx="1" fill="rgba(255,255,255,0.55)" /> {/* Mouth */}
       </svg>
       
       {showCoin && (
@@ -160,33 +160,33 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
   return (
     <div style={{ position: "relative", width: 200, height: 200, zIndex: 10 }}>
       {/* Blanket/cardboard */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, width: 200, height: 20, background: "linear-gradient(90deg, #5a4a3a 0%, #7a6a5a 50%, #5a4a3a 100%)", borderRadius: 4 }} />
+      <div style={{ position: "absolute", bottom: 0, left: 0, width: 200, height: 20, background: "linear-gradient(90deg, #000000 0%, rgba(255,255,255,0.5) 50%, #000000 100%)", borderRadius: 4 }} />
       
       {/* Hat for coins */}
-      <div style={{ position: "absolute", bottom: 12, right: 15, width: 45, height: 16, background: "#1a1a1a", borderRadius: "0 0 50% 50%" }}>
-        <div style={{ position: "absolute", top: 4, left: 10, width: 8, height: 5, background: "#b8860b", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", top: 6, left: 26, width: 6, height: 4, background: "#daa520", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", bottom: 12, right: 15, width: 45, height: 16, background: "black", borderRadius: "0 0 50% 50%" }}>
+        <div style={{ position: "absolute", top: 4, left: 10, width: 8, height: 5, background: "rgba(255,255,255,0.65)", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", top: 6, left: 26, width: 6, height: 4, background: "#2563eb", borderRadius: "50%" }} />
       </div>
       
       {/* Dog */}
       {hasDog && (
         <div style={{ position: "absolute", bottom: 15, left: -50 }}>
           <svg width="60" height="50" viewBox="0 0 30 25">
-            <ellipse cx="18" cy="15" rx="10" ry="7" fill="#8b5a2b" />
-            <ellipse cx="6" cy="10" rx="6" ry="5" fill="#8b5a2b" />
-            <ellipse cx="3" cy="8" rx="2" ry="3" fill="#6b4423" />
-            <circle cx="4" cy="9" r="1.5" fill="#222" />
-            <ellipse cx="1" cy="12" rx="2" ry="1.5" fill="#222" />
-            <rect x="10" y="20" width="3" height="5" rx="1" fill="#8b5a2b" />
-            <rect x="20" y="20" width="3" height="5" rx="1" fill="#8b5a2b" />
+            <ellipse cx="18" cy="15" rx="10" ry="7" fill="rgba(255,255,255,0.6)" />
+            <ellipse cx="6" cy="10" rx="6" ry="5" fill="rgba(255,255,255,0.6)" />
+            <ellipse cx="3" cy="8" rx="2" ry="3" fill="rgba(255,255,255,0.45)" />
+            <circle cx="4" cy="9" r="1.5" fill="black" />
+            <ellipse cx="1" cy="12" rx="2" ry="1.5" fill="black" />
+            <rect x="10" y="20" width="3" height="5" rx="1" fill="rgba(255,255,255,0.6)" />
+            <rect x="20" y="20" width="3" height="5" rx="1" fill="rgba(255,255,255,0.6)" />
           </svg>
         </div>
       )}
       
       {/* Sign */}
       {hasSign && (
-        <div style={{ position: "absolute", bottom: 25, right: -40, width: 60, height: 45, background: "#a08060", border: "2px solid #705030", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(5deg)" }}>
-          <span style={{ fontSize: 9, color: "#222", fontWeight: "bold", textAlign: "center", lineHeight: 1.1 }}>ANYTHING<br/>HELPS</span>
+        <div style={{ position: "absolute", bottom: 25, right: -40, width: 60, height: 45, background: "rgba(255,255,255,0.6)", border: "2px solid rgba(255,255,255,0.45)", display: "flex", alignItems: "center", justifyContent: "center", transform: "rotate(5deg)" }}>
+          <span style={{ fontSize: 9, color: "black", fontWeight: "bold", textAlign: "center", lineHeight: 1.1 }}>ANYTHING<br/>HELPS</span>
         </div>
       )}
       
@@ -194,126 +194,126 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
       <svg width="180" height="180" viewBox="0 0 140 140" style={{ position: "absolute", bottom: 8, left: 5 }}>
         
         {/* === LEGS === */}
-        <ellipse cx="50" cy="128" rx="25" ry="9" fill="#3d3d4d" />
-        <ellipse cx="90" cy="128" rx="25" ry="9" fill="#3d3d4d" />
-        <ellipse cx="28" cy="130" rx="9" ry="5" fill="#1a1a1a" />
-        <ellipse cx="112" cy="130" rx="9" ry="5" fill="#1a1a1a" />
+        <ellipse cx="50" cy="128" rx="25" ry="9" fill="#000000" />
+        <ellipse cx="90" cy="128" rx="25" ry="9" fill="#000000" />
+        <ellipse cx="28" cy="130" rx="9" ry="5" fill="black" />
+        <ellipse cx="112" cy="130" rx="9" ry="5" fill="black" />
         
         {/* === TORSO === */}
-        <path d="M45,55 Q30,62 30,78 L30,118 Q30,125 45,125 L95,125 Q110,125 110,118 L110,78 Q110,62 95,55 Q78,46 70,46 Q62,46 45,55" fill="#4a4a4a" />
-        <path d="M52,100 L88,100 L85,115 L55,115 Z" fill="#3a3a3a" />
+        <path d="M45,55 Q30,62 30,78 L30,118 Q30,125 45,125 L95,125 Q110,125 110,118 L110,78 Q110,62 95,55 Q78,46 70,46 Q62,46 45,55" fill="#000000" />
+        <path d="M52,100 L88,100 L85,115 L55,115 Z" fill="rgba(255,255,255,0.25)" />
         
         {/* === GUITAR - HORIZONTAL across body === */}
         <g style={{ transform: isPlaying ? "translateY(-1px)" : "", transition: "transform 0.1s" }}>
           
           {/* NECK - horizontal, going LEFT, slight upward tilt */}
           {/* Neck back */}
-          <polygon points="5,62 48,72 48,82 5,72" fill="#5c3d2e" />
+          <polygon points="5,62 48,72 48,82 5,72" fill="#000000" />
           {/* Fretboard */}
-          <polygon points="8,64 48,73 48,81 8,71" fill="#1a0f08" />
+          <polygon points="8,64 48,73 48,81 8,71" fill="#000000" />
           {/* Frets */}
-          <line x1="15" y1="65" x2="15" y2="71" stroke="#c0c0c0" strokeWidth="1" />
-          <line x1="22" y1="66" x2="22" y2="72" stroke="#c0c0c0" strokeWidth="1" />
-          <line x1="29" y1="67" x2="29" y2="74" stroke="#c0c0c0" strokeWidth="1" />
-          <line x1="36" y1="69" x2="36" y2="76" stroke="#c0c0c0" strokeWidth="1" />
-          <line x1="43" y1="71" x2="43" y2="78" stroke="#c0c0c0" strokeWidth="1" />
+          <line x1="15" y1="65" x2="15" y2="71" stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
+          <line x1="22" y1="66" x2="22" y2="72" stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
+          <line x1="29" y1="67" x2="29" y2="74" stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
+          <line x1="36" y1="69" x2="36" y2="76" stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
+          <line x1="43" y1="71" x2="43" y2="78" stroke="rgba(255,255,255,0.75)" strokeWidth="1" />
           {/* Fret markers */}
-          <circle cx="18" cy="68" r="1.5" fill="#f0ead6" />
-          <circle cx="32" cy="71" r="1.5" fill="#f0ead6" />
+          <circle cx="18" cy="68" r="1.5" fill="#ffffff" />
+          <circle cx="32" cy="71" r="1.5" fill="#ffffff" />
           
           {/* HEADSTOCK - at far left */}
-          <polygon points="-8,58 8,62 8,74 -8,70" fill="#5c3d2e" />
+          <polygon points="-8,58 8,62 8,74 -8,70" fill="#000000" />
           {/* Nut */}
-          <line x1="6" y1="63" x2="6" y2="73" stroke="#f0ead6" strokeWidth="2" />
+          <line x1="6" y1="63" x2="6" y2="73" stroke="#ffffff" strokeWidth="2" />
           {/* Tuning pegs - top */}
-          <circle cx="-4" cy="60" r="3" fill="#c0c0c0" />
-          <circle cx="-4" cy="65" r="3" fill="#c0c0c0" />
-          <circle cx="-4" cy="70" r="3" fill="#c0c0c0" />
+          <circle cx="-4" cy="60" r="3" fill="rgba(255,255,255,0.75)" />
+          <circle cx="-4" cy="65" r="3" fill="rgba(255,255,255,0.75)" />
+          <circle cx="-4" cy="70" r="3" fill="rgba(255,255,255,0.75)" />
           {/* Tuning pegs - bottom */}
-          <circle cx="2" cy="61" r="3" fill="#c0c0c0" />
-          <circle cx="2" cy="66" r="3" fill="#c0c0c0" />
-          <circle cx="2" cy="71" r="3" fill="#c0c0c0" />
+          <circle cx="2" cy="61" r="3" fill="rgba(255,255,255,0.75)" />
+          <circle cx="2" cy="66" r="3" fill="rgba(255,255,255,0.75)" />
+          <circle cx="2" cy="71" r="3" fill="rgba(255,255,255,0.75)" />
           
           {/* GUITAR BODY - on lap */}
           {/* Lower bout */}
-          <ellipse cx="80" cy="100" rx="35" ry="24" fill="#c4956a" />
-          <ellipse cx="80" cy="100" rx="35" ry="24" fill="none" stroke="#8b5a2b" strokeWidth="2" />
+          <ellipse cx="80" cy="100" rx="35" ry="24" fill="rgba(255,255,255,0.75)" />
+          <ellipse cx="80" cy="100" rx="35" ry="24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
           {/* Upper bout */}
-          <ellipse cx="58" cy="82" rx="20" ry="14" fill="#c4956a" />
-          <ellipse cx="58" cy="82" rx="20" ry="14" fill="none" stroke="#8b5a2b" strokeWidth="1.5" />
+          <ellipse cx="58" cy="82" rx="20" ry="14" fill="rgba(255,255,255,0.75)" />
+          <ellipse cx="58" cy="82" rx="20" ry="14" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" />
           {/* Waist */}
-          <path d="M48,76 Q45,88 48,100 L80,108 Q95,100 95,88 L80,76 Q65,72 48,76" fill="#c4956a" />
+          <path d="M48,76 Q45,88 48,100 L80,108 Q95,100 95,88 L80,76 Q65,72 48,76" fill="rgba(255,255,255,0.75)" />
           
           {/* Sound hole */}
-          <circle cx="72" cy="92" r="12" fill="#2a1a10" />
-          <circle cx="72" cy="92" r="14" fill="none" stroke="#5c3d2e" strokeWidth="2" />
-          <circle cx="72" cy="92" r="16" fill="none" stroke="#8b5a2b" strokeWidth="1" />
+          <circle cx="72" cy="92" r="12" fill="#000000" />
+          <circle cx="72" cy="92" r="14" fill="none" stroke="#000000" strokeWidth="2" />
+          <circle cx="72" cy="92" r="16" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1" />
           
           {/* Bridge */}
-          <rect x="62" y="108" width="28" height="5" rx="1" fill="#3d2817" />
-          <rect x="64" y="107" width="24" height="2" rx="0.5" fill="#f0ead6" />
+          <rect x="62" y="108" width="28" height="5" rx="1" fill="#000000" />
+          <rect x="64" y="107" width="24" height="2" rx="0.5" fill="#ffffff" />
           
           {/* Pickguard */}
-          <ellipse cx="58" cy="95" rx="12" ry="16" fill="#2a1a10" opacity="0.4" />
+          <ellipse cx="58" cy="95" rx="12" ry="16" fill="#000000" opacity="0.4" />
           
           {/* Strings - from bridge to nut */}
-          <line x1="66" y1="107" x2="6" y2="64" stroke="#e0e0e0" strokeWidth="0.5" />
-          <line x1="70" y1="107" x2="6" y2="66" stroke="#e0e0e0" strokeWidth="0.5" />
-          <line x1="74" y1="107" x2="6" y2="68" stroke="#d0d0d0" strokeWidth="0.6" />
-          <line x1="78" y1="107" x2="6" y2="70" stroke="#d0d0d0" strokeWidth="0.6" />
-          <line x1="82" y1="107" x2="6" y2="72" stroke="#cd853f" strokeWidth="0.7" />
-          <line x1="86" y1="107" x2="6" y2="74" stroke="#cd853f" strokeWidth="0.7" />
+          <line x1="66" y1="107" x2="6" y2="64" stroke="#ffffff" strokeWidth="0.5" />
+          <line x1="70" y1="107" x2="6" y2="66" stroke="#ffffff" strokeWidth="0.5" />
+          <line x1="74" y1="107" x2="6" y2="68" stroke="rgba(255,255,255,0.85)" strokeWidth="0.6" />
+          <line x1="78" y1="107" x2="6" y2="70" stroke="rgba(255,255,255,0.85)" strokeWidth="0.6" />
+          <line x1="82" y1="107" x2="6" y2="72" stroke="rgba(255,255,255,0.7)" strokeWidth="0.7" />
+          <line x1="86" y1="107" x2="6" y2="74" stroke="rgba(255,255,255,0.7)" strokeWidth="0.7" />
         </g>
         
         {/* === LEFT ARM - fretting hand on neck === */}
-        <path d="M42,62 Q30,60 22,65" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
+        <path d="M42,62 Q30,60 22,65" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round" />
         {/* Left hand wrapped around neck */}
-        <ellipse cx="20" cy="68" rx="9" ry="7" fill="#c4a67c" />
+        <ellipse cx="20" cy="68" rx="9" ry="7" fill="rgba(255,255,255,0.8)" />
         {/* Fingers curling over fretboard */}
-        <ellipse cx="16" cy="62" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="20" cy="61" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="24" cy="62" rx="3" ry="4" fill="#c4a67c" />
-        <ellipse cx="27" cy="64" rx="2.5" ry="3.5" fill="#c4a67c" />
+        <ellipse cx="16" cy="62" rx="3" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="20" cy="61" rx="3" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="24" cy="62" rx="3" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="27" cy="64" rx="2.5" ry="3.5" fill="rgba(255,255,255,0.8)" />
         {/* Thumb behind neck */}
-        <ellipse cx="18" cy="76" rx="3" ry="4" fill="#c4a67c" />
+        <ellipse cx="18" cy="76" rx="3" ry="4" fill="rgba(255,255,255,0.8)" />
         
         {/* === RIGHT ARM - strumming hand over sound hole === */}
-        <path d="M98,62 Q110,75 100,90" fill="none" stroke="#4a4a4a" strokeWidth="12" strokeLinecap="round" />
+        <path d="M98,62 Q110,75 100,90" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round" />
         {/* Right hand over strings */}
-        <ellipse cx="98" cy="93" rx="9" ry="7" fill="#c4a67c" />
+        <ellipse cx="98" cy="93" rx="9" ry="7" fill="rgba(255,255,255,0.8)" />
         {/* Strumming fingers */}
-        <ellipse cx="92" cy="98" rx="2.5" ry="4" fill="#c4a67c" />
-        <ellipse cx="96" cy="100" rx="2.5" ry="4" fill="#c4a67c" />
-        <ellipse cx="100" cy="100" rx="2.5" ry="4" fill="#c4a67c" />
-        <ellipse cx="104" cy="98" rx="2.5" ry="4" fill="#c4a67c" />
+        <ellipse cx="92" cy="98" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="96" cy="100" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="100" cy="100" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="104" cy="98" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" />
         
         {/* === HEAD === */}
-        <rect x="64" y="38" width="12" height="14" rx="3" fill="#c4a67c" />
-        <ellipse cx="70" cy="26" rx="16" ry="18" fill="#c4a67c" />
+        <rect x="64" y="38" width="12" height="14" rx="3" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="70" cy="26" rx="16" ry="18" fill="rgba(255,255,255,0.8)" />
         
         {/* Beanie */}
-        <path d="M54,22 Q54,6 70,6 Q86,6 86,22" fill="#4a6670" />
-        <rect x="54" y="18" width="32" height="7" fill="#4a6670" />
-        <rect x="54" y="23" width="32" height="3" fill="#3a565f" />
+        <path d="M54,22 Q54,6 70,6 Q86,6 86,22" fill="#2563eb" />
+        <rect x="54" y="18" width="32" height="7" fill="#2563eb" />
+        <rect x="54" y="23" width="32" height="3" fill="#000000" />
         
         {/* Eyes */}
-        <ellipse cx="63" cy="26" rx="3" ry="2.5" fill="#222" />
-        <ellipse cx="77" cy="26" rx="3" ry="2.5" fill="#222" />
+        <ellipse cx="63" cy="26" rx="3" ry="2.5" fill="black" />
+        <ellipse cx="77" cy="26" rx="3" ry="2.5" fill="black" />
         
         {/* Nose */}
-        <path d="M70,29 L68,34 L72,34 Z" fill="#b8a090" />
+        <path d="M70,29 L68,34 L72,34 Z" fill="rgba(255,255,255,0.7)" />
         
         {/* Mouth */}
-        <path d={isPlaying ? "M64,40 Q70,44 76,40" : "M65,40 Q70,42 75,40"} fill="none" stroke="#8a6a5a" strokeWidth="1.5" />
+        <path d={isPlaying ? "M64,40 Q70,44 76,40" : "M65,40 Q70,42 75,40"} fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" />
         
         {/* Stubble */}
         {[0,1,2,3,4,5].map(i => (
-          <circle key={i} cx={64 + (i%3)*4} cy={37 + Math.floor(i/3)*2} r="0.6" fill="#7a6a5a" opacity="0.5" />
+          <circle key={i} cx={64 + (i%3)*4} cy={37 + Math.floor(i/3)*2} r="0.6" fill="rgba(255,255,255,0.5)" opacity="0.5" />
         ))}
         
         {/* Ears */}
-        <ellipse cx="54" cy="28" rx="3" ry="5" fill="#c4a67c" />
-        <ellipse cx="86" cy="28" rx="3" ry="5" fill="#c4a67c" />
+        <ellipse cx="54" cy="28" rx="3" ry="5" fill="rgba(255,255,255,0.8)" />
+        <ellipse cx="86" cy="28" rx="3" ry="5" fill="rgba(255,255,255,0.8)" />
       </svg>
     </div>
   );
@@ -326,15 +326,15 @@ function UpgradeShop({ onClick }: { onClick: () => void }) {
       onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
       <svg width="130" height="140" viewBox="0 0 100 110">
-        <rect x="5" y="25" width="90" height="85" fill="#2a2a35" stroke="#1a1a25" strokeWidth="2" />
-        <path d="M0,27 L50,5 L100,27" fill="#3a3a45" stroke="#2a2a35" strokeWidth="1" />
-        <rect x="25" y="50" width="50" height="60" rx="2" fill="#1a1a25" />
-        <rect x="28" y="53" width="44" height="38" fill="#2a2a30" />
-        <rect x="15" y="32" width="70" height="15" rx="2" fill="#8b4513" />
-        <text x="50" y="44" textAnchor="middle" fontSize="10" fill="#daa520" fontWeight="bold">UPGRADES</text>
-        <circle cx="68" cy="85" r="4" fill="#b8860b" />
-        <rect x="35" y="60" width="30" height="12" rx="1" fill="#1a3a1a" />
-        <text x="50" y="69" textAnchor="middle" fontSize="7" fill="#4ade80">OPEN</text>
+        <rect x="5" y="25" width="90" height="85" fill="#000000" stroke="#000000" strokeWidth="2" />
+        <path d="M0,27 L50,5 L100,27" fill="#000000" stroke="#000000" strokeWidth="1" />
+        <rect x="25" y="50" width="50" height="60" rx="2" fill="#000000" />
+        <rect x="28" y="53" width="44" height="38" fill="#000000" />
+        <rect x="15" y="32" width="70" height="15" rx="2" fill="rgba(255,255,255,0.55)" />
+        <text x="50" y="44" textAnchor="middle" fontSize="10" fill="#2563eb" fontWeight="bold">UPGRADES</text>
+        <circle cx="68" cy="85" r="4" fill="rgba(255,255,255,0.65)" />
+        <rect x="35" y="60" width="30" height="12" rx="1" fill="#000000" />
+        <text x="50" y="69" textAnchor="middle" fontSize="7" fill="#2563eb">OPEN</text>
       </svg>
     </div>
   );
@@ -347,19 +347,19 @@ function LotteryShop({ onClick }: { onClick: () => void }) {
       onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
       <svg width="130" height="140" viewBox="0 0 100 110">
-        <rect x="5" y="25" width="90" height="85" fill="#2a3525" stroke="#1a2515" strokeWidth="2" />
-        <path d="M0,27 L50,5 L100,27" fill="#3a4535" stroke="#2a3525" strokeWidth="1" />
-        <rect x="25" y="50" width="50" height="60" rx="2" fill="#1a2515" />
-        <rect x="28" y="53" width="44" height="38" fill="#2a3520" />
+        <rect x="5" y="25" width="90" height="85" fill="#000000" stroke="#000000" strokeWidth="2" />
+        <path d="M0,27 L50,5 L100,27" fill="#000000" stroke="#000000" strokeWidth="1" />
+        <rect x="25" y="50" width="50" height="60" rx="2" fill="#000000" />
+        <rect x="28" y="53" width="44" height="38" fill="#000000" />
         {/* Lottery tickets display */}
-        <rect x="32" y="58" width="15" height="10" rx="1" fill="#ffd700" transform="rotate(-5 40 63)" />
-        <rect x="45" y="56" width="15" height="10" rx="1" fill="#ff6b6b" transform="rotate(3 52 61)" />
-        <rect x="55" y="60" width="15" height="10" rx="1" fill="#4ecdc4" transform="rotate(-2 62 65)" />
-        <rect x="15" y="32" width="70" height="15" rx="2" fill="#228b22" />
-        <text x="50" y="44" textAnchor="middle" fontSize="9" fill="#ffd700" fontWeight="bold">🎟️ LOTTERY</text>
-        <circle cx="68" cy="85" r="4" fill="#ffd700" />
-        <rect x="35" y="75" width="30" height="12" rx="1" fill="#1a1a1a" />
-        <text x="50" y="84" textAnchor="middle" fontSize="6" fill="#ffd700">SCRATCH!</text>
+        <rect x="32" y="58" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(-5 40 63)" />
+        <rect x="45" y="56" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(3 52 61)" />
+        <rect x="55" y="60" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(-2 62 65)" />
+        <rect x="15" y="32" width="70" height="15" rx="2" fill="#2563eb" />
+        <text x="50" y="44" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🎟️ LOTTERY</text>
+        <circle cx="68" cy="85" r="4" fill="#2563eb" />
+        <rect x="35" y="75" width="30" height="12" rx="1" fill="black" />
+        <text x="50" y="84" textAnchor="middle" fontSize="6" fill="#2563eb">SCRATCH!</text>
       </svg>
     </div>
   );
@@ -374,17 +374,17 @@ function StoreModal({ isOpen, onClose, zc, upgradeLevels, onBuy }: {
   
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div style={{ background: "#1a1a1a", borderRadius: 12, width: "90%", maxWidth: 500, maxHeight: "80vh", overflow: "hidden", border: "2px solid #daa520" }} onClick={e => e.stopPropagation()}>
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid #333", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ background: "black", borderRadius: 12, width: "90%", maxWidth: 500, maxHeight: "80vh", overflow: "hidden", border: "2px solid #2563eb" }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid black", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ color: "#daa520", fontSize: 20, fontWeight: 700 }}>🏪 Upgrade Store</div>
-            <div style={{ color: "#888", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
+            <div style={{ color: "#2563eb", fontSize: 20, fontWeight: 700 }}>🏪 Upgrade Store</div>
+            <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#888", fontSize: 28, cursor: "pointer" }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 28, cursor: "pointer" }}>×</button>
         </div>
-        <div style={{ display: "flex", borderBottom: "1px solid #333" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid black" }}>
           {(["skill", "instrument", "gear", "attraction"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "12px 4px", background: tab === t ? "rgba(218,165,32,0.15)" : "transparent", border: "none", borderBottom: tab === t ? "2px solid #daa520" : "2px solid transparent", color: tab === t ? "#daa520" : "#666", fontSize: 12, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
+            <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "12px 4px", background: tab === t ? "rgba(218,165,32,0.15)" : "transparent", border: "none", borderBottom: tab === t ? "2px solid #2563eb" : "2px solid transparent", color: tab === t ? "#2563eb" : "#666", fontSize: 12, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
           ))}
         </div>
         <div style={{ maxHeight: 400, overflowY: "auto", padding: 10 }}>
@@ -396,11 +396,11 @@ function StoreModal({ isOpen, onClose, zc, upgradeLevels, onBuy }: {
             return (
               <div key={upgrade.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 8, marginBottom: 6, background: level > 0 ? "rgba(218,165,32,0.05)" : "transparent" }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: "#ccc", fontWeight: 600, fontSize: 15 }}>{upgrade.name}{level > 0 && <span style={{ color: "#daa520", marginLeft: 8 }}>Lv.{level}</span>}</div>
-                  <div style={{ color: "#666", fontSize: 12 }}>{upgrade.description}</div>
-                  {!isMaxed && <div style={{ color: "#6a9955", fontSize: 11, marginTop: 2 }}>+{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/tap`}</div>}
+                  <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 15 }}>{upgrade.name}{level > 0 && <span style={{ color: "#2563eb", marginLeft: 8 }}>Lv.{level}</span>}</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>{upgrade.description}</div>
+                  {!isMaxed && <div style={{ color: "#2563eb", fontSize: 11, marginTop: 2 }}>+{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/tap`}</div>}
                 </div>
-                <button onClick={() => onBuy(upgrade.id)} disabled={!canAfford} style={{ padding: "10px 16px", borderRadius: 8, border: "none", background: isMaxed ? "#4a6" : canAfford ? "#daa520" : "#333", color: isMaxed || canAfford ? "#1a1a1a" : "#555", fontWeight: 600, fontSize: 13, cursor: canAfford ? "pointer" : "default", minWidth: 80 }}>{isMaxed ? "MAX" : formatNumber(cost)}</button>
+                <button onClick={() => onBuy(upgrade.id)} disabled={!canAfford} style={{ padding: "10px 16px", borderRadius: 8, border: "none", background: isMaxed ? "#4a6" : canAfford ? "#2563eb" : "black", color: isMaxed || canAfford ? "black" : "#555", fontWeight: 600, fontSize: 13, cursor: canAfford ? "pointer" : "default", minWidth: 80 }}>{isMaxed ? "MAX" : formatNumber(cost)}</button>
               </div>
             );
           })}
@@ -417,8 +417,8 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
   const allScratched = ticket.scratched.length >= 6;
   
   return (
-    <div style={{ background: "linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)", borderRadius: 8, padding: 12, width: 200, border: "3px solid #cc8800" }}>
-      <div style={{ textAlign: "center", marginBottom: 8, color: "#1a1a1a", fontWeight: 700, fontSize: 14 }}>🎟️ {formatNumber(ticket.price)} ZC TICKET</div>
+    <div style={{ background: "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)", borderRadius: 8, padding: 12, width: 200, border: "3px solid #2563eb" }}>
+      <div style={{ textAlign: "center", marginBottom: 8, color: "black", fontWeight: 700, fontSize: 14 }}>🎟️ {formatNumber(ticket.price)} ZC TICKET</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 10 }}>
         {spots.map(i => {
           const isRevealed = ticket.scratched.includes(i);
@@ -428,10 +428,10 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
               onClick={() => !isRevealed && !isScratching && onScratch(i)}
               style={{
                 width: 50, height: 40, borderRadius: 4,
-                background: isRevealed ? (isWin && ticket.result ? "#22c55e" : "#666") : "linear-gradient(135deg, #888 0%, #666 100%)",
+                background: isRevealed ? (isWin && ticket.result ? "#2563eb" : "#666") : "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, #666 100%)",
                 cursor: isRevealed ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#fff", fontWeight: 700, fontSize: 12,
+                color: "#ffffff", fontWeight: 700, fontSize: 12,
                 border: "2px solid #555",
                 transition: "transform 0.1s",
               }}
@@ -444,11 +444,11 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
         })}
       </div>
       {allScratched && (
-        <div style={{ textAlign: "center", padding: 8, borderRadius: 4, background: isWin ? "#22c55e" : "#dc2626", color: "#fff", fontWeight: 700 }}>
+        <div style={{ textAlign: "center", padding: 8, borderRadius: 4, background: isWin ? "#2563eb" : "#2563eb", color: "#ffffff", fontWeight: 700 }}>
           {isWin ? `🎉 WON ${formatNumber(ticket.result!)} ZC!` : "No luck this time!"}
         </div>
       )}
-      {!allScratched && <div style={{ textAlign: "center", color: "#1a1a1a", fontSize: 11 }}>Scratch 6 spots to reveal!</div>}
+      {!allScratched && <div style={{ textAlign: "center", color: "black", fontSize: 11 }}>Scratch 6 spots to reveal!</div>}
     </div>
   );
 }
@@ -492,13 +492,13 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
   
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div style={{ background: "#1a2a1a", borderRadius: 12, width: "90%", maxWidth: 550, maxHeight: "85vh", overflow: "hidden", border: "2px solid #228b22" }} onClick={e => e.stopPropagation()}>
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid #2a3a2a", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(90deg, #1a3a1a 0%, #2a4a2a 100%)" }}>
+      <div style={{ background: "#000000", borderRadius: 12, width: "90%", maxWidth: 550, maxHeight: "85vh", overflow: "hidden", border: "2px solid #2563eb" }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid #000000", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(90deg, #000000 0%, #000000 100%)" }}>
           <div>
-            <div style={{ color: "#ffd700", fontSize: 22, fontWeight: 700 }}>🎟️ Lucky Lottery</div>
-            <div style={{ color: "#888", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
+            <div style={{ color: "#2563eb", fontSize: 22, fontWeight: 700 }}>🎟️ Lucky Lottery</div>
+            <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#888", fontSize: 28, cursor: "pointer" }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 28, cursor: "pointer" }}>×</button>
         </div>
         
         <div style={{ padding: 20, maxHeight: 500, overflowY: "auto" }}>
@@ -508,8 +508,8 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
               {activeTicket.scratched.length >= 6 && (
                 <button onClick={collectWinnings} style={{
                   padding: "12px 30px", borderRadius: 8, border: "none",
-                  background: activeTicket.result && activeTicket.result > 0 ? "#22c55e" : "#666",
-                  color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer",
+                  background: activeTicket.result && activeTicket.result > 0 ? "#2563eb" : "#666",
+                  color: "#ffffff", fontWeight: 700, fontSize: 15, cursor: "pointer",
                 }}>
                   {activeTicket.result && activeTicket.result > 0 ? "Collect Winnings!" : "Try Again"}
                 </button>
@@ -517,7 +517,7 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
             </div>
           ) : (
             <>
-              <div style={{ color: "#aaa", textAlign: "center", marginBottom: 16, fontSize: 13 }}>Choose a ticket to scratch!</div>
+              <div style={{ color: "rgba(255,255,255,0.7)", textAlign: "center", marginBottom: 16, fontSize: 13 }}>Choose a ticket to scratch!</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
                 {LOTTERY_TICKETS.map((t, i) => {
                   const canAfford = zc >= t.price;
@@ -527,8 +527,8 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
                       onClick={() => canAfford && buyTicket(t.price, t.maxWin, t.winChance)}
                       style={{
                         padding: 16, borderRadius: 8, cursor: canAfford ? "pointer" : "not-allowed",
-                        background: canAfford ? "linear-gradient(135deg, #ffd700 0%, #ffaa00 100%)" : "#333",
-                        border: `2px solid ${canAfford ? "#cc8800" : "#444"}`,
+                        background: canAfford ? "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)" : "black",
+                        border: `2px solid ${canAfford ? "#2563eb" : "#444"}`,
                         textAlign: "center", transition: "transform 0.2s",
                         opacity: canAfford ? 1 : 0.5,
                       }}
@@ -536,8 +536,8 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
                       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
                     >
                       <div style={{ fontSize: 28, marginBottom: 4 }}>🎟️</div>
-                      <div style={{ color: "#1a1a1a", fontWeight: 700, fontSize: 16 }}>{formatNumber(t.price)} ZC</div>
-                      <div style={{ color: "#4a4a4a", fontSize: 11, marginTop: 4 }}>Win up to {formatNumber(t.maxWin)}</div>
+                      <div style={{ color: "black", fontWeight: 700, fontSize: 16 }}>{formatNumber(t.price)} ZC</div>
+                      <div style={{ color: "#000000", fontSize: 11, marginTop: 4 }}>Win up to {formatNumber(t.maxWin)}</div>
                     </div>
                   );
                 })}
@@ -552,7 +552,7 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
 
 function FlyingCoin({ x, y, amount }: { x: number; y: number; amount: number }) {
   return (
-    <div style={{ position: "absolute", left: x, top: y, pointerEvents: "none", animation: "coinUp 0.7s ease-out forwards", zIndex: 200, color: "#daa520", fontWeight: 700, fontSize: 18, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>+{formatNumber(amount)}</div>
+    <div style={{ position: "absolute", left: x, top: y, pointerEvents: "none", animation: "coinUp 0.7s ease-out forwards", zIndex: 200, color: "#2563eb", fontWeight: 700, fontSize: 18, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>+{formatNumber(amount)}</div>
   );
 }
 
@@ -607,9 +607,9 @@ export default function MusicianBeggarPage() {
 
   const spawnPedestrian = useCallback(() => {
     const direction: "left" | "right" = Math.random() > 0.5 ? "right" : "left";
-    const shirts = ["#3b5998", "#c0392b", "#27ae60", "#8e44ad", "#2980b9", "#e74c3c", "#1abc9c", "#f39c12"];
-    const pants = ["#2d3436", "#1a252f", "#34495e", "#2c3e50", "#1a1a2e"];
-    const skins = ["#e8c4a0", "#d4a574", "#f5deb3", "#deb887", "#c68642", "#ffe4c4"];
+    const shirts = ["#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb"];
+    const pants = ["#000000", "#000000", "#000000", "#000000", "#000000"];
+    const skins = ["rgba(255,255,255,0.85)", "rgba(255,255,255,0.8)", "rgba(255,255,255,0.9)", "rgba(255,255,255,0.8)", "rgba(255,255,255,0.7)", "#ffffff"];
     const attractLvl = (upgradeLevels["sign"] || 0) + (upgradeLevels["dog"] || 0);
     setPedestrians(prev => [...prev.slice(-10), {
       id: pedIdRef.current++, startX: direction === "right" ? -100 : 1300,
@@ -697,10 +697,10 @@ export default function MusicianBeggarPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f0f12" }}>
+      <div style={{ minHeight: "100vh", background: "#000000" }}>
         <div style={{ height: 60, background: "rgba(0,0,0,0.5)" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70vh" }}>
-          <div style={{ width: 50, height: 50, border: "3px solid #333", borderTopColor: "#daa520", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 50, height: 50, border: "3px solid black", borderTopColor: "#2563eb", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       </div>
     );
@@ -710,19 +710,19 @@ export default function MusicianBeggarPage() {
   const hasDog = (upgradeLevels["dog"] || 0) > 0;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f0f12" }}>
+    <div style={{ minHeight: "100vh", background: "#000000" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
 
       <div style={{ position: "absolute", top: 70, left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 100, pointerEvents: "none" }}>
-        <div style={{ color: "#daa520", fontSize: 44, fontWeight: 800, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{formatNumber(zc)} ZC</div>
-        <div style={{ color: "#888", fontSize: 14 }}>{formatNumber(zpc)}/tap • {formatNumber(zps)}/sec</div>
+        <div style={{ color: "#2563eb", fontSize: 44, fontWeight: 800, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{formatNumber(zc)} ZC</div>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>{formatNumber(zpc)}/tap • {formatNumber(zps)}/sec</div>
       </div>
 
-      <Link href="/game-hub" style={{ position: "absolute", top: 70, left: 20, color: "#daa520", textDecoration: "none", fontSize: 14, zIndex: 100 }}>← Game Hub</Link>
+      <Link href="/game-hub" style={{ position: "absolute", top: 70, left: 20, color: "#2563eb", textDecoration: "none", fontSize: 14, zIndex: 100 }}>← Game Hub</Link>
 
-      <div onClick={handleClick} style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, cursor: "pointer", overflow: "hidden", background: "#0a0a0f" }}>
+      <div onClick={handleClick} style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, cursor: "pointer", overflow: "hidden", background: "#000000" }}>
         {/* Sky */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, #05050a 0%, #0a0a12 50%, #0f0f18 100%)" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, #000000 0%, #000000 50%, #000000 100%)" }} />
         
         {/* Stars */}
         {[[50,25],[150,50],[280,20],[400,45],[550,30],[700,50],[850,18],[1000,40],[1150,28],[1300,55]].map(([x,y], i) => (
@@ -730,35 +730,35 @@ export default function MusicianBeggarPage() {
         ))}
         
         {/* Moon */}
-        <div style={{ position: "absolute", top: 35, right: 80, width: 55, height: 55, background: "radial-gradient(circle at 35% 35%, #fffacd, #f0e68c 60%, #daa520 100%)", borderRadius: "50%", boxShadow: "0 0 50px rgba(255,250,205,0.3)" }} />
+        <div style={{ position: "absolute", top: 35, right: 80, width: 55, height: 55, background: "radial-gradient(circle at 35% 35%, #ffffff, #ffffff 60%, #2563eb 100%)", borderRadius: "50%", boxShadow: "0 0 50px rgba(255,250,205,0.3)" }} />
         
         {/* Buildings */}
         <div style={{ position: "absolute", top: "18%", left: 0, right: 0, height: "30%" }}>
-          <div style={{ position: "absolute", bottom: 0, left: "2%", width: "8%", height: "65%", background: "#0c0c14" }} />
-          <div style={{ position: "absolute", bottom: 0, left: "12%", width: "10%", height: "85%", background: "#08080e" }}>
-            {[18,35,52,70].map((t,i) => <div key={i} style={{ position: "absolute", top: `${t}%`, left: "15%", width: "30%", height: "10%", background: i===1?"#3a3525":"#14141c" }} />)}
+          <div style={{ position: "absolute", bottom: 0, left: "2%", width: "8%", height: "65%", background: "#000000" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "12%", width: "10%", height: "85%", background: "#000000" }}>
+            {[18,35,52,70].map((t,i) => <div key={i} style={{ position: "absolute", top: `${t}%`, left: "15%", width: "30%", height: "10%", background: i===1?"#000000":"#000000" }} />)}
           </div>
-          <div style={{ position: "absolute", bottom: 0, left: "25%", width: "7%", height: "50%", background: "#0a0a12" }} />
-          <div style={{ position: "absolute", bottom: 0, right: "25%", width: "9%", height: "70%", background: "#0c0c14" }} />
-          <div style={{ position: "absolute", bottom: 0, right: "10%", width: "10%", height: "80%", background: "#08080e" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "25%", width: "7%", height: "50%", background: "#000000" }} />
+          <div style={{ position: "absolute", bottom: 0, right: "25%", width: "9%", height: "70%", background: "#000000" }} />
+          <div style={{ position: "absolute", bottom: 0, right: "10%", width: "10%", height: "80%", background: "#000000" }} />
         </div>
         
         {/* Street lamp */}
         <div style={{ position: "absolute", bottom: "42%", left: "8%", zIndex: 3 }}>
-          <div style={{ width: 6, height: 100, background: "#1a1a1a" }} />
-          <div style={{ position: "absolute", top: -8, left: -12, width: 30, height: 14, background: "#252525", borderRadius: "3px 3px 0 0" }} />
-          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#6b8cae", opacity: 0.7, borderRadius: 2, boxShadow: "0 0 25px #6b8cae" }} />
+          <div style={{ width: 6, height: 100, background: "black" }} />
+          <div style={{ position: "absolute", top: -8, left: -12, width: 30, height: 14, background: "#000000", borderRadius: "3px 3px 0 0" }} />
+          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#2563eb", color: "rgba(255,255,255,0.7)", borderRadius: 2, boxShadow: "0 0 25px #2563eb" }} />
         </div>
         
         {/* Sidewalk - smaller */}
-        <div style={{ position: "absolute", bottom: "22%", left: 0, right: 0, height: "12%", background: "linear-gradient(180deg, #22222a 0%, #1a1a22 100%)" }}>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 5, background: "#2a2a32" }} />
+        <div style={{ position: "absolute", bottom: "22%", left: 0, right: 0, height: "12%", background: "linear-gradient(180deg, black22a 0%, #000000 100%)" }}>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 5, background: "#000000" }} />
         </div>
         
         {/* Road - bigger */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "22%", background: "#131316" }}>
-          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #6b8cae 0px, #6b8cae 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
-          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #6b8cae 0px, #6b8cae 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "22%", background: "#000000" }}>
+          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #2563eb 0px, #2563eb 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
+          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #2563eb 0px, #2563eb 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
         </div>
         
         {/* Lottery Shop - on sidewalk */}

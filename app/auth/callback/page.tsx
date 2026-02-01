@@ -110,12 +110,12 @@ export default function AuthCallbackPage() {
       <div style={{
         marginTop: 40,
         padding: 24,
-        background: "var(--bg-header)",
+        background: "black",
         borderRadius: 12,
         textAlign: "center",
         maxWidth: 400,
       }}>
-        <p style={{ marginBottom: 16, color: "#e57373" }}>
+        <p style={{ marginBottom: 16, color: "#2563eb" }}>
           Authentication failed: {errorMsg}
         </p>
         <Link href="/login" style={{ color: "var(--accent)" }}>

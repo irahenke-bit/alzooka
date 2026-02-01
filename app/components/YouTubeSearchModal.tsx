@@ -112,7 +112,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
     >
       <div
         style={{
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           width: "100%",
           maxWidth: 600,
@@ -126,21 +126,21 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
           <h2 style={{ margin: 0, fontSize: 18, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: "#ff0000" }}>▶</span> Search YouTube
+            <span style={{ color: "#2563eb" }}>▶</span> Search YouTube
           </h2>
           <button
             onClick={onClose}
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -152,7 +152,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
         </div>
 
         {/* Search Form */}
-        <form onSubmit={handleSearch} style={{ padding: "16px 20px", borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+        <form onSubmit={handleSearch} style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
           <div style={{ display: "flex", gap: 8 }}>
             <input
               type="text"
@@ -164,10 +164,10 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                 flex: 1,
                 padding: "12px 16px",
                 fontSize: 16,
-                background: "var(--bg-elevated)",
-                border: "1px solid rgba(240, 235, 224, 0.2)",
+                background: "black",
+                border: "1px solid var(--border-default)",
                 borderRadius: 8,
-                color: "var(--text-primary)",
+                color: "#ffffff",
               }}
             />
             <button
@@ -177,7 +177,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                 padding: "12px 24px",
                 fontSize: 16,
                 background: "var(--accent)",
-                color: "var(--bg-header)",
+                color: "black",
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
@@ -196,7 +196,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
         {/* Results */}
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {error && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#e57373" }}>
+            <div style={{ padding: "20px", textAlign: "center", color: "#2563eb" }}>
               {error}
             </div>
           )}
@@ -269,7 +269,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                   fontSize: 14,
                   fontWeight: 600,
                   background: "var(--accent)",
-                  color: "var(--bg-header)",
+                  color: "black",
                   border: "none",
                   borderRadius: 6,
                   cursor: postingId !== null ? "not-allowed" : "pointer",

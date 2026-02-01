@@ -377,12 +377,12 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--bg-header)",
+        background: "black",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
       }}>
-        <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading game...</p>
+        <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading game...</p>
       </div>
     );
   }
@@ -392,7 +392,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--bg-header)",
+        background: "black",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -409,7 +409,7 @@ export default function PlayPage() {
           </p>
         )}
         
-        <p style={{ marginBottom: 32, opacity: 0.7, textAlign: "center", maxWidth: 400 }}>
+        <p style={{ marginBottom: 32, color: "rgba(255,255,255,0.7)", textAlign: "center", maxWidth: 400 }}>
           {mode === "blitz" 
             ? "Answer as many questions as you can in 2 minutes!"
             : "10 questions, 5 seconds each. No time to think!"}
@@ -422,7 +422,7 @@ export default function PlayPage() {
             fontSize: 20,
             fontWeight: 700,
             background: "var(--accent)",
-            color: "var(--bg-header)",
+            color: "black",
             border: "none",
             borderRadius: 12,
             cursor: "pointer",
@@ -431,7 +431,7 @@ export default function PlayPage() {
           Start Game
         </button>
         
-        <Link href="/games" style={{ marginTop: 24, color: "var(--text-primary)", opacity: 0.6 }}>
+        <Link href="/games" style={{ marginTop: 24, color: "#ffffff", opacity: 0.6 }}>
           ← Back to Games
         </Link>
       </div>
@@ -443,7 +443,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--bg-header)",
+        background: "black",
         padding: 24,
       }}>
         {/* Top bar */}
@@ -460,7 +460,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: timeLeft < 30 ? "#e57373" : "var(--accent)",
+              color: timeLeft < 30 ? "#2563eb" : "var(--accent)",
             }}>
               {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
             </span>
@@ -470,7 +470,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: questionTimeLeft <= 2 ? "#e57373" : "var(--accent)",
+              color: questionTimeLeft <= 2 ? "#2563eb" : "var(--accent)",
             }}>
               {questionTimeLeft}s
             </span>
@@ -485,7 +485,7 @@ export default function PlayPage() {
         <div style={{
           maxWidth: 600,
           margin: "0 auto",
-          background: "var(--bg-card)",
+          background: "black",
           borderRadius: 16,
           padding: 24,
         }}>
@@ -499,8 +499,8 @@ export default function PlayPage() {
               const isSelected = answer === selectedAnswer;
               
               // Determine background and border colors based on state
-              let bgColor = "#1a1a1a";
-              let borderColor = "rgba(240, 235, 224, 0.2)";
+              let bgColor = "black";
+              let borderColor = "var(--border-default)";
               
               // Only change colors AFTER user has answered (showResult is true)
               if (showResult) {
@@ -509,7 +509,7 @@ export default function PlayPage() {
                   borderColor = "#1DB954";
                 } else if (isSelected) {
                   bgColor = "rgba(229, 115, 115, 0.3)";
-                  borderColor = "#e57373";
+                  borderColor = "#2563eb";
                 }
               }
 
@@ -531,7 +531,7 @@ export default function PlayPage() {
                     border: `2px solid ${borderColor}`,
                     borderRadius: 12,
                     cursor: showResult ? "default" : "pointer",
-                    color: "var(--text-primary)",
+                    color: "rgba(255,255,255,0.7)",
                     textAlign: "left",
                     userSelect: "none",
                   }}
@@ -550,7 +550,7 @@ export default function PlayPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "var(--bg-header)",
+      background: "black",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -586,7 +586,7 @@ export default function PlayPage() {
         <p style={{ 
           marginBottom: 24, 
           fontSize: 18,
-          color: ratingChange >= 0 ? "#1DB954" : "#e57373",
+          color: ratingChange >= 0 ? "#2563eb" : "rgba(255,255,255,0.6)",
         }}>
           {getRatingChangeDescription(ratingChange)}
         </p>
@@ -598,7 +598,7 @@ export default function PlayPage() {
           style={{
             padding: "12px 24px",
             background: "var(--accent)",
-            color: "var(--bg-header)",
+            color: "black",
             borderRadius: 8,
             fontWeight: 600,
             textDecoration: "none",

@@ -96,7 +96,7 @@ export function FeedControlModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--bg-elevated)",
+          background: "black",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,
@@ -107,7 +107,7 @@ export function FeedControlModal({
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -121,10 +121,9 @@ export function FeedControlModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 20,
               cursor: "pointer",
-              opacity: 0.7,
               padding: 4,
             }}
           >
@@ -143,9 +142,9 @@ export function FeedControlModal({
                 gap: 12,
                 cursor: "pointer",
                 padding: "12px 16px",
-                background: worldView ? "rgba(107, 140, 174, 0.15)" : "rgba(240, 235, 224, 0.05)",
+                background: worldView ? "rgba(37,99,235,0.2)" : "rgba(240, 235, 224, 0.05)",
                 borderRadius: 8,
-                border: worldView ? "1px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.1)",
+                border: worldView ? "1px solid var(--accent)" : "1px solid var(--border-subtle)",
               }}
             >
               <input
@@ -156,7 +155,7 @@ export function FeedControlModal({
               />
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600 }}>World View</div>
-                <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
                   See everything posted on Alzooka
                 </div>
               </div>
@@ -278,7 +277,7 @@ export function FeedControlModal({
         <div
           style={{
             padding: "16px 20px",
-            borderTop: "1px solid rgba(240, 235, 224, 0.1)",
+            borderTop: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "flex-end",
             gap: 12,
@@ -289,9 +288,9 @@ export function FeedControlModal({
             style={{
               padding: "10px 20px",
               background: "transparent",
-              border: "1px solid rgba(240, 235, 224, 0.2)",
+              border: "1px solid var(--border-default)",
               borderRadius: 8,
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 14,
               cursor: "pointer",
             }}
@@ -306,7 +305,7 @@ export function FeedControlModal({
               background: "var(--accent)",
               border: "none",
               borderRadius: 8,
-              color: "var(--bg-header)",
+              color: "black",
               fontSize: 14,
               fontWeight: 600,
               cursor: saving ? "not-allowed" : "pointer",

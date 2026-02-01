@@ -253,7 +253,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
         role="button"
         tabIndex={0}
         style={{
-          background: isOpen ? "rgba(240, 235, 224, 0.1)" : "transparent",
+          background: isOpen ? "var(--border-subtle)" : "transparent",
           border: "none",
           cursor: "pointer",
           position: "relative",
@@ -267,15 +267,15 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           overflow: "visible",
         }}
       >
-        <span style={{ fontSize: 22, color: "#6b8cae" }}>🔔</span>
+        <span style={{ fontSize: 22, color: "#2563eb" }}>🔔</span>
         {unreadCount > 0 && (
           <span
             style={{
               position: "absolute",
               top: 2,
               right: 2,
-              background: "#e53935",
-              color: "#fff",
+              background: "#2563eb",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 11,
               fontWeight: 700,
               borderRadius: "50%",
@@ -302,8 +302,8 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             width: 340,
             maxHeight: 400,
             overflowY: "auto",
-            background: "var(--bg-card)",
-            border: "1px solid rgba(240, 235, 224, 0.2)",
+            background: "black",
+            border: "1px solid var(--border-default)",
             borderRadius: 8,
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
             zIndex: 1000,
@@ -313,7 +313,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           <div
             style={{
               padding: "12px 16px",
-              borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+              borderBottom: "1px solid var(--border-subtle)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -362,7 +362,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
                   borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
                   background: notification.is_read
                     ? "transparent"
-                    : "rgba(107, 140, 174, 0.1)",
+                    : "rgba(37, 99, 235, 0.1)",
                   cursor: notification.link && notification.type !== "friend_request" ? "pointer" : "default",
                 }}
               >
@@ -430,7 +430,7 @@ function NotificationContent({
             style={{
               margin: "4px 0 0 0",
               fontSize: 12,
-              opacity: 0.7,
+              color: "rgba(255,255,255,0.7)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -486,7 +486,7 @@ function FriendRequestNotification({
         >
           {notification.title}
         </p>
-        <span style={{ fontSize: 11, opacity: 0.5, display: "block", marginTop: 2 }}>
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", display: "block", marginTop: 2 }}>
           {formatTime(notification.created_at)}
         </span>
         
@@ -501,7 +501,7 @@ function FriendRequestNotification({
             style={{
               padding: "6px 16px",
               background: "var(--accent)",
-              color: "#1a1a1a",
+              color: "black",
               border: "none",
               borderRadius: 4,
               fontSize: 12,
@@ -521,8 +521,8 @@ function FriendRequestNotification({
             style={{
               padding: "6px 16px",
               background: "transparent",
-              color: "var(--text-primary)",
-              border: "1px solid rgba(240, 235, 224, 0.3)",
+              color: "rgba(255,255,255,0.7)",
+              border: "1px solid var(--border-hover)",
               borderRadius: 4,
               fontSize: 12,
               cursor: isResponding ? "not-allowed" : "pointer",
@@ -538,8 +538,8 @@ function FriendRequestNotification({
               style={{
                 padding: "6px 12px",
                 background: "transparent",
-                color: "var(--text-primary)",
-                border: "1px solid rgba(240, 235, 224, 0.2)",
+                color: "rgba(255,255,255,0.7)",
+                border: "1px solid var(--border-default)",
                 borderRadius: 4,
                 fontSize: 12,
                 textDecoration: "none",

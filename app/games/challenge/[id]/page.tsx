@@ -228,10 +228,10 @@ export default function AcceptChallengePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={currentUser} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
@@ -239,10 +239,10 @@ export default function AcceptChallengePage() {
 
   if (error || !challenge) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+      <div style={{ minHeight: "100vh", background: "black" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--text-primary)", marginBottom: 16 }}>{error || "Challenge not found"}</p>
+          <p style={{ color: "#ffffff", marginBottom: 16 }}>{error || "Challenge not found"}</p>
           <Link href="/games" style={{ color: "var(--accent)" }}>← Back to Games</Link>
         </div>
       </div>
@@ -255,20 +255,20 @@ export default function AcceptChallengePage() {
   const expired = isExpired();
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
+    <div style={{ minHeight: "100vh", background: "black" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 500, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
         <div style={{
           marginTop: 24,
           padding: 24,
-          background: "var(--bg-card)",
+          background: "black",
           borderRadius: 16,
-          border: "1px solid rgba(240, 235, 224, 0.1)",
+          border: "1px solid var(--border-subtle)",
           textAlign: "center",
         }}>
           {/* Challenge icon */}
@@ -283,7 +283,7 @@ export default function AcceptChallengePage() {
                 width: 56,
                 height: 56,
                 borderRadius: "50%",
-                background: "rgba(240, 235, 224, 0.2)",
+                background: "var(--border-default)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -302,7 +302,7 @@ export default function AcceptChallengePage() {
             )}
           </h1>
 
-          <p style={{ margin: "0 0 24px", opacity: 0.7, fontSize: 14 }}>
+          <p style={{ margin: "0 0 24px", color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
             {formatTimeAgo(challenge.created_at)}
           </p>
 
@@ -330,7 +330,7 @@ export default function AcceptChallengePage() {
               borderRadius: 12,
               marginBottom: 24,
             }}>
-              <p style={{ margin: 0, color: "#e57373" }}>This challenge has expired</p>
+              <p style={{ margin: 0, color: "#2563eb" }}>This challenge has expired</p>
             </div>
           )}
 
@@ -341,7 +341,7 @@ export default function AcceptChallengePage() {
               borderRadius: 12,
               marginBottom: 24,
             }}>
-              <p style={{ margin: 0, color: "#e57373" }}>This challenge was declined</p>
+              <p style={{ margin: 0, color: "#2563eb" }}>This challenge was declined</p>
             </div>
           )}
 
@@ -362,7 +362,7 @@ export default function AcceptChallengePage() {
               {/* Sharing consent */}
               <div style={{
                 padding: 16,
-                background: "var(--bg-card)",
+                background: "black",
                 borderRadius: 12,
                 marginBottom: 24,
                 textAlign: "left",
@@ -397,7 +397,7 @@ export default function AcceptChallengePage() {
                     background: "transparent",
                     border: "2px solid rgba(229, 115, 115, 0.5)",
                     borderRadius: 12,
-                    color: "#e57373",
+                    
                     cursor: responding ? "not-allowed" : "pointer",
                     opacity: responding ? 0.7 : 1,
                   }}
@@ -413,7 +413,7 @@ export default function AcceptChallengePage() {
                     fontSize: 16,
                     fontWeight: 700,
                     background: "var(--accent)",
-                    color: "var(--bg-header)",
+                    color: "black",
                     border: "none",
                     borderRadius: 12,
                     cursor: responding ? "not-allowed" : "pointer",
@@ -428,7 +428,7 @@ export default function AcceptChallengePage() {
 
           {/* Message for challenger */}
           {isChallenger && isPending && !expired && (
-            <p style={{ margin: 0, opacity: 0.7, fontSize: 14 }}>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
               Waiting for @{challenge.challenger.username === userData?.username ? "opponent" : challenge.challenger.username} to respond...
             </p>
           )}

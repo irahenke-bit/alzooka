@@ -172,7 +172,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
     >
       <div
         style={{
-          background: "var(--bg-header)",
+          background: "black",
           borderRadius: 12,
           width: "100%",
           maxWidth: 600,
@@ -186,7 +186,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
         <div
           style={{
             padding: "16px 20px",
-            borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
+            borderBottom: "1px solid var(--border-subtle)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -200,7 +200,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.7)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -212,7 +212,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
         </div>
 
         {/* Search Form */}
-        <form onSubmit={handleSearch} style={{ padding: "16px 20px", borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+        <form onSubmit={handleSearch} style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
           {/* Type Toggle */}
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             <button
@@ -222,8 +222,8 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 padding: "6px 16px",
                 fontSize: 14,
                 background: searchType === "album" ? "#1DB954" : "transparent",
-                color: searchType === "album" ? "#000" : "var(--alzooka-cream)",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: searchType === "album" ? "#000" : "rgba(255,255,255,0.5)",
+                border: "1px solid var(--border-hover)",
                 borderRadius: 20,
                 cursor: "pointer",
                 fontWeight: searchType === "album" ? 600 : 400,
@@ -238,8 +238,8 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 padding: "6px 16px",
                 fontSize: 14,
                 background: searchType === "track" ? "#1DB954" : "transparent",
-                color: searchType === "track" ? "#000" : "var(--alzooka-cream)",
-                border: "1px solid rgba(240, 235, 224, 0.3)",
+                color: searchType === "track" ? "#000" : "rgba(255,255,255,0.5)",
+                border: "1px solid var(--border-hover)",
                 borderRadius: 20,
                 cursor: "pointer",
                 fontWeight: searchType === "track" ? 600 : 400,
@@ -260,10 +260,10 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 flex: 1,
                 padding: "12px 16px",
                 fontSize: 16,
-                background: "var(--bg-elevated)",
-                border: "1px solid rgba(240, 235, 224, 0.2)",
+                background: "black",
+                border: "1px solid var(--border-default)",
                 borderRadius: 8,
-                color: "var(--text-primary)",
+                color: "#ffffff",
               }}
             />
             <button
@@ -292,7 +292,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
         {/* Results */}
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {error && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#e57373" }}>
+            <div style={{ padding: "20px", textAlign: "center", color: "#2563eb" }}>
               {error}
             </div>
           )}
@@ -373,7 +373,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                     {result.artist}
                   </div>
                 )}
-                <div style={{ fontSize: 11, opacity: 0.5, marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
                   {result.type === "album" ? "Album" : result.type === "track" ? "Track" : "Artist"}
                 </div>
               </div>
@@ -429,7 +429,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
           
           {/* End of results indicator */}
           {!hasMore && results.length > 0 && !loading && (
-            <div style={{ padding: "16px 20px", textAlign: "center", opacity: 0.5, fontSize: 13 }}>
+            <div style={{ padding: "16px 20px", textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
               End of results
             </div>
           )}
