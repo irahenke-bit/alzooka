@@ -2736,7 +2736,7 @@ function PostCard({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--accent)",
+                        color: "rgba(255,255,255,0.9)",
                         fontSize: 12,
                         cursor: "pointer",
                         marginLeft: 8,

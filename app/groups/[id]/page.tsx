@@ -1901,10 +1901,10 @@ export default function GroupPage() {
             borderRadius: 8,
           }}
         >
-          <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Total Posts
           </div>
-          <div style={{ fontSize: 20, color: "var(--accent)", fontWeight: 700 }}>
+          <div style={{ fontSize: 20, color: "rgba(255,255,255,0.9)", fontWeight: 700 }}>
             {totalPostCount}
           </div>
         </div>
@@ -2374,7 +2374,7 @@ export default function GroupPage() {
                           </div>
                         </Link>
                         {member.role === "admin" && (
-                          <span style={{ fontSize: 12, color: "var(--accent)" }}>Admin</span>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.9)" }}>Admin</span>
                         )}
                       </div>
                       
@@ -2383,7 +2383,7 @@ export default function GroupPage() {
                         {/* Friend Button - not for self */}
                         {!isCurrentUser && (
                           friendStatus === "accepted" ? (
-                            <span style={{ fontSize: 12, color: "var(--accent)", padding: "6px 10px" }}>✓ Friends</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", padding: "6px 10px" }}>✓ Friends</span>
                           ) : friendStatus === "pending" ? (
                             <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", padding: "6px 10px" }}>Pending</span>
                           ) : (
@@ -2393,7 +2393,7 @@ export default function GroupPage() {
                               style={{
                                 background: "transparent",
                                 border: "1px solid var(--accent)",
-                                color: "var(--accent)",
+                                color: "rgba(255,255,255,0.9)",
                                 fontSize: 12,
                                 padding: "6px 10px",
                                 borderRadius: 4,
@@ -2580,7 +2580,7 @@ export default function GroupPage() {
                       style={{
                         background: "transparent",
                         border: "1px solid var(--accent)",
-                        color: "var(--accent)",
+                        color: "rgba(255,255,255,0.9)",
                         fontSize: 12,
                         padding: "6px 12px",
                         borderRadius: 4,
@@ -2981,7 +2981,7 @@ export default function GroupPage() {
       {/* Banned User Message */}
       {isUserBanned && (
         <div className="card" style={{ marginBottom: 24, textAlign: "center", padding: 20, background: "rgba(229, 115, 115, 0.1)", border: "1px solid rgba(229, 115, 115, 0.3)" }}>
-          <p style={{ margin: 0, color: "#0165FC" }}>🚫 You have been banned from interacting with this community.</p>
+          <p style={{ margin: 0, color: "rgba(255,255,255,0.9)" }}>🚫 You have been banned from interacting with this community.</p>
         </div>
       )}
 
@@ -3349,7 +3349,7 @@ export default function GroupPage() {
                 cursor: "pointer",
               }}
             >
-              <span style={{ color: "#0165FC" }}>▶</span> YouTube
+              <span style={{ color: "rgba(255,255,255,0.9)" }}>▶</span> YouTube
             </button>
             <button
               type="button"
@@ -3718,7 +3718,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
           📀 Full Album/Playlist
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -3736,7 +3736,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       borderRadius: 8,
       borderLeft: "4px solid var(--accent)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
         📀 {title}
       </div>
       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -4205,7 +4205,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   <span style={{ 
                     marginLeft: 8, 
                     fontSize: 11, 
-                    color: "var(--accent)",
+                    color: "rgba(255,255,255,0.9)",
                     background: "rgba(201, 165, 92, 0.15)",
                     padding: "2px 8px",
                     borderRadius: 4,
@@ -4305,7 +4305,7 @@ const GroupPostCard = memo(function GroupPostCard({
               <span style={{ opacity: 0.7 }}>Shared from </span>
               <Link
                 href={`/profile/${post.shared_from_post.users?.username}`}
-                style={{ color: "var(--accent)", fontWeight: 600 }}
+                style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
@@ -4315,7 +4315,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   <span style={{ opacity: 0.7 }}> in </span>
                   <Link
                     href={`/groups/${post.shared_from_post.groups.id}`}
-                    style={{ color: "var(--accent)", fontWeight: 600 }}
+                    style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}
                   >
                     {post.shared_from_post.groups.name}
                   </Link>
@@ -4482,7 +4482,7 @@ const GroupPostCard = memo(function GroupPostCard({
                     }}>
                       <span style={{ fontSize: 18 }}>🎵</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
                           {post.video_title}
                         </p>
                       </div>

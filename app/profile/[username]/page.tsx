@@ -224,7 +224,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
           📀 Full Album/Playlist
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -242,7 +242,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       borderRadius: 8,
       borderLeft: "4px solid var(--accent)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
         📀 {title}
       </div>
       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
@@ -2137,7 +2137,7 @@ export default function ProfilePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 36,
-                  color: "var(--accent)",
+                  color: "rgba(255,255,255,0.9)",
                   cursor: "pointer",
                   padding: 0,
                   transition: "transform 0.2s, box-shadow 0.2s",
@@ -2219,8 +2219,7 @@ export default function ProfilePage() {
                 <p style={{ 
                   margin: "0 0 12px 0", 
                   fontSize: 14, 
-                  color: "var(--accent)",
-                  opacity: 0.8,
+                  color: "rgba(255,255,255,0.6)",
                 }}>
                   @{profile.username}
                 </p>
@@ -2273,7 +2272,7 @@ export default function ProfilePage() {
                       border: "1px solid rgba(1, 101, 252, 0.3)",
                       borderRadius: 16,
                       fontSize: 12,
-                      color: "var(--accent)",
+                      color: "rgba(255,255,255,0.9)",
                       textDecoration: "none",
                       marginBottom: 12,
                     }}
@@ -2321,13 +2320,13 @@ export default function ProfilePage() {
                       }}
                       title="View all upvoted content. This list is private."
                     >
-                      <span style={{ color: "var(--accent)", fontSize: 18 }}>▲</span>
+                      <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 18 }}>▲</span>
                       <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
                       <span className="text-muted" style={{ fontSize: 13 }}>received</span>
                     </Link>
                   ) : (
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ color: "var(--accent)", fontSize: 18 }}>▲</span>
+                      <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 18 }}>▲</span>
                       <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
                       <span className="text-muted" style={{ fontSize: 13 }}>received</span>
                     </div>
@@ -2748,7 +2747,7 @@ export default function ProfilePage() {
                   cursor: "pointer",
                 }}
               >
-                <span style={{ color: "#0165FC" }}>▶</span> YouTube
+                <span style={{ color: "rgba(255,255,255,0.9)" }}>▶</span> YouTube
               </button>
               <button
                 type="button"
@@ -2981,7 +2980,7 @@ export default function ProfilePage() {
                       cursor: "pointer",
                     }}
                   >
-                    <span style={{ color: "#0165FC" }}>▶</span> YouTube
+                    <span style={{ color: "rgba(255,255,255,0.9)" }}>▶</span> YouTube
                   </button>
                   <button
                     type="button"
@@ -3014,15 +3013,17 @@ export default function ProfilePage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <button
           onClick={() => setActiveTab("posts")}
           style={{
-            background: activeTab === "posts" ? "var(--accent)" : "transparent",
-            color: activeTab === "posts" ? "black" : "rgba(255,255,255,0.5)",
-            border: activeTab === "posts" ? "none" : "1px solid var(--border-hover)",
-            padding: "8px 16px",
+            background: "transparent",
+            color: activeTab === "posts" ? "#ffffff" : "rgba(255,255,255,0.5)",
+            border: "none",
+            borderBottom: activeTab === "posts" ? "2px solid #0165FC" : "2px solid transparent",
+            padding: "12px 4px",
             fontSize: 14,
+            marginBottom: -1,
           }}
         >
           Posts ({posts.length})
@@ -3030,11 +3031,13 @@ export default function ProfilePage() {
         <button
           onClick={() => setActiveTab("comments")}
           style={{
-            background: activeTab === "comments" ? "var(--accent)" : "transparent",
-            color: activeTab === "comments" ? "black" : "rgba(255,255,255,0.5)",
-            border: activeTab === "comments" ? "none" : "1px solid var(--border-hover)",
-            padding: "8px 16px",
+            background: "transparent",
+            color: activeTab === "comments" ? "#ffffff" : "rgba(255,255,255,0.5)",
+            border: "none",
+            borderBottom: activeTab === "comments" ? "2px solid #0165FC" : "2px solid transparent",
+            padding: "12px 4px",
             fontSize: 14,
+            marginBottom: -1,
           }}
         >
           Comments ({comments.length})
@@ -3180,7 +3183,7 @@ export default function ProfilePage() {
                       {post.wall_user_id && post.wall_user && post.wall_user.username !== profile.username && (
                         <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
                           Posted on{" "}
-                          <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--accent)" }}>
+                          <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "rgba(255,255,255,0.9)" }}>
                             {post.wall_user.display_name || post.wall_user.username}
                           </Link>
                           's wall
@@ -3218,7 +3221,7 @@ export default function ProfilePage() {
                           <span style={{ opacity: 0.7 }}>Shared from </span>
                           <Link 
                             href={`/profile/${post.shared_from_post.users?.username}`} 
-                            style={{ color: "var(--accent)", fontWeight: 600 }}
+                            style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}
                           >
                             {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
                           </Link>
@@ -3228,7 +3231,7 @@ export default function ProfilePage() {
                               <span style={{ opacity: 0.7 }}> in </span>
                               <Link 
                                 href={`/groups/${post.shared_from_post.groups.id}`} 
-                                style={{ color: "var(--accent)", fontWeight: 600 }}
+                                style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}
                               >
                                 {post.shared_from_post.groups.name}
                               </Link>
@@ -3346,7 +3349,7 @@ export default function ProfilePage() {
                               style={{
                                 background: "transparent",
                                 border: "none",
-                                color: "var(--accent)",
+                                color: "rgba(255,255,255,0.9)",
                                 fontSize: 12,
                                 cursor: "pointer",
                                 marginLeft: 8,
@@ -3414,7 +3417,7 @@ export default function ProfilePage() {
                                 }}>
                                   <span style={{ fontSize: 18 }}>🎵</span>
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
+                                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
                                       {post.video_title}
                                     </p>
                                   </div>
@@ -3467,7 +3470,7 @@ export default function ProfilePage() {
                                     }}>
                                       <span style={{ fontSize: 18, color: "#1DB954" }}>●</span>
                                       <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
                                           {post.video_title}
                                         </p>
                                       </div>
@@ -4396,7 +4399,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--accent)" : "rgba(255,255,255,0.5)",
+          color: userVote === 1 ? "var(--gold)" : "rgba(255,255,255,0.5)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,

@@ -1481,7 +1481,7 @@ export function PostModal({
                 {isGroupAdmin(comment.user_id) && (
                   <span style={{ 
                     fontSize: 10, 
-                    color: "var(--accent)",
+                    color: "rgba(255,255,255,0.9)",
                     background: "rgba(201, 165, 92, 0.15)",
                     padding: "2px 6px",
                     borderRadius: 4,
@@ -1540,7 +1540,7 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#0165FC",
+                      color: "rgba(255,255,255,0.9)",
                       fontSize: 11,
                       cursor: "pointer",
                       padding: "2px 6px",
@@ -1560,7 +1560,7 @@ export function PostModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "#0165FC",
+                        color: "rgba(255,255,255,0.9)",
                         fontSize: 13,
                         cursor: "pointer",
                         padding: "2px 6px",
@@ -1770,7 +1770,7 @@ export function PostModal({
                           marginLeft: 8,
                           background: "transparent",
                           border: "none",
-                          color: "var(--accent)",
+                          color: "rgba(255,255,255,0.9)",
                           cursor: "pointer",
                           fontSize: 12,
                           padding: 0,
@@ -2169,7 +2169,7 @@ export function PostModal({
                       <span style={{ 
                         marginLeft: 8, 
                         fontSize: 11, 
-                        color: "var(--accent)",
+                        color: "rgba(255,255,255,0.9)",
                         background: "rgba(201, 165, 92, 0.15)",
                         padding: "2px 8px",
                         borderRadius: 4,
@@ -2187,7 +2187,7 @@ export function PostModal({
               {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
                 <div style={{ marginTop: -6, marginBottom: 12, fontSize: 13, opacity: 0.75 }}>
                   Posted on{" "}
-                  <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "var(--accent)" }}>
+                  <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "rgba(255,255,255,0.9)" }}>
                     {post.wall_user.display_name || post.wall_user.username}
                   </Link>
                   's wall
@@ -2228,7 +2228,7 @@ export function PostModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--accent)",
+                        color: "rgba(255,255,255,0.9)",
                         fontSize: 12,
                         cursor: "pointer",
                         marginLeft: 8,
@@ -2489,7 +2489,7 @@ export function PostModal({
           }}
         >
           {isUserBanned ? (
-            <div style={{ textAlign: "center", color: "#0165FC", fontSize: 14 }}>
+            <div style={{ textAlign: "center", color: "rgba(255,255,255,0.9)", fontSize: 14 }}>
               🚫 You have been banned from interacting with this community.
             </div>
           ) : (
@@ -2502,7 +2502,7 @@ export function PostModal({
                     gap: 8,
                     marginBottom: 8,
                     fontSize: 13,
-                    color: "var(--accent)",
+                    color: "rgba(255,255,255,0.9)",
                   }}
                 >
                   <span>Replying to {replyingTo.displayName}</span>
