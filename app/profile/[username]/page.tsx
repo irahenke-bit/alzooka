@@ -2415,20 +2415,20 @@ export default function ProfilePage() {
                 />
               ) : (
                 <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background: "var(--accent)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "black",
-                    fontWeight: 700,
-                    fontSize: 16,
-                  }}
-                >
-                  {currentUserUsername?.charAt(0).toUpperCase() || "?"}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: 16,
+                }}
+              >
+                {currentUserUsername?.charAt(0).toUpperCase() || "?"}
                 </div>
               )}
               
@@ -2480,9 +2480,9 @@ export default function ProfilePage() {
                   }
                 }}
                 style={{
-                  background: "var(--accent)",
-                  border: "none",
-                  color: "black",
+                  background: "#1a1a1a",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "#ffffff",
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
@@ -2492,7 +2492,6 @@ export default function ProfilePage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  opacity: 0.75,
                 }}
               >
                 "
@@ -2557,12 +2556,13 @@ export default function ProfilePage() {
                 }}
               >
                 <span style={{ 
-                  background: "var(--accent)", 
-                  color: "black",
+                  background: "rgba(255,255,255,0.1)", 
+                  color: "#ffffff",
                   padding: "8px 16px",
                   borderRadius: 20,
                   fontWeight: 600,
                   fontSize: 14,
+                  border: "1px solid rgba(255,255,255,0.2)",
                 }}>
                   📷 Drop images here
                 </span>
@@ -3210,9 +3210,9 @@ export default function ProfilePage() {
                         <div style={{ 
                           marginBottom: 12, 
                           padding: "8px 12px",
-                          background: "rgba(1, 101, 252, 0.1)",
+                          background: "rgba(255, 255, 255, 0.05)",
                           borderRadius: 8,
-                          borderLeft: "3px solid var(--accent)",
+                          borderLeft: "3px solid rgba(255, 255, 255, 0.2)",
                           fontSize: 13,
                         }}>
                           <span style={{ opacity: 0.7 }}>Shared from </span>
@@ -3937,11 +3937,11 @@ export default function ProfilePage() {
                           width: 40,
                           height: 40,
                           borderRadius: "50%",
-                          background: "var(--accent)",
+                          background: "rgba(255,255,255,0.15)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "black",
+                          color: "#ffffff",
                           fontWeight: 700,
                           fontSize: 16,
                         }}
