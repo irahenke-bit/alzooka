@@ -151,7 +151,7 @@ export default function SignupPage() {
         background: "linear-gradient(180deg, #141414 0%, #1a1a1a 50%, #161616 100%)",
         border: "none",
         borderRadius: 16,
-        padding: "48px 40px",
+        padding: "40px 40px",
         boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
       }}>
         <div style={{ marginBottom: 40, textAlign: "center" }}>
@@ -466,9 +466,22 @@ export default function SignupPage() {
             disabled={loading || !!success} 
             style={{ 
               width: "100%",
-              background: "#2a3441",
+              background: "#3a4553",
               color: "#ffffff",
               border: "none",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#4a5563";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#3a4553";
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.background = "#2a3441";
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.background = "#4a5563";
             }}
           >
             {loading ? "Creating account..." : "Create Account"}
