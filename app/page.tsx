@@ -1852,8 +1852,8 @@ function FeedContent() {
                 }
               }}
               style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-default)",
+                background: "#333333",
+                border: "1px solid rgba(255,255,255,0.2)",
                 color: "#ffffff",
                 width: 28,
                 height: 28,
