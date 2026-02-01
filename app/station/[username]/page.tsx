@@ -678,7 +678,7 @@ export default function ViewStationPage() {
         <Header user={user} userUsername={userUsername} userAvatarUrl={userAvatarUrl} />
         <div className="container" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 16px", textAlign: "center" }}>
           <h1>User not found</h1>
-          <p className="text-muted">The user &quot;{username}&quot; doesn&apos;t exist.</p>
+          <p className="text-muted">The user &quot;{username}&quot; doesn't exist.</p>
           <Link href="/" style={{ color: "var(--alzooka-gold)" }}>← Back to Feed</Link>
         </div>
       </>
@@ -690,8 +690,8 @@ export default function ViewStationPage() {
       <>
         <Header user={user} userUsername={userUsername} userAvatarUrl={userAvatarUrl} />
         <div className="container" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 16px", textAlign: "center" }}>
-          <h1>{stationOwner.display_name || stationOwner.username}&apos;s Station</h1>
-          <p className="text-muted">This user hasn&apos;t set up their station yet.</p>
+          <h1>{stationOwner.display_name || stationOwner.username}'s Station</h1>
+          <p className="text-muted">This user hasn't set up their station yet.</p>
           <Link href={`/profile/${stationOwner.username}`} style={{ color: "var(--alzooka-gold)" }}>
             ← Visit their profile
           </Link>

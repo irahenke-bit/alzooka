@@ -2231,7 +2231,7 @@ function FeedContent() {
               {/* End of feed indicator */}
               {!hasMorePosts && posts.length > 0 && (
                 <div style={{ textAlign: "center", padding: 20 }}>
-                  <p className="text-muted">You&apos;ve reached the end!</p>
+                  <p className="text-muted">You've reached the end!</p>
                 </div>
               )}
             </>
@@ -2614,7 +2614,7 @@ function PostCard({
           </div>
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
             <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
-              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>&apos;s wall
+              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
             </div>
           )}
 
@@ -2642,7 +2642,7 @@ function PostCard({
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
-              <span style={{ opacity: 0.7 }}>&apos;s post</span>
+              <span style={{ opacity: 0.7 }}>'s post</span>
               {post.shared_from_post.groups && (
                 <>
                   <span style={{ opacity: 0.7 }}> in </span>

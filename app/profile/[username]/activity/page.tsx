@@ -397,7 +397,7 @@ export default function ActivityPage() {
           <div className="card" style={{ textAlign: "center", padding: 40 }}>
             <p style={{ fontSize: 48, margin: "0 0 16px 0" }}>🔒</p>
             <p className="text-muted" style={{ margin: 0 }}>
-              @{username}&apos;s activity is private.
+              @{username}'s activity is private.
             </p>
           </div>
         ) : activityItems.length === 0 ? (
@@ -442,7 +442,7 @@ export default function ActivityPage() {
                     )}
                     {!item.group_id && item.type === "post" && item.wall_user && (
                       <span className="text-muted" style={{ fontSize: 12 }}>
-                        on @{item.wall_user.username}&apos;s wall
+                        on @{item.wall_user.username}'s wall
                       </span>
                     )}
                     <span className="text-muted" style={{ fontSize: 13, marginLeft: "auto" }}>{formatTime(item.created_at)}</span>

@@ -240,7 +240,7 @@ export function ShareModal({
             <p style={{ opacity: 0.6, textAlign: "center" }}>Loading communities...</p>
           ) : groups.length === 0 ? (
             <p style={{ opacity: 0.6, textAlign: "center", fontSize: 13 }}>
-              You&apos;re not a member of any communities yet
+              You're not a member of any communities yet
             </p>
           ) : (
             <>

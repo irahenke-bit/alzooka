@@ -250,7 +250,7 @@ function CompleteProfileContent() {
           textAlign: "center",
           lineHeight: 1.5,
         }}>
-          Let&apos;s set up your profile. Choose a display name and username.
+          Let's set up your profile. Choose a display name and username.
         </p>
 
         <form onSubmit={handleSubmit}>

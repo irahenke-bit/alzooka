@@ -3048,8 +3048,8 @@ export default function ProfilePage() {
           posts.length === 0 ? (
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
               {isOwnProfile 
-                ? "You haven&apos;t posted anything yet." 
-                : `@${profile.username} hasn&apos;t posted anything yet.`}
+                ? "You haven't posted anything yet." 
+                : `@${profile.username} hasn't posted anything yet.`}
             </p>
           ) : (
             posts.map((post) => {
@@ -3183,7 +3183,7 @@ export default function ProfilePage() {
                           <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
                             {post.wall_user.display_name || post.wall_user.username}
                           </Link>
-                          &apos;s wall
+                          's wall
                         </div>
                       )}
                       
@@ -3222,7 +3222,7 @@ export default function ProfilePage() {
                           >
                             {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
                           </Link>
-                          <span style={{ opacity: 0.7 }}>&apos;s post</span>
+                          <span style={{ opacity: 0.7 }}>'s post</span>
                           {post.shared_from_post.groups && (
                             <>
                               <span style={{ opacity: 0.7 }}> in </span>
@@ -3643,13 +3643,13 @@ export default function ProfilePage() {
           !isOwnProfile && profile.comment_history_private ? (
             /* Comment history is private */
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-              🔒 @{profile.username}&apos;s comment history is private.
+              🔒 @{profile.username}'s comment history is private.
             </p>
           ) : comments.length === 0 ? (
             <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
               {isOwnProfile
-                ? "You haven&apos;t commented on anything yet."
-                : `@${profile.username} hasn&apos;t commented on anything yet.`}
+                ? "You haven't commented on anything yet."
+                : `@${profile.username} hasn't commented on anything yet.`}
             </p>
           ) : (
             comments.map((comment) => {
@@ -3884,7 +3884,7 @@ export default function ProfilePage() {
               borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
             }}>
               <h3 style={{ margin: 0, fontSize: 18 }}>
-                {profile?.display_name || profile?.username}&apos;s Friends
+                {profile?.display_name || profile?.username}'s Friends
               </h3>
               <button
                 onClick={() => setShowFriendsModal(false)}

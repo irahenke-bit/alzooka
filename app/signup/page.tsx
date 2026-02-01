@@ -209,7 +209,7 @@ export default function SignupPage() {
           }}>
             <form onSubmit={handleMagicLink}>
               <p style={{ fontSize: 14, marginBottom: 12, lineHeight: 1.5 }}>
-                Enter your email and we&apos;ll send you a link to create your account — no password needed!
+                Enter your email and we'll send you a link to create your account — no password needed!
               </p>
               
               <div style={{ marginBottom: 12 }}>
@@ -275,7 +275,7 @@ export default function SignupPage() {
                     marginBottom: 12,
                   }}>
                     <p style={{ fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-                      📬 <strong>Check your spam folder!</strong> We&apos;re a new community and some email providers are still learning to trust us. If you don&apos;t see our email in your inbox, please check your spam/junk folder.
+                      📬 <strong>Check your spam folder!</strong> We're a new community and some email providers are still learning to trust us. If you don't see our email in your inbox, please check your spam/junk folder.
                     </p>
                   </div>
                 </>
@@ -408,7 +408,7 @@ export default function SignupPage() {
                 marginBottom: 16,
               }}>
                 <p style={{ fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-                  📬 <strong>Check your spam folder!</strong> We&apos;re a new community and some email providers are still learning to trust us. If you don&apos;t see our email in your inbox, please check your spam/junk folder.
+                  📬 <strong>Check your spam folder!</strong> We're a new community and some email providers are still learning to trust us. If you don't see our email in your inbox, please check your spam/junk folder.
                 </p>
               </div>
             </>

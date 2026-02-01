@@ -222,7 +222,7 @@ export function FeedControlModal({
                   disabled={worldView}
                   style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
                 />
-                Only communities I&apos;m a member of
+                Only communities I'm a member of
               </label>
             </div>
 

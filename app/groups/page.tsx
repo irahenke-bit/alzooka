@@ -339,7 +339,7 @@ export default function GroupsPage() {
           </p>
         ) : groups.length === 0 ? (
           <p className="text-muted" style={{ textAlign: "center", padding: 40 }}>
-            You&apos;ve joined all available communities!
+            You've joined all available communities!
           </p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>

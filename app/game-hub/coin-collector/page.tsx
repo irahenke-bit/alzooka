@@ -1070,7 +1070,7 @@ export default function CoinCollectorPage() {
               Ready to Rebirth?
             </h2>
             <p style={{ color: "var(--alzooka-cream)", opacity: 0.8, marginBottom: 8 }}>
-              You&apos;ll reset all progress but gain:
+              You'll reset all progress but gain:
             </p>
             <div style={{
               background: "rgba(201, 162, 39, 0.2)",

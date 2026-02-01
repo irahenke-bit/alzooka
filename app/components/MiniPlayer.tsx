@@ -231,7 +231,7 @@ const MiniPlayer = memo(function MiniPlayer() {
               marginTop: 2,
             }}
           >
-            Playing from {sourceStation.displayName}&apos;s Station
+            Playing from {sourceStation.displayName}'s Station
           </div>
         )}
       </div>

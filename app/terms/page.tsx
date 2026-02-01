@@ -94,7 +94,7 @@ export default function TermsPage() {
           <ul style={{ marginLeft: 20, marginBottom: 16 }}>
             <li>Your use of the Service</li>
             <li>Your violation of these Terms</li>
-            <li>Your violation of others&apos; rights</li>
+            <li>Your violation of others' rights</li>
             <li>Content you post</li>
           </ul>
 

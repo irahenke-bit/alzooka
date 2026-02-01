@@ -441,7 +441,7 @@ export default function ChallengePage() {
             }}>
               <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>
                 <strong>How it works:</strong> @{selectedUser.username} will play first after accepting your challenge. 
-                You&apos;ll get a notification when it&apos;s your turn to play!
+                You'll get a notification when it's your turn to play!
               </p>
             </div>
 

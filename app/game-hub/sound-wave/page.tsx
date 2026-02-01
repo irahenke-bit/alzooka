@@ -598,7 +598,7 @@ export default function SoundWavePage() {
                       <span style={{ color: "#888" }}> (🔊 🎸 🎤)</span><br/>
                       <span style={{ color: "#ef4444", fontWeight: 600 }}>RED = AVOID</span>
                       <span style={{ color: "#888" }}> (⛔)</span><br/>
-                      <span style={{ color: "#888", fontSize: 12 }}>Don&apos;t let your power hit 0!</span>
+                      <span style={{ color: "#888", fontSize: 12 }}>Don't let your power hit 0!</span>
                     </div>
                   </>
                 )}

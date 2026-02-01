@@ -578,7 +578,7 @@ export default function PlayPage() {
       
       {challengeGame && gameResult !== "waiting" && challengeGame.opponent_score !== undefined && (
         <p style={{ marginBottom: 8, opacity: 0.8 }}>
-          @{challengeGame.opponent_username}&apos;s Score: {challengeGame.opponent_score}
+          @{challengeGame.opponent_username}'s Score: {challengeGame.opponent_score}
         </p>
       )}
       

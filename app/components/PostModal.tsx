@@ -2069,7 +2069,7 @@ export function PostModal({
           </button>
           
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--alzooka-cream)" }}>
-            {post.users?.display_name || post.users?.username || "Unknown"}&apos;s Post
+            {post.users?.display_name || post.users?.username || "Unknown"}'s Post
           </h2>
           <button
             onClick={onClose}
@@ -2183,7 +2183,7 @@ export function PostModal({
                   <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "var(--alzooka-gold)" }}>
                     {post.wall_user.display_name || post.wall_user.username}
                   </Link>
-                  &apos;s wall
+                  's wall
                 </div>
               )}
 

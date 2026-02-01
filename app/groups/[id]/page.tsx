@@ -3934,7 +3934,7 @@ function PaginatedPostsList({
       {/* End of posts indicator */}
       {!hasMore && posts.length > 0 && (
         <div style={{ textAlign: "center", padding: 20 }}>
-          <p className="text-muted">You&apos;ve reached the end!</p>
+          <p className="text-muted">You've reached the end!</p>
         </div>
       )}
     </div>
@@ -4311,7 +4311,7 @@ const GroupPostCard = memo(function GroupPostCard({
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
-              <span style={{ opacity: 0.7 }}>&apos;s post</span>
+              <span style={{ opacity: 0.7 }}>'s post</span>
               {post.shared_from_post.groups && (
                 <>
                   <span style={{ opacity: 0.7 }}> in </span>

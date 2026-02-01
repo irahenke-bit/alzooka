@@ -159,7 +159,7 @@ export default function LoginPage() {
                 lineHeight: 1.5,
                 color: "var(--alzooka-cream)",
               }}>
-                Enter your email and we&apos;ll send you a link to sign in — no password needed!
+                Enter your email and we'll send you a link to sign in — no password needed!
               </p>
               
               <div style={{ marginBottom: 12 }}>
@@ -252,7 +252,7 @@ export default function LoginPage() {
       </div>
 
       <p style={{ marginTop: 24, fontSize: 14 }}>
-        Don&apos;t have an account?{" "}
+        Don't have an account?{" "}
         <Link href="/signup">Sign up</Link>
       </p>
     </div>
