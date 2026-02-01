@@ -38,7 +38,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "black",
+            background: "var(--bg-elevated)",
             color: "rgba(255,255,255,0.7)",
             fontSize: 12,
             fontWeight: 500,
@@ -83,7 +83,7 @@ function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string,
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#2563eb',
+            color: '#0165FC',
             textDecoration: 'none',
             wordBreak: 'break-all',
           }}
@@ -1379,7 +1379,7 @@ export function PostModal({
           marginLeft: isReply ? 40 : 0,
           ...(activeHighlight === comment.id
             ? {
-                background: "rgba(37, 99, 235, 0.2)",
+                background: "rgba(1, 101, 252, 0.2)",
                 padding: 12,
                 marginLeft: isReply ? 28 : -12,
                 marginRight: -12,
@@ -1398,7 +1398,7 @@ export function PostModal({
             onVote={onVote}
           />
 
-          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--accent)' : 'rgba(37, 99, 235, 0.4)'}` }}>
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--accent)' : 'rgba(1, 101, 252, 0.4)'}` }}>
             <div
               style={{
                 marginBottom: 4,
@@ -1536,7 +1536,7 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#2563eb",
+                      color: "#0165FC",
                       fontSize: 11,
                       cursor: "pointer",
                       padding: "2px 6px",
@@ -1556,7 +1556,7 @@ export function PostModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "#2563eb",
+                        color: "#0165FC",
                         fontSize: 13,
                         cursor: "pointer",
                         padding: "2px 6px",
@@ -1884,7 +1884,7 @@ export function PostModal({
         }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "black",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           width: modalSize?.width ?? "100%",
           maxWidth: modalSize ? undefined : 680,
@@ -1907,7 +1907,7 @@ export function PostModal({
           pointerEvents: "auto",
           // Add border in see-through mode so modal is distinguishable
           border: seeThroughMode 
-            ? "2px solid rgba(37, 99, 235, 0.6)" 
+            ? "2px solid rgba(1, 101, 252, 0.6)" 
             : "none",
           position: "relative",
           overflow: "hidden",
@@ -2048,10 +2048,10 @@ export function PostModal({
               top: "50%",
               transform: "translateY(-50%)",
               background: seeThroughMode 
-                ? "rgba(37, 99, 235, 0.3)" 
+                ? "rgba(1, 101, 252, 0.3)" 
                 : "var(--border-subtle)",
               border: seeThroughMode 
-                ? "1px solid rgba(37, 99, 235, 0.5)" 
+                ? "1px solid rgba(1, 101, 252, 0.5)" 
                 : "none",
               borderRadius: "50%",
               width: 36,
@@ -2479,13 +2479,13 @@ export function PostModal({
           style={{
             padding: "16px 20px",
             borderTop: "1px solid var(--border-subtle)",
-            background: "black",
+            background: "var(--bg-elevated)",
             borderRadius: "0 0 12px 12px",
             cursor: isDragging ? "grabbing" : undefined,
           }}
         >
           {isUserBanned ? (
-            <div style={{ textAlign: "center", color: "#2563eb", fontSize: 14 }}>
+            <div style={{ textAlign: "center", color: "#0165FC", fontSize: 14 }}>
               🚫 You have been banned from interacting with this community.
             </div>
           ) : (
@@ -2574,7 +2574,7 @@ export function PostModal({
                     alignItems: "flex-end",
                     gap: 10,
                     padding: "8px 12px",
-                    background: "black",
+                    background: "var(--bg-elevated)",
                     borderRadius: 20,
                     border: "1px solid rgba(240, 235, 224, 0.15)",
                   }}

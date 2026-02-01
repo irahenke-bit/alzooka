@@ -267,14 +267,14 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           overflow: "visible",
         }}
       >
-        <span style={{ fontSize: 22, color: "#2563eb" }}>🔔</span>
+        <span style={{ fontSize: 22, color: "#0165FC" }}>🔔</span>
         {unreadCount > 0 && (
           <span
             style={{
               position: "absolute",
               top: 2,
               right: 2,
-              background: "#2563eb",
+              background: "#0165FC",
               color: "rgba(255,255,255,0.7)",
               fontSize: 11,
               fontWeight: 700,
@@ -302,7 +302,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             width: 340,
             maxHeight: 400,
             overflowY: "auto",
-            background: "black",
+            background: "var(--bg-card)",
             border: "1px solid var(--border-default)",
             borderRadius: 8,
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
@@ -362,7 +362,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
                   borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
                   background: notification.is_read
                     ? "transparent"
-                    : "rgba(37, 99, 235, 0.1)",
+                    : "rgba(1, 101, 252, 0.1)",
                   cursor: notification.link && notification.type !== "friend_request" ? "pointer" : "default",
                 }}
               >

@@ -297,7 +297,7 @@ export default function GamesPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "black" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <Header user={user} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
@@ -307,7 +307,7 @@ export default function GamesPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "black" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px" }}>
@@ -324,7 +324,7 @@ export default function GamesPage() {
         {/* Your Stats Card */}
         {stats && (
           <div style={{
-            background: "black",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -371,7 +371,7 @@ export default function GamesPage() {
             padding: "18px 24px",
             fontSize: 18,
             fontWeight: 700,
-            background: "linear-gradient(135deg, #1DB954 0%, #2563eb 100%)",
+            background: "linear-gradient(135deg, #1DB954 0%, #0165FC 100%)",
             color: "rgba(255,255,255,0.7)",
             border: "none",
             borderRadius: 12,
@@ -403,7 +403,7 @@ export default function GamesPage() {
                 <div
                   key={game.id}
                   style={{
-                    background: "black",
+                    background: "var(--bg-card)",
                     borderRadius: 8,
                     padding: 12,
                     display: "flex",
@@ -529,7 +529,7 @@ export default function GamesPage() {
                   <div
                     key={challenge.id}
                     style={{
-                      background: "black",
+                      background: "var(--bg-card)",
                       borderRadius: 12,
                       padding: 16,
                       display: "flex",

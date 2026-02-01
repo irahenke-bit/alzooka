@@ -86,11 +86,11 @@ function NoProfileContent() {
         <div style={{
           marginTop: 40,
           padding: 32,
-          background: "black",
+          background: "var(--bg-card)",
           borderRadius: 12,
           maxWidth: 400,
         }}>
-          <h2 style={{ marginBottom: 16, color: "#2563eb" }}>Profile Creation Failed</h2>
+          <h2 style={{ marginBottom: 16, color: "#0165FC" }}>Profile Creation Failed</h2>
           <p style={{ marginBottom: 16, color: "#ffffff" }}>{errorMsg}</p>
           <p style={{ marginBottom: 24, color: "rgba(255,255,255,0.5)" }}>
             Please try again or contact support.
@@ -121,7 +121,7 @@ function NoProfileContent() {
       <div style={{
         maxWidth: 400,
         padding: 32,
-        background: "black",
+        background: "var(--bg-card)",
         borderRadius: 12,
         border: "1px solid var(--border-default)",
       }}>

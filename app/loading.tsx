@@ -16,7 +16,7 @@ export default function Loading() {
         style={{
           width: 48,
           height: 48,
-          border: "3px solid rgba(37, 99, 235, 0.2)",
+          border: "3px solid rgba(1, 101, 252, 0.2)",
           borderTopColor: "var(--accent)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",

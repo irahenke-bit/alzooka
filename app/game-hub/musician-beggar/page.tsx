@@ -163,9 +163,9 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
       <div style={{ position: "absolute", bottom: 0, left: 0, width: 200, height: 20, background: "linear-gradient(90deg, #000000 0%, rgba(255,255,255,0.5) 50%, #000000 100%)", borderRadius: 4 }} />
       
       {/* Hat for coins */}
-      <div style={{ position: "absolute", bottom: 12, right: 15, width: 45, height: 16, background: "black", borderRadius: "0 0 50% 50%" }}>
+      <div style={{ position: "absolute", bottom: 12, right: 15, width: 45, height: 16, background: "var(--bg-card)", borderRadius: "0 0 50% 50%" }}>
         <div style={{ position: "absolute", top: 4, left: 10, width: 8, height: 5, background: "rgba(255,255,255,0.65)", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", top: 6, left: 26, width: 6, height: 4, background: "#2563eb", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", top: 6, left: 26, width: 6, height: 4, background: "#0165FC", borderRadius: "50%" }} />
       </div>
       
       {/* Dog */}
@@ -292,8 +292,8 @@ function HomelessMusician({ isPlaying, hasSign, hasDog }: { isPlaying: boolean; 
         <ellipse cx="70" cy="26" rx="16" ry="18" fill="rgba(255,255,255,0.8)" />
         
         {/* Beanie */}
-        <path d="M54,22 Q54,6 70,6 Q86,6 86,22" fill="#2563eb" />
-        <rect x="54" y="18" width="32" height="7" fill="#2563eb" />
+        <path d="M54,22 Q54,6 70,6 Q86,6 86,22" fill="#0165FC" />
+        <rect x="54" y="18" width="32" height="7" fill="#0165FC" />
         <rect x="54" y="23" width="32" height="3" fill="#000000" />
         
         {/* Eyes */}
@@ -331,10 +331,10 @@ function UpgradeShop({ onClick }: { onClick: () => void }) {
         <rect x="25" y="50" width="50" height="60" rx="2" fill="#000000" />
         <rect x="28" y="53" width="44" height="38" fill="#000000" />
         <rect x="15" y="32" width="70" height="15" rx="2" fill="rgba(255,255,255,0.55)" />
-        <text x="50" y="44" textAnchor="middle" fontSize="10" fill="#2563eb" fontWeight="bold">UPGRADES</text>
+        <text x="50" y="44" textAnchor="middle" fontSize="10" fill="#0165FC" fontWeight="bold">UPGRADES</text>
         <circle cx="68" cy="85" r="4" fill="rgba(255,255,255,0.65)" />
         <rect x="35" y="60" width="30" height="12" rx="1" fill="#000000" />
-        <text x="50" y="69" textAnchor="middle" fontSize="7" fill="#2563eb">OPEN</text>
+        <text x="50" y="69" textAnchor="middle" fontSize="7" fill="#0165FC">OPEN</text>
       </svg>
     </div>
   );
@@ -352,14 +352,14 @@ function LotteryShop({ onClick }: { onClick: () => void }) {
         <rect x="25" y="50" width="50" height="60" rx="2" fill="#000000" />
         <rect x="28" y="53" width="44" height="38" fill="#000000" />
         {/* Lottery tickets display */}
-        <rect x="32" y="58" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(-5 40 63)" />
-        <rect x="45" y="56" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(3 52 61)" />
-        <rect x="55" y="60" width="15" height="10" rx="1" fill="#2563eb" transform="rotate(-2 62 65)" />
-        <rect x="15" y="32" width="70" height="15" rx="2" fill="#2563eb" />
-        <text x="50" y="44" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🎟️ LOTTERY</text>
-        <circle cx="68" cy="85" r="4" fill="#2563eb" />
+        <rect x="32" y="58" width="15" height="10" rx="1" fill="#0165FC" transform="rotate(-5 40 63)" />
+        <rect x="45" y="56" width="15" height="10" rx="1" fill="#0165FC" transform="rotate(3 52 61)" />
+        <rect x="55" y="60" width="15" height="10" rx="1" fill="#0165FC" transform="rotate(-2 62 65)" />
+        <rect x="15" y="32" width="70" height="15" rx="2" fill="#0165FC" />
+        <text x="50" y="44" textAnchor="middle" fontSize="9" fill="#0165FC" fontWeight="bold">🎟️ LOTTERY</text>
+        <circle cx="68" cy="85" r="4" fill="#0165FC" />
         <rect x="35" y="75" width="30" height="12" rx="1" fill="black" />
-        <text x="50" y="84" textAnchor="middle" fontSize="6" fill="#2563eb">SCRATCH!</text>
+        <text x="50" y="84" textAnchor="middle" fontSize="6" fill="#0165FC">SCRATCH!</text>
       </svg>
     </div>
   );
@@ -374,17 +374,17 @@ function StoreModal({ isOpen, onClose, zc, upgradeLevels, onBuy }: {
   
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div style={{ background: "black", borderRadius: 12, width: "90%", maxWidth: 500, maxHeight: "80vh", overflow: "hidden", border: "2px solid #2563eb" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 12, width: "90%", maxWidth: 500, maxHeight: "80vh", overflow: "hidden", border: "2px solid #0165FC" }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid black", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ color: "#2563eb", fontSize: 20, fontWeight: 700 }}>🏪 Upgrade Store</div>
+            <div style={{ color: "#0165FC", fontSize: 20, fontWeight: 700 }}>🏪 Upgrade Store</div>
             <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 28, cursor: "pointer" }}>×</button>
         </div>
         <div style={{ display: "flex", borderBottom: "1px solid black" }}>
           {(["skill", "instrument", "gear", "attraction"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "12px 4px", background: tab === t ? "rgba(218,165,32,0.15)" : "transparent", border: "none", borderBottom: tab === t ? "2px solid #2563eb" : "2px solid transparent", color: tab === t ? "#2563eb" : "#666", fontSize: 12, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
+            <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "12px 4px", background: tab === t ? "rgba(218,165,32,0.15)" : "transparent", border: "none", borderBottom: tab === t ? "2px solid #0165FC" : "2px solid transparent", color: tab === t ? "#0165FC" : "#666", fontSize: 12, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
           ))}
         </div>
         <div style={{ maxHeight: 400, overflowY: "auto", padding: 10 }}>
@@ -396,11 +396,11 @@ function StoreModal({ isOpen, onClose, zc, upgradeLevels, onBuy }: {
             return (
               <div key={upgrade.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 8, marginBottom: 6, background: level > 0 ? "rgba(218,165,32,0.05)" : "transparent" }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 15 }}>{upgrade.name}{level > 0 && <span style={{ color: "#2563eb", marginLeft: 8 }}>Lv.{level}</span>}</div>
+                  <div style={{ color: "#ffffff", fontWeight: 600, fontSize: 15 }}>{upgrade.name}{level > 0 && <span style={{ color: "#0165FC", marginLeft: 8 }}>Lv.{level}</span>}</div>
                   <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>{upgrade.description}</div>
-                  {!isMaxed && <div style={{ color: "#2563eb", fontSize: 11, marginTop: 2 }}>+{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/tap`}</div>}
+                  {!isMaxed && <div style={{ color: "#0165FC", fontSize: 11, marginTop: 2 }}>+{upgrade.zpsBonus > 0 ? `${upgrade.zpsBonus}/sec` : `${upgrade.zpcBonus}/tap`}</div>}
                 </div>
-                <button onClick={() => onBuy(upgrade.id)} disabled={!canAfford} style={{ padding: "10px 16px", borderRadius: 8, border: "none", background: isMaxed ? "#4a6" : canAfford ? "#2563eb" : "black", color: isMaxed || canAfford ? "black" : "#555", fontWeight: 600, fontSize: 13, cursor: canAfford ? "pointer" : "default", minWidth: 80 }}>{isMaxed ? "MAX" : formatNumber(cost)}</button>
+                <button onClick={() => onBuy(upgrade.id)} disabled={!canAfford} style={{ padding: "10px 16px", borderRadius: 8, border: "none", background: isMaxed ? "#4a6" : canAfford ? "#0165FC" : "black", color: isMaxed || canAfford ? "black" : "#555", fontWeight: 600, fontSize: 13, cursor: canAfford ? "pointer" : "default", minWidth: 80 }}>{isMaxed ? "MAX" : formatNumber(cost)}</button>
               </div>
             );
           })}
@@ -417,7 +417,7 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
   const allScratched = ticket.scratched.length >= 6;
   
   return (
-    <div style={{ background: "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)", borderRadius: 8, padding: 12, width: 200, border: "3px solid #2563eb" }}>
+    <div style={{ background: "linear-gradient(135deg, #0165FC 0%, #0165FC 100%)", borderRadius: 8, padding: 12, width: 200, border: "3px solid #0165FC" }}>
       <div style={{ textAlign: "center", marginBottom: 8, color: "black", fontWeight: 700, fontSize: 14 }}>🎟️ {formatNumber(ticket.price)} ZC TICKET</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 10 }}>
         {spots.map(i => {
@@ -428,7 +428,7 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
               onClick={() => !isRevealed && !isScratching && onScratch(i)}
               style={{
                 width: 50, height: 40, borderRadius: 4,
-                background: isRevealed ? (isWin && ticket.result ? "#2563eb" : "#666") : "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, #666 100%)",
+                background: isRevealed ? (isWin && ticket.result ? "#0165FC" : "#666") : "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, #666 100%)",
                 cursor: isRevealed ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "#ffffff", fontWeight: 700, fontSize: 12,
@@ -444,7 +444,7 @@ function ScratchTicket({ ticket, onScratch, isScratching }: { ticket: { price: n
         })}
       </div>
       {allScratched && (
-        <div style={{ textAlign: "center", padding: 8, borderRadius: 4, background: isWin ? "#2563eb" : "#2563eb", color: "#ffffff", fontWeight: 700 }}>
+        <div style={{ textAlign: "center", padding: 8, borderRadius: 4, background: isWin ? "#0165FC" : "#0165FC", color: "#ffffff", fontWeight: 700 }}>
           {isWin ? `🎉 WON ${formatNumber(ticket.result!)} ZC!` : "No luck this time!"}
         </div>
       )}
@@ -492,10 +492,10 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
   
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div style={{ background: "#000000", borderRadius: 12, width: "90%", maxWidth: 550, maxHeight: "85vh", overflow: "hidden", border: "2px solid #2563eb" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: "var(--bg-card)", borderRadius: 12, width: "90%", maxWidth: 550, maxHeight: "85vh", overflow: "hidden", border: "2px solid #0165FC" }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #000000", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(90deg, #000000 0%, #000000 100%)" }}>
           <div>
-            <div style={{ color: "#2563eb", fontSize: 22, fontWeight: 700 }}>🎟️ Lucky Lottery</div>
+            <div style={{ color: "#0165FC", fontSize: 22, fontWeight: 700 }}>🎟️ Lucky Lottery</div>
             <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}>Balance: {formatNumber(zc)} ZC</div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 28, cursor: "pointer" }}>×</button>
@@ -508,7 +508,7 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
               {activeTicket.scratched.length >= 6 && (
                 <button onClick={collectWinnings} style={{
                   padding: "12px 30px", borderRadius: 8, border: "none",
-                  background: activeTicket.result && activeTicket.result > 0 ? "#2563eb" : "#666",
+                  background: activeTicket.result && activeTicket.result > 0 ? "#0165FC" : "#666",
                   color: "#ffffff", fontWeight: 700, fontSize: 15, cursor: "pointer",
                 }}>
                   {activeTicket.result && activeTicket.result > 0 ? "Collect Winnings!" : "Try Again"}
@@ -527,8 +527,8 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
                       onClick={() => canAfford && buyTicket(t.price, t.maxWin, t.winChance)}
                       style={{
                         padding: 16, borderRadius: 8, cursor: canAfford ? "pointer" : "not-allowed",
-                        background: canAfford ? "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)" : "black",
-                        border: `2px solid ${canAfford ? "#2563eb" : "#444"}`,
+                        background: canAfford ? "linear-gradient(135deg, #0165FC 0%, #0165FC 100%)" : "black",
+                        border: `2px solid ${canAfford ? "#0165FC" : "#444"}`,
                         textAlign: "center", transition: "transform 0.2s",
                         opacity: canAfford ? 1 : 0.5,
                       }}
@@ -552,7 +552,7 @@ function LotteryModal({ isOpen, onClose, zc, onBuyTicket }: {
 
 function FlyingCoin({ x, y, amount }: { x: number; y: number; amount: number }) {
   return (
-    <div style={{ position: "absolute", left: x, top: y, pointerEvents: "none", animation: "coinUp 0.7s ease-out forwards", zIndex: 200, color: "#2563eb", fontWeight: 700, fontSize: 18, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>+{formatNumber(amount)}</div>
+    <div style={{ position: "absolute", left: x, top: y, pointerEvents: "none", animation: "coinUp 0.7s ease-out forwards", zIndex: 200, color: "#0165FC", fontWeight: 700, fontSize: 18, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>+{formatNumber(amount)}</div>
   );
 }
 
@@ -607,7 +607,7 @@ export default function MusicianBeggarPage() {
 
   const spawnPedestrian = useCallback(() => {
     const direction: "left" | "right" = Math.random() > 0.5 ? "right" : "left";
-    const shirts = ["#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb", "#2563eb"];
+    const shirts = ["#0165FC", "#0165FC", "#0165FC", "#0165FC", "#0165FC", "#0165FC", "#0165FC", "#0165FC"];
     const pants = ["#000000", "#000000", "#000000", "#000000", "#000000"];
     const skins = ["rgba(255,255,255,0.85)", "rgba(255,255,255,0.8)", "rgba(255,255,255,0.9)", "rgba(255,255,255,0.8)", "rgba(255,255,255,0.7)", "#ffffff"];
     const attractLvl = (upgradeLevels["sign"] || 0) + (upgradeLevels["dog"] || 0);
@@ -697,10 +697,10 @@ export default function MusicianBeggarPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#000000" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <div style={{ height: 60, background: "rgba(0,0,0,0.5)" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70vh" }}>
-          <div style={{ width: 50, height: 50, border: "3px solid black", borderTopColor: "#2563eb", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 50, height: 50, border: "3px solid black", borderTopColor: "#0165FC", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         </div>
       </div>
     );
@@ -710,17 +710,17 @@ export default function MusicianBeggarPage() {
   const hasDog = (upgradeLevels["dog"] || 0) > 0;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000000" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
 
       <div style={{ position: "absolute", top: 70, left: "50%", transform: "translateX(-50%)", textAlign: "center", zIndex: 100, pointerEvents: "none" }}>
-        <div style={{ color: "#2563eb", fontSize: 44, fontWeight: 800, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{formatNumber(zc)} ZC</div>
+        <div style={{ color: "#0165FC", fontSize: 44, fontWeight: 800, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{formatNumber(zc)} ZC</div>
         <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>{formatNumber(zpc)}/tap • {formatNumber(zps)}/sec</div>
       </div>
 
-      <Link href="/game-hub" style={{ position: "absolute", top: 70, left: 20, color: "#2563eb", textDecoration: "none", fontSize: 14, zIndex: 100 }}>← Game Hub</Link>
+      <Link href="/game-hub" style={{ position: "absolute", top: 70, left: 20, color: "#0165FC", textDecoration: "none", fontSize: 14, zIndex: 100 }}>← Game Hub</Link>
 
-      <div onClick={handleClick} style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, cursor: "pointer", overflow: "hidden", background: "#000000" }}>
+      <div onClick={handleClick} style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, cursor: "pointer", overflow: "hidden", background: "var(--bg-card)" }}>
         {/* Sky */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, #000000 0%, #000000 50%, #000000 100%)" }} />
         
@@ -730,35 +730,35 @@ export default function MusicianBeggarPage() {
         ))}
         
         {/* Moon */}
-        <div style={{ position: "absolute", top: 35, right: 80, width: 55, height: 55, background: "radial-gradient(circle at 35% 35%, #ffffff, #ffffff 60%, #2563eb 100%)", borderRadius: "50%", boxShadow: "0 0 50px rgba(255,250,205,0.3)" }} />
+        <div style={{ position: "absolute", top: 35, right: 80, width: 55, height: 55, background: "radial-gradient(circle at 35% 35%, #ffffff, #ffffff 60%, #0165FC 100%)", borderRadius: "50%", boxShadow: "0 0 50px rgba(255,250,205,0.3)" }} />
         
         {/* Buildings */}
         <div style={{ position: "absolute", top: "18%", left: 0, right: 0, height: "30%" }}>
-          <div style={{ position: "absolute", bottom: 0, left: "2%", width: "8%", height: "65%", background: "#000000" }} />
-          <div style={{ position: "absolute", bottom: 0, left: "12%", width: "10%", height: "85%", background: "#000000" }}>
+          <div style={{ position: "absolute", bottom: 0, left: "2%", width: "8%", height: "65%", background: "var(--bg-card)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "12%", width: "10%", height: "85%", background: "var(--bg-card)" }}>
             {[18,35,52,70].map((t,i) => <div key={i} style={{ position: "absolute", top: `${t}%`, left: "15%", width: "30%", height: "10%", background: i===1?"#000000":"#000000" }} />)}
           </div>
-          <div style={{ position: "absolute", bottom: 0, left: "25%", width: "7%", height: "50%", background: "#000000" }} />
-          <div style={{ position: "absolute", bottom: 0, right: "25%", width: "9%", height: "70%", background: "#000000" }} />
-          <div style={{ position: "absolute", bottom: 0, right: "10%", width: "10%", height: "80%", background: "#000000" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "25%", width: "7%", height: "50%", background: "var(--bg-card)" }} />
+          <div style={{ position: "absolute", bottom: 0, right: "25%", width: "9%", height: "70%", background: "var(--bg-card)" }} />
+          <div style={{ position: "absolute", bottom: 0, right: "10%", width: "10%", height: "80%", background: "var(--bg-card)" }} />
         </div>
         
         {/* Street lamp */}
         <div style={{ position: "absolute", bottom: "42%", left: "8%", zIndex: 3 }}>
-          <div style={{ width: 6, height: 100, background: "black" }} />
-          <div style={{ position: "absolute", top: -8, left: -12, width: 30, height: 14, background: "#000000", borderRadius: "3px 3px 0 0" }} />
-          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#2563eb", color: "rgba(255,255,255,0.7)", borderRadius: 2, boxShadow: "0 0 25px #2563eb" }} />
+          <div style={{ width: 6, height: 100, background: "var(--bg-card)" }} />
+          <div style={{ position: "absolute", top: -8, left: -12, width: 30, height: 14, background: "var(--bg-card)", borderRadius: "3px 3px 0 0" }} />
+          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#0165FC", color: "rgba(255,255,255,0.7)", borderRadius: 2, boxShadow: "0 0 25px #0165FC" }} />
         </div>
         
         {/* Sidewalk - smaller */}
         <div style={{ position: "absolute", bottom: "22%", left: 0, right: 0, height: "12%", background: "linear-gradient(180deg, black22a 0%, #000000 100%)" }}>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 5, background: "#000000" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 5, background: "var(--bg-card)" }} />
         </div>
         
         {/* Road - bigger */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "22%", background: "#000000" }}>
-          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #2563eb 0px, #2563eb 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
-          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #2563eb 0px, #2563eb 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "22%", background: "var(--bg-card)" }}>
+          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #0165FC 0px, #0165FC 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
+          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #0165FC 0px, #0165FC 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
         </div>
         
         {/* Lottery Shop - on sidewalk */}

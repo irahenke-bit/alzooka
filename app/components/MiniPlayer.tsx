@@ -74,7 +74,7 @@ const MiniPlayer = memo(function MiniPlayer() {
           right: 0,
           height: 52,
           background: "linear-gradient(180deg, black 0%, #000000 100%)",
-          borderTop: "1px solid rgba(37, 99, 235, 0.3)",
+          borderTop: "1px solid rgba(1, 101, 252, 0.3)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -118,7 +118,7 @@ const MiniPlayer = memo(function MiniPlayer() {
           onClick={onResume}
           style={{
             padding: "8px 20px",
-            background: "#2563eb",
+            background: "#0165FC",
             border: "none",
             borderRadius: 20,
             color: "black",
@@ -171,7 +171,7 @@ const MiniPlayer = memo(function MiniPlayer() {
         right: 0,
         height: 64,
         background: "linear-gradient(180deg, black 0%, #000000 100%)",
-        borderTop: "1px solid rgba(37, 99, 235, 0.3)",
+        borderTop: "1px solid rgba(1, 101, 252, 0.3)",
         display: "flex",
         alignItems: "center",
         padding: "0 20px",
@@ -269,7 +269,7 @@ const MiniPlayer = memo(function MiniPlayer() {
             height: 44,
             borderRadius: "50%",
             border: "none",
-            background: "#2563eb",
+            background: "#0165FC",
             color: "black",
             cursor: "pointer",
             display: "flex",
@@ -340,12 +340,12 @@ const MiniPlayer = memo(function MiniPlayer() {
           padding: "8px 16px",
           background: sourceStation 
             ? "rgba(30, 215, 96, 0.2)" 
-            : "rgba(37, 99, 235, 0.2)",
+            : "rgba(1, 101, 252, 0.2)",
           border: sourceStation
             ? "1px solid rgba(30, 215, 96, 0.4)"
-            : "1px solid rgba(37, 99, 235, 0.4)",
+            : "1px solid rgba(1, 101, 252, 0.4)",
           borderRadius: 20,
-          color: sourceStation ? "#1DB954" : "#2563eb",
+          color: sourceStation ? "#1DB954" : "#0165FC",
           fontSize: 12,
           fontWeight: 600,
           textDecoration: "none",

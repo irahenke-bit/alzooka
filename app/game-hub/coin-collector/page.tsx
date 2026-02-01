@@ -34,15 +34,15 @@ type GameSave = {
 // Speaker designs for rebirth levels - chrome/silver base with accent colors
 const SPEAKER_DESIGNS = [
   { id: 1, name: "Chrome Classic", rimColor: "rgba(255,255,255,0.75)", coneColor: "black", glowColor: "#ffffff", accentColor: "rgba(255,255,255,0.6)888" },
-  { id: 2, name: "Midnight Silver", rimColor: "rgba(255,255,255,0.65)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#2563eb" },
-  { id: 3, name: "Platinum Bass", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
-  { id: 4, name: "Gunmetal Gray", rimColor: "rgba(255,255,255,0.35)", coneColor: "black", glowColor: "rgba(255,255,255,0.55)", accentColor: "#2563eb" },
-  { id: 5, name: "Titanium Drop", rimColor: "rgba(255,255,255,0.7)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#2563eb" },
-  { id: 6, name: "Steel Pulse", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.65)", accentColor: "#2563eb" },
-  { id: 7, name: "Mercury Wave", rimColor: "rgba(255,255,255,0.85)", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
-  { id: 8, name: "Nickel Thunder", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.6)", accentColor: "#2563eb" },
-  { id: 9, name: "Pewter Boom", rimColor: "rgba(255,255,255,0.55)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.75)", accentColor: "#2563eb" },
-  { id: 10, name: "Diamond Edition", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#2563eb" },
+  { id: 2, name: "Midnight Silver", rimColor: "rgba(255,255,255,0.65)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#0165FC" },
+  { id: 3, name: "Platinum Bass", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#0165FC" },
+  { id: 4, name: "Gunmetal Gray", rimColor: "rgba(255,255,255,0.35)", coneColor: "black", glowColor: "rgba(255,255,255,0.55)", accentColor: "#0165FC" },
+  { id: 5, name: "Titanium Drop", rimColor: "rgba(255,255,255,0.7)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.85)", accentColor: "#0165FC" },
+  { id: 6, name: "Steel Pulse", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.65)", accentColor: "#0165FC" },
+  { id: 7, name: "Mercury Wave", rimColor: "rgba(255,255,255,0.85)", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#0165FC" },
+  { id: 8, name: "Nickel Thunder", rimColor: "rgba(255,255,255,0.45)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.6)", accentColor: "#0165FC" },
+  { id: 9, name: "Pewter Boom", rimColor: "rgba(255,255,255,0.55)", coneColor: "#000000", glowColor: "rgba(255,255,255,0.75)", accentColor: "#0165FC" },
+  { id: 10, name: "Diamond Edition", rimColor: "#ffffff", coneColor: "#000000", glowColor: "#ffffff", accentColor: "#0165FC" },
 ];
 
 // Collectors (auto-clickers)
@@ -507,7 +507,7 @@ export default function CoinCollectorPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(37, 99, 235, 0.2)",
+            border: "3px solid rgba(1, 101, 252, 0.2)",
             borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
@@ -551,9 +551,9 @@ export default function CoinCollectorPage() {
           </Link>
           <div style={{ 
             fontSize: 12, 
-            color: saveStatus === "saved" ? "#2563eb" : 
-                   saveStatus === "saving" ? "#2563eb" : 
-                   saveStatus === "error" ? "#2563eb" : "rgba(255,255,255,0.4)"
+            color: saveStatus === "saved" ? "#0165FC" : 
+                   saveStatus === "saving" ? "#0165FC" : 
+                   saveStatus === "error" ? "#0165FC" : "rgba(255,255,255,0.4)"
           }}>
             {saveStatus === "saved" && "✓ Saved"}
             {saveStatus === "saving" && "Saving..."}
@@ -818,7 +818,7 @@ export default function CoinCollectorPage() {
                 borderRadius: 12,
                 border: "none",
                 background: canRebirth 
-                  ? "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)"
+                  ? "linear-gradient(135deg, #0165FC 0%, #0165FC 100%)"
                   : "rgba(255,255,255,0.1)",
                 color: canRebirth ? "#fff" : "rgba(255,255,255,0.3)",
                 fontSize: 16,
@@ -898,7 +898,7 @@ export default function CoinCollectorPage() {
                         padding: 12,
                         borderRadius: 10,
                         border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(37, 99, 235, 0.1)" : "rgba(255,255,255,0.05)",
+                        background: canAfford ? "rgba(1, 101, 252, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -961,7 +961,7 @@ export default function CoinCollectorPage() {
                         padding: 12,
                         borderRadius: 10,
                         border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(37, 99, 235, 0.1)" : "rgba(255,255,255,0.05)",
+                        background: canAfford ? "rgba(1, 101, 252, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -1056,7 +1056,7 @@ export default function CoinCollectorPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 16,
               padding: 32,
               maxWidth: 400,
@@ -1071,7 +1071,7 @@ export default function CoinCollectorPage() {
               You'll reset all progress but gain:
             </p>
             <div style={{
-              background: "rgba(37, 99, 235, 0.2)",
+              background: "rgba(1, 101, 252, 0.2)",
               borderRadius: 8,
               padding: 16,
               marginBottom: 24,
@@ -1109,7 +1109,7 @@ export default function CoinCollectorPage() {
                   padding: "12px 24px",
                   borderRadius: 8,
                   border: "none",
-                  background: "linear-gradient(135deg, #2563eb 0%, #2563eb 100%)",
+                  background: "linear-gradient(135deg, #0165FC 0%, #0165FC 100%)",
                   color: "rgba(255,255,255,0.7)",
                   cursor: "pointer",
                   fontWeight: 600,

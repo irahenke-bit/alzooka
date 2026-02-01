@@ -125,7 +125,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "black",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           padding: 32,
           maxWidth: 400,
@@ -191,7 +191,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
           </div>
 
           {error && (
-            <p style={{ color: "#2563eb", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#0165FC", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}

@@ -38,12 +38,12 @@ interface GameItem {
 }
 
 const ITEM_CONFIGS: Record<ItemType, { emoji: string; color: string; isGood: boolean }> = {
-  obstacle: { emoji: "⛔", color: "#2563eb", isGood: false },
-  amp: { emoji: "🔊", color: "#2563eb", isGood: true },
-  speaker: { emoji: "📻", color: "#2563eb", isGood: true },
-  mic: { emoji: "🎤", color: "#2563eb", isGood: true },
-  guitar: { emoji: "🎸", color: "#2563eb", isGood: true },
-  boost: { emoji: "⚡", color: "#2563eb", isGood: true },
+  obstacle: { emoji: "⛔", color: "#0165FC", isGood: false },
+  amp: { emoji: "🔊", color: "#0165FC", isGood: true },
+  speaker: { emoji: "📻", color: "#0165FC", isGood: true },
+  mic: { emoji: "🎤", color: "#0165FC", isGood: true },
+  guitar: { emoji: "🎸", color: "#0165FC", isGood: true },
+  boost: { emoji: "⚡", color: "#0165FC", isGood: true },
 };
 
 export default function SoundWavePage() {
@@ -322,7 +322,7 @@ export default function SoundWavePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#000000" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <div style={{ 
           height: 60, 
           background: "rgba(0,0,0,0.3)", 
@@ -338,7 +338,7 @@ export default function SoundWavePage() {
             width: 48,
             height: 48,
             border: "3px solid rgba(6, 182, 212, 0.2)",
-            borderTopColor: "#2563eb",
+            borderTopColor: "#0165FC",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
           }} />
@@ -373,7 +373,7 @@ export default function SoundWavePage() {
             display: "inline-flex", 
             alignItems: "center", 
             gap: 8, 
-            color: "#2563eb", 
+            color: "#0165FC", 
             textDecoration: "none",
             fontSize: 14,
             marginBottom: 20,
@@ -387,7 +387,7 @@ export default function SoundWavePage() {
           <h1 style={{ 
             fontSize: 36, 
             fontWeight: 800, 
-            color: "#2563eb",
+            color: "#0165FC",
             margin: 0,
             textShadow: "0 0 20px rgba(6, 182, 212, 0.5)",
             letterSpacing: 2,
@@ -408,7 +408,7 @@ export default function SoundWavePage() {
             background: "linear-gradient(180deg, #000000 0%, #000000 100%)",
             borderRadius: 12,
             overflow: "hidden",
-            border: "2px solid #2563eb40",
+            border: "2px solid #0165FC40",
           }}>
             {/* Lane lines */}
             {[1, 2, 3, 4].map(i => (
@@ -465,21 +465,21 @@ export default function SoundWavePage() {
                       ? "linear-gradient(180deg, #000000 0%, #000000 100%)"
                       : `radial-gradient(circle, ${config.color}30 0%, rgba(0,50,0,0.8) 100%)`,
                     border: isObstacle 
-                      ? "3px solid #2563eb" 
+                      ? "3px solid #0165FC" 
                       : `2px solid ${config.color}`,
                     boxShadow: isObstacle
                       ? "0 0 15px rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(0,0,0,0.5)"
                       : `0 0 15px ${config.color}60, inset 0 0 10px rgba(0,0,0,0.3)`,
                   }}
                 >
-                  <span style={{ filter: isObstacle ? "none" : "drop-shadow(0 0 4px #2563eb)" }}>
+                  <span style={{ filter: isObstacle ? "none" : "drop-shadow(0 0 4px #0165FC)" }}>
                     {config.emoji}
                   </span>
                   <span style={{ 
                     fontSize: 11, 
-                    color: isObstacle ? "rgba(255,255,255,0.8)" : "#2563eb",
+                    color: isObstacle ? "rgba(255,255,255,0.8)" : "#0165FC",
                     fontWeight: 700,
-                    textShadow: isObstacle ? "0 0 4px #2563eb" : "0 0 4px #2563eb",
+                    textShadow: isObstacle ? "0 0 4px #0165FC" : "0 0 4px #0165FC",
                   }}>
                     {config.isGood ? `+${item.value}` : `-${item.value}`}
                   </span>
@@ -506,9 +506,9 @@ export default function SoundWavePage() {
               <svg width={WAVE_SIZE} height={WAVE_SIZE} viewBox="0 0 50 50">
                 <defs>
                   <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#2563eb" />
-                    <stop offset="50%" stopColor="#2563eb" />
-                    <stop offset="100%" stopColor="#2563eb" />
+                    <stop offset="0%" stopColor="#0165FC" />
+                    <stop offset="50%" stopColor="#0165FC" />
+                    <stop offset="100%" stopColor="#0165FC" />
                   </linearGradient>
                   <filter id="glow">
                     <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -522,7 +522,7 @@ export default function SoundWavePage() {
                 <path
                   d="M 5 25 Q 12 10 20 25 Q 28 40 35 25 Q 42 10 45 25"
                   fill="none"
-                  stroke={boosted ? "#2563eb" : "url(#waveGrad)"}
+                  stroke={boosted ? "#0165FC" : "url(#waveGrad)"}
                   strokeWidth="4"
                   strokeLinecap="round"
                   filter="url(#glow)"
@@ -533,14 +533,14 @@ export default function SoundWavePage() {
                   cy="25"
                   r="18"
                   fill="rgba(6, 182, 212, 0.2)"
-                  stroke={boosted ? "#2563eb" : "#2563eb"}
+                  stroke={boosted ? "#0165FC" : "#0165FC"}
                   strokeWidth="2"
                 />
                 <text
                   x="25"
                   y="30"
                   textAnchor="middle"
-                  fill={boosted ? "#2563eb" : "#fff"}
+                  fill={boosted ? "#0165FC" : "#fff"}
                   fontSize="14"
                   fontWeight="bold"
                 >
@@ -554,7 +554,7 @@ export default function SoundWavePage() {
                   position: "absolute",
                   top: -20,
                   fontSize: 16,
-                  color: "#2563eb",
+                  color: "#0165FC",
                   animation: "pulse 0.5s ease-in-out infinite",
                 }}>
                   ⚡ BOOST ⚡
@@ -578,7 +578,7 @@ export default function SoundWavePage() {
               }}>
                 {gameOver ? (
                   <>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: "#2563eb", marginBottom: 8 }}>
+                    <div style={{ fontSize: 32, fontWeight: 800, color: "#0165FC", marginBottom: 8 }}>
                       SIGNAL LOST
                     </div>
                     <div style={{ color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>
@@ -594,9 +594,9 @@ export default function SoundWavePage() {
                       Ready to Ride the Wave?
                     </div>
                     <div style={{ fontSize: 14, marginBottom: 16, textAlign: "center" }}>
-                      <span style={{ color: "#2563eb", fontWeight: 600 }}>GREEN = COLLECT</span>
+                      <span style={{ color: "#0165FC", fontWeight: 600 }}>GREEN = COLLECT</span>
                       <span style={{ color: "rgba(255,255,255,0.7)" }}> (🔊 🎸 🎤)</span><br/>
-                      <span style={{ color: "#2563eb", fontWeight: 600 }}>RED = AVOID</span>
+                      <span style={{ color: "#0165FC", fontWeight: 600 }}>RED = AVOID</span>
                       <span style={{ color: "rgba(255,255,255,0.7)" }}> (⛔)</span><br/>
                       <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>Don't let your power hit 0!</span>
                     </div>
@@ -608,7 +608,7 @@ export default function SoundWavePage() {
                     padding: "12px 32px",
                     fontSize: 16,
                     fontWeight: 600,
-                    background: "#2563eb",
+                    background: "#0165FC",
                     color: "#000",
                     border: "none",
                     borderRadius: 8,
@@ -632,14 +632,14 @@ export default function SoundWavePage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>SCORE</div>
-              <div style={{ color: "#2563eb", fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: "#0165FC", fontSize: 24, fontWeight: 700 }}>
                 {score.toLocaleString()}
               </div>
               {combo > 2 && (
-                <div style={{ color: "#2563eb", fontSize: 12, marginTop: 4 }}>
+                <div style={{ color: "#0165FC", fontSize: 12, marginTop: 4 }}>
                   🔥 {combo}x COMBO!
                 </div>
               )}
@@ -651,11 +651,11 @@ export default function SoundWavePage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>POWER</div>
               <div style={{ 
-                color: power <= 3 ? "#2563eb" : power <= 6 ? "#2563eb" : "#2563eb", 
+                color: power <= 3 ? "#0165FC" : power <= 6 ? "#0165FC" : "#0165FC", 
                 fontSize: 28, 
                 fontWeight: 700 
               }}>
@@ -664,14 +664,14 @@ export default function SoundWavePage() {
               <div style={{
                 marginTop: 8,
                 height: 6,
-                background: "black",
+                background: "var(--bg-card)",
                 borderRadius: 3,
                 overflow: "hidden",
               }}>
                 <div style={{
                   width: `${Math.min(100, power * 5)}%`,
                   height: "100%",
-                  background: power <= 3 ? "#2563eb" : power <= 6 ? "#2563eb" : "#2563eb",
+                  background: power <= 3 ? "#0165FC" : power <= 6 ? "#0165FC" : "#0165FC",
                   transition: "width 0.2s",
                 }} />
               </div>
@@ -683,14 +683,14 @@ export default function SoundWavePage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>DISTANCE</div>
               <div style={{ color: "#ffffff", fontSize: 18, fontWeight: 600 }}>
                 {Math.floor(distance)}m
               </div>
               <div style={{ 
-                color: "#2563eb", 
+                color: "#0165FC", 
                 fontSize: 11, 
                 marginTop: 6,
                 fontWeight: 600,
@@ -704,10 +704,10 @@ export default function SoundWavePage() {
               background: "rgba(0,0,0,0.4)",
               borderRadius: 8,
               padding: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>HIGH SCORE</div>
-              <div style={{ color: "#2563eb", fontSize: 16, fontWeight: 600 }}>
+              <div style={{ color: "#0165FC", fontSize: 16, fontWeight: 600 }}>
                 {highScore.toLocaleString()}
               </div>
             </div>
@@ -720,14 +720,14 @@ export default function SoundWavePage() {
               borderRadius: 8,
               fontSize: 11,
             }}>
-              <div style={{ color: "#2563eb", marginBottom: 6, fontWeight: 600 }}>✓ COLLECT (Green)</div>
-              <div style={{ color: "#2563eb", marginBottom: 2 }}>🔊 🎸 🎤 📻</div>
+              <div style={{ color: "#0165FC", marginBottom: 6, fontWeight: 600 }}>✓ COLLECT (Green)</div>
+              <div style={{ color: "#0165FC", marginBottom: 2 }}>🔊 🎸 🎤 📻</div>
               <div style={{ color: "rgba(255,255,255,0.7)", marginBottom: 8, fontSize: 10 }}>Adds power</div>
               
-              <div style={{ color: "#2563eb", marginBottom: 4 }}>⚡ Boost = SMASH!</div>
+              <div style={{ color: "#0165FC", marginBottom: 4 }}>⚡ Boost = SMASH!</div>
               <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 10, marginBottom: 4 }}>Hit ⛔ = +100 pts +2 pwr</div>
               
-              <div style={{ color: "#2563eb", marginBottom: 6, fontWeight: 600, marginTop: 8 }}>✗ AVOID (Red)</div>
+              <div style={{ color: "#0165FC", marginBottom: 6, fontWeight: 600, marginTop: 8 }}>✗ AVOID (Red)</div>
               <div style={{ color: "rgba(255,255,255,0.8)" }}>⛔ Drains power!</div>
             </div>
           </div>

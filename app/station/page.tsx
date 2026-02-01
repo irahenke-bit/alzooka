@@ -80,15 +80,15 @@ type SpotifyTrack = {
 // Preset colors for groups
 const GROUP_COLORS = [
   "#1DB954", // Spotify green
-  "#2563eb", // Pink
-  "#2563eb", // Purple
-  "#2563eb", // Indigo
-  "#2563eb", // Blue
-  "#2563eb", // Cyan
-  "#2563eb", // Orange
-  "#2563eb", // Red
+  "#0165FC", // Pink
+  "#0165FC", // Purple
+  "#0165FC", // Indigo
+  "#0165FC", // Blue
+  "#0165FC", // Cyan
+  "#0165FC", // Orange
+  "#0165FC", // Red
   "rgba(255,255,255,0.5)", // Brown
-  "#2563eb", // Blue Grey
+  "#0165FC", // Blue Grey
 ];
 
 // Note: ignoreTrackUpdatesFor() is now imported from context
@@ -2830,7 +2830,7 @@ export default function StationPage() {
       <div style={{ maxWidth: 960, margin: "0 auto", padding: 20 }}>
         {/* Station Header */}
         <div style={{ 
-          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(37,99,235,0.2) 100%)",
+          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(1,101,252,0.2) 100%)",
           borderRadius: 16,
           padding: 24,
           marginBottom: 24,
@@ -3427,7 +3427,7 @@ export default function StationPage() {
                           top: "100%",
                           left: 0,
                           marginTop: 8,
-                          background: "#000000",
+                          background: "var(--bg-card)",
                           border: "2px solid rgba(255,255,255,0.3)",
                           borderRadius: 10,
                           padding: 16,
@@ -3549,8 +3549,8 @@ export default function StationPage() {
             justifyContent: "space-between",
             padding: "12px 16px",
             marginBottom: 16,
-            background: "rgba(37,99,235,0.2)",
-            border: "1px solid rgba(37, 99, 235, 0.3)",
+            background: "rgba(1,101,252,0.2)",
+            border: "1px solid rgba(1, 101, 252, 0.3)",
             borderRadius: 8,
           }}>
             <span style={{ fontSize: 14 }}>
@@ -3600,10 +3600,10 @@ export default function StationPage() {
                 padding: "12px 24px",
                 fontSize: 15,
                 fontWeight: 600,
-                background: activeTab === "playlists" ? "rgba(37,99,235,0.2)" : "transparent",
-                color: activeTab === "playlists" ? "#2563eb" : "rgba(240, 235, 224, 0.6)",
+                background: activeTab === "playlists" ? "rgba(1,101,252,0.2)" : "transparent",
+                color: activeTab === "playlists" ? "#0165FC" : "rgba(240, 235, 224, 0.6)",
                 border: "none",
-                borderBottom: activeTab === "playlists" ? "2px solid #2563eb" : "2px solid transparent",
+                borderBottom: activeTab === "playlists" ? "2px solid #0165FC" : "2px solid transparent",
                 cursor: "pointer",
                 marginBottom: -1,
               }}
@@ -3641,7 +3641,7 @@ export default function StationPage() {
                   background: "rgba(26, 46, 46, 0.98)",
                   padding: "12px 20px",
                   borderRadius: 50,
-                  border: "1px solid rgba(37, 99, 235, 0.4)",
+                  border: "1px solid rgba(1, 101, 252, 0.4)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
                 }}
               >
@@ -3651,7 +3651,7 @@ export default function StationPage() {
                   fontWeight: 600, 
                   color: "var(--accent)",
                   paddingRight: 12,
-                  borderRight: "1px solid rgba(37, 99, 235, 0.3)",
+                  borderRight: "1px solid rgba(1, 101, 252, 0.3)",
                 }}>
                   {manualSelections.size} Selected
                 </div>
@@ -3686,9 +3686,9 @@ export default function StationPage() {
                         padding: "8px 16px",
                         fontSize: 13,
                         fontWeight: 600,
-                        background: "rgba(37, 99, 235, 0.2)",
+                        background: "rgba(1, 101, 252, 0.2)",
                         color: "var(--accent)",
-                        border: "1px solid rgba(37, 99, 235, 0.4)",
+                        border: "1px solid rgba(1, 101, 252, 0.4)",
                         borderRadius: 20,
                         cursor: "pointer",
                         display: "flex",
@@ -3707,8 +3707,8 @@ export default function StationPage() {
                           left: "50%",
                           transform: "translateX(-50%)",
                           marginBottom: 8,
-                          background: "black",
-                          border: "1px solid rgba(37, 99, 235, 0.3)",
+                          background: "var(--bg-card)",
+                          border: "1px solid rgba(1, 101, 252, 0.3)",
                           borderRadius: 12,
                           padding: 8,
                           zIndex: 100,
@@ -3782,7 +3782,7 @@ export default function StationPage() {
                           left: "50%",
                           transform: "translateX(-50%)",
                           marginBottom: 8,
-                          background: "black",
+                          background: "var(--bg-card)",
                           border: "1px solid rgba(229, 115, 115, 0.3)",
                           borderRadius: 12,
                           padding: 8,
@@ -3978,7 +3978,7 @@ export default function StationPage() {
                             left: "50%",
                             transform: "translateX(-50%)",
                             marginBottom: 8,
-                            background: "black",
+                            background: "var(--bg-card)",
                             border: "1px solid rgba(30, 215, 96, 0.3)",
                             borderRadius: 12,
                             padding: 8,
@@ -4320,9 +4320,9 @@ export default function StationPage() {
                                 padding: "6px 12px",
                                 fontSize: 11,
                                 fontWeight: 600,
-                                background: "rgba(37, 99, 235, 0.2)",
+                                background: "rgba(1, 101, 252, 0.2)",
                                 color: "var(--accent)",
-                                border: "1px solid rgba(37, 99, 235, 0.4)",
+                                border: "1px solid rgba(1, 101, 252, 0.4)",
                                 borderRadius: 6,
                                 cursor: "pointer",
                               }}
@@ -4361,7 +4361,7 @@ export default function StationPage() {
                               right: 0,
                               marginTop: 4,
                               padding: 10,
-                              background: "#000000",
+                              background: "var(--bg-card)",
                               border: "2px solid var(--accent)",
                               borderRadius: 8,
                               zIndex: 1000,
@@ -4444,7 +4444,7 @@ export default function StationPage() {
                                     padding: 12,
                                     background: "rgba(0,0,0,0.25)",
                                     borderRadius: 12,
-                                    border: "1px solid rgba(37, 99, 235, 0.2)",
+                                    border: "1px solid rgba(1, 101, 252, 0.2)",
                                     display: "flex",
                                     gap: 16,
                                     alignItems: "flex-start", // Prevent layout shifts when button appears
@@ -4534,7 +4534,7 @@ export default function StationPage() {
                             gap: 8,
                             cursor: "grab",
                             background: isCurrentTrack
-                              ? "rgba(37, 99, 235, 0.25)"
+                              ? "rgba(1, 101, 252, 0.25)"
                               : isSelectedStart
                                 ? "rgba(30, 215, 96, 0.3)"
                                 : "transparent",
@@ -5119,7 +5119,7 @@ export default function StationPage() {
                                     : isSelectedForRemoval
                                       ? "rgba(229, 115, 115, 0.2)"
                                       : isCurrentTrack 
-                                        ? (isPlaying ? "rgba(37, 99, 235, 0.25)" : "rgba(37,99,235,0.2)")
+                                        ? (isPlaying ? "rgba(1, 101, 252, 0.25)" : "rgba(1,101,252,0.2)")
                                         : isSelectedStart 
                                           ? "rgba(30, 215, 96, 0.3)" 
                                           : "transparent",
@@ -5277,7 +5277,7 @@ export default function StationPage() {
           zIndex: 9999,
         }}>
           <div style={{
-            background: "#000000",
+            background: "var(--bg-card)",
             border: "2px solid var(--accent)",
             borderRadius: 12,
             padding: 24,
@@ -5358,7 +5358,7 @@ export default function StationPage() {
           zIndex: 9999,
         }}>
           <div style={{
-            background: "#000000",
+            background: "var(--bg-card)",
             border: "2px solid rgba(255,255,255,0.3)",
             borderRadius: 12,
             padding: 24,
@@ -5422,7 +5422,7 @@ export default function StationPage() {
           zIndex: 9999,
         }}>
           <div style={{
-            background: "#000000",
+            background: "var(--bg-card)",
             border: "2px solid rgba(255,255,255,0.3)",
             borderRadius: 12,
             padding: 24,
@@ -5486,7 +5486,7 @@ export default function StationPage() {
           zIndex: 9999,
         }}>
           <div style={{
-            background: "#000000",
+            background: "var(--bg-card)",
             border: "2px solid rgba(255,255,255,0.3)",
             borderRadius: 12,
             padding: 24,
@@ -5551,7 +5551,7 @@ export default function StationPage() {
           zIndex: 9999,
         }}>
           <div style={{
-            background: "#000000",
+            background: "var(--bg-card)",
             border: "2px solid #1DB954",
             borderRadius: 16,
             padding: 28,

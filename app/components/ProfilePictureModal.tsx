@@ -194,7 +194,7 @@ export function ProfilePictureModal({
         left: 0,
         right: 0,
         bottom: 0,
-        background: "black",
+        background: "var(--bg-elevated)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -222,7 +222,7 @@ export function ProfilePictureModal({
         <div
           style={{
             flex: "1 1 50%",
-            background: "black",
+            background: "var(--bg-elevated)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -458,7 +458,7 @@ export function ProfilePictureModal({
                           style={{
                             background: "transparent",
                             border: "none",
-                            color: "#2563eb",
+                            color: "#0165FC",
                             fontSize: 12,
                             cursor: "pointer",
                             padding: "4px 0",

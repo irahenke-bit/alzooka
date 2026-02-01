@@ -1757,10 +1757,11 @@ function FeedContent() {
             alignItems: "flex-start",
             gap: 12,
             padding: "12px 16px",
-            background: "black",
+            background: "var(--bg-elevated)",
             borderRadius: 12,
             border: isDraggingOver ? "2px solid var(--accent)" : "1px solid var(--border-default)",
-            marginBottom: 12,
+            boxShadow: "var(--shadow-elevated)",
+            marginBottom: 16,
             position: "relative",
             zIndex: 2,
           }}
@@ -1984,7 +1985,7 @@ function FeedContent() {
         {youtubePreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "black", 
+              background: "var(--bg-card)", 
               borderRadius: 8, 
               overflow: "hidden",
               border: "1px solid var(--border-default)"
@@ -2037,7 +2038,7 @@ function FeedContent() {
         {spotifyPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "black", 
+              background: "var(--bg-card)", 
               borderRadius: 8, 
               overflow: "hidden",
               border: "1px solid var(--border-default)"
@@ -2087,7 +2088,7 @@ function FeedContent() {
         {linkPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 8,
               overflow: "hidden",
               border: "1px solid var(--border-default)"
@@ -2162,7 +2163,7 @@ function FeedContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
-              background: "black",
+              background: "var(--bg-card)",
               border: "1px solid var(--border-default)",
               color: "rgba(255,255,255,0.7)",
               padding: "8px 16px",
@@ -2366,7 +2367,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(37, 99, 235, 0.1)",
+        background: "rgba(1, 101, 252, 0.1)",
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
@@ -2382,7 +2383,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(37, 99, 235, 0.1)",
+        background: "rgba(1, 101, 252, 0.1)",
         borderRadius: 8,
         borderLeft: "4px solid var(--accent)",
       }}>
@@ -2400,7 +2401,7 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     <div style={{
       marginBottom: 12,
       padding: "12px 16px",
-      background: "rgba(37, 99, 235, 0.1)",
+      background: "rgba(1, 101, 252, 0.1)",
       borderRadius: 8,
       borderLeft: "4px solid var(--accent)",
     }}>
@@ -2635,7 +2636,7 @@ function PostCard({
             <div style={{ 
               marginBottom: 12, 
               padding: "8px 12px",
-              background: "rgba(37, 99, 235, 0.1)",
+              background: "rgba(1, 101, 252, 0.1)",
               borderRadius: 8,
               borderLeft: "3px solid var(--accent)",
               fontSize: 13,

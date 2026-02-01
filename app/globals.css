@@ -4,14 +4,15 @@
   /* ============================================
      ALZOOKA THEME - STRICT 3-COLOR SYSTEM
      Black / Blue / White ONLY
+     Depth via layered blacks, not new colors
      ============================================ */
   
   /* THE BLUE - One exact blue, used everywhere */
-  --accent: #2563eb;
-  --accent-light: #2563eb;
-  --accent-dark: #2563eb;
-  --accent-hover: #2563eb;
-  --accent-glow: rgba(37, 99, 235, 0.4);
+  --accent: #0165FC;
+  --accent-light: #0165FC;
+  --accent-dark: #0165FC;
+  --accent-hover: #0165FC;
+  --accent-glow: rgba(1, 101, 252, 0.3);
   
   /* EXCEPTION ONLY: Vote arrows */
   --gold: #eab308;              /* Upvote ONLY */
@@ -19,13 +20,13 @@
   --gold-glow: rgba(234, 179, 8, 0.4);
   --downvote-red: #ef4444;      /* Downvote ONLY */
   
-  /* BLACK - All backgrounds */
-  --bg-page: #000000;
-  --bg-card: #000000;
-  --bg-card-hover: #000000;
-  --bg-elevated: #000000;
-  --bg-header: #000000;
-  --bg-input: #000000;
+  /* LAYERED BLACKS - Depth via elevation */
+  --bg-page: #000000;           /* Darkest - page background */
+  --bg-header: #0a0a0a;         /* Lighter than page, darker than cards */
+  --bg-card: #111111;           /* Cards - lighter than header */
+  --bg-card-hover: #161616;     /* Card hover state */
+  --bg-elevated: #1a1a1a;       /* Composer, modals - most elevated */
+  --bg-input: #0d0d0d;          /* Input fields */
   
   /* WHITE - All text (use opacity for hierarchy) */
   --text-primary: #ffffff;
@@ -33,25 +34,25 @@
   --text-muted: rgba(255, 255, 255, 0.5);
   --text-inverse: #000000;
   
-  /* Borders - white with opacity */
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --border-default: rgba(255, 255, 255, 0.2);
-  --border-hover: rgba(255, 255, 255, 0.3);
-  --border-accent: rgba(37, 99, 235, 0.5);
+  /* Borders - white with opacity for subtle separation */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(1, 101, 252, 0.4);
   
-  /* Shadows */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.7);
+  /* Shadows - adds depth and elevation */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
   
   /* Legacy aliases */
   --alzooka-gold: var(--gold);
   --alzooka-cream: var(--text-primary);
-  --alzooka-black: #000000;
-  --alzooka-black-light: #000000;
-  --alzooka-black-dark: #000000;
+  --alzooka-black: var(--bg-page);
+  --alzooka-black-light: var(--bg-card);
+  --alzooka-black-dark: var(--bg-header);
   
-  --background: #000000;
+  --background: var(--bg-page);
   --foreground: #ffffff;
   
   /* Typography */

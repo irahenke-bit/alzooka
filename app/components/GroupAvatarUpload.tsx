@@ -220,7 +220,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
       {/* Error message */}
       {error && (
         <p style={{ 
-          color: "#2563eb", 
+          color: "#0165FC", 
           fontSize: 12, 
           marginTop: 8,
           textAlign: "center",

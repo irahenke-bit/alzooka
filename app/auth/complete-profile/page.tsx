@@ -311,7 +311,7 @@ function CompleteProfileContent() {
           )}
 
           {error && (
-            <p style={{ color: "#2563eb", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#0165FC", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}

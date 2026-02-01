@@ -148,7 +148,7 @@ export function ShareModal({
     >
       <div
         style={{
-          background: "black",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,

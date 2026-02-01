@@ -468,7 +468,7 @@ export default function GlobalModalsRenderer() {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                background: "black",
+                background: "var(--bg-elevated)",
                 padding: "40px 60px",
                 borderRadius: 12,
                 zIndex: modalWindow.zIndex,

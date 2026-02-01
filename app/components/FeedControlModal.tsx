@@ -96,7 +96,7 @@ export function FeedControlModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "black",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,
@@ -142,7 +142,7 @@ export function FeedControlModal({
                 gap: 12,
                 cursor: "pointer",
                 padding: "12px 16px",
-                background: worldView ? "rgba(37,99,235,0.2)" : "rgba(240, 235, 224, 0.05)",
+                background: worldView ? "rgba(1,101,252,0.2)" : "rgba(240, 235, 224, 0.05)",
                 borderRadius: 8,
                 border: worldView ? "1px solid var(--accent)" : "1px solid var(--border-subtle)",
               }}

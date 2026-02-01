@@ -133,7 +133,7 @@ export function LinkPreview({ url }: Props) {
         border: "1px solid rgba(240, 235, 224, 0.15)",
         borderRadius: 8,
         overflow: "hidden",
-        background: "black",
+        background: "var(--bg-card)",
         transition: "border-color 0.2s",
       }}
       onMouseEnter={(e) => {
@@ -217,7 +217,7 @@ export function LinkPreview({ url }: Props) {
           <div
             style={{
               fontSize: 14,
-              color: "#2563eb",
+              color: "#0165FC",
               marginTop: 4,
             }}
           >

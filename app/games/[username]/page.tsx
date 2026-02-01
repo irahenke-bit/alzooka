@@ -224,7 +224,7 @@ export default function GamingProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "black" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
@@ -235,7 +235,7 @@ export default function GamingProfilePage() {
 
   if (!profile) {
     return (
-      <div style={{ minHeight: "100vh", background: "black" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <p style={{ color: "#ffffff", marginBottom: 16 }}>Player not found</p>
@@ -246,7 +246,7 @@ export default function GamingProfilePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "black" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
@@ -289,7 +289,7 @@ export default function GamingProfilePage() {
         {/* Stats card */}
         {canSeeStats ? (
           <div style={{
-            background: "black",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -347,7 +347,7 @@ export default function GamingProfilePage() {
           </div>
         ) : (
           <div style={{
-            background: "black",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 32,
             marginBottom: 24,

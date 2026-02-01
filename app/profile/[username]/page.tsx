@@ -1630,7 +1630,7 @@ export default function ProfilePage() {
           <div style={{ 
             width: "100%", 
             height: 200, 
-            background: "linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, var(--shadow-card) 100%)",
+            background: "linear-gradient(135deg, rgba(1, 101, 252, 0.1) 0%, var(--shadow-card) 100%)",
             position: "relative"
           }}>
             {/* Skeleton Avatar */}
@@ -1653,7 +1653,7 @@ export default function ProfilePage() {
                 <div style={{ width: 180, height: 28, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
                 <div style={{ width: 100, height: 16, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
               </div>
-              <div style={{ width: 100, height: 36, background: "rgba(37, 99, 235, 0.2)", borderRadius: 8 }} />
+              <div style={{ width: 100, height: 36, background: "rgba(1, 101, 252, 0.2)", borderRadius: 8 }} />
             </div>
             
             {/* Skeleton Bio */}
@@ -1810,7 +1810,7 @@ export default function ProfilePage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "black",
+                      background: "var(--bg-card)",
                       border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       minWidth: 220,
@@ -2269,8 +2269,8 @@ export default function ProfilePage() {
                       alignItems: "center",
                       gap: 6,
                       padding: "4px 10px",
-                      background: "rgba(37,99,235,0.2)",
-                      border: "1px solid rgba(37, 99, 235, 0.3)",
+                      background: "rgba(1,101,252,0.2)",
+                      border: "1px solid rgba(1, 101, 252, 0.3)",
                       borderRadius: 16,
                       fontSize: 12,
                       color: "var(--accent)",
@@ -2388,7 +2388,7 @@ export default function ProfilePage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 12,
               border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
@@ -2638,7 +2638,7 @@ export default function ProfilePage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "black",
+                background: "var(--bg-card)",
                 borderRadius: 8,
                 overflow: "hidden",
                 border: "1px solid var(--border-default)"
@@ -2684,7 +2684,7 @@ export default function ProfilePage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "black",
+                background: "var(--bg-card)",
                 borderRadius: 8,
                 overflow: "hidden",
                 border: "1px solid var(--border-default)",
@@ -2748,7 +2748,7 @@ export default function ProfilePage() {
                   cursor: "pointer",
                 }}
               >
-                <span style={{ color: "#2563eb" }}>▶</span> YouTube
+                <span style={{ color: "#0165FC" }}>▶</span> YouTube
               </button>
               <button
                 type="button"
@@ -2850,7 +2850,7 @@ export default function ProfilePage() {
               {wallYoutubePreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "black",
+                    background: "var(--bg-card)",
                     borderRadius: 8,
                     overflow: "hidden",
                     border: "1px solid var(--border-default)"
@@ -2896,7 +2896,7 @@ export default function ProfilePage() {
               {wallSpotifyPreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "black",
+                    background: "var(--bg-card)",
                     borderRadius: 8,
                     overflow: "hidden",
                     border: "1px solid var(--border-default)",
@@ -2981,7 +2981,7 @@ export default function ProfilePage() {
                       cursor: "pointer",
                     }}
                   >
-                    <span style={{ color: "#2563eb" }}>▶</span> YouTube
+                    <span style={{ color: "#0165FC" }}>▶</span> YouTube
                   </button>
                   <button
                     type="button"
@@ -3210,7 +3210,7 @@ export default function ProfilePage() {
                         <div style={{ 
                           marginBottom: 12, 
                           padding: "8px 12px",
-                          background: "rgba(37, 99, 235, 0.1)",
+                          background: "rgba(1, 101, 252, 0.1)",
                           borderRadius: 8,
                           borderLeft: "3px solid var(--accent)",
                           fontSize: 13,

@@ -10,7 +10,7 @@ import Header from "@/app/components/Header";
 const isDev = process.env.NODE_ENV === "development";
 
 // Custom gamepad icon - Apple emoji style with colored buttons
-const GamepadIcon = ({ size = 48, color = "#2563eb" }: { size?: number; color?: string }) => (
+const GamepadIcon = ({ size = 48, color = "#0165FC" }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 36 36" style={{ filter: `drop-shadow(0 4px 8px ${color}40)` }}>
     {/* Main body - exact Apple emoji shape */}
     <path fill="rgba(255,255,255,0.25)" d="M2 17c0-3.813 2.995-7.071 3.926-8.74.89-1.596 2.391-2.86 4.324-2.86h15.5c1.933 0 3.434 1.264 4.324 2.86C30.995 9.93 34 13.188 34 17c0 5.5-3.5 12-7 12-2.5 0-4.5-2-9-2s-6.5 2-9 2c-3.5 0-7-6.5-7-12z"/>
@@ -21,10 +21,10 @@ const GamepadIcon = ({ size = 48, color = "#2563eb" }: { size?: number; color?: 
     <rect fill="#000000" x="7" y="14" width="4" height="5" rx="0.5"/>
     <rect fill="#000000" x="6" y="15.5" width="6" height="2" rx="0.5"/>
     {/* Face buttons - colored: Red, Green, Purple, Yellow */}
-    <circle fill="#2563eb" cx="27" cy="14" r="2.2"/> {/* Top - Red */}
-    <circle fill="#2563eb" cx="24" cy="17" r="2.2"/> {/* Left - Purple */}
-    <circle fill="#2563eb" cx="30" cy="17" r="2.2"/> {/* Right - Green */}
-    <circle fill="#2563eb" cx="27" cy="20" r="2.2"/> {/* Bottom - Yellow */}
+    <circle fill="#0165FC" cx="27" cy="14" r="2.2"/> {/* Top - Red */}
+    <circle fill="#0165FC" cx="24" cy="17" r="2.2"/> {/* Left - Purple */}
+    <circle fill="#0165FC" cx="30" cy="17" r="2.2"/> {/* Right - Green */}
+    <circle fill="#0165FC" cx="27" cy="20" r="2.2"/> {/* Bottom - Yellow */}
     {/* Joysticks */}
     <circle fill="#000000" cx="14" cy="21" r="3"/>
     <circle fill="#000000" cx="14" cy="21" r="2"/>
@@ -96,7 +96,7 @@ export default function GameHubPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(37, 99, 235, 0.2)",
+            border: "3px solid rgba(1, 101, 252, 0.2)",
             borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
@@ -118,7 +118,7 @@ export default function GameHubPage() {
       description: "Click the speaker to drop the bass, buy upgrades, and become the ultimate bass master!",
       icon: "🔊",
       href: "/game-hub/coin-collector",
-      color: "#2563eb",
+      color: "#0165FC",
       available: true,
     },
     {
@@ -136,7 +136,7 @@ export default function GameHubPage() {
       description: "Stack falling blocks to the beat! Clear lines, rack up combos, and rock out!",
       icon: "🎸",
       href: "/game-hub/rock-drop",
-      color: "#2563eb",
+      color: "#0165FC",
       available: true,
     },
     {
@@ -145,7 +145,7 @@ export default function GameHubPage() {
       description: "Ride the wave, collect amps, and smash through obstacles! Don't let your signal die!",
       icon: "〰️",
       href: "/game-hub/sound-wave",
-      color: "#2563eb",
+      color: "#0165FC",
       available: true,
     },
     {
@@ -154,7 +154,7 @@ export default function GameHubPage() {
       description: "Start as a street musician, earn Zooka Coins, buy upgrades, and rise to fame!",
       icon: "🎸",
       href: "/game-hub/musician-beggar",
-      color: "#2563eb",
+      color: "#0165FC",
       available: true,
     },
   ];
@@ -173,7 +173,7 @@ export default function GameHubPage() {
           <div style={{ 
             fontSize: 64, 
             marginBottom: 16,
-            filter: "drop-shadow(0 4px 12px rgba(37, 99, 235, 0.3))"
+            filter: "drop-shadow(0 4px 12px rgba(1, 101, 252, 0.3))"
           }}>
             🎮
           </div>
@@ -184,7 +184,7 @@ export default function GameHubPage() {
             letterSpacing: "-0.02em",
             color: "rgba(255,255,255,0.7)",
             margin: "0 0 12px 0",
-            textShadow: "0 0 20px rgba(37, 99, 235, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)",
+            textShadow: "0 0 20px rgba(1, 101, 252, 0.5), 0 0 40px rgba(1, 101, 252, 0.3)",
           }}>
             Game Hub
           </h1>

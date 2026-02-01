@@ -78,15 +78,14 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
         position: "sticky",
         top: 0,
         zIndex: 1000,
-        backgroundColor: "#000000",
-        opacity: 1,
+        backgroundColor: "var(--bg-header)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         gap: 20,
         padding: "16px 40px",
         borderBottom: "1px solid var(--border-subtle)",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
       }}
     >
       {/* Logo - always links home */}
@@ -125,7 +124,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
           box-shadow: none !important;
         }
         .nav-icon-glow:hover {
-          background: rgba(37,99,235,0.2) !important;
+          background: rgba(1,101,252,0.2) !important;
         }
         .nav-icon-glow:hover svg {
           fill: var(--accent) !important;
@@ -164,7 +163,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               color: "rgba(255,255,255,0.5)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+              e.currentTarget.style.background = "rgba(1,101,252,0.2)";
               e.currentTarget.style.color = "var(--accent)";
             }}
             onMouseLeave={(e) => {
@@ -196,7 +195,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 color: "rgba(255,255,255,0.5)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                 e.currentTarget.style.color = "var(--accent)";
               }}
               onMouseLeave={(e) => {
@@ -229,7 +228,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 color: "rgba(255,255,255,0.5)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                 e.currentTarget.style.color = "var(--accent)";
               }}
               onMouseLeave={(e) => {
@@ -259,7 +258,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 color: "rgba(255,255,255,0.5)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                 e.currentTarget.style.color = "var(--accent)";
               }}
               onMouseLeave={(e) => {
@@ -294,7 +293,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               color: "rgba(255,255,255,0.5)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+              e.currentTarget.style.background = "rgba(1,101,252,0.2)";
               e.currentTarget.style.color = "var(--accent)";
             }}
             onMouseLeave={(e) => {
@@ -377,7 +376,7 @@ function ProfileDropdown({
       <div
         className="profile-avatar-wrapper"
         style={{
-          background: showUserMenu ? "rgba(37,99,235,0.2)" : "transparent",
+          background: showUserMenu ? "rgba(1,101,252,0.2)" : "transparent",
           border: "none",
           padding: 4,
           borderRadius: "50%",
@@ -436,7 +435,7 @@ function ProfileDropdown({
                   position: "absolute",
                   top: "calc(100% + 8px)",
                   right: 0,
-                  background: "black",
+                  background: "var(--bg-card)",
                   border: "1px solid var(--border-default)",
                   borderRadius: 8,
                   padding: "8px 0",
@@ -459,7 +458,7 @@ function ProfileDropdown({
                     transition: "background 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                    e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
@@ -482,7 +481,7 @@ function ProfileDropdown({
                     transition: "background 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                    e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
@@ -520,7 +519,7 @@ function ProfileDropdown({
                     letterSpacing: "normal",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(37,99,235,0.2)";
+                    e.currentTarget.style.background = "rgba(1,101,252,0.2)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";

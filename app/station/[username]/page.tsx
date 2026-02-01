@@ -931,13 +931,13 @@ export default function ViewStationPage() {
                         fontWeight: 600,
                         background: alreadyHave || justCopied
                           ? "rgba(30, 215, 96, 0.2)"
-                          : "rgba(37, 99, 235, 0.2)",
+                          : "rgba(1, 101, 252, 0.2)",
                         color: alreadyHave || justCopied
                           ? "#1DB954"
                           : "var(--accent)",
                         border: alreadyHave || justCopied
                           ? "1px solid rgba(30, 215, 96, 0.4)"
-                          : "1px solid rgba(37, 99, 235, 0.4)",
+                          : "1px solid rgba(1, 101, 252, 0.4)",
                         borderRadius: 6,
                         cursor: alreadyHave || isAdding ? "not-allowed" : "pointer",
                         opacity: isAdding ? 0.5 : 1,
@@ -1057,13 +1057,13 @@ export default function ViewStationPage() {
                                   fontWeight: 600,
                                   background: copiedPlaylists.has(playlist.id)
                                     ? "rgba(30, 215, 96, 0.2)"
-                                    : "rgba(37, 99, 235, 0.2)",
+                                    : "rgba(1, 101, 252, 0.2)",
                                   color: copiedPlaylists.has(playlist.id)
                                     ? "#1DB954"
                                     : "var(--accent)",
                                   border: copiedPlaylists.has(playlist.id)
                                     ? "1px solid rgba(30, 215, 96, 0.4)"
-                                    : "1px solid rgba(37, 99, 235, 0.4)",
+                                    : "1px solid rgba(1, 101, 252, 0.4)",
                                   borderRadius: 6,
                                   cursor: copiedPlaylists.has(playlist.id) || copyingPlaylist === playlist.id 
                                     ? "not-allowed" 

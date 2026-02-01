@@ -129,7 +129,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "black",
+            background: "var(--bg-card)",
             color: "rgba(255,255,255,0.7)",
             fontSize: 12,
             fontWeight: 500,
@@ -203,7 +203,7 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#2563eb',
+            color: '#0165FC',
             textDecoration: 'none',
             wordBreak: 'break-all',
           }}
@@ -1956,7 +1956,7 @@ export default function GroupPage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "black",
+                      background: "var(--bg-card)",
                       border: "1px solid var(--border-default)",
                       borderRadius: 8,
                       minWidth: 200,
@@ -2742,7 +2742,7 @@ export default function GroupPage() {
                           <button
                             onClick={() => toggleMute(member.user_id)}
                             style={{
-                              background: feedPrefs.mute_members.includes(member.user_id) ? "#2563eb" : "transparent",
+                              background: feedPrefs.mute_members.includes(member.user_id) ? "#0165FC" : "transparent",
                               border: "1px solid rgba(255,255,255,0.3)",
                               color: feedPrefs.mute_members.includes(member.user_id) ? "#000000" : "rgba(255,255,255,0.7)",
                               padding: "4px 8px",
@@ -2981,7 +2981,7 @@ export default function GroupPage() {
       {/* Banned User Message */}
       {isUserBanned && (
         <div className="card" style={{ marginBottom: 24, textAlign: "center", padding: 20, background: "rgba(229, 115, 115, 0.1)", border: "1px solid rgba(229, 115, 115, 0.3)" }}>
-          <p style={{ margin: 0, color: "#2563eb" }}>🚫 You have been banned from interacting with this community.</p>
+          <p style={{ margin: 0, color: "#0165FC" }}>🚫 You have been banned from interacting with this community.</p>
         </div>
       )}
 
@@ -2995,7 +2995,7 @@ export default function GroupPage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 12,
               border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
@@ -3218,7 +3218,7 @@ export default function GroupPage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "black", 
+                background: "var(--bg-card)", 
                 borderRadius: 8, 
                 overflow: "hidden",
                 border: "1px solid var(--border-default)"
@@ -3269,7 +3269,7 @@ export default function GroupPage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "black", 
+                background: "var(--bg-card)", 
                 borderRadius: 8, 
                 overflow: "hidden",
                 border: "1px solid var(--border-default)"
@@ -3349,7 +3349,7 @@ export default function GroupPage() {
                 cursor: "pointer",
               }}
             >
-              <span style={{ color: "#2563eb" }}>▶</span> YouTube
+              <span style={{ color: "#0165FC" }}>▶</span> YouTube
             </button>
             <button
               type="button"
@@ -3988,7 +3988,7 @@ function YouTubeThumbnail({
         width: "100%",
         height: "100%",
         cursor: "pointer",
-        backgroundColor: "black",
+        backgroundColor: "var(--bg-card)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -4297,7 +4297,7 @@ const GroupPostCard = memo(function GroupPostCard({
             <div style={{
               marginBottom: 12,
               padding: "8px 12px",
-              background: "rgba(37, 99, 235, 0.1)",
+              background: "rgba(1, 101, 252, 0.1)",
               borderRadius: 8,
               borderLeft: "3px solid var(--accent)",
               fontSize: 13,

@@ -26,20 +26,20 @@ const LINES_PER_LEVEL = 10;
 // All pieces can be meaningfully rotated
 const PIECES = [
   // 3-block pieces
-  { name: "tri", blocks: [[0, 0], [1, 0], [2, 0]], color: "#2563eb" }, // Straight 3
-  { name: "corner", blocks: [[0, 0], [1, 0], [0, 1]], color: "#2563eb" }, // L-3
+  { name: "tri", blocks: [[0, 0], [1, 0], [2, 0]], color: "#0165FC" }, // Straight 3
+  { name: "corner", blocks: [[0, 0], [1, 0], [0, 1]], color: "#0165FC" }, // L-3
   
   // 4-block pieces
-  { name: "line", blocks: [[0, 0], [1, 0], [2, 0], [3, 0]], color: "#2563eb" }, // Line
-  { name: "tee", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]], color: "#2563eb" }, // T-shape
-  { name: "snake", blocks: [[0, 0], [1, 0], [1, 1], [2, 1]], color: "#2563eb" }, // S-shape
-  { name: "bolt", blocks: [[1, 0], [2, 0], [0, 1], [1, 1]], color: "#2563eb" }, // Z-shape
-  { name: "elbow", blocks: [[0, 0], [0, 1], [1, 1], [2, 1]], color: "#2563eb" }, // J-like
-  { name: "hook", blocks: [[2, 0], [0, 1], [1, 1], [2, 1]], color: "#2563eb" }, // L-like
+  { name: "line", blocks: [[0, 0], [1, 0], [2, 0], [3, 0]], color: "#0165FC" }, // Line
+  { name: "tee", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]], color: "#0165FC" }, // T-shape
+  { name: "snake", blocks: [[0, 0], [1, 0], [1, 1], [2, 1]], color: "#0165FC" }, // S-shape
+  { name: "bolt", blocks: [[1, 0], [2, 0], [0, 1], [1, 1]], color: "#0165FC" }, // Z-shape
+  { name: "elbow", blocks: [[0, 0], [0, 1], [1, 1], [2, 1]], color: "#0165FC" }, // J-like
+  { name: "hook", blocks: [[2, 0], [0, 1], [1, 1], [2, 1]], color: "#0165FC" }, // L-like
   
   // 5-block pieces (pentominoes - unique to Rock Drop)
-  { name: "utah", blocks: [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]], color: "#2563eb" }, // L-pentomino
-  { name: "stairs", blocks: [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2]], color: "#2563eb" }, // Staircase
+  { name: "utah", blocks: [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]], color: "#0165FC" }, // L-pentomino
+  { name: "stairs", blocks: [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2]], color: "#0165FC" }, // Staircase
 ];
 
 // Rock-themed level names
@@ -407,7 +407,7 @@ export default function RockDropPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "black" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <div style={{ 
           height: 60, 
           background: "rgba(0,0,0,0.3)", 
@@ -423,7 +423,7 @@ export default function RockDropPage() {
             width: 48,
             height: 48,
             border: "3px solid rgba(220, 38, 38, 0.2)",
-            borderTopColor: "#2563eb",
+            borderTopColor: "#0165FC",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
           }} />
@@ -459,7 +459,7 @@ export default function RockDropPage() {
             display: "inline-flex", 
             alignItems: "center", 
             gap: 8, 
-            color: "#2563eb", 
+            color: "#0165FC", 
             textDecoration: "none",
             fontSize: 14,
             marginBottom: 20,
@@ -473,7 +473,7 @@ export default function RockDropPage() {
           <h1 style={{ 
             fontSize: 36, 
             fontWeight: 800, 
-            color: "#2563eb",
+            color: "#0165FC",
             margin: 0,
             textShadow: "0 0 20px rgba(220, 38, 38, 0.5)",
             fontFamily: "system-ui",
@@ -492,14 +492,14 @@ export default function RockDropPage() {
             background: "rgba(0,0,0,0.6)",
             borderRadius: 12,
             padding: 12,
-            border: "2px solid #2563eb40",
+            border: "2px solid #0165FC40",
           }}>
             <div style={{
               display: "grid",
               gridTemplateColumns: `repeat(${BOARD_WIDTH}, 24px)`,
               gridTemplateRows: `repeat(${BOARD_HEIGHT}, 24px)`,
               gap: 1,
-              background: "black",
+              background: "var(--bg-card)",
               padding: 2,
               borderRadius: 4,
             }}>
@@ -547,7 +547,7 @@ export default function RockDropPage() {
               }}>
                 {gameOver ? (
                   <>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: "#2563eb", marginBottom: 8 }}>
+                    <div style={{ fontSize: 32, fontWeight: 800, color: "#0165FC", marginBottom: 8 }}>
                       GAME OVER
                     </div>
                     <div style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
@@ -565,7 +565,7 @@ export default function RockDropPage() {
                     padding: "12px 32px",
                     fontSize: 16,
                     fontWeight: 600,
-                    background: "#2563eb",
+                    background: "#0165FC",
                     color: "rgba(255,255,255,0.7)",
                     border: "none",
                     borderRadius: 8,
@@ -595,7 +595,7 @@ export default function RockDropPage() {
                 background: "rgba(0,0,0,0.8)",
                 borderRadius: 12,
               }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: "#2563eb" }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: "#0165FC" }}>
                   PAUSED
                 </div>
                 <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
@@ -613,14 +613,14 @@ export default function RockDropPage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>SCORE</div>
-              <div style={{ color: "#2563eb", fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: "#0165FC", fontSize: 24, fontWeight: 700 }}>
                 {score.toLocaleString()}
               </div>
               {combo > 1 && (
-                <div style={{ color: "#2563eb", fontSize: 12, marginTop: 4 }}>
+                <div style={{ color: "#0165FC", fontSize: 12, marginTop: 4 }}>
                   🔥 {combo}x COMBO!
                 </div>
               )}
@@ -632,7 +632,7 @@ export default function RockDropPage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>LINES</div>
               <div style={{ color: "#ffffff", fontSize: 20, fontWeight: 600 }}>{lines}</div>
@@ -646,7 +646,7 @@ export default function RockDropPage() {
               borderRadius: 8,
               padding: 16,
               marginBottom: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 8 }}>NEXT</div>
               <div style={{
@@ -681,10 +681,10 @@ export default function RockDropPage() {
               background: "rgba(0,0,0,0.4)",
               borderRadius: 8,
               padding: 16,
-              border: "1px solid #2563eb30",
+              border: "1px solid #0165FC30",
             }}>
               <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginBottom: 4 }}>HIGH SCORE</div>
-              <div style={{ color: "#2563eb", fontSize: 18, fontWeight: 600 }}>
+              <div style={{ color: "#0165FC", fontSize: 18, fontWeight: 600 }}>
                 {highScore.toLocaleString()}
               </div>
             </div>

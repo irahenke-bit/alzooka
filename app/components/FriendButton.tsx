@@ -203,7 +203,7 @@ export function FriendButton({
             onClick={rejectRequest}
             style={{
               background: "transparent",
-              color: "#2563eb",
+              color: "#0165FC",
               padding: "8px 16px",
               fontSize: 14,
               border: "1px solid rgba(255,255,255,0.3)",
@@ -253,7 +253,7 @@ export function FriendButton({
             >
               <div
                 style={{
-                  backgroundColor: "black",
+                  backgroundColor: "var(--bg-card)",
                   border: "1px solid rgba(212, 175, 55, 0.3)",
                   borderRadius: 12,
                   padding: 24,

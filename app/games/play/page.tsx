@@ -377,7 +377,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "black",
+        background: "var(--bg-card)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -392,7 +392,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "black",
+        background: "var(--bg-card)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -443,7 +443,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "black",
+        background: "var(--bg-card)",
         padding: 24,
       }}>
         {/* Top bar */}
@@ -460,7 +460,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: timeLeft < 30 ? "#2563eb" : "var(--accent)",
+              color: timeLeft < 30 ? "#0165FC" : "var(--accent)",
             }}>
               {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
             </span>
@@ -470,7 +470,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: questionTimeLeft <= 2 ? "#2563eb" : "var(--accent)",
+              color: questionTimeLeft <= 2 ? "#0165FC" : "var(--accent)",
             }}>
               {questionTimeLeft}s
             </span>
@@ -485,7 +485,7 @@ export default function PlayPage() {
         <div style={{
           maxWidth: 600,
           margin: "0 auto",
-          background: "black",
+          background: "var(--bg-card)",
           borderRadius: 16,
           padding: 24,
         }}>
@@ -509,7 +509,7 @@ export default function PlayPage() {
                   borderColor = "#1DB954";
                 } else if (isSelected) {
                   bgColor = "rgba(229, 115, 115, 0.3)";
-                  borderColor = "#2563eb";
+                  borderColor = "#0165FC";
                 }
               }
 
@@ -550,7 +550,7 @@ export default function PlayPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "black",
+      background: "var(--bg-card)",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -586,7 +586,7 @@ export default function PlayPage() {
         <p style={{ 
           marginBottom: 24, 
           fontSize: 18,
-          color: ratingChange >= 0 ? "#2563eb" : "rgba(255,255,255,0.6)",
+          color: ratingChange >= 0 ? "#0165FC" : "rgba(255,255,255,0.6)",
         }}>
           {getRatingChangeDescription(ratingChange)}
         </p>

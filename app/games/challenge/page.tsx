@@ -153,7 +153,7 @@ export default function ChallengePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "black" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
         <Header user={currentUser} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <p style={{ color: "#ffffff", opacity: 0.7 }}>Loading...</p>
@@ -163,7 +163,7 @@ export default function ChallengePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "black" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-card)" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
@@ -194,7 +194,7 @@ export default function ChallengePage() {
                     flex: 1,
                     padding: "12px 16px",
                     fontSize: 16,
-                    background: "black",
+                    background: "var(--bg-card)",
                     border: "1px solid var(--border-default)",
                     borderRadius: 8,
                     color: "#ffffff",
@@ -234,7 +234,7 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "black",
+                        background: "var(--bg-card)",
                         border: "1px solid var(--border-subtle)",
                         borderRadius: 8,
                         cursor: "pointer",
@@ -281,7 +281,7 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "black",
+                        background: "var(--bg-card)",
                         border: "1px solid var(--border-subtle)",
                         borderRadius: 8,
                         cursor: "pointer",
@@ -323,7 +323,7 @@ export default function ChallengePage() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: 16,
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -392,7 +392,7 @@ export default function ChallengePage() {
                     flex: 1,
                     padding: 16,
                     background: selectedMode === "five_second" ? "rgba(229, 115, 115, 0.2)" : "black",
-                    border: selectedMode === "five_second" ? "2px solid #2563eb" : "2px solid var(--border-subtle)",
+                    border: selectedMode === "five_second" ? "2px solid #0165FC" : "2px solid var(--border-subtle)",
                     borderRadius: 12,
                     cursor: "pointer",
                     color: "rgba(255,255,255,0.7)",
@@ -408,7 +408,7 @@ export default function ChallengePage() {
             {/* Sharing consent */}
             <div style={{
               padding: 16,
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 12,
               marginBottom: 24,
             }}>

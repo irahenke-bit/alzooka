@@ -172,7 +172,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
     >
       <div
         style={{
-          background: "black",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 600,
@@ -260,7 +260,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 flex: 1,
                 padding: "12px 16px",
                 fontSize: 16,
-                background: "black",
+                background: "var(--bg-elevated)",
                 border: "1px solid var(--border-default)",
                 borderRadius: 8,
                 color: "#ffffff",
@@ -292,7 +292,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
         {/* Results */}
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {error && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#2563eb" }}>
+            <div style={{ padding: "20px", textAlign: "center", color: "#0165FC" }}>
               {error}
             </div>
           )}

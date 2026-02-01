@@ -144,13 +144,13 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "black",
+              background: "var(--bg-card)",
               borderRadius: 12,
               padding: "24px 32px",
               maxWidth: 400,
               textAlign: "center",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-              border: "1px solid rgba(37, 99, 235, 0.3)",
+              border: "1px solid rgba(1, 101, 252, 0.3)",
             }}
           >
             <div style={{ fontSize: 48, marginBottom: 16 }}>📑</div>

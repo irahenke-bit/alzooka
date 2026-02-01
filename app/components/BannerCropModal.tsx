@@ -221,7 +221,7 @@ export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = f
       {moderationError && (
         <p style={{ 
           textAlign: "center", 
-          color: "#2563eb", 
+          color: "#0165FC", 
           fontSize: 14, 
           margin: 0,
           padding: "8px 16px",
