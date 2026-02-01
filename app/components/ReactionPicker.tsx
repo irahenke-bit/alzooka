@@ -150,7 +150,7 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
           disabled={!userId}
           style={{
             background: "transparent",
-            color: "rgba(255,255,255,0.5)",
+            color: "#ffffff",
             padding: "4px 0",
             fontSize: 14,
             border: "none",
@@ -163,8 +163,8 @@ export function ReactionPicker({ targetType, targetId, userId, ownerId, supabase
             transition: "color 0.2s",
             opacity: userId ? 1 : 0.4,
           }}
-          onMouseEnter={(e) => userId && (e.currentTarget.style.color = "var(--accent)")}
-          onMouseLeave={(e) => userId && (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+          onMouseEnter={(e) => userId && (e.currentTarget.style.color = "#0165FC")}
+          onMouseLeave={(e) => userId && (e.currentTarget.style.color = "#ffffff")}
           title="Add reaction"
         >
           {/* Smiley face outline icon */}

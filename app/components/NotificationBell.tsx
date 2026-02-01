@@ -273,7 +273,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           viewBox="0 0 24 24" 
           fill="currentColor"
           style={{ 
-            color: isOpen ? "#0165FC" : "rgba(255,255,255,0.5)", 
+            color: isOpen ? "#0165FC" : "#ffffff", 
             transition: "color 0.2s" 
           }}
         >

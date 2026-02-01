@@ -284,12 +284,12 @@ button.btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Icon/action buttons - white at rest, blue on hover */
+/* Icon/action buttons - pure white at rest, blue on hover */
 button.btn-icon,
 .btn-icon {
   background: transparent !important;
   border: none !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
   box-shadow: none !important;
   text-transform: none !important;
   transition: color 0.2s ease !important;
@@ -303,7 +303,7 @@ button.btn-icon::before,
 button.btn-icon:hover,
 .btn-icon:hover {
   background: transparent !important;
-  color: var(--accent) !important;
+  color: #0165FC !important;
   transform: none !important;
 }
 
@@ -451,21 +451,21 @@ a:hover {
 
 /* Navigation icon states */
 .nav-icon {
-  color: var(--text-muted);
+  color: #ffffff;
   transition: color 0.2s ease;
 }
 
 .nav-icon:hover {
-  color: var(--accent);
+  color: #0165FC;
 }
 
 .nav-icon.active {
-  color: var(--accent);
+  color: #0165FC;
 }
 
 /* Reaction states */
 .reaction-icon {
-  color: var(--text-muted);
+  color: #ffffff;
   transition: all 0.2s ease;
 }
 

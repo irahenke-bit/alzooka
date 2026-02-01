@@ -160,7 +160,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               borderRadius: "50%",
               transition: "all 0.2s",
               textDecoration: "none",
-              color: "rgba(255,255,255,0.5)",
+              color: "#ffffff",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "rgba(1,101,252,0.2)";
@@ -192,7 +192,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 borderRadius: "50%",
                 transition: "all 0.2s",
                 textDecoration: "none",
-                color: "rgba(255,255,255,0.5)",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(1,101,252,0.2)";
@@ -225,7 +225,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 borderRadius: "50%",
                 transition: "all 0.2s",
                 textDecoration: "none",
-                color: "rgba(255,255,255,0.5)",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(1,101,252,0.2)";
@@ -255,7 +255,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
                 borderRadius: "50%",
                 transition: "all 0.2s",
                 textDecoration: "none",
-                color: "rgba(255,255,255,0.5)",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(1,101,252,0.2)";
@@ -290,7 +290,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               textDecoration: "none",
               background: "transparent",
               marginRight: 8,
-              color: "rgba(255,255,255,0.5)",
+              color: "#ffffff",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "rgba(1,101,252,0.2)";

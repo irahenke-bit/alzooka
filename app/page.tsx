@@ -2279,7 +2279,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--gold)" : "rgba(255,255,255,0.5)",
+          color: userVote === 1 ? "var(--gold)" : "#ffffff",
           fontSize: 14,
           lineHeight: 1,
           boxShadow: "none",
@@ -2304,7 +2304,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === -1 ? "#e57373" : "rgba(255,255,255,0.5)",
+          color: userVote === -1 ? "#e57373" : "#ffffff",
           fontSize: 14,
           lineHeight: 1,
           boxShadow: "none",
@@ -2568,7 +2568,7 @@ function PostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "rgba(255,255,255,0.5)",
+                  color: "#ffffff",
                   fontSize: 12,
                   cursor: "pointer",
                   padding: "4px 8px",
@@ -2577,7 +2577,7 @@ function PostCard({
                   transition: "color 0.2s",
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#ffffff"}
                 title="Share post"
               >
                 Share
@@ -2590,7 +2590,7 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.5)",
+                      color: "#ffffff",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -2599,7 +2599,7 @@ function PostCard({
                       transition: "color 0.2s",
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "#ffffff"}
                     title="Edit post"
                   >
                     Edit
@@ -2609,7 +2609,7 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.5)",
+                      color: "#ffffff",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -2618,7 +2618,7 @@ function PostCard({
                       transition: "color 0.2s",
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "#ffffff"}
                     title="Delete post"
                   >
                     Delete
@@ -2955,7 +2955,7 @@ function PostCard({
               onClick={onOpenModal}
               style={{
                 background: "transparent",
-                color: "rgba(255,255,255,0.5)",
+                color: "#ffffff",
                 padding: "4px 0",
                 fontSize: 14,
                 border: "none",
@@ -2968,7 +2968,7 @@ function PostCard({
                 transition: "color 0.2s",
               }}
               onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#ffffff"}
             >
               {/* Chat bubble outline icon */}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
