@@ -3013,17 +3013,24 @@ export default function ProfilePage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 16, marginBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+      <div style={{ 
+        display: "flex", 
+        gap: 2, 
+        marginBottom: 16, 
+        background: "#0a0a0a",
+        borderRadius: 8,
+        padding: 4,
+      }}>
         <button
           onClick={() => setActiveTab("posts")}
           style={{
-            background: "transparent",
-            color: activeTab === "posts" ? "#ffffff" : "rgba(255,255,255,0.5)",
+            background: activeTab === "posts" ? "#1a1a1a" : "transparent",
+            color: "#ffffff",
             border: "none",
-            borderBottom: activeTab === "posts" ? "2px solid #0165FC" : "2px solid transparent",
-            padding: "12px 4px",
+            borderRadius: 6,
+            padding: "10px 20px",
             fontSize: 14,
-            marginBottom: -1,
+            fontWeight: activeTab === "posts" ? 600 : 400,
           }}
         >
           Posts ({posts.length})
@@ -3031,13 +3038,13 @@ export default function ProfilePage() {
         <button
           onClick={() => setActiveTab("comments")}
           style={{
-            background: "transparent",
-            color: activeTab === "comments" ? "#ffffff" : "rgba(255,255,255,0.5)",
+            background: activeTab === "comments" ? "#1a1a1a" : "transparent",
+            color: "#ffffff",
             border: "none",
-            borderBottom: activeTab === "comments" ? "2px solid #0165FC" : "2px solid transparent",
-            padding: "12px 4px",
+            borderRadius: 6,
+            padding: "10px 20px",
             fontSize: 14,
-            marginBottom: -1,
+            fontWeight: activeTab === "comments" ? 600 : 400,
           }}
         >
           Comments ({comments.length})

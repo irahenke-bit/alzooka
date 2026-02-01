@@ -3577,19 +3577,24 @@ export default function StationPage() {
 
         {/* Tab Navigation for Albums / Playlists */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(240, 235, 224, 0.15)" }}>
+          <div style={{ 
+            display: "flex", 
+            gap: 2, 
+            background: "#0a0a0a",
+            borderRadius: 8,
+            padding: 4,
+          }}>
             <button
               onClick={() => setActiveTab("albums")}
               style={{
-                padding: "12px 24px",
+                padding: "10px 20px",
                 fontSize: 15,
-                fontWeight: 600,
-                background: activeTab === "albums" ? "rgba(30, 215, 96, 0.15)" : "transparent",
-                color: activeTab === "albums" ? "#1DB954" : "rgba(240, 235, 224, 0.6)",
+                fontWeight: activeTab === "albums" ? 600 : 400,
+                background: activeTab === "albums" ? "#1a1a1a" : "transparent",
+                color: "#ffffff",
                 border: "none",
-                borderBottom: activeTab === "albums" ? "2px solid #1DB954" : "2px solid transparent",
+                borderRadius: 6,
                 cursor: "pointer",
-                marginBottom: -1,
               }}
             >
               Albums ({albums.length})
@@ -3597,15 +3602,14 @@ export default function StationPage() {
             <button
               onClick={() => setActiveTab("playlists")}
               style={{
-                padding: "12px 24px",
+                padding: "10px 20px",
                 fontSize: 15,
-                fontWeight: 600,
-                background: activeTab === "playlists" ? "rgba(1,101,252,0.2)" : "transparent",
-                color: activeTab === "playlists" ? "#0165FC" : "rgba(240, 235, 224, 0.6)",
+                fontWeight: activeTab === "playlists" ? 600 : 400,
+                background: activeTab === "playlists" ? "#1a1a1a" : "transparent",
+                color: "#ffffff",
                 border: "none",
-                borderBottom: activeTab === "playlists" ? "2px solid #0165FC" : "2px solid transparent",
+                borderRadius: 6,
                 cursor: "pointer",
-                marginBottom: -1,
               }}
             >
               Playlists ({playlists.length})
