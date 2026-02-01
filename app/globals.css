@@ -449,6 +449,30 @@ a:hover {
   font-weight: 800;
 }
 
+/* Tab buttons - override global button styles */
+.tab-btn {
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 10px 20px !important;
+  fontSize: 14px !important;
+  fontWeight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  box-shadow: none !important;
+}
+
+.tab-btn:hover {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.tab-btn::before {
+  display: none !important;
+}
+
 /* Navigation icon states */
 .nav-icon {
   color: #ffffff;

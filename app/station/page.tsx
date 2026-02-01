@@ -3586,30 +3586,18 @@ export default function StationPage() {
           }}>
             <button
               onClick={() => setActiveTab("albums")}
+              className="tab-btn"
               style={{
-                padding: "10px 20px",
-                fontSize: 15,
-                fontWeight: 600,
                 background: activeTab === "albums" ? "#1a1a1a" : "transparent",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
               }}
             >
               Albums ({albums.length})
             </button>
             <button
               onClick={() => setActiveTab("playlists")}
+              className="tab-btn"
               style={{
-                padding: "10px 20px",
-                fontSize: 15,
-                fontWeight: 600,
                 background: activeTab === "playlists" ? "#1a1a1a" : "transparent",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
               }}
             >
               Playlists ({playlists.length})

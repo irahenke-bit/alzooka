@@ -3023,28 +3023,18 @@ export default function ProfilePage() {
       }}>
         <button
           onClick={() => setActiveTab("posts")}
+          className="tab-btn"
           style={{
             background: activeTab === "posts" ? "#1a1a1a" : "transparent",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: 6,
-            padding: "10px 20px",
-            fontSize: 14,
-            fontWeight: 600,
           }}
         >
           Posts ({posts.length})
         </button>
         <button
           onClick={() => setActiveTab("comments")}
+          className="tab-btn"
           style={{
             background: activeTab === "comments" ? "#1a1a1a" : "transparent",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: 6,
-            padding: "10px 20px",
-            fontSize: 14,
-            fontWeight: 600,
           }}
         >
           Comments ({comments.length})
