@@ -128,7 +128,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Gmail-inspired red */}
+        {/* Email Link Button - Secondary, dark */}
         <button
           type="button"
           onClick={() => { setLoginMode("magic"); setError(""); setSuccess(""); }}
@@ -140,9 +140,9 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "#c71610",
+            background: "#000000",
             color: "#ffffff",
-            border: "1px solid #a01210",
+            border: "1px solid rgba(255,255,255,0.2)",
             fontWeight: 500,
           }}
         >

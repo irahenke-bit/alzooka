@@ -175,7 +175,7 @@ export default function SignupPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Gmail-inspired red */}
+        {/* Email Link Button - Secondary, dark */}
         <button
           type="button"
           onClick={() => { setShowMagicLink(true); setError(""); setSuccess(""); }}
@@ -187,9 +187,9 @@ export default function SignupPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "#c71610",
+            background: "#000000",
             color: "#ffffff",
-            border: "1px solid #a01210",
+            border: "1px solid rgba(255,255,255,0.2)",
             fontWeight: 500,
           }}
         >
