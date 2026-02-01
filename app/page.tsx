@@ -2568,13 +2568,16 @@ function PostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "rgba(255,255,255,0.7)",
+                  color: "rgba(255,255,255,0.5)",
                   fontSize: 12,
                   cursor: "pointer",
                   padding: "4px 8px",
                   boxShadow: "none",
                   textTransform: "none",
+                  transition: "color 0.2s",
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
                 title="Share post"
               >
                 Share
@@ -2587,13 +2590,16 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.7)",
+                      color: "rgba(255,255,255,0.5)",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
                       boxShadow: "none",
                       textTransform: "none",
+                      transition: "color 0.2s",
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
                     title="Edit post"
                   >
                     Edit
@@ -2603,13 +2609,16 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.6)",
+                      color: "rgba(255,255,255,0.5)",
                       fontSize: 12,
                       cursor: "pointer",
                       padding: "4px 8px",
                       boxShadow: "none",
                       textTransform: "none",
+                      transition: "color 0.2s",
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
                     title="Delete post"
                   >
                     Delete
@@ -2946,7 +2955,7 @@ function PostCard({
               onClick={onOpenModal}
               style={{
                 background: "transparent",
-                color: "rgba(255,255,255,0.7)",
+                color: "rgba(255,255,255,0.5)",
                 padding: "4px 0",
                 fontSize: 14,
                 border: "none",
@@ -2956,7 +2965,10 @@ function PostCard({
                 gap: 6,
                 boxShadow: "none",
                 textTransform: "none",
+                transition: "color 0.2s",
               }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#0165FC"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.5)"}
             >
               {/* Chat bubble outline icon */}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

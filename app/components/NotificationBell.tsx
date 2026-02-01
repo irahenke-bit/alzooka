@@ -267,7 +267,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           overflow: "visible",
         }}
       >
-        <span style={{ fontSize: 22, color: "#0165FC" }}>🔔</span>
+        <span style={{ fontSize: 22, color: isOpen ? "#0165FC" : "rgba(255,255,255,0.5)", transition: "color 0.2s" }}>🔔</span>
         {unreadCount > 0 && (
           <span
             style={{

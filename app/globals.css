@@ -280,6 +280,29 @@ button.btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Icon/action buttons - white at rest, blue on hover */
+button.btn-icon,
+.btn-icon {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  transition: color 0.2s ease !important;
+}
+
+button.btn-icon::before,
+.btn-icon::before {
+  display: none !important;
+}
+
+button.btn-icon:hover,
+.btn-icon:hover {
+  background: transparent !important;
+  color: var(--accent) !important;
+  transform: none !important;
+}
+
 button.btn-sm {
   padding: 8px 16px;
   font-size: 12px;
