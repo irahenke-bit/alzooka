@@ -115,7 +115,7 @@ export function ContentFilterModal({
     >
       <div
         style={{
-          background: "var(--alzooka-teal-dark)",
+          background: "var(--bg-header)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 480,
@@ -142,7 +142,7 @@ export function ContentFilterModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -177,8 +177,8 @@ export function ContentFilterModal({
                 <button
                   onClick={handleConfirmCommonWord}
                   style={{
-                    background: "var(--alzooka-gold)",
-                    color: "var(--alzooka-teal-dark)",
+                    background: "var(--accent)",
+                    color: "var(--bg-header)",
                     border: "none",
                     borderRadius: 6,
                     padding: "8px 16px",
@@ -194,7 +194,7 @@ export function ContentFilterModal({
                   style={{
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     borderRadius: 6,
                     padding: "8px 16px",
                     cursor: "pointer",
@@ -225,7 +225,7 @@ export function ContentFilterModal({
                 borderRadius: 8,
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 background: "rgba(0, 0, 0, 0.2)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 fontSize: 14,
               }}
             />
@@ -233,8 +233,8 @@ export function ContentFilterModal({
               onClick={() => handleAddWord(newWord)}
               disabled={saving || !newWord.trim()}
               style={{
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)",
+                color: "var(--bg-header)",
                 border: "none",
                 borderRadius: 8,
                 padding: "10px 20px",
@@ -278,7 +278,7 @@ export function ContentFilterModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         cursor: "pointer",
                         padding: 0,
                         fontSize: 16,

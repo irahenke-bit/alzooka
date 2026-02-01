@@ -438,8 +438,8 @@ export default function GlobalModalsRenderer() {
         position: "fixed",
         bottom: 100,
         right: 20,
-        background: "var(--alzooka-gold)",
-        color: "var(--alzooka-teal-dark)",
+        background: "var(--accent)",
+        color: "var(--bg-header)",
         padding: "8px 16px",
         borderRadius: 8,
         zIndex: 99999,
@@ -468,7 +468,7 @@ export default function GlobalModalsRenderer() {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                background: "var(--alzooka-teal-light)",
+                background: "var(--bg-elevated)",
                 padding: "40px 60px",
                 borderRadius: 12,
                 zIndex: modalWindow.zIndex,
@@ -476,7 +476,7 @@ export default function GlobalModalsRenderer() {
               }}
             >
               <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
-              <div style={{ color: "var(--alzooka-cream)" }}>Loading post...</div>
+              <div style={{ color: "var(--text-primary)" }}>Loading post...</div>
             </div>
           );
         }

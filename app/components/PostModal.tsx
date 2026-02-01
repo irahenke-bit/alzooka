@@ -38,8 +38,8 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "#0a0a0a",
-            color: "var(--alzooka-cream)",
+            background: "var(--bg-page)",
+            color: "var(--text-primary)",
             fontSize: 12,
             fontWeight: 500,
             borderRadius: 4,
@@ -105,7 +105,7 @@ function renderTextWithLinksAndMentions(text: string, mentionCache?: Map<string,
           key={i}
           href={`/profile/${username}`}
           style={{
-            color: 'var(--alzooka-gold)',
+            color: 'var(--accent)',
             fontWeight: 600,
             textDecoration: 'none',
           }}
@@ -212,7 +212,7 @@ function renderTextWithMentionsOnly(text: string, mentionCache?: Map<string, str
           key={i}
           href={`/profile/${username}`}
           style={{
-            color: 'var(--alzooka-gold)',
+            color: 'var(--accent)',
             fontWeight: 600,
             textDecoration: 'none',
           }}
@@ -370,7 +370,7 @@ function VoteButtons({
   const score = voteTotals[key] || 0;
 
   const scoreColor =
-    score > 0 ? "var(--alzooka-gold)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
+    score > 0 ? "var(--accent)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
@@ -385,7 +385,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+          color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,
@@ -1379,12 +1379,12 @@ export function PostModal({
           marginLeft: isReply ? 40 : 0,
           ...(activeHighlight === comment.id
             ? {
-                background: "rgba(212, 168, 75, 0.2)",
+                background: "rgba(107, 140, 174, 0.2)",
                 padding: 12,
                 marginLeft: isReply ? 28 : -12,
                 marginRight: -12,
                 borderRadius: 8,
-                boxShadow: "inset 0 0 0 2px var(--alzooka-gold)",
+                boxShadow: "inset 0 0 0 2px var(--accent)",
               }
             : {}),
         }}
@@ -1398,7 +1398,7 @@ export function PostModal({
             onVote={onVote}
           />
 
-          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--alzooka-gold)' : 'rgba(212, 168, 75, 0.4)'}` }}>
+          <div style={{ flex: 1, paddingLeft: 8, borderLeft: `2px solid ${!isReply ? 'var(--accent)' : 'rgba(107, 140, 174, 0.4)'}` }}>
             <div
               style={{
                 marginBottom: 4,
@@ -1430,7 +1430,7 @@ export function PostModal({
                         width: isReply ? 26 : 28,
                         height: isReply ? 26 : 28,
                         borderRadius: "50%",
-                        background: "var(--alzooka-gold)",
+                        background: "var(--accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1443,7 +1443,7 @@ export function PostModal({
                     </div>
                   )}
                   <div>
-                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                    <span style={{ fontSize: isReply ? 13 : 14, fontWeight: 600, color: "var(--text-primary)" }}>
                       {comment.users.display_name || comment.users.username}
                     </span>
                   </div>
@@ -1477,7 +1477,7 @@ export function PostModal({
                 {isGroupAdmin(comment.user_id) && (
                   <span style={{ 
                     fontSize: 10, 
-                    color: "var(--alzooka-gold)",
+                    color: "var(--accent)",
                     background: "rgba(201, 165, 92, 0.15)",
                     padding: "2px 6px",
                     borderRadius: 4,
@@ -1496,7 +1496,7 @@ export function PostModal({
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     fontSize: 11,
                     cursor: "pointer",
                     opacity: 0.6,
@@ -1516,7 +1516,7 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       fontSize: 11,
                       cursor: "pointer",
                       opacity: 0.7,
@@ -1592,7 +1592,7 @@ export function PostModal({
                     borderRadius: "8px",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
                     background: "rgba(0, 0, 0, 0.2)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     minHeight: 44,
                     maxHeight: 144,
                     overflowY: "auto",
@@ -1606,7 +1606,7 @@ export function PostModal({
                     style={{
                       padding: "6px 12px",
                       fontSize: 13,
-                      background: "var(--alzooka-gold)",
+                      background: "var(--accent)",
                       color: "#0a0a0a",
                       border: "none",
                       borderRadius: "4px",
@@ -1626,7 +1626,7 @@ export function PostModal({
                       fontSize: 13,
                       background: "transparent",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       borderRadius: "4px",
                       cursor: "pointer",
                     }}
@@ -1763,7 +1763,7 @@ export function PostModal({
                           marginLeft: 8,
                           background: "transparent",
                           border: "none",
-                          color: "var(--alzooka-gold)",
+                          color: "var(--accent)",
                           cursor: "pointer",
                           fontSize: 12,
                           padding: 0,
@@ -1881,7 +1881,7 @@ export function PostModal({
         }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#151515",
+          background: "var(--bg-card)",
           borderRadius: 12,
           width: modalSize?.width ?? "100%",
           maxWidth: modalSize ? undefined : 680,
@@ -1904,7 +1904,7 @@ export function PostModal({
           pointerEvents: "auto",
           // Add border in see-through mode so modal is distinguishable
           border: seeThroughMode 
-            ? "2px solid rgba(201, 162, 39, 0.6)" 
+            ? "2px solid rgba(107, 140, 174, 0.6)" 
             : "none",
           position: "relative",
           overflow: "hidden",
@@ -2045,10 +2045,10 @@ export function PostModal({
               top: "50%",
               transform: "translateY(-50%)",
               background: seeThroughMode 
-                ? "rgba(201, 162, 39, 0.3)" 
+                ? "rgba(107, 140, 174, 0.3)" 
                 : "rgba(240, 235, 224, 0.1)",
               border: seeThroughMode 
-                ? "1px solid rgba(201, 162, 39, 0.5)" 
+                ? "1px solid rgba(107, 140, 174, 0.5)" 
                 : "none",
               borderRadius: "50%",
               width: 36,
@@ -2058,7 +2058,7 @@ export function PostModal({
               justifyContent: "center",
               cursor: "pointer",
               color: seeThroughMode 
-                ? "var(--alzooka-gold)" 
+                ? "var(--accent)" 
                 : "var(--alzooka-cream)",
               fontSize: 18,
               fontWeight: "bold",
@@ -2068,7 +2068,7 @@ export function PostModal({
             {seeThroughMode ? "🐵" : "🙈"}
           </button>
           
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
             {post.users?.display_name || post.users?.username || "Unknown"}'s Post
           </h2>
           <button
@@ -2087,7 +2087,7 @@ export function PostModal({
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 20,
               transition: "background 0.2s",
             }}
@@ -2142,7 +2142,7 @@ export function PostModal({
                         width: 40,
                         height: 40,
                         borderRadius: "50%",
-                        background: "var(--alzooka-gold)",
+                        background: "var(--accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2155,14 +2155,14 @@ export function PostModal({
                     </div>
                   )}
                   <div>
-                    <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                    <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                       {post.users?.display_name || post.users?.username || "Unknown"}
                     </span>
                     {isGroupAdmin(post.user_id) && (
                       <span style={{ 
                         marginLeft: 8, 
                         fontSize: 11, 
-                        color: "var(--alzooka-gold)",
+                        color: "var(--accent)",
                         background: "rgba(201, 165, 92, 0.15)",
                         padding: "2px 8px",
                         borderRadius: 4,
@@ -2180,7 +2180,7 @@ export function PostModal({
               {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
                 <div style={{ marginTop: -6, marginBottom: 12, fontSize: 13, opacity: 0.75 }}>
                   Posted on{" "}
-                  <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "var(--alzooka-gold)" }}>
+                  <Link href={`/profile/${post.wall_user.username}`} onClick={onClose} style={{ color: "var(--accent)" }}>
                     {post.wall_user.display_name || post.wall_user.username}
                   </Link>
                   's wall
@@ -2221,7 +2221,7 @@ export function PostModal({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-gold)",
+                        color: "var(--accent)",
                         fontSize: 12,
                         cursor: "pointer",
                         marginLeft: 8,
@@ -2308,7 +2308,7 @@ export function PostModal({
                             }}
                             disabled={savingImage}
                             style={{
-                              background: "var(--alzooka-gold)",
+                              background: "var(--accent)",
                               border: "none",
                               color: "#0a0a0a",
                               padding: "10px 12px",
@@ -2329,7 +2329,7 @@ export function PostModal({
                             }}
                             disabled={savingImage}
                             style={{
-                              background: "var(--alzooka-gold)",
+                              background: "var(--accent)",
                               border: "none",
                               color: "#0a0a0a",
                               padding: "10px 12px",
@@ -2476,7 +2476,7 @@ export function PostModal({
           style={{
             padding: "16px 20px",
             borderTop: "1px solid rgba(240, 235, 224, 0.1)",
-            background: "#151515",
+            background: "var(--bg-card)",
             borderRadius: "0 0 12px 12px",
             cursor: isDragging ? "grabbing" : undefined,
           }}
@@ -2495,7 +2495,7 @@ export function PostModal({
                     gap: 8,
                     marginBottom: 8,
                     fontSize: 13,
-                    color: "var(--alzooka-gold)",
+                    color: "var(--accent)",
                   }}
                 >
                   <span>Replying to {replyingTo.displayName}</span>
@@ -2504,7 +2504,7 @@ export function PostModal({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       fontSize: 12,
                       cursor: "pointer",
                       opacity: 0.6,
@@ -2544,7 +2544,7 @@ export function PostModal({
                         alt="YouTube thumbnail"
                         style={{ width: "100%", maxHeight: 150, objectFit: "cover" }}
                       />
-                      <div style={{ padding: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, color: "var(--alzooka-cream)" }}>
+                      <div style={{ padding: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, color: "var(--text-primary)" }}>
                         YouTube Video {commentLinkPreview.playlistId && "(Playlist)"}
                       </div>
                     </div>
@@ -2570,7 +2570,7 @@ export function PostModal({
                     alignItems: "flex-end",
                     gap: 10,
                     padding: "8px 12px",
-                    background: "#0a0a0a",
+                    background: "var(--bg-page)",
                     borderRadius: 20,
                     border: "1px solid rgba(240, 235, 224, 0.15)",
                   }}
@@ -2594,7 +2594,7 @@ export function PostModal({
                         width: 32,
                         height: 32,
                         borderRadius: "50%",
-                        background: "var(--alzooka-gold)",
+                        background: "var(--accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2640,7 +2640,7 @@ export function PostModal({
                       overflowY: "auto",
                       lineHeight: 1.4,
                       fontFamily: "inherit",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       outline: "none",
                     }}
                   />
@@ -2675,7 +2675,7 @@ export function PostModal({
                         }
                       }}
                       style={{
-                        background: "var(--alzooka-gold)",
+                        background: "var(--accent)",
                         border: "none",
                         color: "#0a0a0a",
                         width: 32,

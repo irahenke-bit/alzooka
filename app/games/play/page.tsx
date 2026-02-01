@@ -377,12 +377,12 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--alzooka-teal-dark)",
+        background: "var(--bg-header)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
       }}>
-        <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading game...</p>
+        <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading game...</p>
       </div>
     );
   }
@@ -392,14 +392,14 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--alzooka-teal-dark)",
+        background: "var(--bg-header)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         padding: 24,
       }}>
-        <h1 style={{ fontSize: 36, marginBottom: 8, color: "var(--alzooka-gold)" }}>
+        <h1 style={{ fontSize: 36, marginBottom: 8, color: "var(--accent)" }}>
           {mode === "blitz" ? "⚡ Blitz Mode" : "⏱️ Five Second Mode"}
         </h1>
         
@@ -421,8 +421,8 @@ export default function PlayPage() {
             padding: "16px 48px",
             fontSize: 20,
             fontWeight: 700,
-            background: "var(--alzooka-gold)",
-            color: "var(--alzooka-teal-dark)",
+            background: "var(--accent)",
+            color: "var(--bg-header)",
             border: "none",
             borderRadius: 12,
             cursor: "pointer",
@@ -431,7 +431,7 @@ export default function PlayPage() {
           Start Game
         </button>
         
-        <Link href="/games" style={{ marginTop: 24, color: "var(--alzooka-cream)", opacity: 0.6 }}>
+        <Link href="/games" style={{ marginTop: 24, color: "var(--text-primary)", opacity: 0.6 }}>
           ← Back to Games
         </Link>
       </div>
@@ -443,7 +443,7 @@ export default function PlayPage() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "var(--alzooka-teal-dark)",
+        background: "var(--bg-header)",
         padding: 24,
       }}>
         {/* Top bar */}
@@ -460,7 +460,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: timeLeft < 30 ? "#e57373" : "var(--alzooka-gold)",
+              color: timeLeft < 30 ? "#e57373" : "var(--accent)",
             }}>
               {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
             </span>
@@ -470,7 +470,7 @@ export default function PlayPage() {
             <span style={{ 
               fontSize: 24, 
               fontWeight: 700,
-              color: questionTimeLeft <= 2 ? "#e57373" : "var(--alzooka-gold)",
+              color: questionTimeLeft <= 2 ? "#e57373" : "var(--accent)",
             }}>
               {questionTimeLeft}s
             </span>
@@ -485,7 +485,7 @@ export default function PlayPage() {
         <div style={{
           maxWidth: 600,
           margin: "0 auto",
-          background: "#151515",
+          background: "var(--bg-card)",
           borderRadius: 16,
           padding: 24,
         }}>
@@ -531,7 +531,7 @@ export default function PlayPage() {
                     border: `2px solid ${borderColor}`,
                     borderRadius: 12,
                     cursor: showResult ? "default" : "pointer",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     textAlign: "left",
                     userSelect: "none",
                   }}
@@ -550,7 +550,7 @@ export default function PlayPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "var(--alzooka-teal-dark)",
+      background: "var(--bg-header)",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -562,7 +562,7 @@ export default function PlayPage() {
         {gameResult === "win" ? "🎉" : gameResult === "loss" ? "😔" : "✅"}
       </h1>
       
-      <h2 style={{ fontSize: 32, marginBottom: 16, color: "var(--alzooka-gold)" }}>
+      <h2 style={{ fontSize: 32, marginBottom: 16, color: "var(--accent)" }}>
         {gameResult === "win" ? "You Won!" : gameResult === "loss" ? "You Lost" : "Game Complete!"}
       </h2>
       
@@ -597,8 +597,8 @@ export default function PlayPage() {
           href="/games"
           style={{
             padding: "12px 24px",
-            background: "var(--alzooka-gold)",
-            color: "var(--alzooka-teal-dark)",
+            background: "var(--accent)",
+            color: "var(--bg-header)",
             borderRadius: 8,
             fontWeight: 600,
             textDecoration: "none",

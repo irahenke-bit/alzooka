@@ -148,7 +148,7 @@ export function ShareModal({
     >
       <div
         style={{
-          background: "var(--alzooka-teal-dark)",
+          background: "var(--bg-header)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,
@@ -174,7 +174,7 @@ export function ShareModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -218,8 +218,8 @@ export function ShareModal({
             style={{
               width: "100%",
               padding: "14px 16px",
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
+              background: "var(--accent)",
+              color: "var(--bg-header)",
               border: "none",
               borderRadius: 8,
               fontSize: 14,
@@ -257,7 +257,7 @@ export function ShareModal({
                       width: "100%",
                       padding: "12px 16px",
                       background: "rgba(240, 235, 224, 0.1)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       border: "1px solid rgba(240, 235, 224, 0.2)",
                       borderRadius: 8,
                       fontSize: 14,
@@ -275,13 +275,13 @@ export function ShareModal({
                         borderRadius: 8,
                         background: group.avatar_url
                           ? `url(${group.avatar_url}) center/cover`
-                          : "var(--alzooka-gold)",
+                          : "var(--accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: 16,
                         fontWeight: 700,
-                        color: "var(--alzooka-teal-dark)",
+                        color: "var(--bg-header)",
                         flexShrink: 0,
                       }}
                     >

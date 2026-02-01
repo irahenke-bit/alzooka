@@ -96,8 +96,8 @@ export default function GameHubPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(201, 162, 39, 0.2)",
-            borderTopColor: "var(--alzooka-gold)",
+            border: "3px solid rgba(107, 140, 174, 0.2)",
+            borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
           }} />
@@ -118,7 +118,7 @@ export default function GameHubPage() {
       description: "Click the speaker to drop the bass, buy upgrades, and become the ultimate bass master!",
       icon: "🔊",
       href: "/game-hub/coin-collector",
-      color: "#c9a227",
+      color: "#6b8cae",
       available: true,
     },
     {
@@ -173,7 +173,7 @@ export default function GameHubPage() {
           <div style={{ 
             fontSize: 64, 
             marginBottom: 16,
-            filter: "drop-shadow(0 4px 12px rgba(201, 162, 39, 0.3))"
+            filter: "drop-shadow(0 4px 12px rgba(107, 140, 174, 0.3))"
           }}>
             🎮
           </div>
@@ -182,15 +182,15 @@ export default function GameHubPage() {
             fontWeight: 800, 
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
-            color: "var(--alzooka-cream)",
+            color: "var(--text-primary)",
             margin: "0 0 12px 0",
-            textShadow: "0 0 20px rgba(201, 162, 39, 0.5), 0 0 40px rgba(201, 162, 39, 0.3)",
+            textShadow: "0 0 20px rgba(107, 140, 174, 0.5), 0 0 40px rgba(107, 140, 174, 0.3)",
           }}>
             Game Hub
           </h1>
           <p style={{ 
             fontSize: 16, 
-            color: "var(--alzooka-cream)", 
+            color: "var(--text-primary)", 
             opacity: 0.7,
             margin: 0,
           }}>
@@ -257,7 +257,7 @@ export default function GameHubPage() {
                 <p style={{ 
                   fontSize: 14, 
                   fontFamily: "var(--font-body)",
-                  color: "var(--alzooka-cream)", 
+                  color: "var(--text-primary)", 
                   opacity: 0.85,
                   margin: 0,
                   lineHeight: 1.6,

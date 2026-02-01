@@ -375,7 +375,7 @@ export default function ActivityPage() {
         <div style={{ marginBottom: 24 }}>
           <Link
             href={`/profile/${username}`}
-            style={{ color: "var(--alzooka-gold)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
+            style={{ color: "var(--accent)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
           >
             ← Back to Profile
           </Link>
@@ -425,8 +425,8 @@ export default function ActivityPage() {
                 <article className="card" style={{ marginBottom: 12, padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
                     <span style={{ 
-                      background: item.type === "post" ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.2)",
-                      color: item.type === "post" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                      background: item.type === "post" ? "var(--accent)" : "rgba(240, 235, 224, 0.2)",
+                      color: item.type === "post" ? "var(--bg-header)" : "var(--alzooka-cream)",
                       padding: "2px 8px",
                       borderRadius: 4,
                       fontSize: 11,
@@ -456,7 +456,7 @@ export default function ActivityPage() {
                       padding: "8px 12px", 
                       background: "rgba(0, 0, 0, 0.2)", 
                       borderRadius: 6,
-                      borderLeft: "3px solid var(--alzooka-gold)",
+                      borderLeft: "3px solid var(--accent)",
                     }}>
                       <p className="text-muted" style={{ margin: 0, fontSize: 12 }}>
                         Replying to:

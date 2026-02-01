@@ -110,7 +110,7 @@ export default function AuthCallbackPage() {
       <div style={{
         marginTop: 40,
         padding: 24,
-        background: "var(--alzooka-teal-dark)",
+        background: "var(--bg-header)",
         borderRadius: 12,
         textAlign: "center",
         maxWidth: 400,
@@ -118,7 +118,7 @@ export default function AuthCallbackPage() {
         <p style={{ marginBottom: 16, color: "#e57373" }}>
           Authentication failed: {errorMsg}
         </p>
-        <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
+        <Link href="/login" style={{ color: "var(--accent)" }}>
           Back to Sign In
         </Link>
       </div>

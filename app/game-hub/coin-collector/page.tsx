@@ -507,8 +507,8 @@ export default function CoinCollectorPage() {
           <div style={{
             width: 48,
             height: 48,
-            border: "3px solid rgba(201, 162, 39, 0.2)",
-            borderTopColor: "var(--alzooka-gold)",
+            border: "3px solid rgba(107, 140, 174, 0.2)",
+            borderTopColor: "var(--accent)",
             borderRadius: "50%",
             animation: "spin 0.8s linear infinite",
           }} />
@@ -542,7 +542,7 @@ export default function CoinCollectorPage() {
               display: "inline-flex", 
               alignItems: "center", 
               gap: 8, 
-              color: "var(--alzooka-gold)", 
+              color: "var(--accent)", 
               textDecoration: "none",
               fontSize: 14,
             }}
@@ -576,18 +576,18 @@ export default function CoinCollectorPage() {
               marginBottom: 24,
             }}>
               <div>
-                <div style={{ fontSize: 32, fontWeight: 700, color: "var(--alzooka-gold)" }}>
+                <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)" }}>
                   🪙 {formatNumber(coins)}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+                <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7 }}>
                   +{formatNumber(coinsPerSecond)}/sec • +{formatNumber(coinsPerClick)}/click
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+                <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
                   Rebirth Level: {rebirthCount}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--alzooka-gold)" }}>
+                <div style={{ fontSize: 13, color: "var(--accent)" }}>
                   {rebirthBonus.toFixed(2)}x bonus
                 </div>
               </div>
@@ -801,7 +801,7 @@ export default function CoinCollectorPage() {
 
               <p style={{ 
                 marginTop: 8, 
-                color: "var(--alzooka-cream)", 
+                color: "var(--text-primary)", 
                 opacity: 0.6,
                 fontSize: 13,
               }}>
@@ -851,8 +851,8 @@ export default function CoinCollectorPage() {
                   padding: "10px 16px",
                   borderRadius: 8,
                   border: "none",
-                  background: activeTab === "collectors" ? "var(--alzooka-gold)" : "rgba(255,255,255,0.1)",
-                  color: activeTab === "collectors" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                  background: activeTab === "collectors" ? "var(--accent)" : "rgba(255,255,255,0.1)",
+                  color: activeTab === "collectors" ? "var(--bg-header)" : "var(--alzooka-cream)",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontSize: 14,
@@ -867,8 +867,8 @@ export default function CoinCollectorPage() {
                   padding: "10px 16px",
                   borderRadius: 8,
                   border: "none",
-                  background: activeTab === "upgrades" ? "var(--alzooka-gold)" : "rgba(255,255,255,0.1)",
-                  color: activeTab === "upgrades" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                  background: activeTab === "upgrades" ? "var(--accent)" : "rgba(255,255,255,0.1)",
+                  color: activeTab === "upgrades" ? "var(--bg-header)" : "var(--alzooka-cream)",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontSize: 14,
@@ -898,8 +898,8 @@ export default function CoinCollectorPage() {
                         gap: 12,
                         padding: 12,
                         borderRadius: 10,
-                        border: canAfford ? "1px solid var(--alzooka-gold)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(201, 162, 39, 0.1)" : "rgba(255,255,255,0.05)",
+                        border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
+                        background: canAfford ? "rgba(107, 140, 174, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -909,7 +909,7 @@ export default function CoinCollectorPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ 
                           fontWeight: 600, 
-                          color: "var(--alzooka-cream)",
+                          color: "var(--text-primary)",
                           fontSize: 14,
                           marginBottom: 2,
                         }}>
@@ -917,20 +917,20 @@ export default function CoinCollectorPage() {
                           {owned > 0 && (
                             <span style={{ 
                               marginLeft: 8, 
-                              color: "var(--alzooka-gold)",
+                              color: "var(--accent)",
                               fontWeight: 400,
                             }}>
                               x{owned}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 12, color: "var(--alzooka-cream)", opacity: 0.6 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.6 }}>
                           +{production.toFixed(1)}/sec each
                         </div>
                       </div>
                       <div style={{ 
                         fontWeight: 600, 
-                        color: canAfford ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                        color: canAfford ? "var(--accent)" : "var(--alzooka-cream)",
                         fontSize: 13,
                       }}>
                         🪙 {formatNumber(cost)}
@@ -961,8 +961,8 @@ export default function CoinCollectorPage() {
                         gap: 12,
                         padding: 12,
                         borderRadius: 10,
-                        border: canAfford ? "1px solid var(--alzooka-gold)" : "1px solid rgba(255,255,255,0.1)",
-                        background: canAfford ? "rgba(201, 162, 39, 0.1)" : "rgba(255,255,255,0.05)",
+                        border: canAfford ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
+                        background: canAfford ? "rgba(107, 140, 174, 0.1)" : "rgba(255,255,255,0.05)",
                         cursor: canAfford ? "pointer" : "not-allowed",
                         textAlign: "left",
                         opacity: canAfford ? 1 : 0.5,
@@ -972,7 +972,7 @@ export default function CoinCollectorPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ 
                           fontWeight: 600, 
-                          color: "var(--alzooka-cream)",
+                          color: "var(--text-primary)",
                           fontSize: 14,
                           marginBottom: 2,
                         }}>
@@ -980,20 +980,20 @@ export default function CoinCollectorPage() {
                           {owned > 0 && (
                             <span style={{ 
                               marginLeft: 8, 
-                              color: "var(--alzooka-gold)",
+                              color: "var(--accent)",
                               fontWeight: 400,
                             }}>
                               x{owned}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 12, color: "var(--alzooka-cream)", opacity: 0.6 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.6 }}>
                           +{Math.floor(bonus)}/click each
                         </div>
                       </div>
                       <div style={{ 
                         fontWeight: 600, 
-                        color: canAfford ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                        color: canAfford ? "var(--accent)" : "var(--alzooka-cream)",
                         fontSize: 13,
                       }}>
                         🪙 {formatNumber(cost)}
@@ -1011,10 +1011,10 @@ export default function CoinCollectorPage() {
               background: "rgba(0,0,0,0.2)",
               borderRadius: 10,
             }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--alzooka-cream)", marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 12 }}>
                 Stats
               </div>
-              <div style={{ fontSize: 12, color: "var(--alzooka-cream)", opacity: 0.7, lineHeight: 1.8 }}>
+              <div style={{ fontSize: 12, color: "var(--text-primary)", opacity: 0.7, lineHeight: 1.8 }}>
                 <div>Total Clicks: {clicks.toLocaleString()}</div>
                 <div>All-time Coins: {formatNumber(totalCoinsEarned)}</div>
                 <div>Highest Balance: {formatNumber(highestCoins)}</div>
@@ -1028,7 +1028,7 @@ export default function CoinCollectorPage() {
                 marginTop: 12, 
                 textAlign: "center", 
                 fontSize: 12, 
-                color: "var(--alzooka-gold)",
+                color: "var(--accent)",
                 opacity: 0.7,
               }}>
                 Saving...
@@ -1058,7 +1058,7 @@ export default function CoinCollectorPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "var(--alzooka-teal-light)",
+              background: "var(--bg-elevated)",
               borderRadius: 16,
               padding: 32,
               maxWidth: 400,
@@ -1066,25 +1066,25 @@ export default function CoinCollectorPage() {
             }}
           >
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔄</div>
-            <h2 style={{ color: "var(--alzooka-cream)", marginBottom: 12 }}>
+            <h2 style={{ color: "var(--text-primary)", marginBottom: 12 }}>
               Ready to Rebirth?
             </h2>
-            <p style={{ color: "var(--alzooka-cream)", opacity: 0.8, marginBottom: 8 }}>
+            <p style={{ color: "var(--text-primary)", opacity: 0.8, marginBottom: 8 }}>
               You'll reset all progress but gain:
             </p>
             <div style={{
-              background: "rgba(201, 162, 39, 0.2)",
+              background: "rgba(107, 140, 174, 0.2)",
               borderRadius: 8,
               padding: 16,
               marginBottom: 24,
             }}>
-              <div style={{ color: "var(--alzooka-gold)", fontWeight: 600, fontSize: 18 }}>
+              <div style={{ color: "var(--accent)", fontWeight: 600, fontSize: 18 }}>
                 +25% permanent bonus
               </div>
-              <div style={{ color: "var(--alzooka-cream)", opacity: 0.7, fontSize: 14, marginTop: 4 }}>
+              <div style={{ color: "var(--text-primary)", opacity: 0.7, fontSize: 14, marginTop: 4 }}>
                 New total: {((rebirthBonus + 0.25) * 100).toFixed(0)}% production
               </div>
-              <div style={{ color: "var(--alzooka-cream)", opacity: 0.7, fontSize: 14, marginTop: 8 }}>
+              <div style={{ color: "var(--text-primary)", opacity: 0.7, fontSize: 14, marginTop: 8 }}>
                 New speaker design: {SPEAKER_DESIGNS[currentPresident % SPEAKER_DESIGNS.length].name}
               </div>
             </div>
@@ -1097,7 +1097,7 @@ export default function CoinCollectorPage() {
                   borderRadius: 8,
                   border: "1px solid rgba(255,255,255,0.2)",
                   background: "transparent",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   cursor: "pointer",
                   fontWeight: 600,
                 }}

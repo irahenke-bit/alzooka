@@ -679,7 +679,7 @@ export default function ViewStationPage() {
         <div className="container" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 16px", textAlign: "center" }}>
           <h1>User not found</h1>
           <p className="text-muted">The user &quot;{username}&quot; doesn't exist.</p>
-          <Link href="/" style={{ color: "var(--alzooka-gold)" }}>← Back to Feed</Link>
+          <Link href="/" style={{ color: "var(--accent)" }}>← Back to Feed</Link>
         </div>
       </>
     );
@@ -692,7 +692,7 @@ export default function ViewStationPage() {
         <div className="container" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 16px", textAlign: "center" }}>
           <h1>{stationOwner.display_name || stationOwner.username}'s Station</h1>
           <p className="text-muted">This user hasn't set up their station yet.</p>
-          <Link href={`/profile/${stationOwner.username}`} style={{ color: "var(--alzooka-gold)" }}>
+          <Link href={`/profile/${stationOwner.username}`} style={{ color: "var(--accent)" }}>
             ← Visit their profile
           </Link>
         </div>
@@ -726,7 +726,7 @@ export default function ViewStationPage() {
               </p>
               <h1 style={{ margin: "4px 0", fontSize: 28 }}>{station.name}</h1>
               <p style={{ margin: 0, opacity: 0.7 }}>
-                by <Link href={`/profile/${stationOwner.username}`} style={{ color: "var(--alzooka-gold)" }}>
+                by <Link href={`/profile/${stationOwner.username}`} style={{ color: "var(--accent)" }}>
                   {stationOwner.display_name || stationOwner.username}
                 </Link>
               </p>
@@ -796,7 +796,7 @@ export default function ViewStationPage() {
 
           {!playerReady && (
             <p style={{ marginTop: 16, fontSize: 13, opacity: 0.7 }}>
-              Connect Spotify on <Link href="/station" style={{ color: "var(--alzooka-gold)" }}>your station</Link> to play music
+              Connect Spotify on <Link href="/station" style={{ color: "var(--accent)" }}>your station</Link> to play music
             </p>
           )}
         </div>
@@ -931,13 +931,13 @@ export default function ViewStationPage() {
                         fontWeight: 600,
                         background: alreadyHave || justCopied
                           ? "rgba(30, 215, 96, 0.2)"
-                          : "rgba(201, 162, 39, 0.2)",
+                          : "rgba(107, 140, 174, 0.2)",
                         color: alreadyHave || justCopied
                           ? "#1DB954"
-                          : "var(--alzooka-gold)",
+                          : "var(--accent)",
                         border: alreadyHave || justCopied
                           ? "1px solid rgba(30, 215, 96, 0.4)"
-                          : "1px solid rgba(201, 162, 39, 0.4)",
+                          : "1px solid rgba(107, 140, 174, 0.4)",
                         borderRadius: 6,
                         cursor: alreadyHave || isAdding ? "not-allowed" : "pointer",
                         opacity: isAdding ? 0.5 : 1,
@@ -1057,13 +1057,13 @@ export default function ViewStationPage() {
                                   fontWeight: 600,
                                   background: copiedPlaylists.has(playlist.id)
                                     ? "rgba(30, 215, 96, 0.2)"
-                                    : "rgba(201, 162, 39, 0.2)",
+                                    : "rgba(107, 140, 174, 0.2)",
                                   color: copiedPlaylists.has(playlist.id)
                                     ? "#1DB954"
-                                    : "var(--alzooka-gold)",
+                                    : "var(--accent)",
                                   border: copiedPlaylists.has(playlist.id)
                                     ? "1px solid rgba(30, 215, 96, 0.4)"
-                                    : "1px solid rgba(201, 162, 39, 0.4)",
+                                    : "1px solid rgba(107, 140, 174, 0.4)",
                                   borderRadius: 6,
                                   cursor: copiedPlaylists.has(playlist.id) || copyingPlaylist === playlist.id 
                                     ? "not-allowed" 

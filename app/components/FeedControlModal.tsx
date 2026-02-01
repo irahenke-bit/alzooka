@@ -96,7 +96,7 @@ export function FeedControlModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--alzooka-teal-light)",
+          background: "var(--bg-elevated)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 400,
@@ -121,7 +121,7 @@ export function FeedControlModal({
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 20,
               cursor: "pointer",
               opacity: 0.7,
@@ -143,16 +143,16 @@ export function FeedControlModal({
                 gap: 12,
                 cursor: "pointer",
                 padding: "12px 16px",
-                background: worldView ? "rgba(212, 168, 75, 0.15)" : "rgba(240, 235, 224, 0.05)",
+                background: worldView ? "rgba(107, 140, 174, 0.15)" : "rgba(240, 235, 224, 0.05)",
                 borderRadius: 8,
-                border: worldView ? "1px solid var(--alzooka-gold)" : "1px solid rgba(240, 235, 224, 0.1)",
+                border: worldView ? "1px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.1)",
               }}
             >
               <input
                 type="checkbox"
                 checked={worldView}
                 onChange={(e) => handleWorldViewChange(e.target.checked)}
-                style={{ width: 18, height: 18, accentColor: "var(--alzooka-gold)" }}
+                style={{ width: 18, height: 18, accentColor: "var(--accent)" }}
               />
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600 }}>World View</div>
@@ -201,7 +201,7 @@ export function FeedControlModal({
                   checked={showAllGroups}
                   onChange={() => setShowAllGroups(true)}
                   disabled={worldView}
-                  style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                  style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
                 />
                 All communities on Alzooka
               </label>
@@ -220,7 +220,7 @@ export function FeedControlModal({
                   checked={!showAllGroups}
                   onChange={() => setShowAllGroups(false)}
                   disabled={worldView}
-                  style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                  style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
                 />
                 Only communities I'm a member of
               </label>
@@ -247,7 +247,7 @@ export function FeedControlModal({
                   checked={showAllProfiles}
                   onChange={() => setShowAllProfiles(true)}
                   disabled={worldView}
-                  style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                  style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
                 />
                 All profiles on Alzooka
               </label>
@@ -266,7 +266,7 @@ export function FeedControlModal({
                   checked={!showAllProfiles}
                   onChange={() => setShowAllProfiles(false)}
                   disabled={worldView}
-                  style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                  style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
                 />
                 Only friends
               </label>
@@ -291,7 +291,7 @@ export function FeedControlModal({
               background: "transparent",
               border: "1px solid rgba(240, 235, 224, 0.2)",
               borderRadius: 8,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 14,
               cursor: "pointer",
             }}
@@ -303,10 +303,10 @@ export function FeedControlModal({
             disabled={saving}
             style={{
               padding: "10px 24px",
-              background: "var(--alzooka-gold)",
+              background: "var(--accent)",
               border: "none",
               borderRadius: 8,
-              color: "var(--alzooka-teal-dark)",
+              color: "var(--bg-header)",
               fontSize: 14,
               fontWeight: 600,
               cursor: saving ? "not-allowed" : "pointer",

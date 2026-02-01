@@ -107,7 +107,7 @@ export default function LoginPage() {
             gap: 12,
             background: "#fff",
             color: "#1a3a4a",
-            border: "2px solid var(--alzooka-gold)",
+            border: "2px solid var(--accent)",
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -133,7 +133,7 @@ export default function LoginPage() {
             gap: 12,
             background: "linear-gradient(135deg, #4A90A4 0%, #2D5A6B 100%)",
             color: "#fff",
-            border: "2px solid var(--alzooka-gold)",
+            border: "2px solid var(--accent)",
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 fontSize: 14, 
                 marginBottom: 12,
                 lineHeight: 1.5,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}>
                 Enter your email and we'll send you a link to sign in — no password needed!
               </p>
@@ -193,7 +193,7 @@ export default function LoginPage() {
                     flex: 1,
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   Cancel

@@ -242,8 +242,8 @@ function SetPasswordContent() {
             style={{ 
               width: "100%",
               background: "linear-gradient(135deg, #1a5a5a 0%, #0d3d3d 100%)",
-              border: "2px solid var(--alzooka-gold)",
-              color: "var(--alzooka-cream)",
+              border: "2px solid var(--accent)",
+              color: "var(--text-primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

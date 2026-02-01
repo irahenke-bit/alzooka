@@ -112,7 +112,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
     >
       <div
         style={{
-          background: "var(--alzooka-teal-dark)",
+          background: "var(--bg-header)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 600,
@@ -140,7 +140,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -164,10 +164,10 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                 flex: 1,
                 padding: "12px 16px",
                 fontSize: 16,
-                background: "var(--alzooka-teal-light)",
+                background: "var(--bg-elevated)",
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 borderRadius: 8,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             />
             <button
@@ -176,8 +176,8 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
               style={{
                 padding: "12px 24px",
                 fontSize: 16,
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)",
+                color: "var(--bg-header)",
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
@@ -257,7 +257,7 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                 >
                   {video.title}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--alzooka-gold)", opacity: 0.8 }}>
+                <div style={{ fontSize: 12, color: "var(--accent)", opacity: 0.8 }}>
                   {video.channelTitle}
                 </div>
               </div>
@@ -268,8 +268,8 @@ export function YouTubeSearchModal({ onClose, onSelect, onDirectPost }: YouTubeS
                   padding: "8px 20px",
                   fontSize: 14,
                   fontWeight: 600,
-                  background: "var(--alzooka-gold)",
-                  color: "var(--alzooka-teal-dark)",
+                  background: "var(--accent)",
+                  color: "var(--bg-header)",
                   border: "none",
                   borderRadius: 6,
                   cursor: postingId !== null ? "not-allowed" : "pointer",

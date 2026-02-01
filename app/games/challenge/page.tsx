@@ -153,25 +153,25 @@ export default function ChallengePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={currentUser} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--alzooka-cream)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
-        <h1 style={{ fontSize: 28, margin: "16px 0 24px", color: "var(--alzooka-gold)" }}>
+        <h1 style={{ fontSize: 28, margin: "16px 0 24px", color: "var(--accent)" }}>
           🎯 Challenge a Friend
         </h1>
 
@@ -194,10 +194,10 @@ export default function ChallengePage() {
                     flex: 1,
                     padding: "12px 16px",
                     fontSize: 16,
-                    background: "#151515",
+                    background: "var(--bg-card)",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
                     borderRadius: 8,
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 />
                 <button
@@ -207,8 +207,8 @@ export default function ChallengePage() {
                     padding: "12px 20px",
                     fontSize: 14,
                     fontWeight: 600,
-                    background: "var(--alzooka-gold)",
-                    color: "var(--alzooka-teal-dark)",
+                    background: "var(--accent)",
+                    color: "var(--bg-header)",
                     border: "none",
                     borderRadius: 8,
                     cursor: searchQuery.trim() ? "pointer" : "not-allowed",
@@ -234,12 +234,12 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "#151515",
+                        background: "var(--bg-card)",
                         border: "1px solid rgba(240, 235, 224, 0.1)",
                         borderRadius: 8,
                         cursor: "pointer",
                         textAlign: "left",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                       }}
                     >
                       {user.avatar_url ? (
@@ -281,12 +281,12 @@ export default function ChallengePage() {
                         alignItems: "center",
                         gap: 12,
                         padding: 12,
-                        background: "#151515",
+                        background: "var(--bg-card)",
                         border: "1px solid rgba(240, 235, 224, 0.1)",
                         borderRadius: 8,
                         cursor: "pointer",
                         textAlign: "left",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                       }}
                     >
                       {friend.avatar_url ? (
@@ -323,7 +323,7 @@ export default function ChallengePage() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: 16,
-              background: "#151515",
+              background: "var(--bg-card)",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -356,7 +356,7 @@ export default function ChallengePage() {
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 6,
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   cursor: "pointer",
                 }}
               >
@@ -379,7 +379,7 @@ export default function ChallengePage() {
                     border: selectedMode === "blitz" ? "2px solid #1DB954" : "2px solid rgba(240, 235, 224, 0.1)",
                     borderRadius: 12,
                     cursor: "pointer",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     textAlign: "left",
                   }}
                 >
@@ -395,7 +395,7 @@ export default function ChallengePage() {
                     border: selectedMode === "five_second" ? "2px solid #e57373" : "2px solid rgba(240, 235, 224, 0.1)",
                     borderRadius: 12,
                     cursor: "pointer",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     textAlign: "left",
                   }}
                 >
@@ -408,7 +408,7 @@ export default function ChallengePage() {
             {/* Sharing consent */}
             <div style={{
               padding: 16,
-              background: "#151515",
+              background: "var(--bg-card)",
               borderRadius: 12,
               marginBottom: 24,
             }}>
@@ -417,7 +417,7 @@ export default function ChallengePage() {
                   type="checkbox"
                   checked={allowSharing}
                   onChange={(e) => setAllowSharing(e.target.checked)}
-                  style={{ marginTop: 4, width: 18, height: 18, accentColor: "var(--alzooka-gold)" }}
+                  style={{ marginTop: 4, width: 18, height: 18, accentColor: "var(--accent)" }}
                 />
                 <div>
                   <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: 14 }}>
@@ -454,8 +454,8 @@ export default function ChallengePage() {
                 padding: 16,
                 fontSize: 18,
                 fontWeight: 700,
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)",
+                color: "var(--bg-header)",
                 border: "none",
                 borderRadius: 12,
                 cursor: sending ? "not-allowed" : "pointer",

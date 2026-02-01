@@ -168,9 +168,9 @@ export function BannerCropModal({ imageSrc, onCancel, onSave, skipModeration = f
             onClick={handleSave}
             disabled={saving || !completedCrop}
             style={{
-              background: "var(--alzooka-gold)",
+              background: "var(--accent)",
               border: "none",
-              color: "var(--alzooka-teal-dark)",
+              color: "var(--bg-header)",
               padding: "8px 20px",
               borderRadius: 6,
               cursor: "pointer",

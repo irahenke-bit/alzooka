@@ -10,21 +10,21 @@ export function Logo({ size = 48 }: { size?: number }) {
       {/* Three smooth wave lines - matching reference image exactly */}
       <path 
         d="M 10 15 Q 30 5, 50 15 Q 70 25, 90 15" 
-        stroke="var(--alzooka-gold)" 
+        stroke="var(--accent)" 
         strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
         d="M 10 30 Q 30 20, 50 30 Q 70 40, 90 30" 
-        stroke="var(--alzooka-gold)" 
+        stroke="var(--accent)" 
         strokeWidth="4" 
         strokeLinecap="round"
         fill="none"
       />
       <path 
         d="M 10 45 Q 30 35, 50 45 Q 70 55, 90 45" 
-        stroke="var(--alzooka-gold)" 
+        stroke="var(--accent)" 
         strokeWidth="4" 
         strokeLinecap="round"
         fill="none"

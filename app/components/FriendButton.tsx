@@ -149,8 +149,8 @@ export function FriendButton({
         <button
           onClick={sendRequest}
           style={{
-            background: "var(--alzooka-gold)",
-            color: "var(--alzooka-teal-dark)",
+            background: "var(--accent)",
+            color: "var(--bg-header)",
             padding: "8px 16px",
             fontSize: 14,
             fontWeight: 600,
@@ -169,7 +169,7 @@ export function FriendButton({
           onClick={cancelRequest}
           style={{
             background: "transparent",
-            color: "var(--alzooka-cream)",
+            color: "var(--text-primary)",
             padding: "8px 16px",
             fontSize: 14,
             border: "1px solid rgba(240, 235, 224, 0.3)",
@@ -187,8 +187,8 @@ export function FriendButton({
           <button
             onClick={acceptRequest}
             style={{
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
+              background: "var(--accent)",
+              color: "var(--bg-header)",
               padding: "8px 16px",
               fontSize: 14,
               fontWeight: 600,
@@ -223,7 +223,7 @@ export function FriendButton({
             onClick={() => setShowUnfriendConfirm(true)}
             style={{
               background: "transparent",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               padding: "8px 16px",
               fontSize: 14,
               border: "1px solid rgba(240, 235, 224, 0.3)",
@@ -253,7 +253,7 @@ export function FriendButton({
             >
               <div
                 style={{
-                  backgroundColor: "var(--alzooka-teal-dark)",
+                  backgroundColor: "var(--bg-header)",
                   border: "1px solid rgba(212, 175, 55, 0.3)",
                   borderRadius: 12,
                   padding: 24,
@@ -262,7 +262,7 @@ export function FriendButton({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <p style={{ color: "var(--alzooka-cream)", fontSize: 16, marginBottom: 20 }}>
+                <p style={{ color: "var(--text-primary)", fontSize: 16, marginBottom: 20 }}>
                   Are you sure you want to unfriend <strong>{targetDisplayName || "this user"}</strong>?
                 </p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
@@ -270,7 +270,7 @@ export function FriendButton({
                     onClick={() => setShowUnfriendConfirm(false)}
                     style={{
                       background: "transparent",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "10px 24px",
                       fontSize: 14,
                       border: "1px solid rgba(240, 235, 224, 0.3)",

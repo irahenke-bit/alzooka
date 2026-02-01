@@ -747,7 +747,7 @@ export default function MusicianBeggarPage() {
         <div style={{ position: "absolute", bottom: "42%", left: "8%", zIndex: 3 }}>
           <div style={{ width: 6, height: 100, background: "#1a1a1a" }} />
           <div style={{ position: "absolute", top: -8, left: -12, width: 30, height: 14, background: "#252525", borderRadius: "3px 3px 0 0" }} />
-          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#c9a227", opacity: 0.7, borderRadius: 2, boxShadow: "0 0 25px #c9a227" }} />
+          <div style={{ position: "absolute", top: 2, left: -8, width: 22, height: 5, background: "#6b8cae", opacity: 0.7, borderRadius: 2, boxShadow: "0 0 25px #6b8cae" }} />
         </div>
         
         {/* Sidewalk - smaller */}
@@ -757,8 +757,8 @@ export default function MusicianBeggarPage() {
         
         {/* Road - bigger */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "22%", background: "#131316" }}>
-          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #c9a227 0px, #c9a227 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
-          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #c9a227 0px, #c9a227 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
+          <div style={{ position: "absolute", top: "40%", left: 0, right: 0, height: 5, background: "repeating-linear-gradient(90deg, #6b8cae 0px, #6b8cae 45px, transparent 45px, transparent 90px)", opacity: 0.5 }} />
+          <div style={{ position: "absolute", top: "70%", left: 0, right: 0, height: 3, background: "repeating-linear-gradient(90deg, #6b8cae 0px, #6b8cae 45px, transparent 45px, transparent 90px)", opacity: 0.3 }} />
         </div>
         
         {/* Lottery Shop - on sidewalk */}

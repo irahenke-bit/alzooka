@@ -157,14 +157,14 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
           borderRadius: "50%",
           background: currentAvatarUrl 
             ? `url(${currentAvatarUrl}) center/cover`
-            : "var(--alzooka-teal-dark)",
-          border: "3px solid var(--alzooka-gold)",
+            : "var(--bg-header)",
+          border: "3px solid var(--accent)",
           cursor: uploading ? "wait" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: 36,
-          color: "var(--alzooka-gold)",
+          color: "var(--accent)",
           padding: 0,
           position: "relative",
           overflow: "hidden",
@@ -187,7 +187,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
             }}
           >
             ...
@@ -205,7 +205,7 @@ export function AvatarUpload({ currentAvatarUrl, userId, onUpload }: AvatarUploa
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               pointerEvents: "none",
             }}
           >

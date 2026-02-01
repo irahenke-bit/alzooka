@@ -198,10 +198,10 @@ export function UserSearch() {
           padding: "8px 12px",
           fontSize: 14,
           width: 180,
-          background: "var(--alzooka-teal-light)",
+          background: "var(--bg-elevated)",
           border: "1px solid rgba(240, 235, 224, 0.2)",
           borderRadius: 4,
-          color: "var(--alzooka-cream)",
+          color: "var(--text-primary)",
         }}
       />
 
@@ -214,7 +214,7 @@ export function UserSearch() {
             left: 0,
             right: 0,
             marginTop: 4,
-            background: "var(--alzooka-teal-light)",
+            background: "var(--bg-elevated)",
             border: "1px solid rgba(240, 235, 224, 0.2)",
             borderRadius: 4,
             maxHeight: 350,
@@ -230,7 +230,7 @@ export function UserSearch() {
                 style={{
                   padding: "8px 12px",
                   fontSize: 12,
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   opacity: 0.5,
                   borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                 }}
@@ -268,11 +268,11 @@ export function UserSearch() {
                           width: 32,
                           height: 32,
                           borderRadius: "50%",
-                          background: "var(--alzooka-gold)",
+                          background: "var(--accent)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--alzooka-teal-dark)",
+                          color: "var(--bg-header)",
                           fontWeight: 700,
                           fontSize: 14,
                         }}
@@ -281,10 +281,10 @@ export function UserSearch() {
                       </div>
                     )}
                     <div>
-                      <div style={{ color: "var(--alzooka-cream)", fontWeight: 600, fontSize: 14 }}>
+                      <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
                         {user.display_name || user.username}
                       </div>
-                      <div style={{ color: "var(--alzooka-gold)", fontSize: 12, opacity: 0.8 }}>
+                      <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>
                         @{user.username}
                       </div>
                     </div>
@@ -294,7 +294,7 @@ export function UserSearch() {
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       opacity: 0.4,
                       cursor: "pointer",
                       padding: "4px 8px",
@@ -313,11 +313,11 @@ export function UserSearch() {
           {showResults && (
             <>
               {loading ? (
-                <div style={{ padding: 12, fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.6 }}>
+                <div style={{ padding: 12, fontSize: 14, color: "var(--text-primary)", opacity: 0.6 }}>
                   Searching...
                 </div>
               ) : results.length === 0 && groupResults.length === 0 ? (
-                <div style={{ padding: 12, fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.6 }}>
+                <div style={{ padding: 12, fontSize: 14, color: "var(--text-primary)", opacity: 0.6 }}>
                   No results found
                 </div>
               ) : (
@@ -325,7 +325,7 @@ export function UserSearch() {
                   {/* Groups */}
                   {groupResults.length > 0 && (
                     <>
-                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--alzooka-cream)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-primary)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
                         Groups
                       </div>
                       {groupResults.map((group) => (
@@ -352,11 +352,11 @@ export function UserSearch() {
                               width: 32,
                               height: 32,
                               borderRadius: 6,
-                              background: "var(--alzooka-gold)",
+                              background: "var(--accent)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "var(--alzooka-teal-dark)",
+                              color: "var(--bg-header)",
                               fontWeight: 700,
                               fontSize: 14,
                             }}>
@@ -364,10 +364,10 @@ export function UserSearch() {
                             </div>
                           )}
                           <div>
-                            <div style={{ color: "var(--alzooka-cream)", fontWeight: 600, fontSize: 14 }}>
+                            <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
                               {group.name}
                             </div>
-                            <div style={{ color: "var(--alzooka-gold)", fontSize: 12, opacity: 0.8 }}>
+                            <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>
                               👥 Group · {group.privacy === "public" ? "Public" : "Private"}
                             </div>
                           </div>
@@ -379,7 +379,7 @@ export function UserSearch() {
                   {/* Users */}
                   {results.length > 0 && (
                     <>
-                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--alzooka-cream)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
+                      <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-primary)", opacity: 0.5, borderBottom: "1px solid rgba(240, 235, 224, 0.1)" }}>
                         People
                       </div>
                       {results.map((user) => (
@@ -412,11 +412,11 @@ export function UserSearch() {
                                 width: 32,
                                 height: 32,
                                 borderRadius: "50%",
-                                background: "var(--alzooka-gold)",
+                                background: "var(--accent)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                color: "var(--alzooka-teal-dark)",
+                                color: "var(--bg-header)",
                                 fontWeight: 700,
                                 fontSize: 14,
                               }}
@@ -425,10 +425,10 @@ export function UserSearch() {
                             </div>
                           )}
                           <div>
-                            <div style={{ color: "var(--alzooka-cream)", fontWeight: 600, fontSize: 14 }}>
+                            <div style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
                               {user.display_name || user.username}
                             </div>
-                            <div style={{ color: "var(--alzooka-gold)", fontSize: 12, opacity: 0.8 }}>
+                            <div style={{ color: "var(--accent)", fontSize: 12, opacity: 0.8 }}>
                               @{user.username}
                             </div>
                           </div>

@@ -144,26 +144,26 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "var(--alzooka-teal-light)",
+              background: "var(--bg-elevated)",
               borderRadius: 12,
               padding: "24px 32px",
               maxWidth: 400,
               textAlign: "center",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-              border: "1px solid rgba(201, 162, 39, 0.3)",
+              border: "1px solid rgba(107, 140, 174, 0.3)",
             }}
           >
             <div style={{ fontSize: 48, marginBottom: 16 }}>📑</div>
             <h3 style={{ 
               margin: "0 0 12px 0", 
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 18,
             }}>
               Too Many Windows Open
             </h3>
             <p style={{ 
               margin: "0 0 20px 0", 
-              color: "var(--alzooka-cream)", 
+              color: "var(--text-primary)", 
               opacity: 0.8,
               fontSize: 14,
               lineHeight: 1.5,
@@ -173,8 +173,8 @@ export function PostModalsProvider({ children }: { children: React.ReactNode }) 
             <button
               onClick={dismissMaxModalsMessage}
               style={{
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)",
+                color: "var(--bg-header)",
                 border: "none",
                 borderRadius: 8,
                 padding: "10px 24px",

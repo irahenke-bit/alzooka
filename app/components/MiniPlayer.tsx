@@ -74,7 +74,7 @@ const MiniPlayer = memo(function MiniPlayer() {
           right: 0,
           height: 52,
           background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
-          borderTop: "1px solid rgba(201, 162, 39, 0.3)",
+          borderTop: "1px solid rgba(107, 140, 174, 0.3)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -118,7 +118,7 @@ const MiniPlayer = memo(function MiniPlayer() {
           onClick={onResume}
           style={{
             padding: "8px 20px",
-            background: "#c9a227",
+            background: "#6b8cae",
             border: "none",
             borderRadius: 20,
             color: "#1a1a1a",
@@ -171,7 +171,7 @@ const MiniPlayer = memo(function MiniPlayer() {
         right: 0,
         height: 64,
         background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
-        borderTop: "1px solid rgba(201, 162, 39, 0.3)",
+        borderTop: "1px solid rgba(107, 140, 174, 0.3)",
         display: "flex",
         alignItems: "center",
         padding: "0 20px",
@@ -269,7 +269,7 @@ const MiniPlayer = memo(function MiniPlayer() {
             height: 44,
             borderRadius: "50%",
             border: "none",
-            background: "#c9a227",
+            background: "#6b8cae",
             color: "#1a1a1a",
             cursor: "pointer",
             display: "flex",
@@ -340,12 +340,12 @@ const MiniPlayer = memo(function MiniPlayer() {
           padding: "8px 16px",
           background: sourceStation 
             ? "rgba(30, 215, 96, 0.2)" 
-            : "rgba(201, 162, 39, 0.2)",
+            : "rgba(107, 140, 174, 0.2)",
           border: sourceStation
             ? "1px solid rgba(30, 215, 96, 0.4)"
-            : "1px solid rgba(201, 162, 39, 0.4)",
+            : "1px solid rgba(107, 140, 174, 0.4)",
           borderRadius: 20,
-          color: sourceStation ? "#1DB954" : "#c9a227",
+          color: sourceStation ? "#1DB954" : "#6b8cae",
           fontSize: 12,
           fontWeight: 600,
           textDecoration: "none",

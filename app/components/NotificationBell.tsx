@@ -267,7 +267,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
           overflow: "visible",
         }}
       >
-        <span style={{ fontSize: 22, color: "#c9a227" }}>🔔</span>
+        <span style={{ fontSize: 22, color: "#6b8cae" }}>🔔</span>
         {unreadCount > 0 && (
           <span
             style={{
@@ -302,7 +302,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
             width: 340,
             maxHeight: 400,
             overflowY: "auto",
-            background: "#151515",
+            background: "var(--bg-card)",
             border: "1px solid rgba(240, 235, 224, 0.2)",
             borderRadius: 8,
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
@@ -326,7 +326,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-gold)",
+                  color: "var(--accent)",
                   fontSize: 12,
                   cursor: "pointer",
                 }}
@@ -362,7 +362,7 @@ export function NotificationBell({ userId, currentUsername }: { userId: string; 
                   borderBottom: "1px solid rgba(240, 235, 224, 0.05)",
                   background: notification.is_read
                     ? "transparent"
-                    : "rgba(212, 168, 75, 0.1)",
+                    : "rgba(107, 140, 174, 0.1)",
                   cursor: notification.link && notification.type !== "friend_request" ? "pointer" : "default",
                 }}
               >
@@ -449,7 +449,7 @@ function NotificationContent({
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: "var(--alzooka-gold)",
+            background: "var(--accent)",
             flexShrink: 0,
             marginTop: 4,
           }}
@@ -500,7 +500,7 @@ function FriendRequestNotification({
             disabled={isResponding}
             style={{
               padding: "6px 16px",
-              background: "var(--alzooka-gold)",
+              background: "var(--accent)",
               color: "#1a1a1a",
               border: "none",
               borderRadius: 4,
@@ -521,7 +521,7 @@ function FriendRequestNotification({
             style={{
               padding: "6px 16px",
               background: "transparent",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               border: "1px solid rgba(240, 235, 224, 0.3)",
               borderRadius: 4,
               fontSize: 12,
@@ -538,7 +538,7 @@ function FriendRequestNotification({
               style={{
                 padding: "6px 12px",
                 background: "transparent",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 borderRadius: 4,
                 fontSize: 12,
@@ -558,7 +558,7 @@ function FriendRequestNotification({
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: "var(--alzooka-gold)",
+            background: "var(--accent)",
             flexShrink: 0,
             marginTop: 4,
           }}

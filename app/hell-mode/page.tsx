@@ -367,7 +367,7 @@ export default function HellModePage() {
             style={{
               display: "inline-block",
               marginTop: 16,
-              color: "var(--alzooka-gold)",
+              color: "var(--accent)",
               fontSize: 14,
             }}
           >
@@ -383,7 +383,7 @@ export default function HellModePage() {
                 ? "You haven't set up any content filters yet." 
                 : "No posts are currently being filtered."}
             </p>
-            <Link href="/" style={{ color: "var(--alzooka-gold)" }}>
+            <Link href="/" style={{ color: "var(--accent)" }}>
               Return to Feed
             </Link>
           </div>
@@ -411,7 +411,7 @@ export default function HellModePage() {
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: userVote?.value === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                        color: userVote?.value === 1 ? "var(--accent)" : "var(--alzooka-cream)",
                         cursor: "pointer",
                         fontSize: 16,
                         padding: 4,
@@ -420,7 +420,7 @@ export default function HellModePage() {
                     >
                       ▲
                     </button>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: total > 0 ? "var(--alzooka-gold)" : total < 0 ? "#e57373" : "var(--alzooka-cream)" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: total > 0 ? "var(--accent)" : total < 0 ? "#e57373" : "var(--alzooka-cream)" }}>
                       {total}
                     </span>
                     <button
@@ -449,12 +449,12 @@ export default function HellModePage() {
                         {post.users?.avatar_url ? (
                           <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                         ) : (
-                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--alzooka-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--alzooka-teal-dark)", fontWeight: 700 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--bg-header)", fontWeight: 700 }}>
                             {(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                          <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                             {post.users?.display_name || post.users?.username || "Unknown"}
                           </span>
                           <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
@@ -466,7 +466,7 @@ export default function HellModePage() {
                       {post.groups && (
                         <Link 
                           href={`/groups/${post.groups.id}`}
-                          style={{ fontSize: 12, color: "var(--alzooka-gold)", opacity: 0.8 }}
+                          style={{ fontSize: 12, color: "var(--accent)", opacity: 0.8 }}
                         >
                           in {post.groups.name}
                         </Link>
@@ -520,7 +520,7 @@ export default function HellModePage() {
                         style={{
                           background: "transparent",
                           border: "none",
-                          color: "var(--alzooka-cream)",
+                          color: "var(--text-primary)",
                           cursor: "pointer",
                           padding: 0,
                           display: "flex",

@@ -125,7 +125,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--alzooka-teal-dark)",
+          background: "var(--bg-header)",
           borderRadius: 12,
           padding: 32,
           maxWidth: 400,
@@ -204,7 +204,7 @@ export function PasswordModal({ hasPassword, onClose, onSuccess }: PasswordModal
                 flex: 1,
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             >
               Cancel

@@ -407,7 +407,7 @@ export default function RockDropPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
         <div style={{ 
           height: 60, 
           background: "rgba(0,0,0,0.3)", 

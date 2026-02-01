@@ -161,7 +161,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
         style={{
           display: "flex",
           alignItems: "center",
-          background: "var(--alzooka-teal-light)",
+          background: "var(--bg-elevated)",
           border: "1px solid rgba(240, 235, 224, 0.2)",
           borderRadius: 4,
           overflow: "hidden",
@@ -183,7 +183,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
             width: 180,
             background: "transparent",
             border: "none",
-            color: "var(--alzooka-cream)",
+            color: "var(--text-primary)",
             outline: "none",
           }}
         />
@@ -196,9 +196,9 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               display: "flex",
               alignItems: "center",
               gap: 4,
-              background: "rgba(212, 168, 75, 0.2)",
+              background: "rgba(107, 140, 174, 0.2)",
               border: "none",
-              color: "var(--alzooka-gold)",
+              color: "var(--accent)",
               cursor: "pointer",
               padding: "4px 8px",
               fontSize: 11,
@@ -242,7 +242,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
             left: 0,
             right: 0,
             marginTop: 4,
-            background: "var(--alzooka-teal-light)",
+            background: "var(--bg-elevated)",
             border: "1px solid rgba(240, 235, 224, 0.2)",
             borderRadius: 4,
             maxHeight: 400,
@@ -257,7 +257,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 opacity: 0.6,
                 textAlign: "center",
               }}
@@ -269,7 +269,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 opacity: 0.6,
                 textAlign: "center",
               }}
@@ -281,7 +281,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
               style={{
                 padding: 16,
                 fontSize: 14,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 opacity: 0.6,
                 textAlign: "center",
               }}
@@ -294,7 +294,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                 style={{
                   padding: "8px 12px",
                   fontSize: 11,
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   opacity: 0.5,
                   borderBottom: "1px solid rgba(240, 235, 224, 0.1)",
                 }}
@@ -354,11 +354,11 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                             width: 40,
                             height: 40,
                             borderRadius: "50%",
-                            background: "var(--alzooka-gold)",
+                            background: "var(--accent)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "var(--alzooka-teal-dark)",
+                            color: "var(--bg-header)",
                             fontWeight: 700,
                             fontSize: 14,
                           }}
@@ -373,7 +373,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                       {/* Title or content preview */}
                       <div
                         style={{
-                          color: "var(--alzooka-cream)",
+                          color: "var(--text-primary)",
                           fontSize: 14,
                           fontWeight: 500,
                           overflow: "hidden",
@@ -391,7 +391,7 @@ export function GroupPostSearch({ groupId, groupName }: GroupPostSearchProps) {
                           alignItems: "center",
                           gap: 8,
                           fontSize: 12,
-                          color: "var(--alzooka-cream)",
+                          color: "var(--text-primary)",
                           opacity: 0.6,
                           marginTop: 4,
                         }}

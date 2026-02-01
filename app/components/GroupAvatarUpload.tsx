@@ -158,14 +158,14 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
           borderRadius: 12,
           background: currentAvatarUrl 
             ? `url(${currentAvatarUrl}) center/cover`
-            : "var(--alzooka-gold)",
-          border: "4px solid var(--alzooka-gold)",
+            : "var(--accent)",
+          border: "4px solid var(--accent)",
           cursor: uploading ? "wait" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: 36,
-          color: "var(--alzooka-teal-dark)",
+          color: "var(--bg-header)",
           fontWeight: 700,
           padding: 0,
           position: "relative",
@@ -190,7 +190,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
             }}
           >
             ...
@@ -208,7 +208,7 @@ export function GroupAvatarUpload({ currentAvatarUrl, groupId, groupName, onUplo
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               pointerEvents: "none",
             }}
           >

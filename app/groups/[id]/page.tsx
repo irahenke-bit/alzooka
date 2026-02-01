@@ -129,8 +129,8 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
             right: 0,
             marginBottom: 6,
             padding: "6px 10px",
-            background: "var(--alzooka-teal-dark)",
-            color: "var(--alzooka-cream)",
+            background: "var(--bg-header)",
+            color: "var(--text-primary)",
             fontSize: 12,
             fontWeight: 500,
             borderRadius: 4,
@@ -221,7 +221,7 @@ function renderTextWithLinksAndMentions(text: string): React.ReactNode[] {
         <span
           key={i}
           style={{
-            color: 'var(--alzooka-gold)',
+            color: 'var(--accent)',
             fontWeight: 600,
           }}
         >
@@ -755,7 +755,7 @@ export default function GroupPage() {
             if (postElement) {
               postElement.scrollIntoView({ behavior: "smooth", block: "center" });
               postElement.style.transition = "box-shadow 0.3s ease";
-              postElement.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
+              postElement.style.boxShadow = "0 0 0 3px var(--accent)";
               setTimeout(() => {
                 postElement.style.boxShadow = "";
               }, 2000);
@@ -1880,7 +1880,7 @@ export default function GroupPage() {
           overflow: "hidden",
           background: group.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 70%), url(${group.banner_url}) center/cover`
-            : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+            : "linear-gradient(135deg, var(--bg-header) 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
           minHeight: 300,
@@ -1901,10 +1901,10 @@ export default function GroupPage() {
             borderRadius: 8,
           }}
         >
-          <div style={{ fontSize: 11, color: "var(--alzooka-gold)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
             Total Posts
           </div>
-          <div style={{ fontSize: 20, color: "var(--alzooka-gold)", fontWeight: 700 }}>
+          <div style={{ fontSize: 20, color: "var(--accent)", fontWeight: 700 }}>
             {totalPostCount}
           </div>
         </div>
@@ -1956,7 +1956,7 @@ export default function GroupPage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "var(--alzooka-teal-dark)",
+                      background: "var(--bg-header)",
                       border: "1px solid rgba(240, 235, 224, 0.2)",
                       borderRadius: 8,
                       minWidth: 200,
@@ -1974,7 +1974,7 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1995,7 +1995,7 @@ export default function GroupPage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
@@ -2018,7 +2018,7 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2039,7 +2039,7 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2060,7 +2060,7 @@ export default function GroupPage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
@@ -2081,7 +2081,7 @@ export default function GroupPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2131,7 +2131,7 @@ export default function GroupPage() {
               height: 90, 
               borderRadius: 12, 
               objectFit: "cover", 
-              border: "4px solid var(--alzooka-gold)",
+              border: "4px solid var(--accent)",
               flexShrink: 0,
             }} />
           ) : (
@@ -2139,11 +2139,11 @@ export default function GroupPage() {
               width: 90,
               height: 90,
               borderRadius: 12,
-              background: "var(--alzooka-gold)",
+              background: "var(--accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "var(--alzooka-teal-dark)",
+              color: "var(--bg-header)",
               fontWeight: 700,
               fontSize: 36,
               flexShrink: 0,
@@ -2159,7 +2159,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   cursor: "pointer",
                   padding: 0,
                   fontSize: 14,
@@ -2167,7 +2167,7 @@ export default function GroupPage() {
               >
                 👥 {members.length} {members.length === 1 ? "member" : "members"}
               </button>
-              <span style={{ fontSize: 14, color: "var(--alzooka-cream)" }}>
+              <span style={{ fontSize: 14, color: "var(--text-primary)" }}>
                 {group.privacy === "public" ? "🌐 Public" : "🔒 Private"}
               </span>
               {/* Buttons */}
@@ -2178,7 +2178,7 @@ export default function GroupPage() {
                     style={{
                       background: "rgba(0,0,0,0.4)",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       fontSize: 11,
                       padding: "6px 10px",
                     }}
@@ -2192,7 +2192,7 @@ export default function GroupPage() {
                       style={{
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         fontSize: 11,
                         padding: "6px 10px",
                       }}
@@ -2206,7 +2206,7 @@ export default function GroupPage() {
                       style={{
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         fontSize: 11,
                         padding: "6px 10px",
                       }}
@@ -2222,7 +2222,7 @@ export default function GroupPage() {
               ) : group.privacy === "private" ? (
                 pendingInvite ? (
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
+                    <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "var(--bg-header)" }}>
                       ✓ Accept Invite
                     </button>
                     <button
@@ -2230,14 +2230,14 @@ export default function GroupPage() {
                       style={{
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                       }}
                     >
                       ✕ Decline
                     </button>
                   </div>
                 ) : (
-                  <span style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+                  <span style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
                     🔒 Invite only
                   </span>
                 )
@@ -2294,7 +2294,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: "0 8px",
@@ -2349,11 +2349,11 @@ export default function GroupPage() {
                             width: 44,
                             height: 44,
                             borderRadius: "50%",
-                            background: "var(--alzooka-gold)",
+                            background: "var(--accent)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "var(--alzooka-teal-dark)",
+                            color: "var(--bg-header)",
                             fontWeight: 700,
                             fontSize: 16,
                           }}>
@@ -2369,12 +2369,12 @@ export default function GroupPage() {
                           onClick={() => setShowMembersModal(false)}
                           style={{ textDecoration: "none" }}
                         >
-                          <div style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                          <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                             {member.users.display_name || member.users.username}
                           </div>
                         </Link>
                         {member.role === "admin" && (
-                          <span style={{ fontSize: 12, color: "var(--alzooka-gold)" }}>Admin</span>
+                          <span style={{ fontSize: 12, color: "var(--accent)" }}>Admin</span>
                         )}
                       </div>
                       
@@ -2383,7 +2383,7 @@ export default function GroupPage() {
                         {/* Friend Button - not for self */}
                         {!isCurrentUser && (
                           friendStatus === "accepted" ? (
-                            <span style={{ fontSize: 12, color: "var(--alzooka-gold)", padding: "6px 10px" }}>✓ Friends</span>
+                            <span style={{ fontSize: 12, color: "var(--accent)", padding: "6px 10px" }}>✓ Friends</span>
                           ) : friendStatus === "pending" ? (
                             <span style={{ fontSize: 12, opacity: 0.6, padding: "6px 10px" }}>Pending</span>
                           ) : (
@@ -2392,8 +2392,8 @@ export default function GroupPage() {
                               disabled={isPending}
                               style={{
                                 background: "transparent",
-                                border: "1px solid var(--alzooka-gold)",
-                                color: "var(--alzooka-gold)",
+                                border: "1px solid var(--accent)",
+                                color: "var(--accent)",
                                 fontSize: 12,
                                 padding: "6px 10px",
                                 borderRadius: 4,
@@ -2415,7 +2415,7 @@ export default function GroupPage() {
                                   style={{
                                     background: "transparent",
                                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                                    color: "var(--alzooka-cream)",
+                                    color: "var(--text-primary)",
                                     fontSize: 11,
                                     padding: "6px 8px",
                                     borderRadius: 4,
@@ -2432,7 +2432,7 @@ export default function GroupPage() {
                                   style={{
                                     background: "transparent",
                                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                                    color: "var(--alzooka-cream)",
+                                    color: "var(--text-primary)",
                                     fontSize: 11,
                                     padding: "6px 8px",
                                     borderRadius: 4,
@@ -2477,7 +2477,7 @@ export default function GroupPage() {
                 width: "100%",
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             >
               Close
@@ -2518,7 +2518,7 @@ export default function GroupPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: "0 8px",
@@ -2568,7 +2568,7 @@ export default function GroupPage() {
                     
                     {/* Name */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                         {ban.users?.display_name || ban.users?.username || "Unknown"}
                       </div>
                       <div style={{ fontSize: 12, opacity: 0.6 }}>Banned</div>
@@ -2579,8 +2579,8 @@ export default function GroupPage() {
                       onClick={() => handleUnbanUser(ban.id)}
                       style={{
                         background: "transparent",
-                        border: "1px solid var(--alzooka-gold)",
-                        color: "var(--alzooka-gold)",
+                        border: "1px solid var(--accent)",
+                        color: "var(--accent)",
                         fontSize: 12,
                         padding: "6px 12px",
                         borderRadius: 4,
@@ -2601,7 +2601,7 @@ export default function GroupPage() {
                 width: "100%",
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             >
               Close
@@ -2710,11 +2710,11 @@ export default function GroupPage() {
                               width: 32,
                               height: 32,
                               borderRadius: "50%",
-                              background: "var(--alzooka-gold)",
+                              background: "var(--accent)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "var(--alzooka-teal-dark)",
+                              color: "var(--bg-header)",
                               fontWeight: 700,
                               fontSize: 12,
                             }}>
@@ -2727,9 +2727,9 @@ export default function GroupPage() {
                           <button
                             onClick={() => toggleWhitelist(member.user_id)}
                             style={{
-                              background: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--alzooka-gold)" : "transparent",
-                              border: "1px solid var(--alzooka-gold)",
-                              color: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--alzooka-teal-dark)" : "var(--alzooka-gold)",
+                              background: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--accent)" : "transparent",
+                              border: "1px solid var(--accent)",
+                              color: feedPrefs.whitelist_members.includes(member.user_id) ? "var(--bg-header)" : "var(--accent)",
                               padding: "4px 8px",
                               fontSize: 11,
                               cursor: "pointer",
@@ -2777,7 +2777,7 @@ export default function GroupPage() {
                   flex: 1,
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                 }}
               >
                 Cancel
@@ -2839,11 +2839,11 @@ export default function GroupPage() {
                           width: 36,
                           height: 36,
                           borderRadius: "50%",
-                          background: "var(--alzooka-gold)",
+                          background: "var(--accent)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--alzooka-teal-dark)",
+                          color: "var(--bg-header)",
                           fontWeight: 700,
                           fontSize: 14,
                         }}>
@@ -2857,7 +2857,7 @@ export default function GroupPage() {
                         style={{
                           padding: "6px 12px",
                           fontSize: 13,
-                          color: "var(--alzooka-gold)",
+                          color: "var(--accent)",
                           opacity: 0.7,
                         }}
                       >
@@ -2892,7 +2892,7 @@ export default function GroupPage() {
                 width: "100%",
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             >
               Close
@@ -2969,7 +2969,7 @@ export default function GroupPage() {
                   flex: 1,
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                 }}
               >
                 Cancel
@@ -2996,9 +2996,9 @@ export default function GroupPage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--alzooka-teal-dark)",
+              background: "var(--bg-header)",
               borderRadius: 12,
-              border: isDraggingOver ? "2px solid var(--alzooka-gold)" : "1px solid rgba(240, 235, 224, 0.15)",
+              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
               position: "relative",
             }}
@@ -3028,11 +3028,11 @@ export default function GroupPage() {
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    background: "var(--alzooka-gold)",
+                    background: "var(--accent)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--alzooka-teal-dark)",
+                    color: "var(--bg-header)",
                     fontWeight: 700,
                     fontSize: 16,
                   }}
@@ -3089,9 +3089,9 @@ export default function GroupPage() {
                   }
                 }}
                 style={{
-                  background: "var(--alzooka-gold)",
+                  background: "var(--accent)",
                   border: "none",
-                  color: "var(--alzooka-teal-dark)",
+                  color: "var(--bg-header)",
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
@@ -3120,7 +3120,7 @@ export default function GroupPage() {
                 resize: "vertical",
                 border: "none",
                 background: "transparent",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 fontSize: 14,
                 lineHeight: 1.5,
                 outline: "none",
@@ -3142,8 +3142,8 @@ export default function GroupPage() {
                 }}
               >
                 <span style={{ 
-                  background: "var(--alzooka-gold)", 
-                  color: "var(--alzooka-teal-dark)",
+                  background: "var(--accent)", 
+                  color: "var(--bg-header)",
                   padding: "8px 16px",
                   borderRadius: 20,
                   fontWeight: 600,
@@ -3198,7 +3198,7 @@ export default function GroupPage() {
                     borderRadius: 8,
                     border: "2px dashed rgba(240, 235, 224, 0.3)",
                     background: "transparent",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     cursor: "pointer",
                     fontSize: 24,
                     display: "flex",
@@ -3219,7 +3219,7 @@ export default function GroupPage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "var(--alzooka-teal-dark)", 
+                background: "var(--bg-header)", 
                 borderRadius: 8, 
                 overflow: "hidden",
                 border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -3270,7 +3270,7 @@ export default function GroupPage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{ 
-                background: "var(--alzooka-teal-dark)", 
+                background: "var(--bg-header)", 
                 borderRadius: 8, 
                 overflow: "hidden",
                 border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -3330,7 +3330,7 @@ export default function GroupPage() {
               style={{
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3344,7 +3344,7 @@ export default function GroupPage() {
               style={{
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3358,7 +3358,7 @@ export default function GroupPage() {
               style={{
                 background: "transparent",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3497,7 +3497,7 @@ export default function GroupPage() {
             <>
               <p className="text-muted" style={{ marginBottom: 16 }}>You have been invited to join!</p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                <button onClick={acceptInvite} style={{ background: "var(--alzooka-gold)", color: "var(--alzooka-teal-dark)" }}>
+                <button onClick={acceptInvite} style={{ background: "var(--accent)", color: "var(--bg-header)" }}>
                   ✓ Accept Invite
                 </button>
                 <button
@@ -3505,7 +3505,7 @@ export default function GroupPage() {
                   style={{
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   ✕ Decline
@@ -3701,9 +3701,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         padding: "12px 16px",
         background: "rgba(217, 171, 92, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+        <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
           Loading playlist info...
         </div>
       </div>
@@ -3717,12 +3717,12 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         padding: "12px 16px",
         background: "rgba(217, 171, 92, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -3735,12 +3735,12 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       padding: "12px 16px",
       background: "rgba(217, 171, 92, 0.1)",
       borderRadius: 8,
-      borderLeft: "4px solid var(--alzooka-gold)",
+      borderLeft: "4px solid var(--accent)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -4107,7 +4107,7 @@ const GroupPostCard = memo(function GroupPostCard({
   const postKey = `post-${post.id}`;
   const userVote = votes[postKey]?.value || 0;
   const score = voteTotals[postKey] || 0;
-  const scoreColor = score > 0 ? "var(--alzooka-gold)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
+  const scoreColor = score > 0 ? "var(--accent)" : score < 0 ? "#e57373" : "var(--alzooka-cream)";
 
   async function handleSaveEdit() {
     if (!editContent.trim() && !post.image_url && !post.video_url) return;
@@ -4149,7 +4149,7 @@ const GroupPostCard = memo(function GroupPostCard({
               border: "none",
               padding: "4px 8px",
               cursor: "pointer",
-              color: userVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+              color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
               opacity: userVote === 1 ? 1 : 0.5,
               fontSize: 14,
             }}
@@ -4187,11 +4187,11 @@ const GroupPostCard = memo(function GroupPostCard({
                   width: 40,
                   height: 40,
                   borderRadius: "50%",
-                  background: "var(--alzooka-gold)",
+                  background: "var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--alzooka-teal-dark)",
+                  color: "var(--bg-header)",
                   fontWeight: 700,
                   fontSize: 16,
                 }}>
@@ -4199,14 +4199,14 @@ const GroupPostCard = memo(function GroupPostCard({
                 </div>
               )}
               <div>
-                <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                   {post.users?.display_name || post.users?.username || "Unknown"}
                 </span>
                 {isPostAuthorAdmin && (
                   <span style={{ 
                     marginLeft: 8, 
                     fontSize: 11, 
-                    color: "var(--alzooka-gold)",
+                    color: "var(--accent)",
                     background: "rgba(201, 165, 92, 0.15)",
                     padding: "2px 8px",
                     borderRadius: 4,
@@ -4227,7 +4227,7 @@ const GroupPostCard = memo(function GroupPostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   fontSize: 12,
                   cursor: "pointer",
                   opacity: 0.7,
@@ -4244,7 +4244,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     fontSize: 12,
                     cursor: "pointer",
                     opacity: 0.7,
@@ -4299,15 +4299,15 @@ const GroupPostCard = memo(function GroupPostCard({
             <div style={{
               marginBottom: 12,
               padding: "8px 12px",
-              background: "rgba(212, 168, 75, 0.1)",
+              background: "rgba(107, 140, 174, 0.1)",
               borderRadius: 8,
-              borderLeft: "3px solid var(--alzooka-gold)",
+              borderLeft: "3px solid var(--accent)",
               fontSize: 13,
             }}>
               <span style={{ opacity: 0.7 }}>Shared from </span>
               <Link
                 href={`/profile/${post.shared_from_post.users?.username}`}
-                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                style={{ color: "var(--accent)", fontWeight: 600 }}
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
@@ -4317,7 +4317,7 @@ const GroupPostCard = memo(function GroupPostCard({
                   <span style={{ opacity: 0.7 }}> in </span>
                   <Link
                     href={`/groups/${post.shared_from_post.groups.id}`}
-                    style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                    style={{ color: "var(--accent)", fontWeight: 600 }}
                   >
                     {post.shared_from_post.groups.name}
                   </Link>
@@ -4346,7 +4346,7 @@ const GroupPostCard = memo(function GroupPostCard({
                     fontSize: 14,
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   Cancel
@@ -4484,7 +4484,7 @@ const GroupPostCard = memo(function GroupPostCard({
                     }}>
                       <span style={{ fontSize: 18 }}>🎵</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
                           {post.video_title}
                         </p>
                       </div>
@@ -4538,7 +4538,7 @@ const GroupPostCard = memo(function GroupPostCard({
             onClick={onOpenModal}
             style={{
               background: "transparent",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               padding: "4px 0",
               fontSize: 14,
               border: "none",

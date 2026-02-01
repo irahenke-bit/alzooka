@@ -18,7 +18,7 @@ export default function TermsPage() {
       >
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <Logo size={32} />
-          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--alzooka-cream)" }}>
+          <h1 style={{ fontSize: 24, margin: 0, fontWeight: 400, color: "var(--text-primary)" }}>
             Alzooka
           </h1>
         </Link>
@@ -31,7 +31,7 @@ export default function TermsPage() {
         <div style={{ 
           lineHeight: 1.8, 
           fontSize: 15,
-          color: "var(--alzooka-cream)",
+          color: "var(--text-primary)",
         }}>
           <p style={{ opacity: 0.7, marginBottom: 24 }}>Last Updated: December 13, 2025</p>
 
@@ -119,14 +119,14 @@ export default function TermsPage() {
           <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and Alzooka.</p>
 
           <h2 style={{ fontSize: 20, marginTop: 32, marginBottom: 12 }}>18. Contact Information</h2>
-          <p>For questions, contact us at: <a href="mailto:Alzooka1976@gmail.com" style={{ color: "var(--alzooka-gold)" }}>Alzooka1976@gmail.com</a></p>
+          <p>For questions, contact us at: <a href="mailto:Alzooka1976@gmail.com" style={{ color: "var(--accent)" }}>Alzooka1976@gmail.com</a></p>
         </div>
 
         <div style={{ marginTop: 40 }}>
           <Link 
             href="/signup" 
             style={{ 
-              color: "var(--alzooka-gold)", 
+              color: "var(--accent)", 
               textDecoration: "none",
               fontSize: 14,
             }}

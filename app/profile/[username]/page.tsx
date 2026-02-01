@@ -206,9 +206,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         padding: "12px 16px",
         background: "rgba(217, 171, 92, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+        <div style={{ fontSize: 14, color: "var(--text-primary)", opacity: 0.7 }}>
           Loading playlist info...
         </div>
       </div>
@@ -222,12 +222,12 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
         padding: "12px 16px",
         background: "rgba(217, 171, 92, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -240,12 +240,12 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       padding: "12px 16px",
       background: "rgba(217, 171, 92, 0.1)",
       borderRadius: 8,
-      borderLeft: "4px solid var(--alzooka-gold)",
+      borderLeft: "4px solid var(--accent)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.7, marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -927,7 +927,7 @@ export default function ProfilePage() {
             if (element) {
               element.scrollIntoView({ behavior: "smooth", block: "center" });
               element.style.transition = "box-shadow 0.3s ease";
-              element.style.boxShadow = "0 0 0 3px var(--alzooka-gold)";
+              element.style.boxShadow = "0 0 0 3px var(--accent)";
               setTimeout(() => {
                 element.style.boxShadow = "";
               }, 2000);
@@ -1630,7 +1630,7 @@ export default function ProfilePage() {
           <div style={{ 
             width: "100%", 
             height: 200, 
-            background: "linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
+            background: "linear-gradient(135deg, rgba(107, 140, 174, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%)",
             position: "relative"
           }}>
             {/* Skeleton Avatar */}
@@ -1653,7 +1653,7 @@ export default function ProfilePage() {
                 <div style={{ width: 180, height: 28, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginBottom: 8 }} />
                 <div style={{ width: 100, height: 16, background: "rgba(255,255,255,0.05)", borderRadius: 4 }} />
               </div>
-              <div style={{ width: 100, height: 36, background: "rgba(201, 162, 39, 0.2)", borderRadius: 8 }} />
+              <div style={{ width: 100, height: 36, background: "rgba(107, 140, 174, 0.2)", borderRadius: 8 }} />
             </div>
             
             {/* Skeleton Bio */}
@@ -1744,7 +1744,7 @@ export default function ProfilePage() {
           overflow: "visible",
           background: profile.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
-            : "linear-gradient(135deg, var(--alzooka-teal-dark) 0%, var(--alzooka-teal) 100%)",
+            : "linear-gradient(135deg, var(--bg-header) 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
           minHeight: 240,
@@ -1810,7 +1810,7 @@ export default function ProfilePage() {
                       position: "absolute",
                       top: "calc(100% + 8px)",
                       right: 0,
-                      background: "var(--alzooka-teal-dark)",
+                      background: "var(--bg-header)",
                       border: "1px solid rgba(240, 235, 224, 0.2)",
                       borderRadius: 8,
                       minWidth: 220,
@@ -1827,7 +1827,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1848,7 +1848,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1870,7 +1870,7 @@ export default function ProfilePage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
@@ -1890,7 +1890,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1910,7 +1910,7 @@ export default function ProfilePage() {
                         width: "100%",
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         padding: "12px 16px",
                         textAlign: "left",
                         cursor: "pointer",
@@ -1931,7 +1931,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1952,7 +1952,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -1972,7 +1972,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2034,7 +2034,7 @@ export default function ProfilePage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "12px 16px",
                       textAlign: "left",
                       cursor: "pointer",
@@ -2104,7 +2104,7 @@ export default function ProfilePage() {
                       position: "absolute",
                       bottom: -8,
                       right: -8,
-                      background: "var(--alzooka-gold)",
+                      background: "var(--accent)",
                       border: "none",
                       borderRadius: "50%",
                       width: 28,
@@ -2114,7 +2114,7 @@ export default function ProfilePage() {
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: 14,
-                      color: "var(--alzooka-teal-dark)",
+                      color: "var(--bg-header)",
                     }}
                     title="View profile picture"
                   >
@@ -2131,13 +2131,13 @@ export default function ProfilePage() {
                   borderRadius: "50%",
                   background: profile.avatar_url 
                     ? `url(${profile.avatar_url}) center/cover`
-                    : "var(--alzooka-teal-dark)",
-                  border: "3px solid var(--alzooka-gold)",
+                    : "var(--bg-header)",
+                  border: "3px solid var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 36,
-                  color: "var(--alzooka-gold)",
+                  color: "var(--accent)",
                   cursor: "pointer",
                   padding: 0,
                   transition: "transform 0.2s, box-shadow 0.2s",
@@ -2203,7 +2203,7 @@ export default function ProfilePage() {
                     style={{
                       background: "transparent",
                       border: "1px solid var(--alzooka-cream)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                     }}
                   >
                     Cancel
@@ -2219,7 +2219,7 @@ export default function ProfilePage() {
                 <p style={{ 
                   margin: "0 0 12px 0", 
                   fontSize: 14, 
-                  color: "var(--alzooka-gold)",
+                  color: "var(--accent)",
                   opacity: 0.8,
                 }}>
                   @{profile.username}
@@ -2269,11 +2269,11 @@ export default function ProfilePage() {
                       alignItems: "center",
                       gap: 6,
                       padding: "4px 10px",
-                      background: "rgba(201, 162, 39, 0.15)",
-                      border: "1px solid rgba(201, 162, 39, 0.3)",
+                      background: "rgba(107, 140, 174, 0.15)",
+                      border: "1px solid rgba(107, 140, 174, 0.3)",
                       borderRadius: 16,
                       fontSize: 12,
-                      color: "var(--alzooka-gold)",
+                      color: "var(--accent)",
                       textDecoration: "none",
                       marginBottom: 12,
                     }}
@@ -2321,13 +2321,13 @@ export default function ProfilePage() {
                       }}
                       title="View all upvoted content. This list is private."
                     >
-                      <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
+                      <span style={{ color: "var(--accent)", fontSize: 18 }}>▲</span>
                       <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
                       <span className="text-muted" style={{ fontSize: 13 }}>received</span>
                     </Link>
                   ) : (
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ color: "var(--alzooka-gold)", fontSize: 18 }}>▲</span>
+                      <span style={{ color: "var(--accent)", fontSize: 18 }}>▲</span>
                       <span style={{ fontWeight: 600 }}>{voteStats.upvotesReceived}</span>
                       <span className="text-muted" style={{ fontSize: 13 }}>received</span>
                     </div>
@@ -2388,9 +2388,9 @@ export default function ProfilePage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--alzooka-teal-dark)",
+              background: "var(--bg-header)",
               borderRadius: 12,
-              border: isDraggingOver ? "2px solid var(--alzooka-gold)" : "1px solid rgba(240, 235, 224, 0.15)",
+              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
               marginBottom: 12,
               position: "relative",
             }}
@@ -2420,11 +2420,11 @@ export default function ProfilePage() {
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    background: "var(--alzooka-gold)",
+                    background: "var(--accent)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--alzooka-teal-dark)",
+                    color: "var(--bg-header)",
                     fontWeight: 700,
                     fontSize: 16,
                   }}
@@ -2481,9 +2481,9 @@ export default function ProfilePage() {
                   }
                 }}
                 style={{
-                  background: "var(--alzooka-gold)",
+                  background: "var(--accent)",
                   border: "none",
-                  color: "var(--alzooka-teal-dark)",
+                  color: "var(--bg-header)",
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
@@ -2536,7 +2536,7 @@ export default function ProfilePage() {
                 resize: "vertical",
                 border: "none",
                 background: "transparent",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 fontSize: 14,
                 lineHeight: 1.5,
                 outline: "none",
@@ -2558,8 +2558,8 @@ export default function ProfilePage() {
                 }}
               >
                 <span style={{ 
-                  background: "var(--alzooka-gold)", 
-                  color: "var(--alzooka-teal-dark)",
+                  background: "var(--accent)", 
+                  color: "var(--bg-header)",
                   padding: "8px 16px",
                   borderRadius: 20,
                   fontWeight: 600,
@@ -2615,7 +2615,7 @@ export default function ProfilePage() {
                     borderRadius: 8,
                     border: "2px dashed rgba(240, 235, 224, 0.3)",
                     background: "transparent",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     cursor: "pointer",
                     fontSize: 24,
                     display: "flex",
@@ -2638,7 +2638,7 @@ export default function ProfilePage() {
           {youtubePreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "var(--alzooka-teal-dark)",
+                background: "var(--bg-header)",
                 borderRadius: 8,
                 overflow: "hidden",
                 border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -2684,7 +2684,7 @@ export default function ProfilePage() {
           {spotifyPreview && (
             <div style={{ position: "relative", marginBottom: 12 }}>
               <div style={{
-                background: "var(--alzooka-teal-dark)",
+                background: "var(--bg-header)",
                 borderRadius: 8,
                 overflow: "hidden",
                 border: "1px solid rgba(240, 235, 224, 0.2)",
@@ -2742,7 +2742,7 @@ export default function ProfilePage() {
                 style={{
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2756,7 +2756,7 @@ export default function ProfilePage() {
                 style={{
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2770,7 +2770,7 @@ export default function ProfilePage() {
                 style={{
                   background: "transparent",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2850,7 +2850,7 @@ export default function ProfilePage() {
               {wallYoutubePreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "var(--alzooka-teal-dark)",
+                    background: "var(--bg-header)",
                     borderRadius: 8,
                     overflow: "hidden",
                     border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -2896,7 +2896,7 @@ export default function ProfilePage() {
               {wallSpotifyPreview && (
                 <div style={{ position: "relative", marginBottom: 12 }}>
                   <div style={{
-                    background: "var(--alzooka-teal-dark)",
+                    background: "var(--bg-header)",
                     borderRadius: 8,
                     overflow: "hidden",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
@@ -2957,7 +2957,7 @@ export default function ProfilePage() {
                       type="checkbox"
                       checked={wallShowInFeed}
                       onChange={(e) => setWallShowInFeed(e.target.checked)}
-                      style={{ width: 14, height: 14, accentColor: "var(--alzooka-gold)" }}
+                      style={{ width: 14, height: 14, accentColor: "var(--accent)" }}
                     />
                     <span>Show in Alzooka feed</span>
                   </label>
@@ -2975,7 +2975,7 @@ export default function ProfilePage() {
                     style={{
                       background: "transparent",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "8px 16px",
                       fontSize: 14,
                       cursor: "pointer",
@@ -2989,7 +2989,7 @@ export default function ProfilePage() {
                     style={{
                       background: "transparent",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       padding: "8px 16px",
                       fontSize: 14,
                       cursor: "pointer",
@@ -3018,8 +3018,8 @@ export default function ProfilePage() {
         <button
           onClick={() => setActiveTab("posts")}
           style={{
-            background: activeTab === "posts" ? "var(--alzooka-gold)" : "transparent",
-            color: activeTab === "posts" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+            background: activeTab === "posts" ? "var(--accent)" : "transparent",
+            color: activeTab === "posts" ? "var(--bg-header)" : "var(--alzooka-cream)",
             border: activeTab === "posts" ? "none" : "1px solid rgba(240, 235, 224, 0.3)",
             padding: "8px 16px",
             fontSize: 14,
@@ -3030,8 +3030,8 @@ export default function ProfilePage() {
         <button
           onClick={() => setActiveTab("comments")}
           style={{
-            background: activeTab === "comments" ? "var(--alzooka-gold)" : "transparent",
-            color: activeTab === "comments" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+            background: activeTab === "comments" ? "var(--accent)" : "transparent",
+            color: activeTab === "comments" ? "var(--bg-header)" : "var(--alzooka-cream)",
             border: activeTab === "comments" ? "none" : "1px solid rgba(240, 235, 224, 0.3)",
             padding: "8px 16px",
             fontSize: 14,
@@ -3129,10 +3129,10 @@ export default function ProfilePage() {
                           {post.users?.avatar_url ? (
                             <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                           ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--alzooka-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--alzooka-teal-dark)", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--bg-header)", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
                           )}
                           <div>
-                            <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
+                            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
                             <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>{formatTime(post.created_at)}</span>
                           </div>
                         </Link>
@@ -3142,7 +3142,7 @@ export default function ProfilePage() {
                             {/* Share button - visible to everyone */}
                             <button
                               onClick={() => setSharePost(post)}
-                              style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                              style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
                               title="Share post"
                             >
                               Share
@@ -3153,7 +3153,7 @@ export default function ProfilePage() {
                                   setEditingPostId(post.id);
                                   setEditingContent(post.content || "");
                                 }}
-                                style={{ background: "transparent", border: "none", color: "var(--alzooka-cream)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
+                                style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: 12, cursor: "pointer", opacity: 0.8 }}
                                 title="Edit post"
                               >
                                 Edit
@@ -3180,7 +3180,7 @@ export default function ProfilePage() {
                       {post.wall_user_id && post.wall_user && post.wall_user.username !== profile.username && (
                         <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
                           Posted on{" "}
-                          <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--alzooka-gold)" }}>
+                          <Link href={`/profile/${encodeURIComponent(post.wall_user.username)}`} style={{ color: "var(--accent)" }}>
                             {post.wall_user.display_name || post.wall_user.username}
                           </Link>
                           's wall
@@ -3210,15 +3210,15 @@ export default function ProfilePage() {
                         <div style={{ 
                           marginBottom: 12, 
                           padding: "8px 12px",
-                          background: "rgba(212, 168, 75, 0.1)",
+                          background: "rgba(107, 140, 174, 0.1)",
                           borderRadius: 8,
-                          borderLeft: "3px solid var(--alzooka-gold)",
+                          borderLeft: "3px solid var(--accent)",
                           fontSize: 13,
                         }}>
                           <span style={{ opacity: 0.7 }}>Shared from </span>
                           <Link 
                             href={`/profile/${post.shared_from_post.users?.username}`} 
-                            style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                            style={{ color: "var(--accent)", fontWeight: 600 }}
                           >
                             {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
                           </Link>
@@ -3228,7 +3228,7 @@ export default function ProfilePage() {
                               <span style={{ opacity: 0.7 }}> in </span>
                               <Link 
                                 href={`/groups/${post.shared_from_post.groups.id}`} 
-                                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                                style={{ color: "var(--accent)", fontWeight: 600 }}
                               >
                                 {post.shared_from_post.groups.name}
                               </Link>
@@ -3280,7 +3280,7 @@ export default function ProfilePage() {
                         setEditingContent("");
                       }}
                             >Save</button>
-                            <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid rgba(240, 235, 224, 0.3)", color: "var(--alzooka-cream)" }}>Cancel</button>
+                            <button onClick={() => { setEditingPostId(null); setEditingContent(""); }} style={{ background: "transparent", border: "1px solid rgba(240, 235, 224, 0.3)", color: "var(--text-primary)" }}>Cancel</button>
                           </div>
                         </div>
                       ) : (
@@ -3346,7 +3346,7 @@ export default function ProfilePage() {
                               style={{
                                 background: "transparent",
                                 border: "none",
-                                color: "var(--alzooka-gold)",
+                                color: "var(--accent)",
                                 fontSize: 12,
                                 cursor: "pointer",
                                 marginLeft: 8,
@@ -3414,7 +3414,7 @@ export default function ProfilePage() {
                                 }}>
                                   <span style={{ fontSize: 18 }}>🎵</span>
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                                    <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
                                       {post.video_title}
                                     </p>
                                   </div>
@@ -3467,7 +3467,7 @@ export default function ProfilePage() {
                                     }}>
                                       <span style={{ fontSize: 18, color: "#1DB954" }}>●</span>
                                       <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--alzooka-gold)" }}>
+                                        <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>
                                           {post.video_title}
                                         </p>
                                       </div>
@@ -3596,7 +3596,7 @@ export default function ProfilePage() {
                                 opacity: 0.6,
                                 background: "transparent",
                                 border: "none",
-                                color: "var(--alzooka-cream)",
+                                color: "var(--text-primary)",
                                 cursor: "pointer",
                                 padding: "4px 8px",
                               }}
@@ -3761,7 +3761,7 @@ export default function ProfilePage() {
                     </span>
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                       <span style={{ 
-                        color: comment.voteScore > 0 ? "var(--alzooka-gold)" : comment.voteScore < 0 ? "#e57373" : "inherit",
+                        color: comment.voteScore > 0 ? "var(--accent)" : comment.voteScore < 0 ? "#e57373" : "inherit",
                         opacity: comment.voteScore === 0 ? 0.5 : 1,
                         fontSize: 14,
                       }}>
@@ -3769,7 +3769,7 @@ export default function ProfilePage() {
                       </span>
                       <span style={{ 
                         fontSize: 14,
-                        color: comment.voteScore > 0 ? "var(--alzooka-gold)" : comment.voteScore < 0 ? "#e57373" : "inherit",
+                        color: comment.voteScore > 0 ? "var(--accent)" : comment.voteScore < 0 ? "#e57373" : "inherit",
                         opacity: comment.voteScore === 0 ? 0.5 : 1,
                       }}>
                         {comment.voteScore}
@@ -3891,7 +3891,7 @@ export default function ProfilePage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   fontSize: 24,
                   cursor: "pointer",
                   padding: 0,
@@ -3940,11 +3940,11 @@ export default function ProfilePage() {
                           width: 40,
                           height: 40,
                           borderRadius: "50%",
-                          background: "var(--alzooka-gold)",
+                          background: "var(--accent)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--alzooka-teal-dark)",
+                          color: "var(--bg-header)",
                           fontWeight: 700,
                           fontSize: 16,
                         }}
@@ -4385,7 +4385,7 @@ function VoteButtons({
   const score = voteTotals[key] || 0;
 
   const scoreColor = score > 0 
-    ? "var(--alzooka-gold)" 
+    ? "var(--accent)" 
     : score < 0 
       ? "#e57373" 
       : "var(--alzooka-cream)";
@@ -4399,7 +4399,7 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+          color: userVote === 1 ? "var(--accent)" : "var(--alzooka-cream)",
           opacity: userVote === 1 ? 1 : 0.5,
           fontSize: 14,
           lineHeight: 1,

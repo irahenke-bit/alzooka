@@ -296,7 +296,7 @@ function CompleteProfileContent() {
               <p style={{ 
                 fontSize: 18, 
                 fontWeight: 600,
-                color: "var(--alzooka-gold)",
+                color: "var(--accent)",
               }}>
                 {generatingUsername ? (
                   <span style={{ opacity: 0.5 }}>generating...</span>

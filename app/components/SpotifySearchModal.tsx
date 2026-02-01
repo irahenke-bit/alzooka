@@ -172,7 +172,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
     >
       <div
         style={{
-          background: "var(--alzooka-teal-dark)",
+          background: "var(--bg-header)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 600,
@@ -200,7 +200,7 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 24,
               cursor: "pointer",
               padding: 0,
@@ -260,10 +260,10 @@ export function SpotifySearchModal({ onClose, onSelect, onDirectPost, existingUr
                 flex: 1,
                 padding: "12px 16px",
                 fontSize: 16,
-                background: "var(--alzooka-teal-light)",
+                background: "var(--bg-elevated)",
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 borderRadius: 8,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             />
             <button

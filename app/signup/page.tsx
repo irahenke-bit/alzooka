@@ -162,7 +162,7 @@ export default function SignupPage() {
             gap: 12,
             background: "#fff",
             color: "#1a3a4a",
-            border: "2px solid var(--alzooka-gold)",
+            border: "2px solid var(--accent)",
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -188,7 +188,7 @@ export default function SignupPage() {
             gap: 12,
             background: "linear-gradient(135deg, #4A90A4 0%, #2D5A6B 100%)",
             color: "#fff",
-            border: "2px solid var(--alzooka-gold)",
+            border: "2px solid var(--accent)",
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -240,7 +240,7 @@ export default function SignupPage() {
                       marginTop: 2,
                       width: 16, 
                       height: 16, 
-                      accentColor: "var(--alzooka-gold)",
+                      accentColor: "var(--accent)",
                     }}
                   />
                   <span>
@@ -248,7 +248,7 @@ export default function SignupPage() {
                     <Link 
                       href="/terms" 
                       target="_blank"
-                      style={{ color: "var(--alzooka-gold)" }}
+                      style={{ color: "var(--accent)" }}
                     >
                       Terms and Conditions
                     </Link>
@@ -289,7 +289,7 @@ export default function SignupPage() {
                     flex: 1,
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   Cancel
@@ -345,7 +345,7 @@ export default function SignupPage() {
                 transform: "translateY(-50%)",
                 background: "transparent",
                 border: "none",
-                color: "var(--alzooka-gold)",
+                color: "var(--accent)",
                 fontSize: 13,
                 cursor: "pointer",
                 padding: "4px 8px",
@@ -371,7 +371,7 @@ export default function SignupPage() {
                   marginTop: 2,
                   width: 18, 
                   height: 18, 
-                  accentColor: "var(--alzooka-gold)",
+                  accentColor: "var(--accent)",
                   cursor: "pointer",
                 }}
               />
@@ -380,7 +380,7 @@ export default function SignupPage() {
                 <Link 
                   href="/terms" 
                   target="_blank"
-                  style={{ color: "var(--alzooka-gold)", textDecoration: "underline" }}
+                  style={{ color: "var(--accent)", textDecoration: "underline" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   Terms and Conditions

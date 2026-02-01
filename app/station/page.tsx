@@ -2793,7 +2793,7 @@ export default function StationPage() {
                 borderRadius: 8,
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 background: "rgba(0, 0, 0, 0.2)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             />
           </div>
@@ -2807,8 +2807,8 @@ export default function StationPage() {
               padding: "14px 24px",
               fontSize: 16,
               fontWeight: 600,
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
+              background: "var(--accent)",
+              color: "var(--bg-header)",
               border: "none",
               borderRadius: 8,
               cursor: creating ? "not-allowed" : "pointer",
@@ -2830,7 +2830,7 @@ export default function StationPage() {
       <div style={{ maxWidth: 960, margin: "0 auto", padding: 20 }}>
         {/* Station Header */}
         <div style={{ 
-          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(212, 168, 75, 0.15) 100%)",
+          background: "linear-gradient(135deg, rgba(30, 215, 96, 0.15) 0%, rgba(107, 140, 174, 0.15) 100%)",
           borderRadius: 16,
           padding: 24,
           marginBottom: 24,
@@ -2841,7 +2841,7 @@ export default function StationPage() {
               width: 64, 
               height: 64, 
               borderRadius: 12,
-              background: "var(--alzooka-gold)",
+              background: "var(--accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -2872,10 +2872,10 @@ export default function StationPage() {
                       fontSize: 24,
                       fontWeight: 700,
                       background: "rgba(0,0,0,0.3)",
-                      border: "1px solid var(--alzooka-gold)",
+                      border: "1px solid var(--accent)",
                       borderRadius: 6,
                       padding: "4px 10px",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       outline: "none",
                       width: 250,
                     }}
@@ -2886,8 +2886,8 @@ export default function StationPage() {
                       padding: "6px 12px",
                       fontSize: 12,
                       fontWeight: 600,
-                      background: "var(--alzooka-gold)",
-                      color: "var(--alzooka-teal-dark)",
+                      background: "var(--accent)",
+                      color: "var(--bg-header)",
                       border: "none",
                       borderRadius: 6,
                       cursor: "pointer",
@@ -2902,7 +2902,7 @@ export default function StationPage() {
                       fontSize: 12,
                       fontWeight: 600,
                       background: "transparent",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
                       borderRadius: 6,
                       cursor: "pointer",
@@ -3103,7 +3103,7 @@ export default function StationPage() {
                       padding: "8px 16px",
                       fontSize: 12,
                       background: "transparent",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
                       borderRadius: 20,
                       cursor: "pointer",
@@ -3181,7 +3181,7 @@ export default function StationPage() {
                 padding: "8px 12px",
                 fontSize: 14,
                 background: selectAll ? "rgba(30, 215, 96, 0.2)" : "rgba(240, 235, 224, 0.05)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 border: selectAll ? "1px solid rgba(30, 215, 96, 0.5)" : "1px solid rgba(240, 235, 224, 0.2)",
                 borderRadius: 8,
                 cursor: albums.length === 0 || selectAll ? "not-allowed" : "pointer",
@@ -3197,7 +3197,7 @@ export default function StationPage() {
                 padding: "8px 12px",
                 fontSize: 14,
                 background: selectedCount === 0 ? "rgba(240, 235, 224, 0.1)" : "rgba(240, 235, 224, 0.05)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 border: selectedCount === 0 ? "1px solid rgba(240, 235, 224, 0.3)" : "1px solid rgba(240, 235, 224, 0.2)",
                 borderRadius: 8,
                 cursor: albums.length === 0 || selectedCount === 0 ? "not-allowed" : "pointer",
@@ -3223,7 +3223,7 @@ export default function StationPage() {
                 borderRadius: 8,
                 border: "1px solid rgba(240, 235, 224, 0.2)",
                 background: "rgba(0, 0, 0, 0.2)",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
               }}
             />
             <button
@@ -3233,8 +3233,8 @@ export default function StationPage() {
                 padding: "8px 14px",
                 fontSize: 14,
                 fontWeight: 600,
-                background: searchInput.trim() ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
-                color: searchInput.trim() ? "var(--alzooka-teal-dark)" : "rgba(240, 235, 224, 0.4)",
+                background: searchInput.trim() ? "var(--accent)" : "rgba(240, 235, 224, 0.1)",
+                color: searchInput.trim() ? "var(--bg-header)" : "rgba(240, 235, 224, 0.4)",
                 border: "none",
                 borderRadius: 8,
                 cursor: searchInput.trim() ? "pointer" : "not-allowed",
@@ -3251,8 +3251,8 @@ export default function StationPage() {
               padding: "8px 16px",
               fontSize: 14,
               fontWeight: 600,
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
+              background: "var(--accent)",
+              color: "var(--bg-header)",
               border: "none",
               borderRadius: 8,
               cursor: "pointer",
@@ -3283,7 +3283,7 @@ export default function StationPage() {
                     padding: "4px 10px",
                     fontSize: 12,
                     background: "transparent",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     border: "1px solid rgba(240, 235, 224, 0.2)",
                     borderRadius: 6,
                     cursor: "pointer",
@@ -3299,7 +3299,7 @@ export default function StationPage() {
                   padding: "4px 10px",
                   fontSize: 12,
                   background: showCreateGroup ? "rgba(240, 235, 224, 0.1)" : "transparent",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.2)",
                   borderRadius: 6,
                   cursor: "pointer",
@@ -3327,7 +3327,7 @@ export default function StationPage() {
                   borderRadius: 6,
                   border: "1px solid rgba(240, 235, 224, 0.2)",
                   background: "rgba(0, 0, 0, 0.2)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                 }}
               />
               <button
@@ -3337,8 +3337,8 @@ export default function StationPage() {
                   padding: "8px 16px",
                   fontSize: 14,
                   fontWeight: 600,
-                  background: newGroupName.trim() ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
-                  color: newGroupName.trim() ? "var(--alzooka-teal-dark)" : "rgba(240, 235, 224, 0.4)",
+                  background: newGroupName.trim() ? "var(--accent)" : "rgba(240, 235, 224, 0.1)",
+                  color: newGroupName.trim() ? "var(--bg-header)" : "rgba(240, 235, 224, 0.4)",
                   border: "none",
                   borderRadius: 6,
                   cursor: newGroupName.trim() ? "pointer" : "not-allowed",
@@ -3448,7 +3448,7 @@ export default function StationPage() {
                               padding: "8px",
                               fontSize: 13,
                               background: "rgba(240, 235, 224, 0.1)",
-                              color: "var(--alzooka-cream)",
+                              color: "var(--text-primary)",
                               border: "none",
                               borderRadius: 6,
                               cursor: "pointer",
@@ -3489,7 +3489,7 @@ export default function StationPage() {
           
           {/* Hint when no albums are tagged */}
           {groups.length > 0 && albums.length > 0 && Object.keys(albumGroups).length === 0 && !bulkAddGroup && (
-            <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--alzooka-gold)" }}>
+            <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--accent)" }}>
               💡 Click <strong>"Edit"</strong> next to a group, then click albums to add them
             </p>
           )}
@@ -3546,8 +3546,8 @@ export default function StationPage() {
             justifyContent: "space-between",
             padding: "12px 16px",
             marginBottom: 16,
-            background: "rgba(212, 168, 75, 0.15)",
-            border: "1px solid rgba(212, 168, 75, 0.3)",
+            background: "rgba(107, 140, 174, 0.15)",
+            border: "1px solid rgba(107, 140, 174, 0.3)",
             borderRadius: 8,
           }}>
             <span style={{ fontSize: 14 }}>
@@ -3560,8 +3560,8 @@ export default function StationPage() {
                 padding: "6px 12px",
                 fontSize: 13,
                 fontWeight: 600,
-                background: "var(--alzooka-gold)",
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)",
+                color: "var(--bg-header)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -3597,10 +3597,10 @@ export default function StationPage() {
                 padding: "12px 24px",
                 fontSize: 15,
                 fontWeight: 600,
-                background: activeTab === "playlists" ? "rgba(201, 162, 39, 0.15)" : "transparent",
-                color: activeTab === "playlists" ? "#c9a227" : "rgba(240, 235, 224, 0.6)",
+                background: activeTab === "playlists" ? "rgba(107, 140, 174, 0.15)" : "transparent",
+                color: activeTab === "playlists" ? "#6b8cae" : "rgba(240, 235, 224, 0.6)",
                 border: "none",
-                borderBottom: activeTab === "playlists" ? "2px solid #c9a227" : "2px solid transparent",
+                borderBottom: activeTab === "playlists" ? "2px solid #6b8cae" : "2px solid transparent",
                 cursor: "pointer",
                 marginBottom: -1,
               }}
@@ -3638,7 +3638,7 @@ export default function StationPage() {
                   background: "rgba(26, 46, 46, 0.98)",
                   padding: "12px 20px",
                   borderRadius: 50,
-                  border: "1px solid rgba(201, 162, 39, 0.4)",
+                  border: "1px solid rgba(107, 140, 174, 0.4)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
                 }}
               >
@@ -3646,9 +3646,9 @@ export default function StationPage() {
                 <div style={{ 
                   fontSize: 13, 
                   fontWeight: 600, 
-                  color: "var(--alzooka-gold)",
+                  color: "var(--accent)",
                   paddingRight: 12,
-                  borderRight: "1px solid rgba(201, 162, 39, 0.3)",
+                  borderRight: "1px solid rgba(107, 140, 174, 0.3)",
                 }}>
                   {manualSelections.size} Selected
                 </div>
@@ -3683,9 +3683,9 @@ export default function StationPage() {
                         padding: "8px 16px",
                         fontSize: 13,
                         fontWeight: 600,
-                        background: "rgba(201, 162, 39, 0.2)",
-                        color: "var(--alzooka-gold)",
-                        border: "1px solid rgba(201, 162, 39, 0.4)",
+                        background: "rgba(107, 140, 174, 0.2)",
+                        color: "var(--accent)",
+                        border: "1px solid rgba(107, 140, 174, 0.4)",
                         borderRadius: 20,
                         cursor: "pointer",
                         display: "flex",
@@ -3704,8 +3704,8 @@ export default function StationPage() {
                           left: "50%",
                           transform: "translateX(-50%)",
                           marginBottom: 8,
-                          background: "var(--alzooka-teal-dark)",
-                          border: "1px solid rgba(201, 162, 39, 0.3)",
+                          background: "var(--bg-header)",
+                          border: "1px solid rgba(107, 140, 174, 0.3)",
                           borderRadius: 12,
                           padding: 8,
                           zIndex: 100,
@@ -3729,7 +3729,7 @@ export default function StationPage() {
                               background: "transparent",
                               border: "none",
                               borderRadius: 6,
-                              color: "var(--alzooka-cream)",
+                              color: "var(--text-primary)",
                               fontSize: 13,
                               cursor: "pointer",
                               textAlign: "left",
@@ -3779,7 +3779,7 @@ export default function StationPage() {
                           left: "50%",
                           transform: "translateX(-50%)",
                           marginBottom: 8,
-                          background: "var(--alzooka-teal-dark)",
+                          background: "var(--bg-header)",
                           border: "1px solid rgba(229, 115, 115, 0.3)",
                           borderRadius: 12,
                           padding: 8,
@@ -3866,7 +3866,7 @@ export default function StationPage() {
                     fontSize: 13,
                     fontWeight: 500,
                     background: "transparent",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
                     borderRadius: 20,
                     cursor: "pointer",
@@ -3975,7 +3975,7 @@ export default function StationPage() {
                             left: "50%",
                             transform: "translateX(-50%)",
                             marginBottom: 8,
-                            background: "var(--alzooka-teal-dark)",
+                            background: "var(--bg-header)",
                             border: "1px solid rgba(30, 215, 96, 0.3)",
                             borderRadius: 12,
                             padding: 8,
@@ -4005,7 +4005,7 @@ export default function StationPage() {
                                 background: "transparent",
                                 border: "none",
                                 borderRadius: 6,
-                                color: "var(--alzooka-cream)",
+                                color: "var(--text-primary)",
                                 fontSize: 13,
                                 cursor: "pointer",
                                 textAlign: "left",
@@ -4040,7 +4040,7 @@ export default function StationPage() {
                     fontSize: 13,
                     fontWeight: 500,
                     background: "transparent",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
                     borderRadius: 20,
                     cursor: "pointer",
@@ -4317,9 +4317,9 @@ export default function StationPage() {
                                 padding: "6px 12px",
                                 fontSize: 11,
                                 fontWeight: 600,
-                                background: "rgba(201, 162, 39, 0.2)",
-                                color: "var(--alzooka-gold)",
-                                border: "1px solid rgba(201, 162, 39, 0.4)",
+                                background: "rgba(107, 140, 174, 0.2)",
+                                color: "var(--accent)",
+                                border: "1px solid rgba(107, 140, 174, 0.4)",
                                 borderRadius: 6,
                                 cursor: "pointer",
                               }}
@@ -4337,8 +4337,8 @@ export default function StationPage() {
                               padding: "5px 12px",
                               fontSize: 10,
                               fontWeight: 500,
-                              background: isExpanded ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
-                              color: isExpanded ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                              background: isExpanded ? "var(--accent)" : "rgba(240, 235, 224, 0.1)",
+                              color: isExpanded ? "var(--bg-header)" : "var(--alzooka-cream)",
                               border: "none",
                               borderRadius: 6,
                               cursor: "pointer",
@@ -4359,7 +4359,7 @@ export default function StationPage() {
                               marginTop: 4,
                               padding: 10,
                               background: "#1a2e2e",
-                              border: "2px solid var(--alzooka-gold)",
+                              border: "2px solid var(--accent)",
                               borderRadius: 8,
                               zIndex: 1000,
                             }}
@@ -4402,8 +4402,8 @@ export default function StationPage() {
                                 padding: "6px",
                                 fontSize: 11,
                                 fontWeight: 600,
-                                background: "var(--alzooka-gold)",
-                                color: "var(--alzooka-teal-dark)",
+                                background: "var(--accent)",
+                                color: "var(--bg-header)",
                                 border: "none",
                                 borderRadius: 4,
                                 cursor: "pointer",
@@ -4425,7 +4425,7 @@ export default function StationPage() {
                             marginBottom: 16,
                             padding: 16,
                             background: "rgba(0, 0, 0, 0.3)",
-                            border: "2px solid var(--alzooka-gold)",
+                            border: "2px solid var(--accent)",
                             borderRadius: 12,
                             overflowAnchor: "none", // Prevent scroll jump when selecting tracks
                           }}>
@@ -4441,7 +4441,7 @@ export default function StationPage() {
                                     padding: 12,
                                     background: "rgba(0,0,0,0.25)",
                                     borderRadius: 12,
-                                    border: "1px solid rgba(201, 162, 39, 0.2)",
+                                    border: "1px solid rgba(107, 140, 174, 0.2)",
                                     display: "flex",
                                     gap: 16,
                                     alignItems: "flex-start", // Prevent layout shifts when button appears
@@ -4531,13 +4531,13 @@ export default function StationPage() {
                             gap: 8,
                             cursor: "grab",
                             background: isCurrentTrack
-                              ? "rgba(212, 168, 75, 0.25)"
+                              ? "rgba(107, 140, 174, 0.25)"
                               : isSelectedStart
                                 ? "rgba(30, 215, 96, 0.3)"
                                 : "transparent",
                             borderRadius: 4,
                             borderLeft: isCurrentTrack
-                              ? "3px solid var(--alzooka-gold)"
+                              ? "3px solid var(--accent)"
                               : isSelectedStart
                                 ? "3px solid #1DB954"
                                 : "3px solid transparent",
@@ -4574,7 +4574,7 @@ export default function StationPage() {
                               textOverflow: "ellipsis",
                               whiteSpace: "nowrap",
                               fontWeight: isCurrentTrack ? 600 : 400,
-                              color: isCurrentTrack ? "var(--alzooka-gold)" : "inherit",
+                              color: isCurrentTrack ? "var(--accent)" : "inherit",
                             }}
                           >
                             {track.name}
@@ -4583,7 +4583,7 @@ export default function StationPage() {
                             <button
                               onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
                               style={{
-                                background: "var(--alzooka-gold)",
+                                background: "var(--accent)",
                                 border: "none",
                                 borderRadius: "50%",
                                 width: 20,
@@ -4622,7 +4622,7 @@ export default function StationPage() {
                       overflow: "hidden",
                     }}
                   >
-                    <h5 style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+                    <h5 style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, color: "var(--accent)" }}>
                       📋 Add to Playlist
                     </h5>
                     <div
@@ -4781,7 +4781,7 @@ export default function StationPage() {
                       style={{
                         background: "transparent",
                         border: "1px solid rgba(240, 235, 224, 0.3)",
-                        color: "var(--alzooka-cream)",
+                        color: "var(--text-primary)",
                         padding: "6px 12px",
                         borderRadius: 4,
                         cursor: "pointer",
@@ -5007,8 +5007,8 @@ export default function StationPage() {
                           style={{
                             padding: "4px 8px",
                             fontSize: 10,
-                            background: viewingPlaylist === playlist.id ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.1)",
-                            color: viewingPlaylist === playlist.id ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                            background: viewingPlaylist === playlist.id ? "var(--accent)" : "rgba(240, 235, 224, 0.1)",
+                            color: viewingPlaylist === playlist.id ? "var(--bg-header)" : "var(--alzooka-cream)",
                             border: "none",
                             borderRadius: 4,
                             cursor: "pointer",
@@ -5020,7 +5020,7 @@ export default function StationPage() {
                         {groups.length > 0 && (
                           <button
                             onClick={(e) => { e.stopPropagation(); setEditingPlaylistGroups(editingPlaylistGroups === playlist.id ? null : playlist.id); }}
-                            style={{ padding: "4px 8px", fontSize: 10, background: "rgba(240, 235, 224, 0.1)", color: "var(--alzooka-cream)", border: "none", borderRadius: 4, cursor: "pointer" }}
+                            style={{ padding: "4px 8px", fontSize: 10, background: "rgba(240, 235, 224, 0.1)", color: "var(--text-primary)", border: "none", borderRadius: 4, cursor: "pointer" }}
                           >
                             🏷️
                           </button>
@@ -5116,7 +5116,7 @@ export default function StationPage() {
                                     : isSelectedForRemoval
                                       ? "rgba(229, 115, 115, 0.2)"
                                       : isCurrentTrack 
-                                        ? (isPlaying ? "rgba(212, 168, 75, 0.25)" : "rgba(212, 168, 75, 0.15)")
+                                        ? (isPlaying ? "rgba(107, 140, 174, 0.25)" : "rgba(107, 140, 174, 0.15)")
                                         : isSelectedStart 
                                           ? "rgba(30, 215, 96, 0.3)" 
                                           : "transparent",
@@ -5125,7 +5125,7 @@ export default function StationPage() {
                                   borderLeft: isSelectedForRemoval
                                     ? "3px solid #e57373"
                                     : isCurrentTrack 
-                                      ? "3px solid var(--alzooka-gold)" 
+                                      ? "3px solid var(--accent)" 
                                       : isSelectedStart 
                                         ? "3px solid #1DB954" 
                                         : "3px solid transparent",
@@ -5151,7 +5151,7 @@ export default function StationPage() {
                                   textOverflow: "ellipsis", 
                                   whiteSpace: "nowrap",
                                   fontWeight: isCurrentTrack ? 600 : 400,
-                                  color: isCurrentTrack ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
+                                  color: isCurrentTrack ? "var(--accent)" : "var(--alzooka-cream)",
                                 }}>
                                   {track.name || "(Unknown Track)"}
                                 </span>
@@ -5170,7 +5170,7 @@ export default function StationPage() {
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleTogglePlayback(); }}
                                     style={{
-                                      background: "var(--alzooka-gold)",
+                                      background: "var(--accent)",
                                       border: "none",
                                       borderRadius: "50%",
                                       width: 20,
@@ -5275,7 +5275,7 @@ export default function StationPage() {
         }}>
           <div style={{
             background: "#1a2e2e",
-            border: "2px solid var(--alzooka-gold)",
+            border: "2px solid var(--accent)",
             borderRadius: 12,
             padding: 24,
             maxWidth: 400,
@@ -5309,7 +5309,7 @@ export default function StationPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   background: "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 8,
                   cursor: "pointer",
@@ -5376,7 +5376,7 @@ export default function StationPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   background: "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 8,
                   cursor: "pointer",
@@ -5440,7 +5440,7 @@ export default function StationPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   background: "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 8,
                   cursor: "pointer",
@@ -5508,7 +5508,7 @@ export default function StationPage() {
                   fontSize: 14,
                   fontWeight: 500,
                   background: "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 8,
                   cursor: "pointer",
@@ -5555,7 +5555,7 @@ export default function StationPage() {
             maxWidth: 420,
             width: "90%",
           }}>
-            <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600, color: "var(--alzooka-cream)" }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 600, color: "var(--text-primary)" }}>
               Create New Playlist
             </h3>
             <p style={{ margin: "0 0 20px", fontSize: 14, opacity: 0.7 }}>
@@ -5619,7 +5619,7 @@ export default function StationPage() {
                 background: "rgba(0, 0, 0, 0.3)",
                 border: "1px solid rgba(240, 235, 224, 0.3)",
                 borderRadius: 8,
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 marginBottom: 20,
                 boxSizing: "border-box",
               }}
@@ -5636,7 +5636,7 @@ export default function StationPage() {
                   fontSize: 14,
                   fontWeight: 500,
                   background: "rgba(240, 235, 224, 0.1)",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   border: "1px solid rgba(240, 235, 224, 0.3)",
                   borderRadius: 8,
                   cursor: "pointer",

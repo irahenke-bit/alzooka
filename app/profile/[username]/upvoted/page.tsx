@@ -243,12 +243,12 @@ export default function UpvotedPage() {
         <div style={{ marginBottom: 24 }}>
           <Link
             href={`/profile/${username}`}
-            style={{ color: "var(--alzooka-gold)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
+            style={{ color: "var(--accent)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
           >
             ← Back to Profile
           </Link>
           <h1 style={{ margin: "8px 0 0 0", fontSize: 24, display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ color: "var(--alzooka-gold)" }}>▲</span>
+            <span style={{ color: "var(--accent)" }}>▲</span>
             Upvoted Content
           </h1>
           <p className="text-muted" style={{ margin: "8px 0 0 0", fontSize: 14 }}>
@@ -275,8 +275,8 @@ export default function UpvotedPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ 
-                        background: item.type === "post" ? "var(--alzooka-gold)" : "rgba(240, 235, 224, 0.2)",
-                        color: item.type === "post" ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                        background: item.type === "post" ? "var(--accent)" : "rgba(240, 235, 224, 0.2)",
+                        color: item.type === "post" ? "var(--bg-header)" : "var(--alzooka-cream)",
                         padding: "2px 8px",
                         borderRadius: 4,
                         fontSize: 11,
@@ -295,7 +295,7 @@ export default function UpvotedPage() {
                     display: "flex", 
                     alignItems: "center", 
                     gap: 4,
-                    color: "var(--alzooka-gold)",
+                    color: "var(--accent)",
                     fontWeight: 600,
                   }}>
                     <span>▲</span>

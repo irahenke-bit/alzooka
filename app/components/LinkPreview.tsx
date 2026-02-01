@@ -133,7 +133,7 @@ export function LinkPreview({ url }: Props) {
         border: "1px solid rgba(240, 235, 224, 0.15)",
         borderRadius: 8,
         overflow: "hidden",
-        background: "var(--alzooka-teal-light)",
+        background: "var(--bg-elevated)",
         transition: "border-color 0.2s",
       }}
       onMouseEnter={(e) => {
@@ -173,7 +173,7 @@ export function LinkPreview({ url }: Props) {
         <div
           style={{
             fontSize: 11,
-            color: "var(--alzooka-cream)",
+            color: "var(--text-primary)",
             opacity: 0.5,
             marginBottom: 4,
             textTransform: "lowercase",
@@ -190,7 +190,7 @@ export function LinkPreview({ url }: Props) {
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               marginBottom: 4,
               lineHeight: 1.3,
             }}
@@ -202,7 +202,7 @@ export function LinkPreview({ url }: Props) {
           <div
             style={{
               fontSize: 13,
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               opacity: 0.7,
               lineHeight: 1.4,
               overflow: "hidden",

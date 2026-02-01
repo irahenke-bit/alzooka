@@ -49,7 +49,7 @@ export function EmojiButton({ onEmojiSelect, buttonSize = 32, direction = "up" }
         style={{
           background: "rgba(240, 235, 224, 0.1)",
           border: "none",
-          color: "var(--alzooka-cream)",
+          color: "var(--text-primary)",
           width: buttonSize,
           height: buttonSize,
           borderRadius: "50%",

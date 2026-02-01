@@ -243,7 +243,7 @@ export default function DownvotedPage() {
         <div style={{ marginBottom: 24 }}>
           <Link
             href={`/profile/${username}`}
-            style={{ color: "var(--alzooka-gold)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
+            style={{ color: "var(--accent)", fontSize: 14, marginBottom: 8, display: "inline-block" }}
           >
             ← Back to Profile
           </Link>

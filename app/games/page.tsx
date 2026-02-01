@@ -297,23 +297,23 @@ export default function GamesPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={user} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
       <Header user={user} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h1 style={{ fontSize: 32, margin: "0 0 8px", color: "var(--alzooka-gold)" }}>
+          <h1 style={{ fontSize: 32, margin: "0 0 8px", color: "var(--accent)" }}>
             🎵 Music Trivia
           </h1>
           <p style={{ opacity: 0.7, margin: 0 }}>
@@ -324,7 +324,7 @@ export default function GamesPage() {
         {/* Your Stats Card */}
         {stats && (
           <div style={{
-            background: "#151515",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -335,7 +335,7 @@ export default function GamesPage() {
               <span style={{ 
                 fontSize: 24, 
                 fontWeight: 700, 
-                color: "var(--alzooka-gold)" 
+                color: "var(--accent)" 
               }}>
                 {stats.rating} Rating
               </span>
@@ -403,7 +403,7 @@ export default function GamesPage() {
                 <div
                   key={game.id}
                   style={{
-                    background: "#151515",
+                    background: "var(--bg-card)",
                     borderRadius: 8,
                     padding: 12,
                     display: "flex",
@@ -473,8 +473,8 @@ export default function GamesPage() {
                 padding: "12px 16px",
                 fontSize: 14,
                 fontWeight: 600,
-                background: activeTab === tab ? "var(--alzooka-gold)" : "#151515",
-                color: activeTab === tab ? "var(--alzooka-teal-dark)" : "var(--alzooka-cream)",
+                background: activeTab === tab ? "var(--accent)" : "#151515",
+                color: activeTab === tab ? "var(--bg-header)" : "var(--alzooka-cream)",
                 border: "none",
                 borderRadius: 8,
                 cursor: "pointer",
@@ -509,8 +509,8 @@ export default function GamesPage() {
                   style={{
                     marginTop: 16,
                     padding: "10px 20px",
-                    background: "var(--alzooka-gold)",
-                    color: "var(--alzooka-teal-dark)",
+                    background: "var(--accent)",
+                    color: "var(--bg-header)",
                     border: "none",
                     borderRadius: 8,
                     cursor: "pointer",
@@ -529,7 +529,7 @@ export default function GamesPage() {
                   <div
                     key={challenge.id}
                     style={{
-                      background: "#151515",
+                      background: "var(--bg-card)",
                       borderRadius: 12,
                       padding: 16,
                       display: "flex",
@@ -578,7 +578,7 @@ export default function GamesPage() {
                             background: "transparent",
                             border: "1px solid rgba(240, 235, 224, 0.3)",
                             borderRadius: 6,
-                            color: "var(--alzooka-cream)",
+                            color: "var(--text-primary)",
                             cursor: "pointer",
                           }}
                         >
@@ -588,10 +588,10 @@ export default function GamesPage() {
                           onClick={() => acceptChallenge(challenge)}
                           style={{
                             padding: "8px 16px",
-                            background: "var(--alzooka-gold)",
+                            background: "var(--accent)",
                             border: "none",
                             borderRadius: 6,
-                            color: "var(--alzooka-teal-dark)",
+                            color: "var(--bg-header)",
                             cursor: "pointer",
                             fontWeight: 600,
                           }}
@@ -634,7 +634,7 @@ export default function GamesPage() {
                     alignItems: "center",
                     gap: 12,
                     textDecoration: "none",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                     border: index < 3 ? `1px solid rgba(${index === 0 ? "255, 215, 0" : index === 1 ? "192, 192, 192" : "205, 127, 50"}, 0.3)` : "1px solid rgba(240, 235, 224, 0.1)",
                   }}
                 >
@@ -670,7 +670,7 @@ export default function GamesPage() {
                     </p>
                   </div>
                   
-                  <span style={{ fontWeight: 700, color: "var(--alzooka-gold)" }}>
+                  <span style={{ fontWeight: 700, color: "var(--accent)" }}>
                     {entry.rating}
                   </span>
                 </Link>

@@ -16,13 +16,13 @@ export default function Loading() {
         style={{
           width: 48,
           height: 48,
-          border: "3px solid rgba(201, 162, 39, 0.2)",
-          borderTopColor: "var(--alzooka-gold)",
+          border: "3px solid rgba(107, 140, 174, 0.2)",
+          borderTopColor: "var(--accent)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",
         }}
       />
-      <p style={{ color: "var(--alzooka-cream)", opacity: 0.6 }}>Loading groups...</p>
+      <p style={{ color: "var(--text-primary)", opacity: 0.6 }}>Loading groups...</p>
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

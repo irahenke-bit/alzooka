@@ -222,7 +222,7 @@ export function ProfilePictureModal({
         <div
           style={{
             flex: "1 1 50%",
-            background: "var(--alzooka-teal-dark)",
+            background: "var(--bg-header)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -246,12 +246,12 @@ export function ProfilePictureModal({
                 width: 200,
                 height: 200,
                 borderRadius: "50%",
-                background: "var(--alzooka-gold)",
+                background: "var(--accent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 80,
-                color: "var(--alzooka-teal-dark)",
+                color: "var(--bg-header)",
                 fontWeight: 700,
               }}
             >
@@ -328,11 +328,11 @@ export function ProfilePictureModal({
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    background: "var(--alzooka-gold)",
+                    background: "var(--accent)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--alzooka-teal-dark)",
+                    color: "var(--bg-header)",
                     fontWeight: 700,
                   }}
                 >
@@ -401,11 +401,11 @@ export function ProfilePictureModal({
                           width: 32,
                           height: 32,
                           borderRadius: "50%",
-                          background: "var(--alzooka-gold)",
+                          background: "var(--accent)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--alzooka-teal-dark)",
+                          color: "var(--bg-header)",
                           fontWeight: 700,
                           fontSize: 14,
                         }}
@@ -549,7 +549,7 @@ export function ProfilePictureModal({
                 opacity: 0.6,
               }}
             >
-              <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
+              <Link href="/login" style={{ color: "var(--accent)" }}>
                 Log in
               </Link>{" "}
               to comment

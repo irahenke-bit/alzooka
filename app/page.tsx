@@ -1882,7 +1882,7 @@ function FeedContent() {
               resize: "vertical",
               border: "none",
               background: "transparent",
-              color: "var(--alzooka-cream)",
+              color: "var(--text-primary)",
               fontSize: 14,
               lineHeight: 1.5,
               outline: "none",
@@ -1961,7 +1961,7 @@ function FeedContent() {
                   borderRadius: 8,
                   border: "2px dashed rgba(240, 235, 224, 0.3)",
                   background: "transparent",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-primary)",
                   cursor: "pointer",
                   fontSize: 24,
                   display: "flex",
@@ -1984,7 +1984,7 @@ function FeedContent() {
         {youtubePreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "var(--alzooka-teal-dark)", 
+              background: "var(--bg-header)", 
               borderRadius: 8, 
               overflow: "hidden",
               border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -2037,7 +2037,7 @@ function FeedContent() {
         {spotifyPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{ 
-              background: "var(--alzooka-teal-dark)", 
+              background: "var(--bg-header)", 
               borderRadius: 8, 
               overflow: "hidden",
               border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -2087,7 +2087,7 @@ function FeedContent() {
         {linkPreview && (
           <div style={{ position: "relative", marginBottom: 12 }}>
             <div style={{
-              background: "var(--alzooka-teal-dark)",
+              background: "var(--bg-header)",
               borderRadius: 8,
               overflow: "hidden",
               border: "1px solid rgba(240, 235, 224, 0.2)"
@@ -2684,7 +2684,7 @@ function PostCard({
                   style={{
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   Cancel
@@ -2949,7 +2949,7 @@ function PostCard({
               onClick={onOpenModal}
               style={{
                 background: "transparent",
-                color: "var(--alzooka-cream)",
+                color: "var(--text-primary)",
                 padding: "4px 0",
                 fontSize: 14,
                 border: "none",

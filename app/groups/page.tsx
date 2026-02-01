@@ -298,11 +298,11 @@ export default function GroupsPage() {
                         width: 50,
                         height: 50,
                         borderRadius: 8,
-                        background: "var(--alzooka-gold)",
+                        background: "var(--accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--alzooka-teal-dark)",
+                        color: "var(--bg-header)",
                         fontWeight: 700,
                         fontSize: 20,
                       }}>
@@ -357,11 +357,11 @@ export default function GroupsPage() {
                       width: 50,
                       height: 50,
                       borderRadius: 8,
-                      background: "var(--alzooka-gold)",
+                      background: "var(--accent)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "var(--alzooka-teal-dark)",
+                      color: "var(--bg-header)",
                       fontWeight: 700,
                       fontSize: 20,
                     }}>
@@ -402,7 +402,7 @@ export default function GroupsPage() {
                       padding: "10px 16px",
                       background: "transparent",
                       border: "1px solid rgba(240, 235, 224, 0.3)",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-primary)",
                       borderRadius: 8,
                       textAlign: "center",
                       textDecoration: "none",
@@ -509,7 +509,7 @@ export default function GroupsPage() {
                   style={{
                     background: "transparent",
                     border: "1px solid rgba(240, 235, 224, 0.3)",
-                    color: "var(--alzooka-cream)",
+                    color: "var(--text-primary)",
                   }}
                 >
                   Cancel

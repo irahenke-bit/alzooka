@@ -228,10 +228,10 @@ export default function AcceptChallengePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={currentUser} userUsername={null} userAvatarUrl={null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
@@ -239,11 +239,11 @@ export default function AcceptChallengePage() {
 
   if (error || !challenge) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", marginBottom: 16 }}>{error || "Challenge not found"}</p>
-          <Link href="/games" style={{ color: "var(--alzooka-gold)" }}>← Back to Games</Link>
+          <p style={{ color: "var(--text-primary)", marginBottom: 16 }}>{error || "Challenge not found"}</p>
+          <Link href="/games" style={{ color: "var(--accent)" }}>← Back to Games</Link>
         </div>
       </div>
     );
@@ -255,18 +255,18 @@ export default function AcceptChallengePage() {
   const expired = isExpired();
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 500, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--alzooka-cream)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
         <div style={{
           marginTop: 24,
           padding: 24,
-          background: "#151515",
+          background: "var(--bg-card)",
           borderRadius: 16,
           border: "1px solid rgba(240, 235, 224, 0.1)",
           textAlign: "center",
@@ -362,7 +362,7 @@ export default function AcceptChallengePage() {
               {/* Sharing consent */}
               <div style={{
                 padding: 16,
-                background: "#151515",
+                background: "var(--bg-card)",
                 borderRadius: 12,
                 marginBottom: 24,
                 textAlign: "left",
@@ -372,7 +372,7 @@ export default function AcceptChallengePage() {
                     type="checkbox"
                     checked={allowSharing}
                     onChange={(e) => setAllowSharing(e.target.checked)}
-                    style={{ marginTop: 4, width: 18, height: 18, accentColor: "var(--alzooka-gold)" }}
+                    style={{ marginTop: 4, width: 18, height: 18, accentColor: "var(--accent)" }}
                   />
                   <div>
                     <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: 14 }}>
@@ -412,8 +412,8 @@ export default function AcceptChallengePage() {
                     padding: 16,
                     fontSize: 16,
                     fontWeight: 700,
-                    background: "var(--alzooka-gold)",
-                    color: "var(--alzooka-teal-dark)",
+                    background: "var(--accent)",
+                    color: "var(--bg-header)",
                     border: "none",
                     borderRadius: 12,
                     cursor: responding ? "not-allowed" : "pointer",

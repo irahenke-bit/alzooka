@@ -224,10 +224,10 @@ export default function GamingProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", opacity: 0.7 }}>Loading...</p>
+          <p style={{ color: "var(--text-primary)", opacity: 0.7 }}>Loading...</p>
         </div>
       </div>
     );
@@ -235,22 +235,22 @@ export default function GamingProfilePage() {
 
   if (!profile) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
         <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-          <p style={{ color: "var(--alzooka-cream)", marginBottom: 16 }}>Player not found</p>
-          <Link href="/games" style={{ color: "var(--alzooka-gold)" }}>← Back to Games</Link>
+          <p style={{ color: "var(--text-primary)", marginBottom: 16 }}>Player not found</p>
+          <Link href="/games" style={{ color: "var(--accent)" }}>← Back to Games</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--alzooka-teal-dark)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-header)" }}>
       <Header user={currentUser} userUsername={userData?.username || null} userAvatarUrl={userData?.avatar_url || null} />
       
       <main style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px" }}>
-        <Link href="/games" style={{ color: "var(--alzooka-cream)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
+        <Link href="/games" style={{ color: "var(--text-primary)", opacity: 0.6, textDecoration: "none", fontSize: 14 }}>
           ← Back to Games
         </Link>
 
@@ -289,7 +289,7 @@ export default function GamingProfilePage() {
         {/* Stats card */}
         {canSeeStats ? (
           <div style={{
-            background: "#151515",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 20,
             marginBottom: 24,
@@ -297,7 +297,7 @@ export default function GamingProfilePage() {
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h2 style={{ margin: 0, fontSize: 18 }}>Stats</h2>
-              <span style={{ fontSize: 28, fontWeight: 700, color: "var(--alzooka-gold)" }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "var(--accent)" }}>
                 {profile.rating}
               </span>
             </div>
@@ -338,7 +338,7 @@ export default function GamingProfilePage() {
                     type="checkbox"
                     checked={profile.hide_stats}
                     onChange={toggleHideStats}
-                    style={{ width: 16, height: 16, accentColor: "var(--alzooka-gold)" }}
+                    style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
                   />
                   Hide my stats from others
                 </label>
@@ -347,7 +347,7 @@ export default function GamingProfilePage() {
           </div>
         ) : (
           <div style={{
-            background: "#151515",
+            background: "var(--bg-card)",
             borderRadius: 12,
             padding: 32,
             marginBottom: 24,
@@ -370,8 +370,8 @@ export default function GamingProfilePage() {
               padding: 16,
               fontSize: 16,
               fontWeight: 600,
-              background: "var(--alzooka-gold)",
-              color: "var(--alzooka-teal-dark)",
+              background: "var(--accent)",
+              color: "var(--bg-header)",
               border: "none",
               borderRadius: 12,
               textDecoration: "none",
@@ -425,7 +425,7 @@ export default function GamingProfilePage() {
         <div style={{ marginTop: 32, textAlign: "center" }}>
           <Link
             href={`/profile/${profile.username}`}
-            style={{ color: "var(--alzooka-cream)", opacity: 0.6, fontSize: 14 }}
+            style={{ color: "var(--text-primary)", opacity: 0.6, fontSize: 14 }}
           >
             View full profile →
           </Link>

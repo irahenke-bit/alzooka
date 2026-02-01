@@ -94,12 +94,12 @@ export default function CallbackPage() {
       <div style={{
         marginTop: 40,
         padding: 24,
-        background: "var(--alzooka-teal-dark)",
+        background: "var(--bg-header)",
         borderRadius: 12,
         textAlign: "center",
       }}>
         <p style={{ marginBottom: 16, color: "#e57373" }}>Authentication failed. Please try again.</p>
-        <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
+        <Link href="/login" style={{ color: "var(--accent)" }}>
           Back to Sign In
         </Link>
       </div>

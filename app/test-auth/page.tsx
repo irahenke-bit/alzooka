@@ -32,7 +32,7 @@ export default function TestAuthPage() {
         {urlInfo || "Loading..."}
       </pre>
       <p style={{ marginTop: 20 }}>
-        <Link href="/login" style={{ color: "var(--alzooka-gold)" }}>
+        <Link href="/login" style={{ color: "var(--accent)" }}>
           Back to Login
         </Link>
       </p>
