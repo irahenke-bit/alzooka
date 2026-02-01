@@ -3030,7 +3030,7 @@ export default function ProfilePage() {
             borderRadius: 6,
             padding: "10px 20px",
             fontSize: 14,
-            fontWeight: activeTab === "posts" ? 600 : 400,
+            fontWeight: 600,
           }}
         >
           Posts ({posts.length})
@@ -3044,7 +3044,7 @@ export default function ProfilePage() {
             borderRadius: 6,
             padding: "10px 20px",
             fontSize: 14,
-            fontWeight: activeTab === "comments" ? 600 : 400,
+            fontWeight: 600,
           }}
         >
           Comments ({comments.length})

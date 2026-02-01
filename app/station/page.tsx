@@ -3589,7 +3589,7 @@ export default function StationPage() {
               style={{
                 padding: "10px 20px",
                 fontSize: 15,
-                fontWeight: activeTab === "albums" ? 600 : 400,
+                fontWeight: 600,
                 background: activeTab === "albums" ? "#1a1a1a" : "transparent",
                 color: "#ffffff",
                 border: "none",
@@ -3604,7 +3604,7 @@ export default function StationPage() {
               style={{
                 padding: "10px 20px",
                 fontSize: 15,
-                fontWeight: activeTab === "playlists" ? 600 : 400,
+                fontWeight: 600,
                 background: activeTab === "playlists" ? "#1a1a1a" : "transparent",
                 color: "#ffffff",
                 border: "none",
