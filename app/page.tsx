@@ -1852,9 +1852,9 @@ function FeedContent() {
                 }
               }}
               style={{
-                background: "var(--accent)",
-                border: "none",
-                color: "#000000",
+                background: "#1a1a1a",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "#ffffff",
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
@@ -1864,7 +1864,6 @@ function FeedContent() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: 0.75,
               }}
             >
               "
@@ -1905,12 +1904,13 @@ function FeedContent() {
               }}
             >
               <span style={{ 
-                background: "var(--accent)", 
-                color: "#000000",
+                background: "rgba(255,255,255,0.1)", 
+                color: "#ffffff",
                 padding: "8px 16px",
                 borderRadius: 20,
                 fontWeight: 600,
                 fontSize: 14,
+                border: "1px solid rgba(255,255,255,0.2)",
               }}>
                 📷 Drop images here
               </span>

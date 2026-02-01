@@ -204,9 +204,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(217, 171, 92, 0.1)",
+        background: "rgba(255, 255, 255, 0.05)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--accent)",
+        borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
       }}>
         <div style={{ fontSize: 14, color: "#ffffff", opacity: 0.7 }}>
           Loading playlist info...
@@ -220,9 +220,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(217, 171, 92, 0.1)",
+        background: "rgba(255, 255, 255, 0.05)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--accent)",
+        borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
       }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
           📀 Full Album/Playlist
@@ -238,9 +238,9 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     <div style={{
       marginBottom: 12,
       padding: "12px 16px",
-      background: "rgba(217, 171, 92, 0.1)",
+      background: "rgba(255, 255, 255, 0.05)",
       borderRadius: 8,
-      borderLeft: "4px solid var(--accent)",
+      borderLeft: "4px solid rgba(255, 255, 255, 0.2)",
     }}>
       <div style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
         📀 {title}
@@ -2104,8 +2104,8 @@ export default function ProfilePage() {
                       position: "absolute",
                       bottom: -8,
                       right: -8,
-                      background: "var(--accent)",
-                      border: "none",
+                      background: "#1a1a1a",
+                      border: "2px solid rgba(255,255,255,0.2)",
                       borderRadius: "50%",
                       width: 28,
                       height: 28,
@@ -2114,7 +2114,7 @@ export default function ProfilePage() {
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: 14,
-                      color: "black",
+                      color: "#ffffff",
                     }}
                     title="View profile picture"
                   >
@@ -2131,24 +2131,24 @@ export default function ProfilePage() {
                   borderRadius: "50%",
                   background: profile.avatar_url 
                     ? `url(${profile.avatar_url}) center/cover`
-                    : "black",
-                  border: "3px solid var(--accent)",
+                    : "#1a1a1a",
+                  border: "3px solid rgba(255,255,255,0.2)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 36,
-                  color: "rgba(255,255,255,0.9)",
+                  color: "#ffffff",
                   cursor: "pointer",
                   padding: 0,
-                  transition: "transform 0.2s, box-shadow 0.2s",
+                  transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "scale(1.05)";
-                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(212, 175, 55, 0.3)";
+                  e.currentTarget.style.borderColor = "#0165FC";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
                 }}
                 title="View profile picture"
               >
@@ -3129,7 +3129,7 @@ export default function ProfilePage() {
                           {post.users?.avatar_url ? (
                             <img src={post.users.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                           ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "black", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontWeight: 700 }}>{(post.users?.display_name || post.users?.username || "?").charAt(0).toUpperCase()}</div>
                           )}
                           <div>
                             <span style={{ fontWeight: 600, color: "#ffffff" }}>{post.users?.display_name || post.users?.username || "Unknown"}</span>
