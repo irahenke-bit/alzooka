@@ -1,16 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  /* Alzooka Brand Colors - Black Theme */
-  --alzooka-black: #0a0a0a;
-  --alzooka-cream: #e8e4dc;
-  --alzooka-gold: #c9a55c;
-  --alzooka-black-light: #151515;
-  --alzooka-black-dark: #050505;
+  /* ============================================
+     ALZOOKA THEME - Steel Blue Accent
+     ============================================ */
   
-  --background: var(--alzooka-black);
-  --foreground: var(--alzooka-cream);
-  --accent: var(--alzooka-gold);
+  /* Primary Accent - Steel Blue (links, buttons, active states) */
+  --accent: #6b8cae;
+  --accent-light: #8aa5c4;
+  --accent-dark: #4a6b8a;
+  --accent-hover: #7d9bba;
+  --accent-glow: rgba(107, 140, 174, 0.4);
+  
+  /* Gold - ONLY for ranks, upvotes, achievements */
+  --gold: #c9a55c;
+  --gold-light: #d4b76a;
+  --gold-glow: rgba(201, 165, 92, 0.4);
+  
+  /* Backgrounds - Dark Slate (no pure black) */
+  --bg-page: #12151a;           /* Main page background */
+  --bg-card: #1a1e24;           /* Cards and panels */
+  --bg-card-hover: #1f242b;     /* Card hover state */
+  --bg-elevated: #222831;       /* Modals, dropdowns */
+  --bg-header: #0f1115;         /* Header (darker than cards) */
+  --bg-input: #1a1e24;          /* Input fields */
+  
+  /* Text Colors (no pure white) */
+  --text-primary: #e2e4e8;      /* Main text - off-white */
+  --text-secondary: #a0a4ac;    /* Metadata, timestamps */
+  --text-muted: #6b7280;        /* Disabled, inactive */
+  --text-inverse: #12151a;      /* Text on buttons */
+  
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(107, 140, 174, 0.5);
+  
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  /* Legacy aliases (for gradual migration) */
+  --alzooka-gold: var(--gold);
+  --alzooka-cream: var(--text-primary);
+  --alzooka-black: var(--bg-page);
+  --alzooka-black-light: var(--bg-card);
+  --alzooka-black-dark: var(--bg-header);
+  
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
   
   /* Typography */
   --font-display: 'Syne', system-ui, sans-serif;
@@ -28,8 +68,8 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font-body);
   min-height: 100vh;
   font-size: 16px;
@@ -41,9 +81,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Starfield background with parallax */
-body::before,
-body::after {
+/* Subtle background texture - very low opacity */
+body::before {
   content: '';
   position: fixed;
   top: 0;
@@ -52,77 +91,24 @@ body::after {
   bottom: 0;
   pointer-events: none;
   z-index: -1;
-}
-
-/* Far stars - smaller, more numerous, slower parallax */
-body::before {
+  opacity: 0.03;
   background-image: 
-    radial-gradient(1px 1px at 100px 50px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 200px 150px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 300px 75px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 400px 200px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 500px 100px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 50px 300px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 150px 400px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 250px 350px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 350px 450px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 450px 380px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 550px 280px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 600px 420px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 700px 180px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 800px 320px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 900px 80px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 1000px 250px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 1100px 400px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 1200px 150px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 80px 500px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 180px 600px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 280px 550px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 380px 650px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 480px 580px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 580px 700px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 680px 620px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 780px 750px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 880px 680px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 980px 580px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 1080px 720px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 1180px 650px, rgba(255,255,255,0.6), transparent);
-  background-size: 1300px 800px;
+    radial-gradient(1px 1px at 100px 50px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 300px 150px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 500px 100px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 700px 200px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 900px 80px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 150px 300px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 400px 350px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 650px 280px, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 850px 400px, rgba(255,255,255,1), transparent);
+  background-size: 1000px 500px;
   background-attachment: fixed;
-  animation: parallax-slow 60s linear infinite;
 }
 
-/* Near stars - larger, fewer, gold tint, faster parallax */
+/* Remove the second starfield layer entirely */
 body::after {
-  background-image: 
-    radial-gradient(2px 2px at 120px 120px, rgba(201,165,92,0.9), transparent),
-    radial-gradient(2px 2px at 350px 280px, rgba(255,255,255,0.9), transparent),
-    radial-gradient(2px 2px at 580px 180px, rgba(201,165,92,0.8), transparent),
-    radial-gradient(2px 2px at 800px 380px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2px 2px at 1050px 220px, rgba(201,165,92,0.9), transparent),
-    radial-gradient(2px 2px at 200px 480px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2px 2px at 450px 550px, rgba(201,165,92,0.8), transparent),
-    radial-gradient(2px 2px at 700px 620px, rgba(255,255,255,0.9), transparent),
-    radial-gradient(2px 2px at 950px 520px, rgba(201,165,92,0.8), transparent),
-    radial-gradient(2px 2px at 1150px 680px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.5px 1.5px at 50px 250px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 650px 350px, rgba(201,165,92,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 900px 150px, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 300px 700px, rgba(201,165,92,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 1100px 450px, rgba(255,255,255,0.7), transparent);
-  background-size: 1200px 750px;
-  background-attachment: fixed;
-  animation: parallax-fast 45s linear infinite;
-}
-
-@keyframes parallax-slow {
-  0% { background-position: 0 0; }
-  100% { background-position: 1300px 800px; }
-}
-
-@keyframes parallax-fast {
-  0% { background-position: 0 0; }
-  100% { background-position: -1200px -750px; }
+  display: none;
 }
 
 body > * {
@@ -183,10 +169,10 @@ a:hover {
 
 /* Form Elements */
 input, textarea {
-  background: #151515;
-  border: 1px solid var(--alzooka-cream);
-  border-radius: 4px;
-  color: var(--alzooka-cream);
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--text-primary);
   padding: 12px 16px;
   font-size: 16px;
   font-family: var(--font-body);
@@ -194,21 +180,23 @@ input, textarea {
   width: 100%;
   position: relative;
   z-index: 2;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input::placeholder, textarea::placeholder {
-  color: rgba(240, 235, 224, 0.5);
+  color: var(--text-muted);
 }
 
 input:focus, textarea:focus {
   outline: none;
-  border-color: var(--alzooka-gold);
-  box-shadow: 0 0 15px rgba(201, 162, 39, 0.3), 0 0 30px rgba(201, 162, 39, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+/* Primary Button - Steel Blue */
 button {
-  background: linear-gradient(135deg, #d4af5a 0%, #c9a55c 50%, #b8944d 100%);
-  color: var(--alzooka-black-dark);
+  background: var(--accent);
+  color: var(--text-inverse);
   border: none;
   border-radius: 6px;
   padding: 12px 24px;
@@ -218,8 +206,8 @@ button {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
   z-index: 2;
@@ -235,10 +223,10 @@ button::before {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.15),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.4s ease;
 }
 
 button:hover::before {
@@ -246,14 +234,9 @@ button:hover::before {
 }
 
 button:hover {
-  background: linear-gradient(135deg, #e0bd68 0%, #d4af5a 50%, #c9a55c 100%);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 0 30px rgba(201, 162, 39, 0.5),
-    0 0 60px rgba(201, 162, 39, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px) scale(1.02);
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
 }
 
 button:focus {
@@ -262,29 +245,25 @@ button:focus {
 
 button:focus-visible {
   outline: none !important;
-  box-shadow: 
-    0 0 0 3px rgba(201, 162, 39, 0.5),
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 0 30px rgba(201, 162, 39, 0.4);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 button:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 0 10px rgba(201, 162, 39, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  background: var(--text-muted);
 }
 
 button:disabled:hover {
   transform: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card);
+  background: var(--text-muted);
 }
 
 button:disabled::before {
@@ -294,8 +273,8 @@ button:disabled::before {
 /* Button Variants */
 button.btn-outline {
   background: transparent;
-  border: 2px solid var(--alzooka-gold);
-  color: var(--alzooka-gold);
+  border: 2px solid var(--accent);
+  color: var(--accent);
   box-shadow: none;
 }
 
@@ -303,23 +282,19 @@ button.btn-outline::before {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(201, 162, 39, 0.1),
+    rgba(107, 140, 174, 0.1),
     transparent
   );
 }
 
 button.btn-outline:hover {
-  background: rgba(201, 162, 39, 0.1);
-  border-color: #d4af5a;
-  box-shadow: 
-    0 0 25px rgba(201, 162, 39, 0.4),
-    0 0 50px rgba(201, 162, 39, 0.2),
-    inset 0 0 20px rgba(201, 162, 39, 0.1);
+  background: rgba(107, 140, 174, 0.1);
+  border-color: var(--accent-light);
 }
 
 button.btn-ghost {
   background: transparent;
-  color: var(--alzooka-cream);
+  color: var(--text-primary);
   box-shadow: none;
 }
 
@@ -328,21 +303,17 @@ button.btn-ghost::before {
 }
 
 button.btn-ghost:hover {
-  background: rgba(240, 235, 224, 0.1);
-  box-shadow: 0 0 20px rgba(240, 235, 224, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 button.btn-danger {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: #c0392b;
+  box-shadow: var(--shadow-card);
 }
 
 button.btn-danger:hover {
-  background: linear-gradient(135deg, #e74c5c 0%, #dc3545 100%);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 0 30px rgba(220, 53, 69, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: #d44637;
+  box-shadow: var(--shadow-card-hover);
 }
 
 button.btn-sm {
@@ -357,6 +328,16 @@ button.btn-lg {
   border-radius: 8px;
 }
 
+/* Gold button variant - ONLY for special actions */
+button.btn-gold {
+  background: var(--gold);
+  color: var(--text-inverse);
+}
+
+button.btn-gold:hover {
+  background: var(--gold-light);
+}
+
 /* Utility classes */
 .container {
   max-width: 792px;
@@ -366,22 +347,25 @@ button.btn-lg {
   z-index: 2;
 }
 
+/* Card - Clear visual separation from background */
 .card {
-  background: #151515;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border-radius: 12px;
   padding: 24px;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: none;
-  transition: all 0.3s ease;
-  /* Ensure post content uses Georgia, not display font */
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
   font-family: Georgia, 'Times New Roman', serif;
   position: relative;
   z-index: 2;
 }
 
 .card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+  background: var(--bg-card-hover);
 }
 
 /* Ensure usernames and post content use plain Georgia font */
@@ -391,12 +375,21 @@ button.btn-lg {
   font-family: Georgia, 'Times New Roman', serif;
 }
 
+/* Text utility classes */
 .text-gold {
-  color: var(--alzooka-gold);
+  color: var(--gold);
+}
+
+.text-accent {
+  color: var(--accent);
 }
 
 .text-muted {
-  color: rgba(240, 235, 224, 0.6);
+  color: var(--text-secondary);
+}
+
+.text-disabled {
+  color: var(--text-muted);
 }
 
 /* Group tag with removable X on hover */
@@ -408,9 +401,13 @@ button.btn-lg {
   background: rgba(0,0,0,0.7) !important;
 }
 
-/* Glow utility classes - only for hover states */
+/* Glow utility classes - minimal, only for special highlights */
 .glow-gold {
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.glow-accent {
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .glow-gold-subtle {
@@ -429,9 +426,16 @@ button.btn-lg {
   animation: none;
 }
 
-/* Link glow on hover */
-a.glow-link:hover {
-  text-shadow: 0 0 8px rgba(201, 162, 39, 0.6);
+/* Link styles */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-light);
+  text-decoration: underline;
 }
 
 /* Typography utility classes */
@@ -448,6 +452,7 @@ a.glow-link:hover {
   letter-spacing: 0.05em;
 }
 
+/* Gold gradient - ONLY for ranks/achievements */
 .text-gradient-gold {
   background: linear-gradient(135deg, #c9a55c 0%, #e8d5a3 50%, #c9a55c 100%);
   -webkit-background-clip: text;
@@ -461,4 +466,32 @@ a.glow-link:hover {
 
 .text-extra-bold {
   font-weight: 800;
+}
+
+/* Navigation icon states */
+.nav-icon {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.nav-icon:hover {
+  color: var(--accent);
+}
+
+.nav-icon.active {
+  color: var(--accent);
+}
+
+/* Reaction states */
+.reaction-icon {
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.reaction-icon:hover {
+  color: var(--accent);
+}
+
+.reaction-icon.active {
+  color: var(--gold);
 }

@@ -1757,9 +1757,9 @@ function FeedContent() {
             alignItems: "flex-start",
             gap: 12,
             padding: "12px 16px",
-            background: "#151515",
+            background: "var(--bg-card)",
             borderRadius: 12,
-            border: isDraggingOver ? "2px solid var(--alzooka-gold)" : "1px solid rgba(240, 235, 224, 0.15)",
+            border: isDraggingOver ? "2px solid var(--accent)" : "1px solid var(--border-default)",
             marginBottom: 12,
             position: "relative",
             zIndex: 2,
@@ -1790,11 +1790,11 @@ function FeedContent() {
                   width: 40,
                   height: 40,
                   borderRadius: "50%",
-                  background: "var(--alzooka-gold)",
+                  background: "var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--alzooka-teal-dark)",
+                  color: "var(--text-inverse)",
                   fontWeight: 700,
                   fontSize: 16,
                 }}
@@ -1851,9 +1851,9 @@ function FeedContent() {
                 }
               }}
               style={{
-                background: "var(--alzooka-gold)",
+                background: "var(--accent)",
                 border: "none",
-                color: "var(--alzooka-teal-dark)",
+                color: "var(--text-inverse)",
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
@@ -1904,8 +1904,8 @@ function FeedContent() {
               }}
             >
               <span style={{ 
-                background: "var(--alzooka-gold)", 
-                color: "var(--alzooka-teal-dark)",
+                background: "var(--accent)", 
+                color: "var(--text-inverse)",
                 padding: "8px 16px",
                 borderRadius: 20,
                 fontWeight: 600,
@@ -2162,9 +2162,9 @@ function FeedContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
-              background: "#151515",
-              border: "1px solid rgba(240, 235, 224, 0.3)",
-              color: "var(--alzooka-cream)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
               padding: "8px 16px",
               fontSize: 14,
               cursor: "pointer",
@@ -2172,6 +2172,9 @@ function FeedContent() {
               alignItems: "center",
               gap: 6,
               zIndex: 2,
+              boxShadow: "none",
+              textTransform: "none",
+              letterSpacing: "normal",
             }}
           >
             📷 Photo
@@ -2263,12 +2266,12 @@ function VoteButtons({
   const userVote = votes[key]?.value || 0;
   const score = voteTotals[key] || 0;
 
-  // Determine score color: gold if positive, red if negative, muted if zero
+  // Determine score color: gold if positive (achievement), red if negative, muted if zero
   const scoreColor = score > 0 
-    ? "var(--alzooka-gold)" 
+    ? "var(--gold)" 
     : score < 0 
       ? "#e57373" 
-      : "var(--alzooka-cream)";
+      : "var(--text-secondary)";
   
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: 32 }}>
@@ -2279,10 +2282,12 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === 1 ? "var(--alzooka-gold)" : "var(--alzooka-cream)",
-          opacity: userVote === 1 ? 1 : 0.5,
+          color: userVote === 1 ? "var(--gold)" : "var(--text-muted)",
           fontSize: 14,
           lineHeight: 1,
+          boxShadow: "none",
+          textTransform: "none",
+          transition: "color 0.2s",
         }}
         title="Upvote"
       >
@@ -2292,7 +2297,6 @@ function VoteButtons({
         fontSize: 14, 
         fontWeight: 600, 
         color: scoreColor,
-        opacity: score === 0 ? 0.5 : 1,
       }}>
         {score}
       </span>
@@ -2303,10 +2307,12 @@ function VoteButtons({
           border: "none",
           padding: "4px 8px",
           cursor: "pointer",
-          color: userVote === -1 ? "#e57373" : "var(--alzooka-cream)",
-          opacity: userVote === -1 ? 1 : 0.5,
+          color: userVote === -1 ? "#e57373" : "var(--text-muted)",
           fontSize: 14,
           lineHeight: 1,
+          boxShadow: "none",
+          textTransform: "none",
+          transition: "color 0.2s",
         }}
         title="Downvote"
       >
@@ -2364,11 +2370,11 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(217, 171, 92, 0.1)",
+        background: "rgba(107, 140, 174, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 14, color: "var(--alzooka-cream)", opacity: 0.7 }}>
+        <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Loading playlist info...
         </div>
       </div>
@@ -2380,14 +2386,14 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
       <div style={{
         marginBottom: 12,
         padding: "12px 16px",
-        background: "rgba(217, 171, 92, 0.1)",
+        background: "rgba(107, 140, 174, 0.1)",
         borderRadius: 8,
-        borderLeft: "4px solid var(--alzooka-gold)",
+        borderLeft: "4px solid var(--accent)",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
           📀 Full Album/Playlist
         </div>
-        <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
           This will autoplay through all tracks
         </div>
       </div>
@@ -2398,14 +2404,14 @@ function PlaylistTitle({ videoUrl, playlistId }: { videoUrl: string; playlistId:
     <div style={{
       marginBottom: 12,
       padding: "12px 16px",
-      background: "rgba(217, 171, 92, 0.1)",
+      background: "rgba(107, 140, 174, 0.1)",
       borderRadius: 8,
-      borderLeft: "4px solid var(--alzooka-gold)",
+      borderLeft: "4px solid var(--accent)",
     }}>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--alzooka-gold)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--accent)" }}>
         📀 {title}
       </div>
-      <div style={{ fontSize: 13, color: "var(--alzooka-cream)", opacity: 0.7, marginTop: 4 }}>
+      <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
         This will autoplay through all tracks
       </div>
     </div>
@@ -2500,7 +2506,7 @@ function PostCard({
       className="card" 
       id={`post-${post.id}`}
       style={isHighlighted ? { 
-        boxShadow: "0 0 0 2px var(--alzooka-gold)",
+        boxShadow: "0 0 0 2px var(--accent)",
         scrollMarginTop: 100,
       } : undefined}
     >
@@ -2538,11 +2544,11 @@ function PostCard({
                   width: 40,
                   height: 40,
                   borderRadius: "50%",
-                  background: "var(--alzooka-gold)",
+                  background: "var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--alzooka-teal-dark)",
+                  color: "var(--text-inverse)",
                   fontWeight: 700,
                   fontSize: 16,
                 }}>
@@ -2550,7 +2556,7 @@ function PostCard({
                 </div>
               )}
               <div>
-                <span style={{ fontWeight: 600, color: "var(--alzooka-cream)" }}>
+                <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                   {post.users?.display_name || post.users?.username || "Unknown"}
                 </span>
                 <span className="text-muted" style={{ marginLeft: 8, fontSize: 14 }}>
@@ -2565,11 +2571,12 @@ function PostCard({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--alzooka-cream)",
+                  color: "var(--text-secondary)",
                   fontSize: 12,
                   cursor: "pointer",
-                  opacity: 0.7,
                   padding: "4px 8px",
+                  boxShadow: "none",
+                  textTransform: "none",
                 }}
                 title="Share post"
               >
@@ -2583,11 +2590,12 @@ function PostCard({
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "var(--alzooka-cream)",
+                      color: "var(--text-secondary)",
                       fontSize: 12,
                       cursor: "pointer",
-                      opacity: 0.7,
                       padding: "4px 8px",
+                      boxShadow: "none",
+                      textTransform: "none",
                     }}
                     title="Edit post"
                   >
@@ -2601,8 +2609,9 @@ function PostCard({
                       color: "#e57373",
                       fontSize: 12,
                       cursor: "pointer",
-                      opacity: 0.7,
                       padding: "4px 8px",
+                      boxShadow: "none",
+                      textTransform: "none",
                     }}
                     title="Delete post"
                   >
@@ -2613,15 +2622,15 @@ function PostCard({
             </div>
           </div>
           {post.wall_user_id && post.wall_user && post.wall_user.username !== post.users?.username && (
-            <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
-              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--alzooka-gold)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
+            <div style={{ marginBottom: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+              Posted on <Link href={`/profile/${post.wall_user.username}`} style={{ color: "var(--accent)" }}>{post.wall_user.display_name || post.wall_user.username}</Link>'s wall
             </div>
           )}
 
           {/* Group attribution */}
           {post.group_id && post.groups && (
-            <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.75 }}>
-              Posted in <Link href={`/groups/${post.group_id}`} style={{ color: "var(--alzooka-gold)" }}>{post.groups.name}</Link>
+            <div style={{ marginBottom: 8, fontSize: 13, color: "var(--text-secondary)" }}>
+              Posted in <Link href={`/groups/${post.group_id}`} style={{ color: "var(--accent)" }}>{post.groups.name}</Link>
             </div>
           )}
 
@@ -2630,15 +2639,15 @@ function PostCard({
             <div style={{ 
               marginBottom: 12, 
               padding: "8px 12px",
-              background: "rgba(212, 168, 75, 0.1)",
+              background: "rgba(107, 140, 174, 0.1)",
               borderRadius: 8,
-              borderLeft: "3px solid var(--alzooka-gold)",
+              borderLeft: "3px solid var(--accent)",
               fontSize: 13,
             }}>
-              <span style={{ opacity: 0.7 }}>Shared from </span>
+              <span style={{ color: "var(--text-secondary)" }}>Shared from </span>
               <Link 
                 href={`/profile/${post.shared_from_post.users?.username}`} 
-                style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                style={{ color: "var(--accent)", fontWeight: 600 }}
               >
                 {post.shared_from_post.users?.display_name || post.shared_from_post.users?.username}
               </Link>
@@ -2648,7 +2657,7 @@ function PostCard({
                   <span style={{ opacity: 0.7 }}> in </span>
                   <Link 
                     href={`/groups/${post.shared_from_post.groups.id}`} 
-                    style={{ color: "var(--alzooka-gold)", fontWeight: 600 }}
+                    style={{ color: "var(--accent)", fontWeight: 600 }}
                   >
                     {post.shared_from_post.groups.name}
                   </Link>
@@ -2721,12 +2730,14 @@ function PostCard({
                       style={{
                         background: "transparent",
                         border: "none",
-                        color: "var(--alzooka-gold)",
+                        color: "var(--accent)",
                         fontSize: 12,
                         cursor: "pointer",
                         marginLeft: 8,
                         textDecoration: "underline",
                         padding: 0,
+                        boxShadow: "none",
+                        textTransform: "none",
                       }}
                     >
                       {showEditHistory ? "Hide edits" : "See edits"}
