@@ -175,7 +175,7 @@ export default function SignupPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Light solid provider style */}
+        {/* Email Link Button - Light solid provider style (secondary) */}
         <button
           type="button"
           onClick={() => { setShowMagicLink(true); setError(""); setSuccess(""); }}
@@ -187,6 +187,7 @@ export default function SignupPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
+            padding: "10px 16px",
             background: "#f2f2f2",
             color: "#1f1f1f",
             border: "1px solid #dadce0",
