@@ -188,23 +188,23 @@ export default function SignupPage() {
             justifyContent: "center",
             gap: 12,
             padding: "10px 16px",
-            background: "#f2f2f2",
+            background: "#e8e8e8",
             color: "#1f1f1f",
             border: "1px solid #dadce0",
             fontWeight: 500,
             transition: "background 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#e8e8e8";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#f2f2f2";
-          }}
-          onMouseDown={(e) => {
             e.currentTarget.style.background = "#dedede";
           }}
-          onMouseUp={(e) => {
+          onMouseLeave={(e) => {
             e.currentTarget.style.background = "#e8e8e8";
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.background = "#d4d4d4";
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.background = "#dedede";
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
