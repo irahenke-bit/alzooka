@@ -175,7 +175,7 @@ export default function SignupPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Polished secondary */}
+        {/* Email Link Button - Light outline style */}
         <button
           type="button"
           onClick={() => { setShowMagicLink(true); setError(""); setSuccess(""); }}
@@ -187,12 +187,19 @@ export default function SignupPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
+            background: "transparent",
             color: "#ffffff",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderTop: "1px solid rgba(255,255,255,0.25)",
+            border: "1px solid rgba(255,255,255,0.4)",
             fontWeight: 500,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+            transition: "background 0.2s, border-color 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)";
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
