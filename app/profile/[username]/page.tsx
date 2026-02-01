@@ -2480,8 +2480,8 @@ export default function ProfilePage() {
                   }
                 }}
                 style={{
-                  background: "#1a1a1a",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "#111111",
+                  border: "1px solid rgba(255,255,255,0.12)",
                   color: "#ffffff",
                   width: 28,
                   height: 28,
