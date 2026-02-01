@@ -128,7 +128,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Light outline style */}
+        {/* Email Link Button - Light solid provider style */}
         <button
           type="button"
           onClick={() => { setLoginMode("magic"); setError(""); setSuccess(""); }}
@@ -140,22 +140,26 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "transparent",
-            color: "#ffffff",
-            border: "1px solid rgba(255,255,255,0.4)",
+            background: "#f2f2f2",
+            color: "#1f1f1f",
+            border: "1px solid #dadce0",
             fontWeight: 500,
-            transition: "background 0.2s, border-color 0.2s",
+            transition: "background 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+            e.currentTarget.style.background = "#e8e8e8";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)";
+            e.currentTarget.style.background = "#f2f2f2";
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.background = "#dedede";
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.background = "#e8e8e8";
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="4" width="20" height="16" rx="2"/>
             <path d="M22 7l-10 6L2 7"/>
           </svg>
