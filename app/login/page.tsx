@@ -194,6 +194,11 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
+                  style={{
+                    background: "#f5f5f5",
+                    color: "#1f1f1f",
+                    border: "1px solid #dadce0",
+                  }}
                 />
               </div>
 
@@ -250,6 +255,11 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              style={{
+                background: "#f5f5f5",
+                color: "#1f1f1f",
+                border: "1px solid #dadce0",
+              }}
             />
           </div>
           
@@ -260,6 +270,11 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              style={{
+                background: "#f5f5f5",
+                color: "#1f1f1f",
+                border: "1px solid #dadce0",
+              }}
             />
           </div>
 

@@ -236,6 +236,11 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
+                  style={{
+                    background: "#f5f5f5",
+                    color: "#1f1f1f",
+                    border: "1px solid #dadce0",
+                  }}
                 />
               </div>
 
@@ -338,6 +343,11 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              style={{
+                background: "#f5f5f5",
+                color: "#1f1f1f",
+                border: "1px solid #dadce0",
+              }}
             />
           </div>
           
@@ -349,7 +359,12 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
-              style={{ paddingRight: 60 }}
+              style={{
+                background: "#f5f5f5",
+                color: "#1f1f1f",
+                border: "1px solid #dadce0",
+                paddingRight: 60,
+              }}
             />
             <button
               type="button"
