@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { getServerClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
 
 // Debug endpoint to check Spotify token status
@@ -18,7 +18,7 @@ export async function GET() {
   }
   
   // Use the proper server client with cookie handling
-  const testSupabase = await createServerClient();
+  const testSupabase = await getServerClient();
   
   // Get current user from session
   const { data: { user: currentUser } } = await testSupabase.auth.getUser();

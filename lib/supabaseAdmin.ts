@@ -22,7 +22,7 @@ import { createClient } from "@supabase/supabase-js";
 //   - Background jobs that need to modify any user's data
 //   - Server-side operations where RLS cannot apply
 //
-// For user-facing routes, use createServerClient() from lib/supabase.ts instead.
+// For user-facing routes, use getServerClient() from lib/supabase.ts instead.
 // =============================================================================
 
 /**

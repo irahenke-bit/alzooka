@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabaseAdmin";
-import { createServerClient } from "@/lib/supabase";
+import { getServerClient } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
 // =============================================================================
@@ -14,7 +14,7 @@ export async function GET(
   const { id: userId, groupId } = await params;
 
   // GUARD: Require authenticated user and verify ownership
-  const supabaseAuth = await createServerClient();
+  const supabaseAuth = await getServerClient();
   const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
 
   if (authError || !user) {
@@ -68,7 +68,7 @@ export async function POST(
   const { id: userId, groupId } = await params;
 
   // GUARD: Require authenticated user and verify ownership
-  const supabaseAuth = await createServerClient();
+  const supabaseAuth = await getServerClient();
   const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
 
   if (authError || !user) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabaseAdmin";
-import { createServerClient } from "@/lib/supabase";
+import { getServerClient } from "@/lib/supabase";
 import { cookies } from "next/headers";
 
 // =============================================================================
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   // GUARD 2: Verify the logged-in user matches the user who initiated OAuth
-  const supabaseAuth = await createServerClient();
+  const supabaseAuth = await getServerClient();
   const { data: { user } } = await supabaseAuth.auth.getUser();
 
   if (!user) {

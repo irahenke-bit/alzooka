@@ -31,17 +31,18 @@ export function createBrowserClient() {
 // =============================================================================
 
 /**
- * Creates a Supabase client for server-side code that needs user auth.
+ * Gets a Supabase client for server-side code that needs user auth.
  * This client reads/writes cookies so it acts as the logged-in user.
  * RLS policies are respected based on the authenticated user.
  * 
+ * IMPORTANT: This is an async function - always use `await`!
  * IMPORTANT: Must be called inside a request context (not at module level).
  * 
  * Usage:
- *   const supabase = await createServerClient();
+ *   const supabase = await getServerClient();
  *   const { data: { user } } = await supabase.auth.getUser();
  */
-export async function createServerClient() {
+export async function getServerClient() {
   // Dynamic import to avoid "next/headers" being evaluated at module level
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
@@ -77,7 +78,7 @@ export async function createServerClient() {
 /**
  * Creates a simple Supabase client for server-side code that doesn't need
  * user authentication (e.g., public data queries, health checks).
- * Does NOT have access to user session - use createServerClient() for that.
+ * Does NOT have access to user session - use getServerClient() for that.
  */
 export function createAnonServerClient() {
   // Using dynamic import to avoid issues with createClient in edge runtime

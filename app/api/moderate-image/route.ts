@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase';
+import { getServerClient } from '@/lib/supabase';
 import { analyzeModeration, ModerationResult } from '@/lib/imageModeration';
 
 /**
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // Log blocked content for review (without storing the actual image)
     if (result.blocked) {
-      const supabase = await createServerClient();
+      const supabase = await getServerClient();
       const clientIP = request.headers.get('x-forwarded-for') || 
                        request.headers.get('x-real-ip') || 
                        'unknown';

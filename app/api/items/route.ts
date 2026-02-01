@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase';
+import { getServerClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await getServerClient();
     
     // Parse request body
     let body;
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const supabase = await createServerClient();
+    const supabase = await getServerClient();
     
   const { data, error } = await supabase
     .from('items')
