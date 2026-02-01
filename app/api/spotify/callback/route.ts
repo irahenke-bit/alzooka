@@ -52,12 +52,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Use admin client to bypass RLS for updating user's Spotify tokens
-  let supabase;
-  try {
-    supabase = createAdminClient();
-  } catch (e) {
-    console.error("Admin client error:", e);
-    return NextResponse.redirect(new URL("/station?error=admin_client_failed", siteUrl));
+  const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.redirect(new URL("/station?error=spotify_disabled", siteUrl));
   }
 
   if (!code) {

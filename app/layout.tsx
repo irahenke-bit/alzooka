@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Syne } from "next/font/google";
 import "./globals.css";
 import Providers from "@/app/components/Providers";
+import { validateEnv } from "@/lib/env";
+
+// Validate environment variables at startup
+validateEnv();
 
 // Bold, distinctive display font for headings
 const syne = Syne({

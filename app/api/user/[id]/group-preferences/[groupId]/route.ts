@@ -33,6 +33,12 @@ export async function GET(
   }
   
   const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Group preferences disabled in this environment" },
+      { status: 503 }
+    );
+  }
   
   const { data, error } = await supabase
     .from("user_group_preferences")
@@ -89,6 +95,12 @@ export async function POST(
   const body = await request.json();
   
   const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Group preferences disabled in this environment" },
+      { status: 503 }
+    );
+  }
   
   // Upsert preferences
   const { data, error } = await supabase

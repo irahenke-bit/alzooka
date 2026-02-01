@@ -41,7 +41,13 @@ export async function POST() {
   }
 
   try {
-    const supabase = createAdminClient()
+    const supabase = createAdminClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Admin features disabled in this environment" },
+        { status: 503 }
+      );
+    }
 
     // Read the SQL file content
     const fs = require('fs')

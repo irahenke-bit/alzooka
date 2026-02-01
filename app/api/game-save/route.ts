@@ -37,6 +37,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     const supabase = createAdminClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Game save disabled in this environment" },
+        { status: 503 }
+      );
+    }
 
     const { error } = await supabase
       .from("coin_collector_saves")

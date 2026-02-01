@@ -34,11 +34,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  let supabase;
-  try {
-    supabase = createAdminClient();
-  } catch {
-    return NextResponse.json({ error: "Admin client not configured" }, { status: 500 });
+  const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Spotify features disabled in this environment" },
+      { status: 503 }
+    );
   }
 
   // Get user's Spotify tokens
@@ -144,11 +145,12 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  let supabase;
-  try {
-    supabase = createAdminClient();
-  } catch {
-    return NextResponse.json({ error: "Admin client not configured" }, { status: 500 });
+  const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Spotify features disabled in this environment" },
+      { status: 503 }
+    );
   }
 
   await supabase

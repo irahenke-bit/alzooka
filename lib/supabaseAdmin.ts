@@ -26,7 +26,16 @@ import { createClient } from "@supabase/supabase-js";
 // =============================================================================
 
 /**
+ * Check if the admin client is available (service role key is set).
+ * Use this to gracefully disable admin features in preview deployments.
+ */
+export function isAdminClientAvailable(): boolean {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+/**
  * Creates an admin Supabase client that bypasses RLS.
+ * Returns null if SUPABASE_SERVICE_ROLE_KEY is not set (e.g., preview deployments).
  * 
  * ⚠️  NEVER use this in user-facing routes! ⚠️
  * ⚠️  NEVER import this file in client components! ⚠️
@@ -35,16 +44,20 @@ import { createClient } from "@supabase/supabase-js";
  * - Database seeding scripts
  * - Background jobs
  * - Admin dashboards (server-side only)
+ * 
+ * Usage:
+ *   const admin = createAdminClient();
+ *   if (!admin) {
+ *     return NextResponse.json({ error: "Admin features disabled" }, { status: 503 });
+ *   }
  */
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+  // Return null instead of throwing - allows preview deployments to work
   if (!url || !serviceKey) {
-    throw new Error(
-      "Missing SUPABASE_SERVICE_ROLE_KEY environment variable. " +
-      "This should only be set on the server, never exposed to the browser."
-    );
+    return null;
   }
 
   return createClient(url, serviceKey, {
