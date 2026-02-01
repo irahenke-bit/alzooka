@@ -168,7 +168,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+              e.currentTarget.style.color = "#ffffff";
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ transition: "fill 0.2s" }}>
@@ -200,7 +200,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                e.currentTarget.style.color = "#ffffff";
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ transition: "fill 0.2s" }}>
@@ -233,7 +233,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                e.currentTarget.style.color = "#ffffff";
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ transition: "fill 0.2s" }}>
@@ -263,7 +263,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                e.currentTarget.style.color = "#ffffff";
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ transition: "fill 0.2s" }}>
@@ -298,7 +298,7 @@ export default function Header({ user, userUsername, userAvatarUrl, searchCompon
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+              e.currentTarget.style.color = "#ffffff";
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ transition: "fill 0.2s" }}>
