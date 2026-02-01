@@ -44,6 +44,12 @@
  * TURNSTILE_SECRET_KEY
  *   - Cloudflare Turnstile secret for captcha verification
  *   - Required: Only if using Turnstile captcha
+ * 
+ * SEED_TRIVIA_ENABLED
+ *   - Safety switch for /api/seed-trivia endpoint
+ *   - Set to "true" to allow admins to run database seeding
+ *   - Default: off (endpoint returns 404)
+ *   - Recommended: Keep off in production unless actively seeding
  */
 
 // Required vars that must always be present

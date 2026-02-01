@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 // =============================================================================
 // ADMIN-ONLY ROUTE - Database seeding
-// Disabled in production. Only admins can run in development.
+// Protected by: SEED_TRIVIA_ENABLED env + authentication + admin allowlist
 // =============================================================================
 
 // Admin user IDs - only these users can run admin operations
@@ -13,11 +13,13 @@ const ADMIN_USER_IDS = [
 ];
 
 export async function POST() {
-  // GUARD 1: Disable in production
-  if (process.env.NODE_ENV === "production") {
+  // GUARD 1: Safety switch - must be explicitly enabled via env var
+  // In production, this defaults to OFF. Set SEED_TRIVIA_ENABLED=true to allow.
+  const seedEnabled = process.env.SEED_TRIVIA_ENABLED === "true";
+  if (!seedEnabled) {
     return NextResponse.json(
-      { error: "Seed endpoint is disabled in production" },
-      { status: 403 }
+      { error: "Seed endpoint is not enabled" },
+      { status: 404 }
     );
   }
 
@@ -40,15 +42,16 @@ export async function POST() {
     );
   }
 
-  try {
-    const supabase = createAdminClient();
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "Admin features disabled in this environment" },
-        { status: 503 }
-      );
-    }
+  // GUARD 4: Admin client must be available
+  const supabase = createAdminClient();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Admin features disabled in this environment" },
+      { status: 503 }
+    );
+  }
 
+  try {
     // Read the SQL file content
     const fs = require('fs')
     const path = require('path')
