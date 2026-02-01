@@ -128,7 +128,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        {/* Email Link Button - Secondary, dark */}
+        {/* Email Link Button - Polished secondary */}
         <button
           type="button"
           onClick={() => { setLoginMode("magic"); setError(""); setSuccess(""); }}
@@ -140,10 +140,12 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "#000000",
+            background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
             color: "#ffffff",
-            border: "1px solid rgba(255,255,255,0.2)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderTop: "1px solid rgba(255,255,255,0.25)",
             fontWeight: 500,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
