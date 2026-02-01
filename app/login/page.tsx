@@ -81,18 +81,26 @@ export default function LoginPage() {
     <div style={{ 
       minHeight: "100vh", 
       display: "flex", 
-      flexDirection: "column",
       alignItems: "center", 
       justifyContent: "center",
-      padding: 20 
+      padding: 20,
+      background: "#000000",
     }}>
-      {/* Logo */}
-      <div style={{ marginBottom: 40 }}>
-        <LogoWithText />
-      </div>
+      {/* Centered Card Container */}
+      <div style={{
+        width: "100%",
+        maxWidth: 420,
+        background: "#111111",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: 16,
+        padding: "48px 40px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+      }}>
+        {/* Logo */}
+        <div style={{ marginBottom: 40, textAlign: "center" }}>
+          <LogoWithText />
+        </div>
 
-      {/* Login Form */}
-      <div style={{ width: "100%", maxWidth: 360 }}>
         {/* Google Sign In Button */}
         <button
           type="button"
@@ -105,15 +113,15 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "#fff",
-            color: "#000000",
-            border: "2px solid var(--accent)",
+            background: "#000000",
+            color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#0165FC" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-            <path fill="#0165FC" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-            <path fill="#0165FC" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+            <path fill="#ffffff" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+            <path fill="#ffffff" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#ffffff" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
             <path fill="#ffffff" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
           </svg>
           Continue with Google
@@ -131,9 +139,9 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            background: "linear-gradient(135deg, #0165FC 0%, #0165FC 100%)",
-            color: "rgba(255,255,255,0.7)",
-            border: "2px solid var(--accent)",
+            background: "#000000",
+            color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -148,9 +156,9 @@ export default function LoginPage() {
           <div style={{
             marginBottom: 24,
             padding: 16,
-            background: "rgba(240, 235, 224, 0.05)",
+            background: "#0a0a0a",
             borderRadius: 8,
-            border: "1px solid var(--border-subtle)",
+            border: "1px solid rgba(255,255,255,0.1)",
           }}>
             <form onSubmit={handleMagicLink}>
               <p style={{ 
@@ -174,13 +182,13 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <p style={{ color: "#0165FC", marginBottom: 12, fontSize: 14 }}>
+                <p style={{ color: "#ffffff", marginBottom: 12, fontSize: 14 }}>
                   {error}
                 </p>
               )}
 
               {success && (
-                <p style={{ color: "#0165FC", marginBottom: 12, fontSize: 14 }}>
+                <p style={{ color: "#ffffff", marginBottom: 12, fontSize: 14 }}>
                   ✓ {success}
                 </p>
               )}
@@ -192,7 +200,7 @@ export default function LoginPage() {
                   style={{ 
                     flex: 1,
                     background: "transparent",
-                    border: "1px solid var(--border-hover)",
+                    border: "1px solid rgba(255,255,255,0.2)",
                     color: "#ffffff",
                   }}
                 >
@@ -213,9 +221,9 @@ export default function LoginPage() {
           marginBottom: 24,
           gap: 16 
         }}>
-          <div style={{ flex: 1, height: 1, backgroundColor: "var(--border-color)" }} />
+          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.1)" }} />
           <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>or sign in with password</span>
-          <div style={{ flex: 1, height: 1, backgroundColor: "var(--border-color)" }} />
+          <div style={{ flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.1)" }} />
         </div>
 
         <form onSubmit={handleLogin}>
@@ -240,7 +248,7 @@ export default function LoginPage() {
           </div>
 
           {error && loginMode === "password" && (
-            <p style={{ color: "#0165FC", marginBottom: 16, fontSize: 14 }}>
+            <p style={{ color: "#ffffff", marginBottom: 16, fontSize: 14 }}>
               {error}
             </p>
           )}
@@ -249,12 +257,13 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-      </div>
 
-      <p style={{ marginTop: 24, fontSize: 14 }}>
-        Don't have an account?{" "}
-        <Link href="/signup">Sign up</Link>
-      </p>
+        {/* Sign up link inside card */}
+        <p style={{ marginTop: 24, fontSize: 14, textAlign: "center", color: "rgba(255,255,255,0.7)" }}>
+          Don't have an account?{" "}
+          <Link href="/signup" style={{ color: "#ffffff" }}>Sign up</Link>
+        </p>
+      </div>
     </div>
   );
 }
