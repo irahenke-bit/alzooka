@@ -2096,31 +2096,6 @@ export default function ProfilePage() {
                   userId={profile.id}
                   onUpload={handleAvatarUpdate}
                 />
-                {/* View button overlay for own profile */}
-                {profile.avatar_url && (
-                  <button
-                    onClick={() => setShowPictureModal(true)}
-                    style={{
-                      position: "absolute",
-                      bottom: -8,
-                      right: -8,
-                      background: "#1a1a1a",
-                      border: "2px solid rgba(255,255,255,0.2)",
-                      borderRadius: "50%",
-                      width: 28,
-                      height: 28,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                      color: "#ffffff",
-                    }}
-                    title="View profile picture"
-                  >
-                    🔍
-                  </button>
-                )}
               </div>
             ) : (
               <button
