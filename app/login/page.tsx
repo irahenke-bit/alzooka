@@ -84,17 +84,17 @@ export default function LoginPage() {
       alignItems: "center", 
       justifyContent: "center",
       padding: 20,
-      background: "#000000",
+      background: "radial-gradient(ellipse at center, #000000 0%, #000000 50%, rgba(0,0,0,0.95) 100%)",
     }}>
       {/* Centered Card Container */}
       <div style={{
         width: "100%",
         maxWidth: 420,
-        background: "#111111",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "linear-gradient(180deg, #0d0d0d 0%, #151515 50%, #121212 100%)",
+        border: "none",
         borderRadius: 16,
         padding: "48px 40px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.4)",
       }}>
         {/* Logo */}
         <div style={{ marginBottom: 40, textAlign: "center" }}>
@@ -117,6 +117,7 @@ export default function LoginPage() {
             color: "#1f1f1f",
             border: "1px solid #dadce0",
             fontWeight: 500,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -146,6 +147,7 @@ export default function LoginPage() {
             border: "1px solid #dadce0",
             fontWeight: 500,
             transition: "background 0.2s",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#dedede";

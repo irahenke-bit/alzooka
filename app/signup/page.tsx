@@ -141,31 +141,43 @@ export default function SignupPage() {
       flexDirection: "column",
       alignItems: "center", 
       justifyContent: "center",
-      padding: 20 
+      padding: 20,
+      background: "radial-gradient(ellipse at center, #000000 0%, #000000 50%, rgba(0,0,0,0.95) 100%)",
     }}>
-      <div style={{ marginBottom: 40 }}>
-        <LogoWithText />
-      </div>
+      {/* Centered Card Container */}
+      <div style={{
+        width: "100%",
+        maxWidth: 420,
+        background: "linear-gradient(180deg, #0d0d0d 0%, #151515 50%, #121212 100%)",
+        border: "none",
+        borderRadius: 16,
+        padding: "48px 40px",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.4)",
+      }}>
+        <div style={{ marginBottom: 40, textAlign: "center" }}>
+          <LogoWithText />
+        </div>
 
-      <div style={{ width: "100%", maxWidth: 360 }}>
+        <div style={{ width: "100%" }}>
         {/* Google Sign Up Button - Brand colors allowed */}
-        <button
-          type="button"
-          onClick={handleGoogleSignUp}
-          disabled={loading}
-          style={{
-            width: "100%",
-            marginBottom: 12,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            background: "#ffffff",
-            color: "#1f1f1f",
-            border: "1px solid #dadce0",
-            fontWeight: 500,
-          }}
-        >
+          <button
+            type="button"
+            onClick={handleGoogleSignUp}
+            disabled={loading}
+            style={{
+              width: "100%",
+              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 12,
+              background: "#ffffff",
+              color: "#1f1f1f",
+              border: "1px solid #dadce0",
+              fontWeight: 500,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+            }}
+          >
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
@@ -176,24 +188,25 @@ export default function SignupPage() {
         </button>
 
         {/* Email Link Button - Light solid provider style (secondary) */}
-        <button
-          type="button"
-          onClick={() => { setShowMagicLink(true); setError(""); setSuccess(""); }}
-          disabled={loading}
-          style={{
-            width: "100%",
-            marginBottom: 24,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            padding: "10px 16px",
-            background: "#e8e8e8",
-            color: "#1f1f1f",
-            border: "1px solid #dadce0",
-            fontWeight: 500,
-            transition: "background 0.2s",
-          }}
+          <button
+            type="button"
+            onClick={() => { setShowMagicLink(true); setError(""); setSuccess(""); }}
+            disabled={loading}
+            style={{
+              width: "100%",
+              marginBottom: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 12,
+              padding: "10px 16px",
+              background: "#e8e8e8",
+              color: "#1f1f1f",
+              border: "1px solid #dadce0",
+              fontWeight: 500,
+              transition: "background 0.2s",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)",
+            }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#dedede";
           }}
@@ -452,12 +465,13 @@ export default function SignupPage() {
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
-      </div>
+        </div>
 
-      <p style={{ marginTop: 24, fontSize: 14 }}>
-        Already have an account?{" "}
-        <Link href="/login">Sign in</Link>
-      </p>
+        <p style={{ marginTop: 24, fontSize: 14, textAlign: "center" }}>
+          Already have an account?{" "}
+          <Link href="/login">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
 }

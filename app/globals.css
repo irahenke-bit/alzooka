@@ -179,6 +179,7 @@ input:focus, textarea:focus {
   background: #f5f5f5 !important;
   color: #1f1f1f !important;
   border: 1px solid #dadce0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
 }
 
 .light-input::placeholder {
@@ -187,7 +188,7 @@ input:focus, textarea:focus {
 
 .light-input:focus {
   border-color: #b0b0b0 !important;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Primary Button - Black default, blue on interaction */
