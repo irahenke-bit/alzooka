@@ -199,6 +199,7 @@ export default function LoginPage() {
                     color: "#1f1f1f",
                     border: "1px solid #dadce0",
                   }}
+                  className="light-input"
                 />
               </div>
 
@@ -260,6 +261,7 @@ export default function LoginPage() {
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
+              className="light-input"
             />
           </div>
           
@@ -275,6 +277,7 @@ export default function LoginPage() {
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
+              className="light-input"
             />
           </div>
 

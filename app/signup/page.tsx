@@ -241,6 +241,7 @@ export default function SignupPage() {
                     color: "#1f1f1f",
                     border: "1px solid #dadce0",
                   }}
+                  className="light-input"
                 />
               </div>
 
@@ -348,6 +349,7 @@ export default function SignupPage() {
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
+              className="light-input"
             />
           </div>
           
@@ -365,6 +367,7 @@ export default function SignupPage() {
                 border: "1px solid #dadce0",
                 paddingRight: 60,
               }}
+              className="light-input"
             />
             <button
               type="button"
