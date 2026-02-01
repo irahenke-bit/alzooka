@@ -289,7 +289,16 @@ export default function LoginPage() {
             </p>
           )}
 
-          <button type="submit" disabled={loading} style={{ width: "100%" }}>
+          <button 
+            type="submit" 
+            disabled={loading} 
+            style={{ 
+              width: "100%",
+              background: "#2a3441",
+              color: "#ffffff",
+              border: "none",
+            }}
+          >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>

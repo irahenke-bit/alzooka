@@ -461,7 +461,16 @@ export default function SignupPage() {
             </>
           )}
 
-          <button type="submit" disabled={loading || !!success} style={{ width: "100%" }}>
+          <button 
+            type="submit" 
+            disabled={loading || !!success} 
+            style={{ 
+              width: "100%",
+              background: "#2a3441",
+              color: "#ffffff",
+              border: "none",
+            }}
+          >
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
