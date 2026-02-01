@@ -197,7 +197,7 @@ export default function LoginPage() {
                   required
                   autoFocus
                   style={{
-                    background: "#f5f5f5",
+                    background: "#ebebeb",
                     color: "#1f1f1f",
                     border: "1px solid #dadce0",
                   }}
@@ -259,7 +259,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{
-                background: "#f5f5f5",
+                background: "#ebebeb",
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
@@ -275,7 +275,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{
-                background: "#f5f5f5",
+                background: "#ebebeb",
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
@@ -294,6 +294,7 @@ export default function LoginPage() {
             disabled={loading} 
             style={{ 
               width: "100%",
+              padding: "12px 20px",
               background: "#3a4553",
               color: "#ffffff",
               border: "none",
