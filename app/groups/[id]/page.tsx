@@ -2987,7 +2987,14 @@ export default function GroupPage() {
 
       {/* Post Form (members only, not banned) */}
       {isMember && !isUserBanned && (
-        <form onSubmit={handlePost} style={{ marginBottom: 24 }}>
+        <form onSubmit={handlePost} style={{ 
+          marginBottom: 24,
+          padding: 16,
+          background: "#111111",
+          border: "1px solid rgba(255,255,255,0.04)",
+          borderRadius: 12,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+        }}>
           {/* Input container with avatar inside */}
           <div
             style={{
@@ -2995,10 +3002,10 @@ export default function GroupPage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--bg-card)",
+              background: "#1a1a1a",
               borderRadius: 12,
-              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
-              marginBottom: 12,
+              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
+              marginBottom: 20,
               position: "relative",
             }}
             onDragOver={(e) => e.preventDefault()}
