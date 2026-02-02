@@ -2714,9 +2714,9 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => setShowYouTubeSearch(true)}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--border-hover)",
-                  color: "rgba(255,255,255,0.7)",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "rgba(255,255,255,0.85)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2735,9 +2735,9 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => setShowSpotifySearch(true)}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--border-hover)",
-                  color: "rgba(255,255,255,0.7)",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "rgba(255,255,255,0.85)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
@@ -2755,12 +2755,15 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--border-hover)",
-                  color: "rgba(255,255,255,0.7)",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "rgba(255,255,255,0.85)",
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
                 📷 Photo
@@ -2777,10 +2780,11 @@ export default function ProfilePage() {
                 onClick={handlePost}
                 disabled={posting || (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0)}
                 style={{
-                  background: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "#2a2a2a" : "#3a4553",
-                  color: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "rgba(255,255,255,0.4)" : "#ffffff",
+                  background: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "#252525" : "#3a4553",
+                  color: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.95)",
                   border: "none",
                   cursor: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "not-allowed" : "pointer",
+                  transition: "background 0.2s, color 0.2s",
                 }}
               >
                 {posting ? "Posting..." : "POST"}

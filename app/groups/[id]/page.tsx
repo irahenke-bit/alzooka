@@ -3341,9 +3341,9 @@ export default function GroupPage() {
               type="button"
               onClick={() => setShowYouTubeSearch(true)}
               style={{
-                background: "transparent",
-                border: "1px solid var(--border-hover)",
-                color: "rgba(255,255,255,0.7)",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.85)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3362,9 +3362,9 @@ export default function GroupPage() {
               type="button"
               onClick={() => setShowSpotifySearch(true)}
               style={{
-                background: "transparent",
-                border: "1px solid var(--border-hover)",
-                color: "rgba(255,255,255,0.7)",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.85)",
                 padding: "8px 16px",
                 fontSize: 14,
                 cursor: "pointer",
@@ -3382,10 +3382,11 @@ export default function GroupPage() {
               type="submit" 
               disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}
               style={{
-                background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "#2a2a2a" : "#3a4553",
-                color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "rgba(255,255,255,0.4)" : "#ffffff",
+                background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "#252525" : "#3a4553",
+                color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.95)",
                 border: "none",
                 cursor: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "not-allowed" : "pointer",
+                transition: "background 0.2s, color 0.2s",
               }}
             >
               {posting ? "Posting..." : "POST"}

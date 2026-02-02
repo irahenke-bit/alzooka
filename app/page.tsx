@@ -2163,9 +2163,9 @@ function FeedContent() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             style={{
-              background: "var(--bg-card)",
-              border: "1px solid var(--border-default)",
-              color: "rgba(255,255,255,0.7)",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.85)",
               padding: "8px 16px",
               fontSize: 14,
               cursor: "pointer",
@@ -2184,10 +2184,11 @@ function FeedContent() {
             type="submit" 
             disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview)}
             style={{
-              background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "#2a2a2a" : "#3a4553",
-              color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "rgba(255,255,255,0.4)" : "#ffffff",
+              background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "#252525" : "#3a4553",
+              color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.95)",
               border: "none",
               cursor: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "not-allowed" : "pointer",
+              transition: "background 0.2s, color 0.2s",
             }}
           >
             {posting ? "Posting..." : "POST"}
