@@ -250,7 +250,7 @@ export default function SignupPage() {
                   required
                   autoFocus
                   style={{
-                    background: "#ebebeb",
+                    background: "#dedede",
                     color: "#1f1f1f",
                     border: "1px solid #dadce0",
                   }}
@@ -358,7 +358,7 @@ export default function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{
-                background: "#ebebeb",
+                background: "#dedede",
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
               }}
@@ -375,7 +375,7 @@ export default function SignupPage() {
               minLength={8}
               required
               style={{
-                background: "#ebebeb",
+                background: "#dedede",
                 color: "#1f1f1f",
                 border: "1px solid #dadce0",
                 paddingRight: 60,
