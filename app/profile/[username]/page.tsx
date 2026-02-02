@@ -2358,10 +2358,10 @@ export default function ProfilePage() {
         <div style={{ 
           marginBottom: 24, 
           padding: 16,
-          background: "#141414",
-          border: "none",
+          background: "#111111",
+          border: "1px solid rgba(255,255,255,0.04)",
           borderRadius: 12,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
         }}>
           {/* Input container with avatar inside */}
           <div
