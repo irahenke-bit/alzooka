@@ -1744,13 +1744,14 @@ export default function ProfilePage() {
           overflow: "visible",
           background: profile.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
-            : "linear-gradient(135deg, black 0%, var(--alzooka-teal) 100%)",
+            : "linear-gradient(135deg, #0a0a0a 0%, var(--alzooka-teal) 100%)",
           position: "relative",
           padding: "24px",
           minHeight: 240,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
+          boxShadow: isOwnProfile ? "none" : "0 8px 32px rgba(0,0,0,0.4)",
         }}
       >
         {/* Background with rounded corners for clipping */}
@@ -2357,13 +2358,10 @@ export default function ProfilePage() {
         <div style={{ 
           marginBottom: 24, 
           padding: 16,
-          background: "rgba(255,255,255,0.02)",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          borderLeft: "1px solid rgba(255,255,255,0.04)",
-          borderRight: "1px solid rgba(255,255,255,0.04)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "#141414",
+          border: "none",
           borderRadius: "0 0 12px 12px",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
         }}>
           {/* Input container with avatar inside */}
           <div
