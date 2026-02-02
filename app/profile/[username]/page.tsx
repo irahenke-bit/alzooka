@@ -1739,7 +1739,7 @@ export default function ProfilePage() {
       {/* Profile Card with Banner - unified like groups */}
       <div 
         style={{ 
-          marginBottom: 12, 
+          marginBottom: 20, 
           borderRadius: 12, 
           overflow: "visible",
           background: profile.banner_url
