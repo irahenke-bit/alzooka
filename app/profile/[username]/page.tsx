@@ -1739,8 +1739,8 @@ export default function ProfilePage() {
       {/* Profile Card with Banner - unified like groups */}
       <div 
         style={{ 
-          marginBottom: 0, 
-          borderRadius: isOwnProfile ? "12px 12px 0 0" : 12, 
+          marginBottom: 12, 
+          borderRadius: 12, 
           overflow: "visible",
           background: profile.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
@@ -1758,7 +1758,7 @@ export default function ProfilePage() {
         <div style={{
           position: "absolute",
           inset: 0,
-          borderRadius: isOwnProfile ? "12px 12px 0 0" : 12,
+          borderRadius: 12,
           overflow: "hidden",
           background: "inherit",
           zIndex: -1,
@@ -2360,7 +2360,7 @@ export default function ProfilePage() {
           padding: 16,
           background: "#141414",
           border: "none",
-          borderRadius: "0 0 12px 12px",
+          borderRadius: 12,
           boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
         }}>
           {/* Input container with avatar inside */}
