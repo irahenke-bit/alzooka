@@ -1739,7 +1739,7 @@ export default function ProfilePage() {
       {/* Profile Card with Banner - unified like groups */}
       <div 
         style={{ 
-          marginBottom: 32, 
+          marginBottom: 16, 
           borderRadius: 12, 
           overflow: "visible",
           background: profile.banner_url
@@ -2354,7 +2354,13 @@ export default function ProfilePage() {
 
       {/* New Post Form (only on own profile) */}
       {isOwnProfile && (
-        <div className="card" style={{ marginBottom: 24 }}>
+        <div style={{ 
+          marginBottom: 24, 
+          padding: 16,
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: 12,
+        }}>
           {/* Input container with avatar inside */}
           <div
             style={{
