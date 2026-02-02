@@ -3378,8 +3378,17 @@ export default function GroupPage() {
               </svg>
               Spotify
             </button>
-            <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}>
-              {posting ? "Posting..." : "Post"}
+            <button 
+              type="submit" 
+              disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview)}
+              style={{
+                background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "#2a2a2a" : "#3a4553",
+                color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "rgba(255,255,255,0.4)" : "#ffffff",
+                border: "none",
+                cursor: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview) ? "not-allowed" : "pointer",
+              }}
+            >
+              {posting ? "Posting..." : "POST"}
             </button>
           </div>
         </form>

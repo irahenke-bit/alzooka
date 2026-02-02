@@ -2180,8 +2180,17 @@ function FeedContent() {
           >
             📷 Photo
           </button>
-          <button type="submit" disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview)}>
-            {posting ? "Posting..." : "Post"}
+          <button 
+            type="submit" 
+            disabled={posting || (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview)}
+            style={{
+              background: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "#2a2a2a" : "#3a4553",
+              color: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "rgba(255,255,255,0.4)" : "#ffffff",
+              border: "none",
+              cursor: (!content.trim() && selectedImages.length === 0 && !youtubePreview && !spotifyPreview && !linkPreview) ? "not-allowed" : "pointer",
+            }}
+          >
+            {posting ? "Posting..." : "POST"}
           </button>
         </div>
       </form>

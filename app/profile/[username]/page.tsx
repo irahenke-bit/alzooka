@@ -2362,10 +2362,10 @@ export default function ProfilePage() {
               alignItems: "flex-start",
               gap: 12,
               padding: "12px 16px",
-              background: "var(--bg-card)",
+              background: "#1a1a1a",
               borderRadius: 12,
-              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(240, 235, 224, 0.15)",
-              marginBottom: 12,
+              border: isDraggingOver ? "2px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
+              marginBottom: 20,
               position: "relative",
             }}
             onDragOver={(e) => e.preventDefault()}
@@ -2777,10 +2777,13 @@ export default function ProfilePage() {
                 onClick={handlePost}
                 disabled={posting || (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0)}
                 style={{
-                  opacity: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? 0.5 : 1,
+                  background: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "#2a2a2a" : "#3a4553",
+                  color: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "rgba(255,255,255,0.4)" : "#ffffff",
+                  border: "none",
+                  cursor: (!newPostContent.trim() && !youtubePreview && !spotifyPreview && selectedImages.length === 0) ? "not-allowed" : "pointer",
                 }}
               >
-                {posting ? "Posting..." : "Post"}
+                {posting ? "Posting..." : "POST"}
               </button>
             </div>
           </div>
