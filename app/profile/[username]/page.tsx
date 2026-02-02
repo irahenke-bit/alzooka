@@ -2720,9 +2720,16 @@ export default function ProfilePage() {
                   padding: "8px 16px",
                   fontSize: 14,
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                <span style={{ color: "rgba(255,255,255,0.9)" }}>▶</span> YouTube
+                <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+                  <rect width="20" height="14" rx="3" fill="#FF0000"/>
+                  <path d="M8 10V4L13 7L8 10Z" fill="white"/>
+                </svg>
+                YouTube
               </button>
               <button
                 type="button"
@@ -2953,9 +2960,16 @@ export default function ProfilePage() {
                       padding: "8px 16px",
                       fontSize: 14,
                       cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
                     }}
                   >
-                    <span style={{ color: "rgba(255,255,255,0.9)" }}>▶</span> YouTube
+                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+                      <rect width="20" height="14" rx="3" fill="#FF0000"/>
+                      <path d="M8 10V4L13 7L8 10Z" fill="white"/>
+                    </svg>
+                    YouTube
                   </button>
                   <button
                     type="button"
