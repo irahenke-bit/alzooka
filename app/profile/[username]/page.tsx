@@ -1739,8 +1739,8 @@ export default function ProfilePage() {
       {/* Profile Card with Banner - unified like groups */}
       <div 
         style={{ 
-          marginBottom: 16, 
-          borderRadius: 12, 
+          marginBottom: 0, 
+          borderRadius: isOwnProfile ? "12px 12px 0 0" : 12, 
           overflow: "visible",
           background: profile.banner_url
             ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(26,58,74,0.95) 60%), url(${profile.banner_url}) center/cover`
@@ -1757,7 +1757,7 @@ export default function ProfilePage() {
         <div style={{
           position: "absolute",
           inset: 0,
-          borderRadius: 12,
+          borderRadius: isOwnProfile ? "12px 12px 0 0" : 12,
           overflow: "hidden",
           background: "inherit",
           zIndex: -1,
@@ -2352,14 +2352,18 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* New Post Form (only on own profile) */}
+      {/* New Post Form (only on own profile) - attached to profile */}
       {isOwnProfile && (
         <div style={{ 
           marginBottom: 24, 
           padding: 16,
-          background: "transparent",
-          border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 12,
+          background: "rgba(255,255,255,0.02)",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          borderLeft: "1px solid rgba(255,255,255,0.04)",
+          borderRight: "1px solid rgba(255,255,255,0.04)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "0 0 12px 12px",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
         }}>
           {/* Input container with avatar inside */}
           <div
